@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1420">
+<title>Handstand Fastway</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<style>
+:root{
+  --bg:#0f1420; --card:#182033; --card2:#1f2940; --line:#2c3854;
+  --txt:#eef2fb; --mut:#93a0bd; --acc:#ffb020; --ok:#3ddc97; --bad:#ff6b6b; --blue:#6aa8ff;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+body{padding:0 0 calc(76px + env(safe-area-inset-bottom))}
+button,select,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;border-radius:12px;background:var(--card2);padding:12px 16px;min-height:44px}
+button.primary{background:var(--acc);color:#1a1300;font-weight:700}
+button.ghost{background:transparent;border:1px solid var(--line)}
+button.danger{background:transparent;border:1px solid var(--bad);color:var(--bad)}
+main{max-width:640px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}
+h2{font-size:17px;margin:0}
+.mut{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
+.row{display:flex;align-items:center;gap:12px}
+.grow{flex:1;min-width:0}
+header.top{padding:16px 16px 0;max-width:640px;margin:0 auto}
+select{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:44px}
+.bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:10px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));border-radius:99px;transition:width .4s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+.stat{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-size:20px}
+.next{border-color:var(--acc)}
+.sec-head{width:100%;text-align:left;background:transparent;padding:0;display:flex;align-items:center;gap:12px}
+.badge{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--card2);font-weight:700}
+.sec.done .badge{background:var(--ok);color:#06281a}
+.sec.locked{opacity:.62}
+.sec.off-goal .badge{border:1px dashed var(--line);background:transparent}
+.chev{color:var(--mut);transition:transform .2s}
+.sec.open .chev{transform:rotate(90deg)}
+.sec-body{display:none;margin-top:12px}
+.sec.open .sec-body{display:block}
+.ms{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card2);margin-top:8px;padding:12px}
+.dot{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:14px}
+.ms.done .dot{background:var(--ok);border-color:var(--ok);color:#06281a}
+.ms.wip .dot{border-color:var(--acc)}
+.ms .t{font-weight:600}
+.tag{font-size:12px;color:var(--mut);white-space:nowrap}
+details{margin-top:12px}
+summary{color:var(--blue);cursor:pointer;padding:8px 0}
+label.vid{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:14px;border-top:1px solid var(--line)}
+label.vid input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--ok)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#0b0f18;border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;max-width:213px;background:transparent;border-radius:0;color:var(--mut);padding:14px 4px;font-size:14px}
+nav.tabs button.on{color:var(--acc);font-weight:700}
+.view{display:none}.view.on{display:block}
+dialog{border:0;border-radius:20px;background:var(--card);color:var(--txt);width:min(560px,calc(100vw - 24px));padding:20px;max-height:92vh}
+dialog::backdrop{background:rgba(0,0,0,.7)}
+.clock{font-variant-numeric:tabular-nums;font-size:72px;font-weight:800;text-align:center;margin:12px 0 4px;line-height:1}
+.clock.count{color:var(--acc)}.clock.hit{color:var(--ok)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btns button{flex:1}
+.big{width:100%;min-height:64px;font-size:20px}
+input[type=number]{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:44px}
+.log{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
+.log:first-child{border-top:0}
+.pr{color:var(--ok);font-weight:700}
+textarea{width:100%;min-height:90px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px ui-monospace,monospace}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="row"><div class="grow"><h1>🤸 Handstand Fastway</h1><div class="mut">Ton arbre de compétences, étape par étape</div></div></div>
+</header>
+
+<main>
+  <section id="v-path" class="view on">
+    <div class="card">
+      <label class="mut" for="goal">But final</label>
+      <select id="goal"></select>
+      <div class="bar"><i id="goalBar"></i></div>
+      <div class="mut" id="goalTxt" style="margin-top:6px"></div>
+      <div class="stats">
+        <div class="stat"><b id="stStreak">0</b><span class="mut">jours d'affilée</span></div>
+        <div class="stat"><b id="stWeek">0</b><span class="mut">séances / 7 j</span></div>
+        <div class="stat"><b id="stDone">0</b><span class="mut">jalons validés</span></div>
+      </div>
+    </div>
+    <div class="card next" id="nextCard"></div>
+    <div id="tree"></div>
+  </section>
+
+  <section id="v-log" class="view">
+    <div class="card"><h2>Journal</h2><div class="mut">Tes derniers essais</div><div id="logList" style="margin-top:8px"></div></div>
+  </section>
+
+  <section id="v-set" class="view">
+    <div class="card">
+      <h2>Chrono</h2>
+      <div class="mut" style="margin:6px 0">Compte à rebours avant départ (le temps de monter en équilibre)</div>
+      <select id="countdown"><option value="0">Aucun</option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select>
+    </div>
+    <div class="card">
+      <h2>Sauvegarde</h2>
+      <div class="mut" style="margin:6px 0">Les données restent sur cet appareil. Exporte-les pour les garder ou changer de téléphone.</div>
+      <textarea id="io" placeholder="Colle ici une sauvegarde pour l'importer"></textarea>
+      <div class="btns"><button id="exp">Exporter</button><button id="imp">Importer</button></div>
+      <div class="btns"><button class="danger" id="reset">Tout effacer</button></div>
+    </div>
+    <div class="card mut">Les noms de jalons et de vidéos renvoient à ton programme « Handstand Toolkit ». L'app ne contient aucune vidéo : elle sert à suivre ta progression.</div>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button data-v="path" class="on">Parcours</button>
+  <button data-v="log">Journal</button>
+  <button data-v="set">Réglages</button>
+</nav>
+
+<dialog id="dlg">
+  <div class="row"><div class="grow"><h2 id="dT"></h2><div class="mut" id="dS"></div></div><button class="ghost" id="dX" aria-label="Fermer">✕</button></div>
+  <div id="dHold">
+    <div class="clock" id="clock">0.0</div>
+    <div class="mut" style="text-align:center" id="clockHint"></div>
+    <div class="btns"><button class="primary big" id="go">Démarrer</button></div>
+  </div>
+  <div id="dReps">
+    <div class="mut" style="margin-top:12px">Répétitions réussies</div>
+    <div class="btns"><input type="number" id="reps" min="0" inputmode="numeric"><button class="primary" id="saveReps">Enregistrer</button></div>
+  </div>
+  <div class="btns"><button id="toggle"></button></div>
+  <div class="mut" id="dBest" style="margin-top:12px"></div>
+  <div id="dLog"></div>
+</dialog>
+
+<script>
+"use strict";
+// ---------- Données : l'arbre de compétences ----------
+// type: hold (secondes), reps (répétitions), check (réussi / pas réussi)
+const TREE = [
+  {id:"starter", name:"Starter", req:[], ms:[
+    {id:"st_bail30", name:"Cartwheel Bail", sub:"à 30 cm du mur", type:"check"},
+    {id:"st_bailc2w", name:"Cartwheel Bail", sub:"poitrine au mur", type:"check"},
+    {id:"st_split", name:"Split Leg Balance On Wall", sub:"tenue au mur", type:"hold", target:5},
+  ], videos:["Hands, eyes and scapula position","Entering the wall","Where is balance & heel pulls","Split leg balance","Chest to wall holds","Top end isolations","Using the wall","Falling : why you must learn to fall & the terrible cartwheel","Falling : 5 ways to build confidence","Falling : why chest to wall?"]},
+  {id:"b1", name:"Beginner 1", req:["starter"], ms:[
+    {id:"b1_free5", name:"Freestanding", sub:"en split leg", type:"hold", target:5},
+  ], videos:["Split leg balance","Chest to wall holds","Top end isolations","Using the wall","Limit the variables : tricks to increase your consistency","The basic kick up & 50/50 rule","Kicking up to handstand"]},
+  {id:"b2", name:"Beginner 2", req:["b1"], ms:[
+    {id:"b2_free15", name:"Freestanding", sub:"en split leg", type:"hold", target:15},
+    {id:"b2_str15", name:"Straight", sub:"jambes serrées", type:"hold", target:15},
+  ], videos:["5 shapes that will help you improve","You need to tuck more","Scapula anatomy","How long does it take & examples","Road to a minute"]},
+  {id:"inter", name:"Intermediate", req:["b2"], ms:[
+    {id:"in_str40", name:"Straight", sub:"Shape Holds", type:"hold", target:40},
+    {id:"in_str60", name:"Straight", sub:"Shape Holds", type:"hold", target:60},
+    {id:"in_tuck", name:"Tuck", sub:"genoux alignés avec les hanches", type:"hold", target:10},
+    {id:"in_toes", name:"Head Looking At Toes", sub:"Shape Holds", type:"hold", target:15},
+    {id:"in_7d", name:"Double Leg 7", sub:"Shape Holds", type:"hold", target:5},
+    {id:"in_7s", name:"Single Leg 7", sub:"Shape Holds", type:"hold", target:5},
+    {id:"in_toes7", name:"Head Looking At Toes 7", sub:"Shape Holds", type:"hold", target:5},
+    {id:"in_changes", name:"Shape Changes", sub:"Level 1", type:"check"},
+    {id:"in_hspu", name:"Handstand Push Up", sub:"", type:"reps", target:3},
+  ], videos:["Intermediate handstand tips & tricks","Head looking at toes","Suffering with 7's","Arguments for a straight line","10 tips for a straight line"]},
+  {id:"onearm", name:"One Arm", req:["inter"], ms:[
+    {id:"oa_flagfloor", name:"Flags To Floor", sub:"", type:"check"},
+    {id:"oa_flaghoriz", name:"Flags Below Horizontal", sub:"chaque côté", type:"hold", target:5},
+    {id:"oa_shift", name:"Weight Shifting", sub:"par côté", type:"reps", target:2},
+    {id:"oa_finger", name:"Fingertip Support", sub:"", type:"hold", target:15},
+    {id:"oa_strarm", name:"Straight Arm Support", sub:"", type:"hold", target:15},
+    {id:"oa_oahs", name:"One Arm Handstand", sub:"le sommet de l'arbre", type:"hold", target:5},
+  ], videos:["Two arm finessing","Flagging as one arm handstand prep","Mechanics of a OAHS","Weight shifting","Fingertip support","Straight arm support","Raising center of mass","Going for glory","10 tips for the OAHS"]},
+  {id:"press", name:"Press", req:["b2"], ms:[
+    {id:"pr_straddle", name:"Straddle Press", sub:"", type:"check"},
+    {id:"pr_pike", name:"Pike Press", sub:"", type:"check"},
+    {id:"pr_stalder", name:"Stalder", sub:"", type:"check"},
+  ], videos:["Mechanics of a press","Top down","Bottom up","Weak link","Liv's journey to press","Trap-3 Trap-1"]},
+  {id:"low", name:"Low Balances", req:[], ms:[
+    {id:"lo_frog", name:"Frog & Crow", sub:"", type:"check"},
+    {id:"lo_elbow", name:"Elbow Lever", sub:"", type:"check"},
+    {id:"lo_croc", name:"Croc", sub:"", type:"check"},
+    {id:"lo_qdr", name:"QDR", sub:"", type:"check"},
+  ], videos:["Elbow lever","Croc","QDR"]},
+  {id:"key", name:"Concepts clés (tous niveaux)", req:[], ms:[], videos:["The handstand skill tree key","The fight & learning to save","4 kick ups you should know","Getting creative","Kicking up to handstand","Looking after your wrists","Hands, eyes and scapula position","The basic kick up"]},
+];
+const GOALS = [
+  {id:"oahs", name:"One Arm Handstand 5 s", secs:["starter","b1","b2","inter","onearm"]},
+  {id:"min", name:"Handstand droit 60 s", secs:["starter","b1","b2"], extra:["in_str40","in_str60"]},
+  {id:"press", name:"Press jusqu'au Stalder", secs:["starter","b1","b2","press"]},
+  {id:"all", name:"Tout l'arbre", secs:["starter","b1","b2","inter","onearm","press","low"]},
+];
+const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
+const MS = {}; TREE.forEach(s=>s.ms.forEach(m=>{MS[m.id]=m; m.sec=s.id;}));
+
+// ---------- État ----------
+const KEY = "hs-fastway-v1";
+const blank = () => ({goal:"oahs", countdown:5, ms:{}, log:[], vid:{}});
+let S = blank();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
+const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
+const $ = id => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const unit = m => m.type === "hold" ? "s" : m.type === "reps" ? " reps" : "";
+const fmt = (m, v) => m.type === "hold" ? (Math.round(v*10)/10) + " s" : v + " reps";
+const targetTxt = m => m.type === "check" ? "à réussir" : "objectif " + m.target + unit(m);
+
+function goalMs(){
+  const g = GOALS.find(g=>g.id===S.goal) || GOALS[0];
+  const ids = []; g.secs.forEach(s=>SEC[s].ms.forEach(m=>ids.push(m.id)));
+  (g.extra||[]).forEach(id=>ids.push(id));
+  return ids;
+}
+const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
+const secLocked = s => s.req.some(r=>!secDone(SEC[r]));
+const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
+
+// ---------- Rendu ----------
+const openSecs = new Set();
+function render(){
+  // objectif
+  const gsel = $("goal");
+  if (!gsel.options.length) GOALS.forEach(g=>gsel.add(new Option(g.name, g.id)));
+  gsel.value = S.goal;
+  const ids = goalMs(), done = ids.filter(id=>st(id).done).length;
+  const pct = ids.length ? Math.round(done/ids.length*100) : 0;
+  $("goalBar").style.width = pct + "%";
+  $("goalTxt").textContent = done + " / " + ids.length + " jalons sur ce chemin · " + pct + " %";
+  // stats
+  const days = new Set(S.log.map(l=>dayKey(l.t)));
+  let streak = 0; const d = new Date();
+  if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while (days.has(dayKey(d))) { streak++; d.setDate(d.getDate()-1); }
+  const weekAgo = Date.now() - 7*864e5;
+  $("stStreak").textContent = streak;
+  $("stWeek").textContent = new Set(S.log.filter(l=>l.t>weekAgo).map(l=>dayKey(l.t))).size;
+  $("stDone").textContent = Object.keys(MS).filter(id=>st(id).done).length;
+  // prochaine étape
+  const nextId = ids.find(id=>!st(id).done);
+  const nc = $("nextCard"); nc.textContent = "";
+  if (nextId){
+    const m = MS[nextId];
+    nc.append(el("div","mut","Prochaine étape · " + SEC[m.sec].name));
+    const h = el("h2",null, m.name + (m.target ? " — " + m.target + unit(m) : "")); h.style.margin = "4px 0";
+    nc.append(h);
+    if (m.sub) nc.append(el("div","mut",m.sub));
+    if (m.type !== "check" && st(nextId).best) nc.append(el("div","mut","Ton record : " + fmt(m, st(nextId).best)));
+    const b = el("button","primary big", m.type === "hold" ? "Lancer le chrono" : "S'entraîner"); b.style.marginTop = "12px";
+    b.onclick = () => openMs(nextId); nc.append(b);
+    if (!openSecs.size) openSecs.add(m.sec);
+  } else {
+    nc.append(el("h2",null,"🏆 But final atteint !"), el("div","mut","Choisis un autre but en haut pour continuer."));
+  }
+  // arbre
+  const tree = $("tree"); tree.textContent = "";
+  const gset = new Set(ids.map(id=>MS[id].sec));
+  TREE.forEach((s,i)=>{
+    const c = el("div","card sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (s.ms.length && !gset.has(s.id)?" off-goal":"") + (openSecs.has(s.id)?" open":""));
+    const h = el("button","sec-head");
+    h.append(el("span","badge", secDone(s) ? "✓" : secLocked(s) ? "🔒" : s.ms.length ? String(i+1) : "▶"));
+    const g = el("span","grow"); g.append(el("h2",null,s.name));
+    const n = s.ms.filter(m=>st(m.id).done).length;
+    let info = s.ms.length ? n + " / " + s.ms.length + " jalons" : s.videos.length + " vidéos";
+    if (secLocked(s)) info += " · après " + s.req.map(r=>SEC[r].name).join(", ");
+    else if (s.ms.length && !gset.has(s.id)) info += " · hors de ton chemin";
+    g.append(el("div","mut",info)); h.append(g, el("span","chev","›"));
+    h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); c.classList.toggle("open"); };
+    const body = el("div","sec-body");
+    s.ms.forEach(m=>{
+      const x = st(m.id);
+      const b = el("button","ms" + (x.done?" done":x.best?" wip":""));
+      b.append(el("span","dot", x.done ? "✓" : ""));
+      const t = el("span","grow"); t.append(el("div","t", m.name + (m.target ? " · " + m.target + unit(m) : "")));
+      if (m.sub) t.append(el("div","mut",m.sub));
+      b.append(t);
+      if (m.type !== "check" && x.best) b.append(el("span","tag","record " + fmt(m,x.best)));
+      b.onclick = () => openMs(m.id); body.append(b);
+    });
+    if (s.videos.length){
+      const det = el("details"); if (!s.ms.length) det.open = true;
+      const seen = s.videos.filter(v=>S.vid[s.id+"|"+v]).length;
+      det.append(el("summary",null,"Vidéos du programme à regarder (" + seen + " / " + s.videos.length + ")"));
+      s.videos.forEach(v=>{
+        const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[s.id+"|"+v];
+        cb.onchange = () => { S.vid[s.id+"|"+v] = cb.checked; save(); det.querySelector("summary").textContent = "Vidéos du programme à regarder (" + s.videos.filter(v=>S.vid[s.id+"|"+v]).length + " / " + s.videos.length + ")"; };
+        l.append(cb, el("span",null,v)); det.append(l);
+      });
+      body.append(det);
+    }
+    c.append(h, body); tree.append(c);
+  });
+  // journal
+  const ll = $("logList"); ll.textContent = "";
+  if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Lance un chrono depuis le parcours."));
+  S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
+  $("countdown").value = String(S.countdown);
+}
+function logRow(l, withName){
+  const m = MS[l.id]; const r = el("div","log"); if (!m) return r;
+  const when = new Date(l.t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + " " + new Date(l.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  const left = el("span","grow"); if (withName) left.append(el("div",null,m.name + (m.sub ? " · " + m.sub : ""))); left.append(el("div","mut",when));
+  r.append(left, el("span", l.pr ? "pr" : null, (l.v === true ? "validé" : fmt(m,l.v)) + (l.pr ? " ★" : "")));
+  return r;
+}
+
+// ---------- Fiche jalon + chrono ----------
+let cur = null, timer = null, phase = "idle", t0 = 0, beeped = false, ac = null, wake = null;
+function beep(freq, ms){
+  try {
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = freq; o.connect(g); g.connect(ac.destination);
+    g.gain.setValueAtTime(0.25, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + ms/1000);
+    o.start(); o.stop(ac.currentTime + ms/1000);
+  } catch(e){}
+  if (navigator.vibrate) navigator.vibrate(ms);
+}
+function openMs(id){
+  cur = id; const m = MS[id];
+  $("dT").textContent = m.name; $("dS").textContent = [SEC[m.sec].name, m.sub, targetTxt(m)].filter(Boolean).join(" · ");
+  $("dHold").style.display = m.type === "hold" ? "" : "none";
+  $("dReps").style.display = m.type === "reps" ? "" : "none";
+  $("reps").value = "";
+  resetClock(); fillDlg(); $("dlg").showModal();
+}
+function fillDlg(){
+  const m = MS[cur], x = st(cur);
+  $("toggle").textContent = x.done ? "Retirer la validation" : (m.type === "check" ? "✓ Je l'ai réussi" : "Valider manuellement");
+  $("toggle").className = x.done ? "ghost" : (m.type === "check" ? "primary big" : "ghost");
+  $("dBest").textContent = m.type === "check" ? (x.done ? "Jalon validé ✓" : "") : (x.best ? "Record : " + fmt(m,x.best) + (x.done ? " · jalon validé ✓" : " · objectif " + m.target + unit(m)) : "Pas encore d'essai enregistré.");
+  const dl = $("dLog"); dl.textContent = "";
+  S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
+}
+function record(v){
+  const m = MS[cur], x = st(cur); let pr = false;
+  if (v === true) { x.done = true; }
+  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target) x.done = true; }
+  S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  save(); fillDlg(); render();
+}
+function resetClock(){
+  clearInterval(timer); phase = "idle"; beeped = false;
+  $("clock").textContent = "0.0"; $("clock").className = "clock";
+  $("go").textContent = "Démarrer"; $("clockHint").textContent = "Objectif : " + (MS[cur].target || 0) + " s";
+  if (wake) { wake.release().catch(()=>{}); wake = null; }
+}
+$("go").onclick = async () => {
+  const m = MS[cur], ck = $("clock");
+  if (phase === "idle"){
+    try { if (navigator.wakeLock) wake = await navigator.wakeLock.request("screen"); } catch(e){}
+    let left = S.countdown; let lastShown = -1;
+    const startRun = () => { phase = "run"; t0 = performance.now(); ck.className = "clock"; $("go").textContent = "Stop"; $("clockHint").textContent = "Touche Stop en redescendant"; beep(880, 350); };
+    if (left > 0) { phase = "count"; ck.className = "clock count"; $("go").textContent = "Annuler"; $("clockHint").textContent = "Mets-toi en place…"; t0 = performance.now(); } else startRun();
+    timer = setInterval(()=>{
+      const e = (performance.now() - t0) / 1000;
+      if (phase === "count"){
+        const r = Math.ceil(left - e);
+        if (r <= 0) startRun();
+        else { ck.textContent = String(r); if (r !== lastShown) { lastShown = r; if (r <= 3) beep(440, 120); } }
+      } else if (phase === "run"){
+        ck.textContent = e.toFixed(1);
+        if (!beeped && e >= m.target) { beeped = true; ck.className = "clock hit"; beep(1320, 600); }
+      }
+    }, 50);
+  } else if (phase === "count"){ resetClock(); }
+  else if (phase === "run"){
+    const v = Math.floor((performance.now() - t0) / 100) / 10;
+    clearInterval(timer); phase = "idle"; $("go").textContent = "Nouvel essai";
+    if (wake) { wake.release().catch(()=>{}); wake = null; }
+    $("clockHint").textContent = v >= m.target ? "Objectif atteint 🎉" : "Encore " + (Math.round((m.target - v)*10)/10) + " s pour l'objectif";
+    if (v >= 0.5) record(v);
+  }
+};
+$("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (v > 0) { record(v); $("reps").value = ""; } };
+$("toggle").onclick = () => { const x = st(cur); if (x.done) { x.done = false; save(); fillDlg(); render(); } else record(true); };
+$("dX").onclick = () => $("dlg").close();
+$("dlg").addEventListener("close", resetClock);
+
+// ---------- Navigation + réglages ----------
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
+  document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x===b));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id === "v-" + b.dataset.v));
+  window.scrollTo(0,0);
+});
+$("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); save(); render(); };
+$("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
+$("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
+$("imp").onclick = () => {
+  try { const d = JSON.parse($("io").value); if (!d || typeof d.ms !== "object" || !Array.isArray(d.log)) throw 0;
+    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { S = Object.assign(blank(), d); save(); render(); alert("Sauvegarde importée."); } }
+  catch(e){ alert("Sauvegarde illisible : colle le texte exporté tel quel."); }
+};
+$("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est définitif.")) { S = blank(); openSecs.clear(); save(); render(); } };
+
+render();
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+</body>
+</html>
