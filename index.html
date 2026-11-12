@@ -69,7 +69,7 @@ select option{font:16px system-ui;background:var(--bg);color:var(--txt)}
 /* arbre */
 .sec{border-top:1px solid var(--line)}
 .sec:last-child{border-bottom:1px solid var(--line)}
-.sec-head{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;text-align:left}
+.sec-head{display:flex;align-items:center;gap:14px;width:100%;min-height:72px;text-align:left}
 .idx{font:600 15px/1 var(--disp);color:var(--mut);width:22px;font-variant-numeric:tabular-nums}
 .sname{font:600 22px/1.1 var(--disp);letter-spacing:.04em;text-transform:uppercase}
 .cnt{font:600 17px/1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
@@ -646,12 +646,20 @@ function renderQuest(S0, nextId){
   const box = $("quest"); box.textContent = "";
   const ids = goalMs(), goal = GOALS.find(g=>g.id === S.goal) || GOALS[0], done = doneIn(ids);
   const main = el("div","block"); main.style.border = "0";
-  main.append(el("div","lab","Quête principale"), el("h2",null,goal.name));
+  const gi = GOALS.indexOf(goal);
+  main.append(el("div","lab","Quête principale" + (gi < 2 ? " · quête " + (gi+1) + " sur 2" : "")), el("h2",null,goal.name));
   main.children[1].style.margin = "6px 0 10px";
   const bar = el("div","bar"), bi = el("i"); bi.style.width = (ids.length ? done/ids.length*100 : 0) + "%"; bar.append(bi);
   main.append(el("div","mut", done + " jalons sur " + ids.length + (nextId ? " · prochaine étape : " + MS[nextId].name : " · quête accomplie")), bar);
   bar.style.marginTop = "12px";
   if (nextId) { const b = el("button","btn","Reprendre la quête"); b.style.marginTop = "16px"; b.onclick = () => openMs(nextId); main.append(b); }
+  GOALS.slice(0, 2).forEach((g2, i)=>{ if (g2.id === goal.id) return;
+    const q = el("div","q"), h = el("div","h"), d2 = doneIn(g2.ms); q.style.marginTop = "20px";
+    h.append(el("b",null,"Quête " + (i+1) + " · " + g2.name), el("span",null, d2 + " / " + g2.ms.length));
+    const br = el("div","bar"), bi2 = el("i"); bi2.style.width = (d2/g2.ms.length*100) + "%"; br.append(bi2);
+    const sw = el("button","btn line", d2 >= g2.ms.length ? "Revoir cette quête" : "En faire ma quête principale"); sw.style.marginTop = "12px";
+    sw.onclick = () => { S.goal = g2.id; openSecs.clear(); pg().cur = null; save(); render(); };
+    q.append(h, el("div","mut", i === 0 ? "La première : l'arbre d'équilibre, de la sortie au mur à l'équilibre sur un bras." : "La suivante : la branche Planche, du planche lean à la full planche."), br, sw); main.append(q); });
   box.append(main);
   const todo = S0.badges.filter(b=>!b.ok).sort((a,b)=>b.cur/b.max - a.cur/a.max), got = S0.badges.filter(b=>b.ok);
   const side = el("div","block"); side.append(el("h2",null,"Quêtes secondaires"), el("div","mut","Chacune débloque un badge et 50 points d'expérience."));
@@ -709,12 +717,15 @@ function render(){
 
   const tree = $("tree"); tree.textContent = "";
   let n = 0;
-  TREE.forEach(s=>{
+  const Q1 = new Set(GOALS[0].ms), Q2 = new Set(GOALS[1].ms);
+  const qTag = s => !s.ms.length ? "" : s.ms.some(m=>Q1.has(m.id)) ? "Quête 1" : s.ms.some(m=>Q2.has(m.id)) ? "Quête 2" : "Secondaire";
+  const qRank = s => ({"Quête 1":0, "Quête 2":1, "Secondaire":2, "":3})[qTag(s)];
+  TREE.slice().sort((a,b)=>qRank(a) - qRank(b)).forEach(s=>{
     const c = el("section","sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (openSecs.has(s.id)?" open":""));
     const h = el("button","sec-head");
     h.setAttribute("aria-expanded", openSecs.has(s.id));
     h.append(el("span","idx", s.ms.length ? String(++n).padStart(2,"0") : "—"));
-    const g = el("span","grow"); g.append(el("span","sname",s.name)); h.append(g);
+    const g = el("span","grow"); if (qTag(s)) { const tg = el("span","lab",qTag(s)); tg.style.cssText = "display:block;margin-bottom:4px"; g.append(tg); } g.append(el("span","sname",s.name)); h.append(g);
     h.append(el("span","cnt", s.ms.length ? s.ms.filter(m=>st(m.id).done).length + "/" + s.ms.length : ""), icon("chev","chev"));
     h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); h.setAttribute("aria-expanded", c.classList.toggle("open")); };
     const body = el("div","sec-body");
@@ -866,16 +877,33 @@ $("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").cl
 // ---------- Séance : programmes conservés sur l'appareil uniquement ----------
 // Le contenu des programmes n'est pas lisible dans ce dépôt : il arrive chiffré (programs/*.enc, déverrouillé par une
 // phrase que seul l'utilisateur connaît) ou par import d'un fichier au format "hs-program/1".
+const DAYK = ["mon","tue","wed","thu","fri","sat","sun"], DAYL = ["L","M","M","J","V","S","D"];
 const PKEY = "hs-fastway-progs", PPASS = "hs-fastway-pass"; let PS = {}, P = null;
 try { PS = JSON.parse(localStorage.getItem(PKEY)) || {}; } catch(e){}
 const savePS = () => { try { localStorage.setItem(PKEY, JSON.stringify(PS)); } catch(e){} };
 try { const old = JSON.parse(localStorage.getItem("hs-fastway-prog")); if (old && old.id && !PS[old.id]) { PS[old.id] = old; savePS(); } localStorage.removeItem("hs-fastway-prog"); } catch(e){}
-const DAYK = ["mon","tue","wed","thu","fri","sat","sun"], DAYL = ["L","M","M","J","V","S","D"];
 const DAYN = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const todayIdx = () => (new Date().getDay() + 6) % 7;
 let selDay = todayIdx();
 const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = g.wk || {}; g.by = g.by || {}; return g; };
-const pickP = () => { const ids = Object.keys(PS); P = PS[pg().cur] || PS[ids[0]] || null; if (P) pg().cur = P.id; };
+// Séance d'équilibre : construite à partir de l'arbre (les prochains jalons accessibles de la quête 1), pas d'un programme importé.
+function builtin(){
+  const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, 3);
+  const blocks = next.map(id=>{ const m = MS[id], base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:5}, ()=>({reps:1}))});
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:m.type === "hold" ? 5 : 3}, ()=>({goal:m.target, rest:60}))}); });
+  const day = {type:"train", blocks};
+  return {id:"equilibre", name:"Séance d'équilibre", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir de ton arbre : les prochains jalons accessibles de la quête « " + GOALS[0].name + " », cinq essais chacun. Atteindre la cible valide le jalon.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
+}
+const PGROUPS = [
+  ["Quête 1 · Équilibre sur un bras", id => id === "equilibre"],
+  ["Quête 2 · Full planche", id => id === "planche-domination"],
+  ["Autres programmes de planche", id => /^planche-/.test(id)],
+  ["Souplesse", id => /^etirements/.test(id)],
+  ["Autres", id => true],
+];
+const allP = () => Object.assign({equilibre:builtin()}, PS);
+const pickP = () => { const all = allP(); P = all[pg().cur] || all[S.goal === "planche" && PS["planche-domination"] ? "planche-domination" : "equilibre"]; };
 const pp = () => pg().by[P.id] || (pg().by[P.id] = {step:0});
 const pStep = () => P.steps[Math.min(pp().step, P.steps.length - 1)];
 const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + P.id + "|" + pp().step + "|" + DAYK[di]; };
@@ -892,7 +920,7 @@ const sDur = (s, sc) => Math.max(5, Math.round(s.dur * (sc || 1)));
 const sRun = (s, sc) => s.durMax ? Math.max(5, Math.round(s.durMax * (sc || 1))) : sDur(s, sc);
 const fixTxt = (b, s, sc) => (s.dur != null ? sDur(s, sc) + (s.durMax ? " à " + sRun(s, sc) : "") + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
 const restTxt = s => !s.rest ? "libre" : s.rest % 60 ? s.rest + (s.restMax ? " à " + s.restMax : "") + " s" : (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
-const pTarget = (b, s) => { const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
+const pTarget = (b, s) => { if (s.goal) return s.goal; const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
 const extLink = (href, txt) => { const a = el("a","lk",txt); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
 const ytLink = (id, txt) => extLink("https://www.youtube.com/watch?v=" + id, txt);
 const drv = id => "https://drive.google.com/file/d/" + id + "/view";
@@ -953,8 +981,8 @@ function renderSess(){
   pickP();
   const box = $("sess"); box.textContent = "";
   const head = el("div","block"); head.style.border = "0"; box.append(head);
-  if (!P){
-    head.append(el("h2",null,"Séance"), el("div","mut","Aucun programme sur cet appareil. Saisis ta phrase d'accès aux programmes : ils sont téléchargés, déverrouillés, puis conservés dans ce téléphone."));
+  const passForm = () => { const w = el("div");
+    w.append(el("div","mut","Tes programmes (planche, étirements) ne sont pas encore sur cet appareil. Saisis ta phrase d'accès : ils sont téléchargés, déverrouillés, puis conservés dans ce téléphone."));
     const f = el("form"), inp = el("input"), msg = el("div","mut"), b = el("button","btn","Charger mes programmes");
     inp.type = "text"; inp.autocapitalize = "none"; inp.autocomplete = "off"; inp.spellcheck = false; inp.setAttribute("aria-label","Phrase d'accès aux programmes"); inp.className = "pass";
     b.type = "submit"; msg.style.marginTop = "10px";
@@ -963,18 +991,16 @@ function renderSess(){
       const r = await loadRemote(pass); b.disabled = false;
       if (r === "ok" && Object.keys(PS).length) { save(); renderSess(); }
       else msg.textContent = r === "code" ? "Phrase incorrecte." : "Impossible de joindre les programmes. Vérifie ta connexion et réessaie."; };
-    f.append(inp, b, msg); head.append(f);
-    const alt = el("button","btn line","Importer un fichier de programme"); alt.style.marginTop = "12px"; alt.onclick = () => $("pgFile").click(); head.append(alt);
-    return;
-  }
-  const step = pStep(), ids = Object.keys(PS);
+    f.append(inp, b, msg); w.append(f); return w; };
+  const step = pStep(), all = allP(), left = new Set(Object.keys(all));
   head.append(el("div","lab","Programme" + (P.author ? " · " + P.author : "")));
-  if (ids.length > 1){
-    const ps = el("select"); ps.setAttribute("aria-label","Programme"); ps.className = "big";
-    ids.forEach(id=>ps.add(new Option(PS[id].name, id))); ps.value = P.id;
-    ps.onchange = () => { pg().cur = ps.value; save(); renderSess(); };
-    head.append(ps);
-  } else { const h = el("h2",null,P.name); h.style.marginTop = "6px"; head.append(h); }
+  const ps = el("select"); ps.setAttribute("aria-label","Programme"); ps.className = "big";
+  PGROUPS.forEach(([label, test])=>{ const ids = [...left].filter(test); if (!ids.length) return;
+    const og = document.createElement("optgroup"); og.label = label;
+    ids.forEach(id=>{ left.delete(id); og.append(new Option(all[id].name, id)); }); ps.append(og); });
+  ps.value = P.id;
+  ps.onchange = () => { pg().cur = ps.value; save(); renderSess(); };
+  head.append(ps);
   const sel = el("select"); sel.setAttribute("aria-label","Étape du programme");
   P.steps.forEach((s,i)=>sel.add(new Option(s.name + (s.goals && s.goals.length ? " · " + s.goals[0].name + " " + s.goals[0].target : s.scale && s.scale < 1 ? " · semaine allégée" : ""), i)));
   sel.value = Math.min(pp().step, P.steps.length - 1);
@@ -1033,12 +1059,13 @@ function renderSess(){
   if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(k.url ? extLink(k.url, k.name) : k.drive ? extLink(drv(k.drive), k.name) : ytLink(k.yt, k.name))); foot.append(l); }
   const lx = el("details"); lx.append(el("summary",null,"Lexique : les termes des programmes"));
   const dl = el("dl","lex"); LEX.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); lx.append(dl); foot.append(lx);
+  if (!Object.keys(PS).length) foot.append(passForm());
   const fb = el("div","btns"), bi = el("button","btn line","Importer un fichier"), br = el("button","btn warn","Retirer");
   bi.onclick = () => $("pgFile").click();
   br.onclick = () => { if (confirm("Retirer « " + P.name + " » de cet appareil ? Tes records sont conservés.")) {
     if (P._v) { try { localStorage.removeItem(PPASS); } catch(e){} }
     delete PS[P.id]; savePS(); pg().cur = null; renderSess(); } };
-  fb.append(bi, br); foot.append(fb); box.append(foot);
+  fb.append(bi); if (!P.builtin) fb.append(br); foot.append(fb); box.append(foot);
 }
 $("pgFile").onchange = async e => {
   const file = e.target.files[0]; e.target.value = ""; if (!file) return;
@@ -1135,7 +1162,7 @@ function runFixed(){
 function saveSet(v){
   const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
-  if (b.ms && MS[b.ms] && b.kind === "hold") { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
+  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();
@@ -1178,7 +1205,7 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id === "v-" + b.dataset.v));
   window.scrollTo(0,0);
 });
-$("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); save(); render(); };
+$("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); pg().cur = null; save(); render(); };
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 $("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
