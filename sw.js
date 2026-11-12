@@ -1,5 +1,5 @@
 // Cache minimal pour utiliser l'app hors connexion (salle, parc…).
-const CACHE = "hs-fastway-v2";
+const CACHE = "hs-fastway-v3";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon.svg"];
 
 self.addEventListener("install", e => {

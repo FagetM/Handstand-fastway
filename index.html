@@ -61,6 +61,7 @@ nav.tabs button.on{color:var(--acc);font-weight:700}
 .view{display:none}.view.on{display:block}
 a.yt{display:flex;gap:12px;align-items:center;background:var(--card2);border-radius:12px;padding:8px;margin-top:10px;color:var(--txt);text-decoration:none}
 a.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#000;flex:none}
+img.ph{display:block;width:100%;max-height:260px;object-fit:contain;background:#000;border-radius:12px;margin-top:10px}
 .ms.lk{opacity:.6}
 dialog{overflow:auto;border:0;border-radius:20px;background:var(--card);color:var(--txt);width:min(560px,calc(100vw - 24px));padding:20px;max-height:92vh}
 dialog::backdrop{background:rgba(0,0,0,.7)}
@@ -78,14 +79,14 @@ textarea{width:100%;min-height:90px;background:var(--card2);color:var(--txt);bor
 body.locked #gate{display:grid}
 body.locked>header,body.locked>main,body.locked>nav{display:none}
 #gate form{width:min(340px,100%);text-align:center}
-#gate input{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;width:100%;font-size:24px;text-align:center;letter-spacing:6px;margin:16px 0 12px}
+#gate input{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;width:100%;font-size:24px;text-align:center;letter-spacing:3px;margin:16px 0 12px}
 </style>
 </head>
 <body class="locked">
 <div id="gate"><form id="gateForm">
   <h1>🤸 Handstand Fastway</h1>
   <div class="mut" id="gateMsg">Entre ton code d'accès</div>
-  <input id="gateCode" type="password" inputmode="numeric" autocomplete="off" aria-label="Code d'accès">
+  <input id="gateCode" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Code d'accès">
   <button class="primary big" type="submit">Ouvrir</button>
 </form></div>
 <header class="top">
@@ -187,12 +188,13 @@ const TREE = [
   ], videos:[["Au mur : jambes en ciseaux","Split leg balance"],["Au mur : tenues poitrine face au mur","Chest to wall holds"],["Au mur : quitter le mur en tirant avec les orteils","Leaving the wall with toe pulls"],["Monter en équilibre : limiter les variables pour être régulier","Limit the variables: tricks to increase your consistency"],["Monter en équilibre : la montée de base et la règle du 50/50","The basic kick up & 50/50 rule"]]},
   {id:"b2", name:"Débutant 2", en:"Beginner 2", ms:[
     {id:"in_holds", name:"Tenues de formes, niveau 1", en:"Level 1 Shape Holds", type:"check", req:["b2_str15"],
-      desc:"Tenir d'autres formes que la ligne droite : groupé, jambes écartées, ciseaux… Chaque forme déplace ton centre de gravité et t'oblige à rééquilibrer."},
+      desc:"Tenir d'autres formes que la ligne droite : groupé, jambes écartées, ciseaux… Chaque forme déplace ton centre de gravité et t'oblige à rééquilibrer.",
+      img:["img/formes-silhouettes.jpg","img/formes-plage.jpg"]},
     {id:"in_changes", name:"Changements de formes, niveau 1", en:"Level 1 Shape Changes", type:"check", req:["in_holds"],
       desc:"Passer d'une forme à l'autre sans redescendre : c'est le mouvement des jambes qui devient l'exercice."},
     {id:"in_tuck", name:"Groupé, genoux à hauteur des hanches", en:"Tuck – Knees In Line With Hips 10s", type:"hold", target:10, req:["in_changes"],
       desc:"Genoux pliés ramenés devant toi jusqu'à la hauteur des hanches. Les épaules doivent avancer pour compenser : très formateur.",
-      yt:[["VtipeT7CMK0","Guide de l'équilibre groupé"]]},
+      yt:[["VtipeT7CMK0","Guide de l'équilibre groupé"]], img:["img/groupe.jpg"]},
     {id:"in_str40", name:"Équilibre droit", en:"Straight 40s", type:"hold", target:40, req:["b2_str15"],
       desc:"La ligne droite, tenue 40 s : l'endurance des épaules commence à compter autant que l'équilibre.",
       yt:[["LcM0AGa2f6A","Apprendre l'équilibre : la méthode la plus rapide"]]},
@@ -337,7 +339,7 @@ function render(){
       const subs = [m.sub, lk ? "après : " + m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + MS[r].target + unit(MS[r]) : "")).join(" + ") : ""].filter(Boolean);
       if (subs.length) t.append(el("div","mut",subs.join(" · ")));
       b.append(t);
-      if (m.yt) b.append(el("span","tag","▶"));
+      if (m.yt || m.img) b.append(el("span","tag", m.yt ? "▶" : "📷"));
       if (m.type !== "check" && x.best) b.append(el("span","tag","record " + fmt(m,x.best)));
       b.onclick = () => openMs(m.id); body.append(b);
     });
@@ -386,6 +388,7 @@ function openMs(id){
   $("dEn").textContent = "Dans le programme : " + m.en;
   $("dDesc").textContent = m.desc || "";
   const dv = $("dVid"); dv.textContent = "";
+  (m.img||[]).forEach(src=>{ const im = el("img","ph"); im.src = src; im.alt = "Exemple : " + m.name; im.loading = "lazy"; dv.append(im); });
   (m.yt||[]).forEach(([id,title])=>{
     const a = el("a","yt"); a.href = "https://www.youtube.com/watch?v=" + id; a.target = "_blank"; a.rel = "noopener";
     const im = el("img"); im.src = "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg"; im.alt = ""; im.loading = "lazy";
@@ -468,7 +471,7 @@ $("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est d
 
 // ---------- Code d'accès ----------
 // Simple rideau : il écarte les curieux, mais le code de la page reste lisible par qui sait chercher.
-const GATE = "ad428c43315161f9fb5c845460707bd11de8fd42b379a7a752f3a4b8dc32aead", GKEY = "hs-fastway-gate";
+const GATE = "fb3dec3691028de465ae4d4185b5b73c40027b8bccf38f3d3cae42419db0393c", GKEY = "hs-fastway-gate";
 async function gateHash(code){
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hs-fastway:" + code));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
@@ -478,7 +481,7 @@ let known = null; try { known = localStorage.getItem(GKEY); } catch(e){}
 if (known === GATE) unlock(); else $("gateCode").focus();
 $("gateForm").onsubmit = async e => {
   e.preventDefault();
-  let h = ""; try { h = await gateHash($("gateCode").value.trim()); } catch(err){ $("gateMsg").textContent = "Ce navigateur ne peut pas vérifier le code."; return; }
+  let h = ""; try { h = await gateHash($("gateCode").value.trim().toLowerCase()); } catch(err){ $("gateMsg").textContent = "Ce navigateur ne peut pas vérifier le code."; return; }
   if (h === GATE) { try { localStorage.setItem(GKEY, h); } catch(err){} unlock(); }
   else { $("gateMsg").textContent = "Code incorrect, réessaie."; $("gateCode").value = ""; }
 };
