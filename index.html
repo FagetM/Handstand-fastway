@@ -153,6 +153,47 @@ a.yt .t{font-weight:600;line-height:1.3}
 .av .me{color:var(--txt)}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
+/* haut de page visuel : bandeau de quête, tuiles, aide en vignettes */
+.qb{display:flex;align-items:center;gap:14px;width:100%;padding:12px;border-radius:14px;background:var(--raise);text-align:left}
+.qb .art{position:relative;flex:none;width:84px;height:84px;display:grid;place-items:center}
+.qb .art .rg{position:absolute;inset:0}
+.qb .art .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.qb .lab,.qb .qt,.qb .qn,.qb .qd{display:block}
+.qb .qt{font:600 22px/1.1 var(--disp);margin-top:4px}
+.qb .qn{font-size:13px;color:var(--mut);margin-top:6px}
+.qb .qd{display:flex;gap:5px;margin-top:10px}
+.qb .qd i{flex:1;height:5px;border-radius:3px;background:var(--line)}
+.qb .qd i.cur{background:color-mix(in srgb,var(--acc) 55%,var(--line))}
+.qb .qd i.ok{background:var(--acc)}
+.qb .chev{color:var(--mut)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 6px;border-radius:12px;background:var(--raise);text-align:center;color:var(--mut)}
+.tile b{font-size:30px;color:var(--txt)}
+.tile span{font-size:11.5px;line-height:1.2}
+.hw{display:flex;gap:8px;overflow-x:auto;padding:2px 0 16px;scrollbar-width:none}
+.hw::-webkit-scrollbar{display:none}
+.hwc{flex:0 0 118px;display:flex;flex-direction:column;gap:6px;padding:14px 10px;border-radius:12px;background:var(--raise);color:var(--mut)}
+.hwc b{color:var(--txt);font-size:14px}
+.hwc span{font-size:12.5px;line-height:1.25}
+.next .pi{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--bg);color:var(--txt)}
+.next .pstep{align-items:center}
+.next .pc{margin-left:10px;padding:3px 10px;border-radius:12px;font:600 14px/1 var(--disp);box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 35%,transparent);vertical-align:middle}
+.pjal{display:flex;gap:14px;align-items:center;margin:16px 0 14px;padding:12px;border-radius:14px;background:color-mix(in srgb,var(--bg) 8%,transparent)}
+.pjal .art{position:relative;flex:none;width:92px;height:92px;border-radius:50%;background:var(--bg)}
+.pjal .art .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%)}
+.pips{display:flex;gap:5px;margin-top:8px}
+.pips span{flex:1;padding:4px 2px;border-radius:7px;text-align:center;font:600 13px/1 var(--disp);box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 30%,transparent);opacity:.6}
+.pips .ok{background:var(--bg);color:var(--txt);opacity:1;box-shadow:none}
+.pips .now{box-shadow:inset 0 0 0 2px var(--acc);opacity:1}
+.dose{display:flex;align-items:baseline;gap:10px;margin-top:10px}
+.dose b{font-size:30px}
+.dose span{font-size:13px;opacity:.75}
+.dots{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.dots i{width:11px;height:11px;border-radius:50%;background:currentColor;opacity:.85}
+.dots i.t{background:none;box-shadow:inset 0 0 0 2px var(--acc);opacity:1}
+.pw .gly{display:grid;place-items:center;margin-top:6px;min-height:22px}
+.pleg{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:12px;opacity:.75}
+.pleg span{display:flex;align-items:center;gap:5px}
 /* accompagnement : plan du jour, aide, légende, plan d'un jalon */
 .next .pstep{display:flex;gap:14px;align-items:flex-start;margin-top:16px}
 .next .pn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 16px/1 var(--disp);background:var(--bg);color:var(--txt)}
@@ -206,7 +247,7 @@ ul.plan li{margin:7px 0}
 .jr-e{position:absolute;inset:0;width:100%;height:100%}
 .jr-e path{fill:none;stroke:var(--mut);stroke-opacity:.4;stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke}
 .jr-e path.on{stroke:var(--txt);stroke-opacity:1}
-.jr-e path.go{stroke:var(--acc);stroke-opacity:1;stroke-dasharray:2 9;animation:flow 1.1s linear infinite}
+.jr-e path.go{stroke:var(--acc);stroke-opacity:1;stroke-dasharray:2 9}
 @keyframes flow{to{stroke-dashoffset:-22}}
 .jr-b{position:absolute;left:0;right:0;padding:12px 14px;border-radius:12px;background:var(--raise);z-index:1}
 .jr-b .r{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
@@ -223,7 +264,7 @@ ul.plan li{margin:7px 0}
 .jn{position:absolute;z-index:1;transform:translateX(-50%);width:112px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
 .jn .c{position:relative;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--raise);transition:transform .25s}
 .jn:active .c{transform:scale(.94)}
-.sp{display:block;background-repeat:no-repeat;background-position:0 0}
+.sp{display:block;background-repeat:no-repeat;background-position:0 0;contain:strict}
 .jn .c .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);pointer-events:none}
 .jn .c{background:color-mix(in srgb,var(--txt) 13%,var(--bg))}
 .sp.demo{border-radius:12px;background-color:var(--raise)}
@@ -233,7 +274,7 @@ ul.plan li{margin:7px 0}
 .jn .rg circle.f{stroke:var(--acc)}
 .jn.done .rg circle.f{stroke:var(--txt)}
 .jn.lk .c .sp{filter:grayscale(1);opacity:.5}
-.jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent);animation:halo 2.2s ease-in-out infinite}
+.jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent)}
 @keyframes halo{50%{box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 6%,transparent)}}
 .jn.pop .c{animation:pop .6s ease-out}
 @keyframes pop{40%{transform:scale(1.22)}}
@@ -351,43 +392,42 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
           <div class="mut" id="xpTxt"></div>
         </div>
       </div>
-      <label class="lab" for="goal">Quête principale</label>
-      <select id="goal"></select>
-      <div class="prog"><span class="disp num" id="gNum">0</span><span class="mut" id="gDen"></span><span class="disp pct" id="gPct"></span></div>
-      <div class="bar"><i id="goalBar"></i></div>
-      <dl class="stats">
-        <div><dt>Jours d'affilée</dt><dd class="disp" id="stStreak">0</dd></div>
-        <div><dt>Séances, 7 jours</dt><dd class="disp" id="stWeek">0</dd></div>
-        <div><dt>Jalons validés</dt><dd class="disp" id="stDone">0</dd></div>
-      </dl>
+      <div id="qban"></div>
+      <div class="tiles">
+        <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b class="disp" id="stStreak">0</b><span>jours d'affilée</span></div>
+        <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><b class="disp" id="stWeek">0</b><span>séances cette semaine</span></div>
+        <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.5l3 3 5-6"/></svg><b class="disp" id="stDone">0</b><span>jalons validés</span></div>
+      </div>
+      <div hidden><span id="gNum"></span><span id="gDen"></span><span id="gPct"></span><i id="goalBar"></i></div>
     </div>
     <details class="howto" id="howto">
       <summary>Comment ça marche</summary>
-      <ol>
-        <li><b>Une quête</b> : tu choisis ta destination ci-dessus. La première mène à l'équilibre sur un bras, la seconde à la full planche.</li>
-        <li><b>Des jalons</b> : le parcours, plus bas, est la carte de toutes les figures à apprendre, dans l'ordre. Chaque cercle est une figure.</li>
-        <li><b>Trois niveaux par jalon</b> : tu progresses par paliers vers la durée visée. Le troisième niveau valide le jalon et ouvre les suivants.</li>
-        <li><b>Un plan</b> : chaque jour, la carte « Ton plan du jour » te dit quoi faire. Chaque fiche de jalon détaille le plan pour passer au niveau suivant.</li>
-        <li><b>Des récompenses</b> : chaque essai rapporte de l'expérience. Les niveaux et les badges débloquent des tenues pour ton personnage.</li>
-      </ol>
+      <div class="hw">
+        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 4 2.5 4H6"/></svg><b>1 · Une quête</b><span>Ta destination</span></div>
+        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="12" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.3 7.2l7.4 3.6M15.7 13.2l-7.4 3.6"/></svg><b>2 · Des jalons</b><span>Une figure par cercle</span></div>
+        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4"/></svg><b>3 · Trois niveaux</b><span>Par paliers vers la cible</span></div>
+        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><b>4 · Un plan</b><span>Quoi faire chaque jour</span></div>
+        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="5.5"/><path d="M8.5 3l3.5 6 3.5-6M12 12v4"/></svg><b>5 · Des récompenses</b><span>Niveaux, badges, tenues</span></div>
+      </div>
     </details>
     <div class="next" id="nextCard"></div>
     <nav class="jump" aria-label="Aller à"><button data-to="sect-sess">Séance</button><button data-to="sect-tree">Parcours</button><button data-to="sect-quest">Quêtes</button><button data-to="sect-badges">Badges</button></nav>
     <h2 class="sect" id="sect-sess">Séance du jour</h2>
-    <p class="intro-t">Les exercices d'aujourd'hui, série par série, avec le chrono et les repos. Touche la ligne pour ouvrir la séance ; tu peux y changer de programme.</p>
+    
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
     <div id="sess"></div>
     <input type="file" id="pgFile" hidden>
     <h2 class="sect" id="sect-tree">Le parcours</h2>
-    <p class="intro-t">La carte complète, de haut en bas. Chaque étage a un but ; termine-le pour ouvrir le suivant. Touche une figure pour voir son plan.</p>
+
     <div class="legend" aria-label="Légende">
-      <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span>
+      <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1" stroke="var(--acc)"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4" stroke="var(--line)"/></svg>Anneau : 3 niveaux</span>
     </div>
-    <p class="intro-t">L'anneau autour d'une figure est coupé en trois : un segment par niveau atteint.</p>
+
     <div id="tree"></div>
     <h2 class="sect" id="sect-quest">Quêtes</h2>
-    <p class="intro-t">Ta destination. Touche une carte pour en faire ta quête principale.</p>
     <div id="quest"></div>
+    <label class="lab" for="goal" style="display:block;margin-top:22px">Toutes les quêtes</label>
+    <select id="goal"></select>
   </section>
 
   <section id="v-log" class="view">
@@ -793,13 +833,14 @@ const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-dominatio
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0]};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
 function planFor(m){
-  const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:""};
+  const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Tu n'as plus rien à prouver ici. Refais la figure une ou deux fois par semaine pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
   const force = /^(pl_|pr_|oa_|lo_)/.test(m.id) || m.id === "in_hspu", days = force ? 4 : 5, sets = force ? 6 : 8, tries = 2;
   const freq = days + " séances par semaine" + (force ? ", jamais deux jours de suite sur la même figure." : " : c'est une habileté, la fréquence compte plus que la durée.");
   if (m.type === "check"){
+    out.n = {sets, check:true};
     out.head = "Plan pour réussir ce jalon"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
     out.lines = [freq, "À chaque séance : " + sets + " essais, en prenant le temps de récupérer entre chacun.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Arrête la série si la forme se dégrade : un essai propre vaut mieux que trois brouillons.", "Valide le jalon quand tu le réussis proprement 3 fois sur 5."];
   } else {
@@ -807,6 +848,7 @@ function planFor(m){
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     const work = Math.max(lo, Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
+    out.n = {sets, work, tries, T, hold};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", 60 à 90 s de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
@@ -951,7 +993,7 @@ POSE3D.oa_flaghoriz = "hs_flag";
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
 // Chaque figure est rendue image par image dans une bande d'images, puis animée en boucle. Tant qu'elle n'est pas prête, on montre une image fixe.
-const SPR = {}, SPN = 104, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
+const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
 const animOn = () => S.anim !== false;
 function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
@@ -966,25 +1008,52 @@ function sprPaint(sp, size){
 const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { const sp = e.target; if (e.isIntersecting) { if (sp._off) { sp._off = 0; sprPaint(sp, +sp.dataset.size || 64); } sp.style.animationPlayState = "running"; }
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
-function buildSprites(force){
-  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return; sprKey = key; const job = ++sprJob;
+// Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
+const SPV = "4-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
+const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
+async function sprRestore(key){
+  const meta = sprMeta(); if (meta.key !== key || meta.v !== SPV || !window.caches) return 0;
+  let n = 0; try { const c = await caches.open(SPC);
+    for (const id of Object.keys(meta.items || {})) { if (SPR[id]) continue; const r = await c.match("spr/" + id); if (!r) continue; const bl = await r.blob(); SPR[id] = {url:URL.createObjectURL(bl), n:meta.items[id].n, hold:meta.items[id].hold}; n++; }
+  } catch(e){} return n;
+}
+async function sprStore(key, id, blob, n, hold){
+  if (!window.caches) return; try { const c = await caches.open(SPC); await c.put("spr/" + id, new Response(blob, {headers:{"Content-Type":"image/webp"}}));
+    const meta = sprMeta(); if (meta.key !== key || meta.v !== SPV) { meta.key = key; meta.v = SPV; meta.items = {}; } meta.items[id] = {n, hold}; localStorage.setItem(SPM, JSON.stringify(meta)); } catch(e){}
+}
+async function buildSprites(force){
+  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return;
+  const changed = sprKey && sprKey !== key; sprKey = key; const job = ++sprJob;
+  if (changed) Object.keys(SPR).forEach(id=>{ const u = SPR[id].url; delete SPR[id]; setTimeout(()=>URL.revokeObjectURL(u), 2000); });
+  if (await sprRestore(key)) sprRepaint();
+  if (job !== sprJob) return;
+  // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l'écran
+  const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
+  const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
+  const ids = [...new Set(nodes.concat(Object.keys(MS)))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
   let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
-  // une animation par jalon, dans l'ordre du parcours (le haut de la page s'anime en premier)
-  const order = [...document.querySelectorAll(".jn")].map(n=>n.dataset.id), ids = order.concat(Object.keys(MS).filter(id=>!order.includes(id)));
-  const A = sprA, dt = 1 / SPF, MAXF = 80; let i = 0;
-  const one = () => { if (job !== sprJob) return; if (i >= ids.length) return; const id = ids[i++], sc = sprMod.SCRIPTS[id]; if (!sc) { setTimeout(one, 0); return; }
-    const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1;
+  const A = sprA, dt = 1 / SPF, MAXF = 80; await idle();
+  for (const id of ids){
+    if (job !== sprJob) return; const sc = sprMod.SCRIPTS[id];
+    while (document.hidden || sprBusy()) { await new Promise(r=>setTimeout(r, 400)); if (job !== sprJob) return; }
+    const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1, g = 0;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
     const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
     A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
-    A.play(sc.s, !sc.cut); let g = 0; do { snap(); g++; } while (A.moving() && g < MAXF); if (!sc.cut) snap();
-    if (hold < 0) hold = Math.floor(n / 2);
+    A.play(sc.s, !sc.cut);
+    do { snap(); g++; if (g % 4 === 0) { await idle(); if (job !== sprJob) return; } } while (A.moving() && g < MAXF);
+    if (!sc.cut) snap(); if (hold < 0) hold = Math.floor(n / 2);
     const out = document.createElement("canvas"); out.width = n * SPN; out.height = SPN; out.getContext("2d").drawImage(sheet, 0, 0);
-    out.toBlob(b=>{ if (job !== sprJob || !b) return; const old = SPR[id]; SPR[id] = {url:URL.createObjectURL(b), n, hold}; sprRepaint(id); if (old) setTimeout(()=>URL.revokeObjectURL(old.url), 2000); setTimeout(one, 20); }, "image/webp", 0.86);
-  };
-  setTimeout(one, 60);
+    const blob = await new Promise(r => out.toBlob(r, "image/webp", 0.84)); if (job !== sprJob || !blob) return;
+    SPR[id] = {url:URL.createObjectURL(blob), n, hold}; sprRepaint(id); sprStore(key, id, blob, n, hold); await idle();
+  }
 }
+// pendant qu'on fait défiler ou qu'on touche l'écran, le calcul des animations attend
+let sprTouch = 0; ["scroll","touchstart","touchmove","pointerdown"].forEach(ev=>window.addEventListener(ev, () => { sprTouch = Date.now(); }, {passive:true}));
+const sprBusy = () => Date.now() - sprTouch < 700 || !!document.querySelector("dialog[open]");
+
 
 // Vestiaire : [identifiant, nom, niveau requis]. La médaille se débloque en terminant une quête principale.
 const WARD = [
@@ -1045,6 +1114,16 @@ function render(){
   const gsel = $("goal");
   if (!gsel.options.length) GOALS.forEach(g=>gsel.add(new Option(g.name, g.id)));
   gsel.value = S.goal;
+  { // bandeau de quête : la figure finale, l'anneau d'avancement, les étages à traverser
+    const qb = $("qban"), goal = GOALS.find(g=>g.id === S.goal) || GOALS[0], gms = goal.ms, dn = gms.filter(id=>st(id).done).length, fin = gms[gms.length - 1]; qb.textContent = "";
+    const b = el("button","qb"); b.setAttribute("aria-label","Quête : " + goal.name + ", " + dn + " jalons sur " + gms.length + ". Changer de quête.");
+    const art = el("span","art"); art.innerHTML = ringSvg(dn / gms.length, 84, 38, 4, "rg"); const sp = el("span","sp"); sp.dataset.pose = poseId(fin); sp.dataset.anim = fin; sp.dataset.lk = ""; sprPaint(sp, 68); art.append(sp);
+    const g = el("span","grow"); g.append(el("span","lab","Ta quête"), el("span","qt",goal.name));
+    const want = new Set(gms), tiers = TREE.filter(s=>s.ms.some(m=>want.has(m.id))), dots = el("span","qd");
+    tiers.forEach(s=>{ const ms = s.ms.filter(m=>want.has(m.id)), d = ms.filter(m=>st(m.id).done).length; const i = el("i", d >= ms.length ? "ok" : d > 0 || ms.some(m=>!msLocked(m)) ? "cur" : ""); i.title = s.name; dots.append(i); });
+    g.append(dots, el("span","qn", dn + " / " + gms.length + " jalons · " + tiers.length + " étages"));
+    b.append(art, g, icon("chev","chev")); b.onclick = () => $("sect-quest").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); qb.append(b);
+  }
   const ids = goalMs(), done = ids.filter(id=>st(id).done).length;
   const pct = ids.length ? Math.round(done/ids.length*100) : 0;
   $("goalBar").style.width = pct + "%";
@@ -1074,26 +1153,32 @@ function render(){
   if (nextId){
     const m = MS[nextId], pl = planFor(m), L = lvls(m), k = lvlOf(m), today = todayIdx();
     nc.append(el("div","lab","Ton plan du jour"));
-    const step = (n, title, text) => { const r = el("div","pstep"), g = el("div","grow"); r.append(el("span","pn",String(n)), g); g.append(el("div","pt",title)); if (text) g.append(el("div","pd",text)); nc.append(r); return g; };
-    step(1, "Échauffe-toi · 5 minutes", "Poignets dans tous les sens, épaules, quelques pompes d'omoplates.");
-    const g2 = step(2, "Travaille ton jalon : " + m.name, (L.length > 1 ? "Niveau " + k + " sur " + L.length + ". " : "") + pl.short);
-    const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche"); b.onclick = () => openMs(nextId); g2.append(b);
-    const go = el("button","golink","Voir sur le parcours"); go.onclick = () => { const nd = document.querySelector('.jn[data-id="' + nextId + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }; g2.append(go);
-    pickP(); const d0 = P ? pDay(today) : {blocks:[]}, tot = d0.blocks.reduce((n,x)=>n + x.sets.length, 0);
-    if (P && P.builtin) {   // la séance d'équilibre reprend les mêmes jalons : on la propose pour enchaîner avec les repos chronométrés
-      const g3 = step(3, "Enchaîne les jalons accessibles", tot ? "La séance d'équilibre déroule tes prochains jalons avec les repos chronométrés." : "Aucun jalon accessible pour l'instant.");
-      if (tot) { const bs = el("button","btn line2","Ouvrir la séance d'équilibre"); bs.onclick = () => openProg(P.id); g3.append(bs); }
-      step(4, "Retour au calme · 5 minutes", "Étire poignets, épaules et arrière des cuisses. Deux jours par semaine, fais une vraie séance de souplesse.");
-    } else {
-      const g3 = step(3, tot ? "Fais ta séance : " + P.name : "Séance du programme", tot ? d0.blocks.length + (d0.blocks.length > 1 ? " exercices" : " exercice") + " prévus aujourd'hui." : "Rien de prévu aujourd'hui dans « " + (P ? P.name : "") + " ». Repos, ou un peu de souplesse.");
-      if (tot) { const bs = el("button","btn line2","Ouvrir la séance"); bs.onclick = () => openProg(P.id); g3.append(bs); }
-    }
-    // la semaine type de la quête
-    const wkPlan = WEEK[S.goal === "planche" ? "planche" : "oahs"], d = new Date(); d.setDate(d.getDate() - today);
-    const wk = el("div","pweek"); nc.append(el("div","lab","Ta semaine type"));
+    const PI = {warm:'<path d="M12 4a8 8 0 107.5 5.2"/><path d="M20 4v5h-5"/>', list:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/>', calm:'<path d="M3 15c3-5 5 3 9-2s6 3 9-2"/><path d="M3 20c3-5 5 3 9-2s6 3 9-2" opacity=".5"/>'};
+    const ic = d => '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
+    const row = (iconHtml, title, chip) => { const r = el("div","pstep"), i = el("span","pi"), g = el("div","grow"); i.innerHTML = iconHtml; const h = el("div","pt",title); if (chip) h.append(el("span","pc",chip)); g.append(h); r.append(i, g); nc.append(r); return g; };
+    row(ic(PI.warm), "Échauffement", "5 min");
+    // le jalon du jour : la figure animée, ses niveaux, et la dose en chiffres
+    const jr = el("div","pjal"), art = el("span","art"), sp = el("span","sp"); sp.dataset.pose = poseId(nextId); sp.dataset.anim = nextId; sp.dataset.lk = ""; sprPaint(sp, 92); art.append(sp);
+    const jg = el("div","grow"); jg.append(el("div","pt",m.name));
+    const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < k ? "ok" : i === k ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); jg.append(pips);
+    if (pl.n && !pl.n.check){ const dose = el("div","dose"); dose.append(el("b","disp", pl.n.sets + " × " + (pl.n.hold ? pl.n.work + " s" : pl.n.work)), el("span",null,"puis " + pl.n.tries + " × " + (pl.n.hold ? pl.n.T + " s" : pl.n.T)));
+      const dots = el("div","dots"); for (let i = 0; i < pl.n.sets; i++) dots.append(el("i")); for (let i = 0; i < pl.n.tries; i++) dots.append(el("i","t")); jg.append(dose, dots); }
+    else if (pl.n){ const dose = el("div","dose"); dose.append(el("b","disp", pl.n.sets + " essais")); const dots = el("div","dots"); for (let i = 0; i < pl.n.sets; i++) dots.append(el("i")); jg.append(dose, dots); }
+    jr.append(art, jg); nc.append(jr);
+    const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche et le plan"); b.onclick = () => openMs(nextId); nc.append(b);
+    const go = el("button","golink","Voir sur le parcours"); go.onclick = () => { const nd = document.querySelector('.jn[data-id="' + nextId + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }; nc.append(go);
+    pickP(); const d0 = P ? pDay(today) : {blocks:[]}, tot = d0.blocks.reduce((n,x)=>n + x.sets.length, 0), dnS = Object.keys(wkGet(today)).length;
+    const g3 = row(ic(PI.list), P && P.builtin ? "Séance d'équilibre" : P ? P.name : "Séance", tot ? dnS + " / " + tot + " séries" : "rien aujourd'hui");
+    if (tot) { const bs = el("button","btn line2","Ouvrir la séance"); bs.onclick = () => openProg(P.id); g3.append(bs); }
+    row(ic(PI.calm), "Retour au calme", "5 min");
+    // la semaine type de la quête, en pictogrammes
+    const key = S.goal === "planche" ? "planche" : "oahs", wkPlan = WEEK[key], d = new Date(); d.setDate(d.getDate() - today);
+    const GL = {"Équil.":figMini("b2_str15", 22), "Planche":figMini("pl_full", 22), "Souple":ic(PI.calm), "Repos":'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 12h8"/></svg>'};
+    const wk = el("div","pweek"); nc.append(el("div","lab","Ta semaine"));
     wkPlan.forEach((lab, i)=>{ const day = new Date(d); day.setDate(d.getDate() + i); const did = S.log.some(l=>dayKey(l.t) === dayKey(day));
-      const c = el("div","pw" + (i === today ? " today" : "") + (did ? " did" : "") + (lab === "Repos" ? " rest" : "")); c.append(el("b",null,DAYL[i]), el("span",null,lab)); wk.append(c); });
-    nc.append(wk, el("div","pd","Cinq séances et une de souplesse : déplace les jours selon ton emploi du temps. Les jours d'équilibre, ajoute dix minutes d'étirements en fin de séance."));
+      const c = el("div","pw" + (i === today ? " today" : "") + (did ? " did" : "") + (lab === "Repos" ? " rest" : "")); c.setAttribute("aria-label", DAYN[i] + " : " + lab + (did ? ", fait" : "")); c.append(el("b",null,DAYL[i])); const gsp = el("span","gly"); gsp.innerHTML = GL[lab]; c.append(gsp); wk.append(c); });
+    nc.append(wk);
+    const lg = el("div","pleg"); [...new Set(wkPlan)].forEach(lab=>{ const s = el("span"); s.innerHTML = GL[lab]; s.append(lab === "Équil." ? "Équilibre" : lab === "Souple" ? "Souplesse" : lab); lg.append(s); }); nc.append(lg);
     if (!openSecs.size) openSecs.add(m.sec);
   } else {
     nc.append(el("div","lab","Quête"), el("h2",null,"Accomplie."), el("p",null,"Choisis une autre quête pour continuer."));

@@ -1,12 +1,12 @@
 // Cache minimal pour utiliser l'app hors connexion (salle, parc…).
-const CACHE = "hs-fastway-v35";
+const CACHE = "hs-fastway-v37";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon.svg", "fonts/barlow-condensed-600.woff2", "avatar3d.js", "vendor/three.module.min.js"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== "hs-sprites").map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
 // Réseau d'abord (pour recevoir les mises à jour), cache en secours hors ligne.
 self.addEventListener("fetch", e => {

@@ -142,7 +142,7 @@ const OLD = {wraps:"wraps_o", band:"band_o", cap:"cap_o", shoes:"shoes_k", socks
 export function mount(host, opts = {}){
   const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:!!opts.manual});
-  renderer.setPixelRatio(opts.manual ? 1 : Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(opts.manual ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
   const canvas = renderer.domElement; canvas.style.cssText = "display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab";
   canvas.setAttribute("role","img");
   host.append(canvas);
@@ -302,7 +302,9 @@ export function mount(host, opts = {}){
 
   let last = performance.now(), visible = true, raf = 0, dirty = true, drag = null;
   let clock = 0;
-  function frame(now){ raf = 0; const dt = Math.min(0.05, (now - last) / 1000); last = now; core(dt, now);
+  function frame(now){ raf = 0;
+    if (!party && !seg && !queue.length && !drag && now - last < 30) { if (visible) raf = requestAnimationFrame(frame); return; }
+    const dt = Math.min(0.05, (now - last) / 1000); last = now; core(dt, now);
     if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame); }
   function core(dt, now){
     if (party) { partyStep(dt); dirty = true; }
