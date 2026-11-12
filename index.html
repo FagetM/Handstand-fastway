@@ -103,7 +103,7 @@ label.vid input{width:18px;height:18px;flex:none;margin:2px 0 0;accent-color:var
 
 /* onglets */
 nav.tabs{z-index:5;position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;max-width:130px;min-height:56px;color:var(--mut);font:600 14px/1 var(--disp);letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
+nav.tabs button{flex:1;max-width:200px;min-height:56px;color:var(--mut);font:600 14px/1 var(--disp);letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
 nav.tabs button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
 .view{display:none}.view.on{display:block}
 .block{padding:24px 0;border-bottom:1px solid var(--line)}
@@ -153,6 +153,15 @@ a.yt .t{font-weight:600;line-height:1.3}
 .av .me{color:var(--txt)}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
+/* une seule page : titres de section, sauts, séance repliable */
+.sect{margin:34px 0 12px;font-size:30px;scroll-margin-top:60px}
+.jump{position:sticky;top:0;z-index:4;display:flex;gap:6px;margin:0 -20px;padding:8px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
+.jump button{flex:1;min-height:38px;border-radius:19px;box-shadow:inset 0 0 0 1px var(--line);font-weight:600;font-size:13.5px}
+.fold-h{display:flex;align-items:center;gap:12px;width:100%;min-height:64px;padding:12px 14px;border-radius:12px;background:var(--raise);text-align:left}
+.fold-h .t{font-weight:600;line-height:1.25}
+.fold-h .chev{margin-left:auto;transition:transform .2s}
+.fold-h[aria-expanded=true] .chev{transform:rotate(90deg)}
+#sess[hidden]{display:none}
 /* le parcours */
 .jr{margin-top:6px}
 .jr-c{position:relative}
@@ -299,15 +308,16 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
       </dl>
     </div>
     <div class="next" id="nextCard"></div>
-    <div id="tree"></div>
-  </section>
-
-  <section id="v-sess" class="view">
+    <nav class="jump" aria-label="Aller à"><button data-to="sect-sess">Séance</button><button data-to="sect-tree">Parcours</button><button data-to="sect-quest">Quêtes</button><button data-to="sect-badges">Badges</button></nav>
+    <h2 class="sect" id="sect-sess">Séance du jour</h2>
+    <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
     <div id="sess"></div>
     <input type="file" id="pgFile" hidden>
+    <h2 class="sect" id="sect-tree">Le parcours</h2>
+    <div id="tree"></div>
+    <h2 class="sect" id="sect-quest">Quêtes</h2>
+    <div id="quest"></div>
   </section>
-
-  <section id="v-quest" class="view"><div id="quest"></div></section>
 
   <section id="v-log" class="view">
     <div class="block" style="border:0;padding-bottom:8px"><h2>Journal</h2><div class="mut">Tes 60 derniers essais</div></div>
@@ -337,8 +347,6 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 
 <nav class="tabs">
   <button data-v="path" class="on">Parcours</button>
-  <button data-v="sess">Séance</button>
-  <button data-v="quest">Quêtes</button>
   <button data-v="log">Journal</button>
   <button data-v="set">Réglages</button>
 </nav>
@@ -749,7 +757,7 @@ function journey(nextId){
     const c = el("span","c"), R = 39, C = 2*Math.PI*R, seg = C / L.length, gap = L.length > 1 ? 5 : 0;
     let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
     L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < k ? "f" : "") + '" stroke-dasharray="' + (seg - gap).toFixed(1) + ' ' + (C - seg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*seg + gap/2)).toFixed(1) + '"/>'; });
-    c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = pose; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, p[2] ? 72 : 90); c.append(sp);
+    c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = pose; sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, p[2] ? 72 : 90); c.append(sp);
     if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
     if (cur) b.append(el("span","here","Prochaine étape"));
     b.append(c, el("span","n", m.name));
@@ -779,7 +787,7 @@ function renderQuest(S0, nextId){
   const bar = el("div","bar"), bi = el("i"); bi.style.width = (ids.length ? done/ids.length*100 : 0) + "%"; bar.append(bi);
   main.append(el("div","mut", done + " jalons sur " + ids.length + (nextId ? " · prochaine étape : " + MS[nextId].name : " · quête accomplie")), bar);
   bar.style.marginTop = "12px";
-  if (nextId) { const b = el("button","btn","Reprendre la quête"); b.style.marginTop = "16px"; b.onclick = () => openMs(nextId); main.append(b); }
+
   GOALS.slice(0, 2).forEach((g2, i)=>{ if (g2.id === goal.id) return;
     const q = el("div","q"), h = el("div","h"), d2 = doneIn(g2.ms); q.style.marginTop = "20px";
     h.append(el("b",null,"Quête " + (i+1) + " · " + g2.name), el("span",null, d2 + " / " + g2.ms.length));
@@ -794,7 +802,7 @@ function renderQuest(S0, nextId){
     const br = el("div","bar"), i = el("i"); i.style.width = (b.cur/b.max*100) + "%"; br.append(i); q.append(h, el("div","mut",b.desc), br); side.append(q); });
   if (!todo.length) side.append(el("div","mut","Toutes les quêtes secondaires sont terminées."));
   box.append(side);
-  const bd = el("div","block"); bd.style.border = "0"; bd.append(el("h2",null,"Badges"), el("div","mut", got.length + " sur " + S0.badges.length));
+  const bd = el("div","block"); bd.style.border = "0"; bd.id = "sect-badges"; bd.style.scrollMarginTop = "60px"; bd.append(el("h2",null,"Badges"), el("div","mut", got.length + " sur " + S0.badges.length));
   const grid = el("div","badges");
   got.concat(todo).forEach(b=>{ const x = el("div","bdg" + (b.ok ? "" : " off")); x.append(el("div","m",b.g), el("div",null,b.name)); grid.append(x); });
   bd.append(grid); box.append(bd);
@@ -810,39 +818,41 @@ POSE3D.oa_flaghoriz = "hs_flag";
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
 // Chaque figure est rendue image par image dans une bande d'images, puis animée en boucle. Tant qu'elle n'est pas prête, on montre une image fixe.
-const SPR = {}, SPN = 112; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
+const SPR = {}, SPN = 104, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
 const animOn = () => S.anim !== false;
 function sprPaint(sp, size){
-  const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[pose]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
+  const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
   if (!R) { sp.style.backgroundImage = 'url("anim/still_' + pose + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
   sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
   if (!animOn()) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
   sp.style.backgroundPosition = "0 0"; sp.style.setProperty("--end", (-R.n * size) + "px");
-  sp.style.animation = "spr " + (R.n / 10).toFixed(1) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / 10).toFixed(2) + "s";
+  sp.style.animation = "spr " + (R.n / SPF).toFixed(2) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / SPF).toFixed(2) + "s";
   if (sprIO && !sp._io) { sp._io = 1; sprIO.observe(sp); }
 }
 // seuls les personnages visibles à l'écran sont animés : le reste est en pause, pour ménager le téléphone
-const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { e.target.style.animationPlayState = e.isIntersecting ? "running" : "paused"; }), {rootMargin:"120px"}) : null;
-const sprRepaint = pose => document.querySelectorAll(".sp" + (pose ? '[data-pose="' + pose + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
+const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { const sp = e.target; if (e.isIntersecting) { if (sp._off) { sp._off = 0; sprPaint(sp, +sp.dataset.size || 64); } sp.style.animationPlayState = "running"; }
+  else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
+const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 function buildSprites(force){
   if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return; sprKey = key; const job = ++sprJob;
   let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
-  const poses = [...new Set(Object.keys(MS).map(poseId))].filter(p=>p !== "stand"), A = sprA, dt = 0.1, MAXF = 56; let i = 0;
-  // d'abord les figures des jalons accessibles, pour que l'écran s'anime vite
-  const pri = p => Object.values(MS).some(m=>poseId(m.id) === p && (st(m.id).done || !msLocked(m))) ? 0 : 1; poses.sort((a,b)=>pri(a) - pri(b));
-  const one = () => { if (job !== sprJob) return; if (i >= poses.length) return; const pose = poses[i++];
-    const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = 0;
-    const snap = () => { if (n < MAXF) { A.step(dt); cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
-    A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); for (let k = 0; k < 3; k++) snap();
-    A.set({pose, fit:F, level:6}); let g = 0; do { snap(); g++; } while (A.moving() && g < 22);
-    for (let k = 0; k < 10; k++) { if (k === 4) hold = n; snap(); }
-    A.set({pose:"stand", fit:F, level:6}); g = 0; do { snap(); g++; } while (A.moving() && g < 22); snap();
+  // une animation par jalon, dans l'ordre du parcours (le haut de la page s'anime en premier)
+  const order = [...document.querySelectorAll(".jn")].map(n=>n.dataset.id), ids = order.concat(Object.keys(MS).filter(id=>!order.includes(id)));
+  const A = sprA, dt = 1 / SPF, MAXF = 68; let i = 0;
+  const one = () => { if (job !== sprJob) return; if (i >= ids.length) return; const id = ids[i++], sc = sprMod.SCRIPTS[id]; if (!sc) { setTimeout(one, 0); return; }
+    const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1;
+    const stillAt = sc.still || sc.s[sc.s.length - 1][0];
+    const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
+    A.wall(sc.wall || 0); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
+    A.play(sc.s, !sc.cut); let g = 0; do { snap(); g++; } while (A.moving() && g < MAXF); if (!sc.cut) snap();
+    if (hold < 0) hold = Math.floor(n / 2);
     const out = document.createElement("canvas"); out.width = n * SPN; out.height = SPN; out.getContext("2d").drawImage(sheet, 0, 0);
-    out.toBlob(b=>{ if (job !== sprJob || !b) return; const old = SPR[pose]; SPR[pose] = {url:URL.createObjectURL(b), n, hold}; sprRepaint(pose); if (old) setTimeout(()=>URL.revokeObjectURL(old.url), 2000); setTimeout(one, 30); }, "image/webp", 0.86);
+    out.toBlob(b=>{ if (job !== sprJob || !b) return; const old = SPR[id]; SPR[id] = {url:URL.createObjectURL(b), n, hold}; sprRepaint(id); if (old) setTimeout(()=>URL.revokeObjectURL(old.url), 2000); setTimeout(one, 20); }, "image/webp", 0.86);
   };
   setTimeout(one, 60);
 }
+
 // Vestiaire : [identifiant, nom, niveau requis]. La médaille se débloque en terminant une quête principale.
 const WARD = [
   {slot:"skin", name:"Peau", items:[["s1","Claire"],["s2","Hâlée"],["s3","Mate"],["s4","Foncée"]]},
@@ -980,7 +990,7 @@ function openMs(id){
   $("dDesc").textContent = m.desc || "";
   const fg = $("dFig"); fg.textContent = "";
   { const pz = poseId(id);
-    if (pz !== "stand" && SPR[pz]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
+    if (SPR[id]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
     else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() ? "demo_" : "still_") + pz + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
     else { const f2 = figure(id); if (f2) fg.append(f2); } }
   const dd = $("dMore"); dd.textContent = ""; const D = DETAILS[id];
@@ -1181,6 +1191,13 @@ const LEX = [
 function renderSess(){
   pickP();
   const box = $("sess"); box.textContent = "";
+  { // en-tête repliable : la séance du jour en une ligne
+    const tg = $("sessToggle"), open = !!S.sessOpen, d0 = pDay(todayIdx()), tot = d0.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(wkGet(todayIdx())).length;
+    tg.textContent = ""; const g = el("span","grow");
+    g.append(el("div","t", P.name + " · " + DAYN[todayIdx()].toLowerCase()), el("div","mut", !tot ? "Rien de prévu aujourd'hui" : d0.blocks.length + (d0.blocks.length > 1 ? " exercices" : " exercice") + " · " + (dn >= tot ? "séance terminée" : dn + " / " + tot + " séries faites")));
+    tg.append(g, icon("chev","chev")); tg.setAttribute("aria-expanded", open); box.hidden = !open;
+    tg.onclick = () => { S.sessOpen = !S.sessOpen; save(); renderSess(); };
+  }
   const head = el("div","block"); head.style.border = "0"; box.append(head);
   const passForm = () => { const w = el("div");
     w.append(el("div","mut","Tes programmes (planche, étirements) ne sont pas encore sur cet appareil. Saisis ta phrase d'accès : ils sont téléchargés, déverrouillés, puis conservés dans ce téléphone."));
@@ -1409,6 +1426,7 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id === "v-" + b.dataset.v));
   window.scrollTo(0,0);
 });
+document.querySelectorAll(".jump button").forEach(b=>b.onclick=()=>{ const t = document.getElementById(b.dataset.to); if (b.dataset.to === "sect-sess" && !S.sessOpen) { S.sessOpen = true; save(); renderSess(); } if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); });
 $("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); pg().cur = null; save(); render(); };
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 $("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); };

@@ -34,9 +34,9 @@ Object.assign(POSES, {
   kick: {pitch:2.55, arm:[-2.6,-2.6],   armZ:[0,0], hip:[-1.5,0.25],   hipZ:[0,0],       knee:[0.3,0],     head:-0.4},
   pike: {pitch:2.3,  arm:[-2.45,-2.45], armZ:[0,0], hip:[-1.15,-1.15], hipZ:[0.35,0.35], knee:[0,0],       head:-0.45},
 });
-const VIA = {fold:1, kick:1, pike:1};
+const VIA = {fold:1, kick:1, pike:1, fold_s:1};
 const FEET = {stand:1, cheer:1, crouch:1, pl_lean:1, fold:1};
-const cat = n => n.startsWith("pl_") || n === "crow" || n === "lever" ? "pl" : n.startsWith("hs") || n === "oahs" || n === "kick" || n === "pike" ? "hs" : "up";
+const cat = n => n.startsWith("pl_") || n.startsWith("lv_") || n === "crow" || n === "lever" ? "pl" : n.startsWith("hs") || n === "oahs" || n === "kick" || n === "pike" ? "hs" : "up";
 // Chemin d'une posture à l'autre : [posture, durée en secondes]. On passe par un vrai mouvement
 // (flexion puis lancer de jambe pour monter en équilibre, descente carpée pour aller en planche…).
 function route(a, b){
@@ -49,9 +49,79 @@ function route(a, b){
   return [[b,0.75]];
 }
 const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; };      // arrivée avec un léger dépassement          // postures en appui sur les pieds (ou pieds + mains)
-const KEYS = ["hands","one","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","knee0","knee1"];
+// ---------- Animations propres à chaque jalon ----------
+const P = (base, o) => Object.assign({}, POSES[base], o);
+const mirror = p => Object.assign({}, p, {arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0)});
+Object.assign(POSES, {
+  hs_cw1:   P("hs", {roll:1.15, hipZ:[0.8,0.8], feet:true}),                                             // sortie en roue : on bascule sur le côté…
+  hs_cw2:   {pitch:PI, roll:PI, arm:[0.1,0.1], armZ:[0.3,0.3], elbow:[-0.2,-0.2], hip:[0,0], hipZ:[0.25,0.25], knee:[0,0], head:0, feet:true},   // …et on retombe debout
+  hs_cw3:   {pitch:PI, roll:PI, spin:PI, arm:[0.08,0.08], armZ:[0.13,0.13], elbow:[-0.22,-0.22], hip:[0,0], hipZ:[0.05,0.05], knee:[0,0], head:0, feet:true},
+  hs_splitM:mirror(POSES.hs_split),
+  hs_split2:P("hs_split", {hip:[-0.5,0.95]}),
+  hs_tuck90:P("hs", {hip:[-1.57,-1.57], knee:[1.57,1.57]}),
+  hs_headin:P("hs", {head:0.6}),
+  hs_7headin:P("hs_seven", {head:0.55}),
+  hs_flagM: mirror(POSES.hs_flag),
+  hs_flagLo:P("hs_flag", {roll:0.5, hipZ:[1.3,-0.3]}),
+  hs_flagLoM:mirror(P("hs_flag", {roll:0.5, hipZ:[1.3,-0.3]})),
+  hs_mex:   {pitch:PI + 0.2, arm:[-PI + 0.34,-PI + 0.34], armZ:[0,0], hip:[0.7,0.7], hipZ:[0,0], knee:[0.55,0.55], head:-0.8},
+  hs_hspu:  P("hs", {pitch:PI - 0.18, arm:[-PI + 0.95,-PI + 0.95], elbow:[-1.75,-1.75], armZ:[0.15,0.15], head:-0.7}),
+  hs_shiftL:P("hs_straddle", {roll:0.14, armZ:[0,0.16]}),
+  hs_shiftR:mirror(P("hs_straddle", {roll:0.14, armZ:[0,0.16]})),
+  hs_finger:P("oahs", {arm:[-PI,-PI + 0.2], armZ:[0,0.5], roll:0.12}),
+  hs_oastr: P("oahs", {one:1}),
+  hs_oafull:P("oahs", {arm:[-PI,-0.12], armZ:[0,0.28], roll:0.08, one:1}),
+  fold_s:   P("fold", {hipZ:[0.55,0.55]}),
+  hs_spress:P("pike", {hip:[-1.5,-1.5], hipZ:[0.85,0.85]}),
+  hs_stal0: {pitch:0.75, arm:[-0.55,-0.55], armZ:[0,0], hip:[-2.25,-2.25], hipZ:[0.95,0.95], knee:[0,0], head:-0.1},
+  lv_croc:  P("lever", {arm:[-0.45,-1.5], elbow:[-1.75,-0.1], armZ:[0,0.7], one:1}),
+  lv_qdr:   P("lever", {roll:0.85, hip:[-0.7,0.35], knee:[0.6,0.25], arm:[-0.45,-0.9], elbow:[-1.75,-0.6]}),
+});
+Object.assign(FEET, {fold_s:1});
+// Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
+const UP = [["fold",0.45,0],["kick",0.3,0]];
+export const SCRIPTS = {
+  st_bail30: {wall:-1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
+  st_bailc2w:{wall:1,  cut:true, s:[...UP,["hs",0.5,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
+  st_split:  {wall:-1, s:[...UP,["hs_split",0.5,0.8],["hs_splitM",0.7,0.8],["hs_split",0.7,0.5]]},
+  b1_free5:  {s:[...UP,["hs_split",0.5,1.0],["hs_split2",0.5,0.4],["hs_split",0.5,0.8]]},
+  b2_free15: {s:[...UP,["hs_straddle",0.5,0.8],["hs_split",0.6,0.9],["hs_straddle",0.6,0.6]], still:"hs_straddle"},
+  b2_str15:  {s:[...UP,["hs_straddle",0.5,0.3],["hs",0.5,1.6]]},
+  in_str40:  {s:[...UP,["hs",0.5,2.4]]},
+  in_str60:  {s:[...UP,["hs",0.5,1.2],["hs_headin",0.5,0.5],["hs",0.5,1.0]], still:"hs"},
+  in_holds:  {s:[...UP,["hs",0.5,0.3],["hs_straddle",0.6,0.7],["hs_tuck",0.6,0.7],["hs_split",0.6,0.7],["hs",0.6,0.3]], still:"hs_straddle"},
+  in_changes:{s:[...UP,["hs_straddle",0.45,0.1],["hs_tuck",0.45,0.1],["hs",0.45,0.1],["hs_straddle",0.45,0.1],["hs_tuck",0.45,0.1],["hs",0.45,0.3]], still:"hs_tuck"},
+  in_tuck:   {s:[...UP,["hs",0.5,0.2],["hs_tuck90",0.7,1.6]]},
+  in_7s:     {s:[...UP,["hs",0.5,0.2],["hs_seven1",0.7,1.5]]},
+  in_7d:     {s:[...UP,["hs",0.5,0.2],["hs_seven",0.8,1.5]]},
+  in_toes:   {s:[...UP,["hs",0.5,0.5],["hs_headin",0.6,1.5]]},
+  in_toes7:  {s:[...UP,["hs",0.5,0.2],["hs_seven",0.7,0.3],["hs_7headin",0.5,1.3]]},
+  oa_flaghoriz:{s:[...UP,["hs_straddle",0.5,0.2],["hs_flag",0.7,0.8],["hs_straddle",0.5,0.1],["hs_flagM",0.7,0.8]], still:"hs_flag"},
+  oa_flagfloor:{s:[...UP,["hs_straddle",0.5,0.2],["hs_flagLo",0.9,0.9],["hs_straddle",0.6,0.1],["hs_flagLoM",0.9,0.9]], still:"hs_flagLo"},
+  in_mexican:{s:[...UP,["hs",0.5,0.4],["hs_mex",0.9,1.6]]},
+  in_hspu:   {s:[...UP,["hs",0.5,0.3],["hs_hspu",0.7,0.15],["hs",0.6,0.15],["hs_hspu",0.7,0.15],["hs",0.6,0.15],["hs_hspu",0.7,0.15],["hs",0.6,0.4]], still:"hs_hspu"},
+  oa_shift:  {s:[...UP,["hs_straddle",0.5,0.3],["hs_shiftL",0.5,0.7],["hs_straddle",0.4,0.1],["hs_shiftR",0.5,0.7],["hs_straddle",0.4,0.2]], still:"hs_shiftL"},
+  oa_finger: {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.7,1.8]]},
+  oa_strarm: {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.3],["hs_oastr",0.7,1.5]]},
+  oa_oahs:   {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,1.8]]},
+  pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["hs_straddle",0.8,0.4],["hs",0.5,1.0]], still:"hs_spress"},
+  pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
+  pr_stalder:{s:[["crouch",0.4,0],["hs_stal0",0.6,0.7],["hs_spress",0.9,0],["hs_straddle",0.8,0.3],["hs",0.5,0.9]], still:"hs_stal0"},
+  lo_frog:   {s:[["crouch",0.45,0.1],["crow",0.7,1.9]]},
+  lo_elbow:  {s:[["fold",0.45,0],["lever",0.7,1.9]]},
+  lo_croc:   {s:[["fold",0.45,0],["lever",0.6,0.4],["lv_croc",0.7,1.6]]},
+  lo_qdr:    {s:[["fold",0.45,0],["lever",0.6,0.2],["lv_qdr",0.8,1.7]]},
+  pl_lean:   {s:[["fold",0.45,0],["pl_lean",0.5,2.2]]},
+  pl_tuck:   {s:[["fold",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
+  pl_adv:    {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_adv",0.6,1.6]]},
+  pl_frog:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_frog",0.6,1.6]]},
+  pl_pike:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_pike",0.7,1.6]]},
+  pl_straddle:{s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
+  pl_full:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
+};
+const KEYS = ["hands","one","spin","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
-  return {hands:FEET[n] ? 0 : 1, one:n === "oahs" ? 1 : 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
+  return {hands:FEET[n] || p.feet ? 0 : 1, one:n === "oahs" || p.one ? 1 : 0, spin:p.spin || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
     armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
@@ -134,6 +204,9 @@ export function mount(host, opts = {}){
   const base = at(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.03, 64), soft), scene, 0, -0.016, 0);
   const track = new THREE.Mesh(new THREE.TorusGeometry(1.06, 0.018, 8, 96), soft); track.rotation.x = PI/2; scene.add(track);
   if (opts.bare) base.visible = track.visible = false;
+  // mur des exercices au mur : un panneau derrière ou devant le personnage
+  const wall = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.06), new THREE.MeshStandardMaterial({roughness:1, transparent:true, opacity:0.5})); wall.position.set(0, 1.25, -0.42); wall.visible = false;
+  const wallPivot = grp(scene, 0, 0, 0); wallPivot.add(wall);                 // le mur suit la vue, pas les pirouettes du personnage
   const ringM = new THREE.MeshStandardMaterial({roughness:0.5});
   let arc = null;
   const setArc = frac => { if (arc) { scene.remove(arc); arc.geometry.dispose(); }
@@ -164,10 +237,10 @@ export function mount(host, opts = {}){
     headband.visible = hk === "band"; capG.visible = hk === "cap"; beanie.visible = hk === "beanie"; crown.visible = hk === "crown";
     belt.visible = knot.visible = xk === "belt"; medal.visible = xk === "medal" || xk === "medal2"; coin2.visible = xk === "medal2";
   }
-  function colors(){ const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
+  function colors(){ wall.material.color.set(cssv("--mut") || "#918e86"); const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
 
   let cur = flat("stand"), yaw = opts.yaw != null ? opts.yaw : -0.9, spin = !opts.bare, scale = 1, jump = 0, extraYaw = 0;
-  let queue = [], seg = null, here = "stand", wob = null, pulse = null;      // transition en cours, posture atteinte, oscillation d'arrivée
+  let queue = [], seg = null, here = "stand", wob = null, pulse = null, holdT = 0, scripted = false;      // transition en cours, posture atteinte, oscillation d'arrivée
   const off = {p:0, r:0};
   const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3();
   const reduce = !opts.manual && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -177,7 +250,7 @@ export function mount(host, opts = {}){
       L.sh.rotation.set(p["arm" + i], 0, L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i];
       L.hip.rotation.set(p["hip" + i], 0, L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; });
     torso.scale.set(1 + breath, 1, 1 + breath); chest.scale.set(1, 1 + breath, 1 + breath);
-    root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
+    root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
     box.setFromObject(root); let low = box.min.y;
     if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx > 0 || p.one < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); }); }
     tmp.set((box.min.x + box.max.x) / 2, 0, (box.min.z + box.max.z) / 2); pivot.worldToLocal(tmp);
@@ -218,11 +291,13 @@ export function mount(host, opts = {}){
     if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame); }
   function core(dt, now){
     if (party) { partyStep(dt); dirty = true; }
-    else if (seg || queue.length) {
-      if (!seg) { const [name, dur] = queue.shift(); seg = {from:cur, to:flat(name), name, dur:reduce ? 0.01 : dur, t:0, last:!queue.length}; }
-      seg.t = Math.min(1, seg.t + dt / seg.dur); cur = mix(seg.from, seg.to, seg.last ? back(seg.t) : ease(seg.t)); dirty = true;
-      if (seg.t >= 1) { cur = seg.to; here = seg.name; const done = seg.last; seg = null;
-        if (done && !reduce) { const c = cat(here); wob = {t:0, a:c === "hs" ? 0.075 : c === "pl" ? 0.04 : 0.015}; pulse = {t:0}; } } }
+    else if (seg || queue.length || holdT > 0) {
+      if (holdT > 0) { holdT -= dt; dirty = true; }
+      else if (!seg) { const [name, dur, hold] = queue.shift(); seg = {from:cur, to:flat(name), name, dur:reduce ? 0.01 : dur, hold:hold || 0, t:0, last:!queue.length, soft:scripted}; }
+      if (seg) {
+      seg.t = Math.min(1, seg.t + dt / seg.dur); cur = mix(seg.from, seg.to, seg.last && !seg.soft ? back(seg.t) : ease(seg.t)); dirty = true;
+      if (seg.t >= 1) { cur = seg.to; here = seg.name; holdT = seg.hold; const done = seg.last && !seg.soft; seg = null;
+        if (done && !reduce) { const c = cat(here); wob = {t:0, a:c === "hs" ? 0.075 : c === "pl" ? 0.04 : 0.015}; pulse = {t:0}; } } } }
     off.p = 0; off.r = 0;
     if (!party && !reduce) {
       const c = cat(here), s = now / 1000, w = opts.loopT ? 2 * PI * clock / opts.loopT : 0;   // équilibre : micro-corrections permanentes
@@ -252,6 +327,7 @@ export function mount(host, opts = {}){
     // pose : clé de POSES · frac : progression vers le niveau suivant (0 à 1) · level : niveau · fit : tenue choisie
     set({pose, frac, level, fit, label}){
       restPose = POSES[pose] ? pose : "stand";
+      scripted = false;
       const goal = queue.length ? queue[queue.length - 1][0] : seg ? seg.name : here;
       if (!party && goal !== restPose) { const fromName = seg ? seg.name : here; queue = route(fromName, restPose); seg = null; }
       setArc(frac || 0);
@@ -261,12 +337,17 @@ export function mount(host, opts = {}){
     },
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
-    poses: Object.keys(POSES).filter(k => !VIA[k]),
+    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal0|lv_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
-    jump(pose){ queue = []; seg = null; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
+    jump(pose){ queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
     busy(){ return !!(seg || queue.length || wob); },
-    moving(){ return !!(seg || queue.length); },
+    moving(){ return !!(seg || queue.length || holdT > 0); },
+    // joue un script : [[posture, durée, maintien], …] ; back : revient debout par le mouvement inverse
+    play(steps, back){ scripted = true; holdT = 0; seg = null; queue = steps.map(s => s.slice()); if (back) { const last = steps[steps.length - 1][0]; route(last, "stand").forEach(r => queue.push([r[0], r[1], 0])); } restPose = "stand"; dirty = true; },
+    at(){ return seg ? seg.name : here; },
+    holding(){ return !seg && holdT > 0; },
+    wall(side){ wall.visible = !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
     canvas,
     png(){ return canvas.toDataURL("image/png"); },
   };
