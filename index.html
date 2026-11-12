@@ -707,13 +707,14 @@ const pDay = di => {
   const stp = pStep(), d = stp.days[DAYK[di]] || {type:"rest", blocks:[]};
   if (!d.routine) return Object.assign({blocks:[]}, d);
   const R = (P.routines || {})[d.routine] || {blocks:[]};
-  return {type:d.type, name:R.name, equip:R.equip, blocks:R.blocks || [], scale:stp.scale || 1, routine:true};
+  return {type:d.type, name:R.name, equip:R.equip, blocks:R.blocks || [], scale:stp.scale || 1, routine:true, circuit:R.circuit, tips:R.tips, drive:R.drive, info:R.info};
 };
 const unit = b => b.kind === "hold" ? " s" : " rép.";
 const fixed = s => s.dur != null || s.reps != null;
 const sDur = (s, sc) => Math.max(5, Math.round(s.dur * (sc || 1)));
-const fixTxt = (b, s, sc) => (s.dur != null ? sDur(s, sc) + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
-const restTxt = s => (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
+const sRun = (s, sc) => s.durMax ? Math.max(5, Math.round(s.durMax * (sc || 1))) : sDur(s, sc);
+const fixTxt = (b, s, sc) => (s.dur != null ? sDur(s, sc) + (s.durMax ? " à " + sRun(s, sc) : "") + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
+const restTxt = s => !s.rest ? "libre" : s.rest % 60 ? s.rest + (s.restMax ? " à " + s.restMax : "") + " s" : (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
 const pTarget = (b, s) => { const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
 const extLink = (href, txt) => { const a = el("a","lk",txt); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
 const ytLink = (id, txt) => extLink("https://www.youtube.com/watch?v=" + id, txt);
@@ -790,22 +791,30 @@ function renderSess(){
   const dh = el("div","blk"); dh.style.borderTop = "0"; dh.style.paddingTop = "4px";
   dh.append(el("h2",null,DAYN[selDay] + (selDay === todayIdx() ? ", aujourd'hui" : "")));
   const info = !day.blocks.length ? (day.type === "rest" && !P.routines ? "Récupération active : mobilité, étirements, marche. Pas de travail de force." : "Rien de prévu ce jour-là dans ce programme.")
-    : day.routine ? day.name + (day.scale < 1 ? " · durées réduites cette semaine" : "") + ". Touche un étirement pour lancer le compte à rebours." + (day.equip ? " Matériel : " + day.equip : "")
+    : day.circuit ? day.name + ". Circuit : " + day.circuit.rounds + " tours, les exercices s'enchaînent, repos " + restTxt(day.circuit) + " entre les tours."
+    : day.routine ? day.name + (day.scale < 1 ? " · durées réduites cette semaine" : "") + ". Touche un exercice pour le lancer ; la suite s'enchaîne toute seule." + (day.equip ? " Matériel : " + day.equip : "")
     : day.type === "gtg" ? "Séries réparties sur la journée, bien espacées, sans aller à l'épuisement."
     : "Touche une série pour lancer le chrono. Le repos démarre tout seul après chaque série.";
-  const ih = el("div","mut",info); ih.style.marginTop = "6px"; dh.append(ih); box.append(dh);
+  const ih = el("div","mut",info); ih.style.marginTop = "6px"; dh.append(ih);
+  if (day.blocks.length && (day.info || step.info)) { const x = el("div","mut",day.info || step.info); x.style.marginTop = "6px"; dh.append(x); }
+  if (day.blocks.length && day.drive) dh.append(extLink("https://drive.google.com/file/d/" + day.drive + "/view", "Vidéo de la séance"));
+  if (day.blocks.length && day.tips && day.tips.length) { const det = el("details"); det.append(el("summary",null,"Rappels du programme")); const ul = el("ul"); ul.style.cssText = "margin:0;padding-left:18px;font-size:14px;color:var(--mut)"; day.tips.forEach(t=>ul.append(el("li",null,t))); det.append(ul); dh.append(det); }
+  box.append(dh);
   day.blocks.forEach((b,bi)=>{
     const c = el("div","blk"), h = el("div","blk-h"), t = el("span","grow"), fx = fixed(b.sets[0]);
     t.append(el("div","t",b.name));
     const best = pg().best[b.name];
-    t.append(el("div","mut", fx ? [b.pnf ? "PNF" : "", b.muscles].filter(Boolean).join(" · ")
-      : b.sets.length + " séries · repos " + restTxt(b.sets[0]) + (best ? " · record " + num(best) + unit(b) : "")));
+    const one = fx && b.sets.length === 1;
+    t.append(el("div","mut", one ? [b.pnf ? "PNF" : "", b.muscles].filter(Boolean).join(" · ")
+      : fx ? b.sets.length + (day.circuit ? " tours · " : " séries · ") + fixTxt(b, b.sets[0], day.scale)
+      : b.sets.length + (b.sets.length > 1 ? " séries" : " série") + (b.sets[0].rest ? " · repos " + restTxt(b.sets[0]) : "") + (best ? " · record " + num(best) + unit(b) : "")));
     h.append(t); const vl = vidLink(b); if (vl) h.append(vl); c.append(h);
-    const row = el("div","sets" + (fx ? " one" : ""));
+    const row = el("div","sets" + (one ? " one" : ""));
     b.sets.forEach((s,si)=>{
       const v = vals[bi + "-" + si], tg = pTarget(b,s);
       const x = el("button","set" + (v != null ? " dn" : ""));
-      if (fx) { x.setAttribute("aria-label", b.name); x.append(el("span","v", v != null ? "Fait · " + fixTxt(b,s,day.scale) : fixTxt(b,s,day.scale))); }
+      if (fx && !one) { x.setAttribute("aria-label", b.name + ", " + (si+1) + " sur " + b.sets.length); x.append(el("span","p", (si+1) + "/" + b.sets.length), el("span","v", v != null ? "fait" : s.dur != null ? sDur(s, day.scale) + " s" : "× " + s.reps)); }
+      else if (fx) { x.setAttribute("aria-label", b.name); x.append(el("span","v", v != null ? "Fait · " + fixTxt(b,s,day.scale) : fixTxt(b,s,day.scale))); }
       else { x.setAttribute("aria-label","Série " + (si+1) + " sur " + b.sets.length);
         x.append(el("span","p", (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "")), el("span","v", v != null ? num(v) + unit(b) : tg ? tg + unit(b) : "max")); }
       x.onclick = () => openSet(bi, si);
@@ -814,7 +823,7 @@ function renderSess(){
     c.append(row); box.append(c);
   });
   const foot = el("div","blk");
-  if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(ytLink(k.yt, k.name))); foot.append(l); }
+  if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(k.url ? extLink(k.url, k.name) : ytLink(k.yt, k.name))); foot.append(l); }
   const fb = el("div","btns"), bi = el("button","btn line","Importer un fichier"), br = el("button","btn warn","Retirer");
   bi.onclick = () => $("pgFile").click();
   br.onclick = () => { if (confirm("Retirer « " + P.name + " » de cet appareil ? Tes records sont conservés.")) {
@@ -839,8 +848,10 @@ let sd = null, sdTimer = null, sdWake = null;
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
 function nextSet(){
-  const day = pDay(selDay), vals = wkGet(selDay);
-  for (let b = 0; b < day.blocks.length; b++) for (let s = 0; s < day.blocks[b].sets.length; s++) if (vals[b + "-" + s] == null) return [b, s];
+  const day = pDay(selDay), vals = wkGet(selDay), B = day.blocks;
+  if (day.circuit) { const n = Math.max(0, ...B.map(b=>b.sets.length));
+    for (let s = 0; s < n; s++) for (let b = 0; b < B.length; b++) if (s < B[b].sets.length && vals[b + "-" + s] == null) return [b, s]; }
+  else for (let b = 0; b < B.length; b++) for (let s = 0; s < B[b].sets.length; s++) if (vals[b + "-" + s] == null) return [b, s];
   return null;
 }
 function openSet(bi, si){
@@ -851,18 +862,19 @@ function openSet(bi, si){
   const ck = $("sdClock"); ck.className = "clock";
   if (fx){
     const timed = s.dur != null;
-    $("sdS").textContent = (bi+1) + "/" + day.blocks.length + " · " + fixTxt(b, s, day.scale) + (b.pnf ? " · PNF" : "");
-    ck.style.display = timed ? "" : "none"; if (timed) ck.textContent = mmss(sDur(s, day.scale));
+    $("sdS").textContent = (b.sets.length > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + "/" + b.sets.length + " · " : (bi+1) + "/" + day.blocks.length + " · ") + fixTxt(b, s, day.scale) + (b.pnf ? " · PNF" : "");
+    ck.style.display = timed ? "" : "none"; if (timed) ck.textContent = mmss(sRun(s, day.scale));
     $("sdReps").style.display = "none"; $("sdGo").style.display = ""; $("sdGo").textContent = timed ? "Démarrer" : "Fait";
     $("sdHint").textContent = [b.pnf ? "PNF : contracte 10 s, relâche 5 s, puis gagne en amplitude." : "", b.note].filter(Boolean).join(" ");
   } else {
-    $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "") + " · repos " + restTxt(s);
+    $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "") + (s.rest ? " · repos " + restTxt(s) : "");
     const hold = b.kind === "hold";
     ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
     $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
       : "Premier passage : fais ton maximum propre, il servira de référence.";
+    if (b.note) $("sdHint").textContent += " " + b.note;
   }
   if (!$("sd").open) $("sd").showModal();
 }
@@ -871,20 +883,34 @@ function storeSet(v){
   const keys = Object.keys(pg().wk); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(x=>delete pg().wk[x]);
 }
 function saveFixed(){
-  const {b, s, day} = sd; sdStop();
+  const {b, s, day, si} = sd; sdStop();
   storeSet(s.dur != null ? sDur(s, day.scale) : s.reps);
   const nx = nextSet();
   if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? " · " + day.name : ""), k:"check", v:true, pr:false});
   save(); render();
+  if (nx && day.circuit && day.circuit.rest && nx[1] !== si) { startRest(day.circuit, nx, "Tour " + (si+1) + "/" + b.sets.length + " terminé"); return; }
   if (nx) openSet(nx[0], nx[1]); else $("sd").close();
 }
+function startRest(r, nx, title){
+  const end = Date.now() + r.rest*1000, ck = $("sdClock"); let done = false;
+  sd.mode = "rest"; sd.next = nx;
+  ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
+  $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title;
+  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Continuer" : "Terminer la séance";
+  const nb = nx && pDay(selDay).blocks[nx[0]];
+  $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
+  const tick = () => { const left = (end - Date.now())/1000;
+    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; } }
+    else ck.textContent = mmss(Math.ceil(left)); };
+  tick(); sdTimer = setInterval(tick, 250);
+}
 function runFixed(){
-  const {s, day} = sd, ck = $("sdClock"), dur = sDur(s, day.scale), prep = sd.side === 1 ? S.countdown : 5;
+  const {s, day} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), prep = sd.side === 1 ? S.countdown : 5;
   let end = Date.now() + prep*1000, last = -1; sd.mode = prep ? "count" : "run";
   const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350); };
   if (!prep) go(); else ck.className = "clock count";
   $("sdGo").textContent = "Passer";
-  $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + (s.sides ? " · côté " + sd.side + "/2" : "") + (sd.b.pnf ? " · PNF" : "");
+  if (s.sides) $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + " · côté " + sd.side + "/2" + (sd.b.pnf ? " · PNF" : "");
   sdTimer = setInterval(()=>{
     const left = (end - Date.now())/1000;
     if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
@@ -899,17 +925,9 @@ function saveSet(v){
   if (b.ms && MS[b.ms] && b.kind === "hold") { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
-  const nx = nextSet(), end = Date.now() + s.rest*1000, ck = $("sdClock"); let done = false;
-  sd.mode = "rest"; sd.next = nx;
-  ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
-  $("sdS").textContent = "Repos · " + restTxt(s); $("sdT").textContent = "Fait : " + num(v) + unit(b) + (pr && old > 0 ? ", record" : "");
-  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Série suivante" : "Terminer la séance";
-  const nb = nx && pDay(selDay).blocks[nx[0]];
-  $("sdHint").textContent = nx ? "Ensuite : " + nb.name + ", série " + (nx[1]+1) + "/" + nb.sets.length : "C'était la dernière série du jour.";
-  const tick = () => { const left = (end - Date.now())/1000;
-    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; } }
-    else ck.textContent = mmss(Math.ceil(left)); };
-  tick(); sdTimer = setInterval(tick, 250);
+  const nx = nextSet();
+  if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else $("sd").close(); return; }
+  startRest(s, nx, "Fait : " + num(v) + unit(b) + (pr && old > 0 ? ", record" : ""));
 }
 $("sdGo").onclick = async () => {
   const ck = $("sdClock");
