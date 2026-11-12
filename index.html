@@ -59,7 +59,10 @@ nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#0b0f18;border-top:1p
 nav.tabs button{flex:1;max-width:213px;background:transparent;border-radius:0;color:var(--mut);padding:14px 4px;font-size:14px}
 nav.tabs button.on{color:var(--acc);font-weight:700}
 .view{display:none}.view.on{display:block}
-dialog{border:0;border-radius:20px;background:var(--card);color:var(--txt);width:min(560px,calc(100vw - 24px));padding:20px;max-height:92vh}
+a.yt{display:flex;gap:12px;align-items:center;background:var(--card2);border-radius:12px;padding:8px;margin-top:10px;color:var(--txt);text-decoration:none}
+a.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#000;flex:none}
+.ms.lk{opacity:.6}
+dialog{overflow:auto;border:0;border-radius:20px;background:var(--card);color:var(--txt);width:min(560px,calc(100vw - 24px));padding:20px;max-height:92vh}
 dialog::backdrop{background:rgba(0,0,0,.7)}
 .clock{font-variant-numeric:tabular-nums;font-size:72px;font-weight:800;text-align:center;margin:12px 0 4px;line-height:1}
 .clock.count{color:var(--acc)}.clock.hit{color:var(--ok)}
@@ -123,7 +126,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
       <div class="btns"><button id="exp">Exporter</button><button id="imp">Importer</button></div>
       <div class="btns"><button class="danger" id="reset">Tout effacer</button></div>
     </div>
-    <div class="card mut">Les noms de jalons et de vidéos renvoient à ton programme « Handstand Toolkit ». L'app ne contient aucune vidéo : elle sert à suivre ta progression.</div>
+    <div class="card mut">Les jalons suivent l'arbre de ton programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube : l'app n'en contient aucune.</div>
   </section>
 </main>
 
@@ -135,6 +138,9 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 
 <dialog id="dlg">
   <div class="row"><div class="grow"><h2 id="dT"></h2><div class="mut" id="dS"></div></div><button class="ghost" id="dX" aria-label="Fermer">✕</button></div>
+  <div class="mut" id="dEn" style="margin-top:6px"></div>
+  <p id="dDesc" style="margin:10px 0 0"></p>
+  <div id="dVid"></div>
   <div id="dHold">
     <div class="clock" id="clock">0.0</div>
     <div class="mut" style="text-align:center" id="clockHint"></div>
@@ -153,56 +159,101 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 "use strict";
 // ---------- Données : l'arbre de compétences ----------
 // type: hold (secondes), reps (répétitions), check (réussi / pas réussi)
+// req: jalons à valider avant · alt: compétence alternative (hors chemin) · soon: parcours « à venir » dans le programme
+// yt: vidéos YouTube de référence · en: nom d'origine dans le programme
+const BASE = ["in_tuck","in_str60"]; // les deux jalons qui ouvrent le niveau Intermédiaire
 const TREE = [
-  {id:"starter", name:"Starter", req:[], ms:[
-    {id:"st_bail30", name:"Cartwheel Bail", sub:"à 30 cm du mur", type:"check"},
-    {id:"st_bailc2w", name:"Cartwheel Bail", sub:"poitrine au mur", type:"check"},
-    {id:"st_split", name:"Split Leg Balance On Wall", sub:"tenue au mur", type:"hold", target:5},
-  ], videos:["Hands, eyes and scapula position","Entering the wall","Where is balance & heel pulls","Split leg balance","Chest to wall holds","Top end isolations","Using the wall","Falling : why you must learn to fall & the terrible cartwheel","Falling : 5 ways to build confidence","Falling : why chest to wall?"]},
-  {id:"b1", name:"Beginner 1", req:["starter"], ms:[
-    {id:"b1_free5", name:"Freestanding", sub:"en split leg", type:"hold", target:5},
-  ], videos:["Split leg balance","Chest to wall holds","Top end isolations","Using the wall","Limit the variables : tricks to increase your consistency","The basic kick up & 50/50 rule","Kicking up to handstand"]},
-  {id:"b2", name:"Beginner 2", req:["b1"], ms:[
-    {id:"b2_free15", name:"Freestanding", sub:"en split leg", type:"hold", target:15},
-    {id:"b2_str15", name:"Straight", sub:"jambes serrées", type:"hold", target:15},
-  ], videos:["5 shapes that will help you improve","You need to tuck more","Scapula anatomy","How long does it take & examples","Road to a minute"]},
-  {id:"inter", name:"Intermediate", req:["b2"], ms:[
-    {id:"in_str40", name:"Straight", sub:"Shape Holds", type:"hold", target:40},
-    {id:"in_str60", name:"Straight", sub:"Shape Holds", type:"hold", target:60},
-    {id:"in_tuck", name:"Tuck", sub:"genoux alignés avec les hanches", type:"hold", target:10},
-    {id:"in_toes", name:"Head Looking At Toes", sub:"Shape Holds", type:"hold", target:15},
-    {id:"in_7d", name:"Double Leg 7", sub:"Shape Holds", type:"hold", target:5},
-    {id:"in_7s", name:"Single Leg 7", sub:"Shape Holds", type:"hold", target:5},
-    {id:"in_toes7", name:"Head Looking At Toes 7", sub:"Shape Holds", type:"hold", target:5},
-    {id:"in_changes", name:"Shape Changes", sub:"Level 1", type:"check"},
-    {id:"in_hspu", name:"Handstand Push Up", sub:"", type:"reps", target:3},
-  ], videos:["Intermediate handstand tips & tricks","Head looking at toes","Suffering with 7's","Arguments for a straight line","10 tips for a straight line"]},
-  {id:"onearm", name:"One Arm", req:["inter"], ms:[
-    {id:"oa_flagfloor", name:"Flags To Floor", sub:"", type:"check"},
-    {id:"oa_flaghoriz", name:"Flags Below Horizontal", sub:"chaque côté", type:"hold", target:5},
-    {id:"oa_shift", name:"Weight Shifting", sub:"par côté", type:"reps", target:2},
-    {id:"oa_finger", name:"Fingertip Support", sub:"", type:"hold", target:15},
-    {id:"oa_strarm", name:"Straight Arm Support", sub:"", type:"hold", target:15},
-    {id:"oa_oahs", name:"One Arm Handstand", sub:"le sommet de l'arbre", type:"hold", target:5},
-  ], videos:["Two arm finessing","Flagging as one arm handstand prep","Mechanics of a OAHS","Weight shifting","Fingertip support","Straight arm support","Raising center of mass","Going for glory","10 tips for the OAHS"]},
-  {id:"press", name:"Press", req:["b2"], ms:[
-    {id:"pr_straddle", name:"Straddle Press", sub:"", type:"check"},
-    {id:"pr_pike", name:"Pike Press", sub:"", type:"check"},
-    {id:"pr_stalder", name:"Stalder", sub:"", type:"check"},
-  ], videos:["Mechanics of a press","Top down","Bottom up","Weak link","Liv's journey to press","Trap-3 Trap-1"]},
-  {id:"low", name:"Low Balances", req:[], ms:[
-    {id:"lo_frog", name:"Frog & Crow", sub:"", type:"check"},
-    {id:"lo_elbow", name:"Elbow Lever", sub:"", type:"check"},
-    {id:"lo_croc", name:"Croc", sub:"", type:"check"},
-    {id:"lo_qdr", name:"QDR", sub:"", type:"check"},
-  ], videos:["Elbow lever","Croc","QDR"]},
-  {id:"key", name:"Concepts clés (tous niveaux)", req:[], ms:[], videos:["The handstand skill tree key","The fight & learning to save","4 kick ups you should know","Getting creative","Kicking up to handstand","Looking after your wrists","Hands, eyes and scapula position","The basic kick up"]},
+  {id:"starter", name:"Départ", en:"Starter", ms:[
+    {id:"st_bail30", name:"Sortie en roue, à 30 cm du mur", en:"Cartwheel Bail – 30cm From Wall", type:"check", req:[],
+      desc:"Tu montes en équilibre avec les mains à environ 30 cm du mur, puis tu sors sur le côté, comme une roue. C'est ton issue de secours : la maîtriser d'abord enlève la peur de tomber.",
+      yt:[["CGb3ddy1Qd0","Équilibre contre le mur"]]},
+    {id:"lo_frog", name:"Grenouille et corbeau", en:"Frog & Crow", sub:"préparation conseillée", type:"check", req:[], alt:true,
+      desc:"Appuis bas, bras fléchis, genoux posés sur les coudes. Un premier équilibre sur les mains tout près du sol, qui prépare les poignets et l'équilibre au mur."},
+    {id:"st_split", name:"Jambes en ciseaux au mur", en:"Split Leg Balance On Wall", type:"hold", target:5, req:["st_bail30"],
+      desc:"Au mur, une jambe reste en contact et l'autre s'en éloigne, comme des ciseaux ouverts. Tu cherches le point d'équilibre et tu décolles le pied du mur pendant 5 s.",
+      yt:[["AuLdmq7V8Q0","Split leg balance"]]},
+    {id:"st_bailc2w", name:"Sortie en roue, poitrine face au mur", en:"Cartwheel Bail – Chest To Wall", type:"check", req:["st_bail30"],
+      desc:"La même sortie en roue, mais depuis l'équilibre ventre face au mur, la position la plus proche du vrai équilibre.",
+      yt:[["OnXxclKvCTA","Équilibre poitrine face au mur"]]},
+  ], videos:[["Tomber : pourquoi apprendre à tomber, et la roue ratée","Falling: why you must learn to fall & the terrible cartwheel"],["Tomber : 5 façons de prendre confiance","5 ways to gain confidence"],["Tomber : pourquoi poitrine face au mur ?","Why chest to wall?"],["Au mur : position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["Au mur : comment y monter","Entering the wall"],["Au mur : où est l'équilibre, et tirer avec les talons","Where is balance & heel pulls"],["Au mur : jambes en ciseaux","Split leg balance"]]},
+  {id:"b1", name:"Débutant 1", en:"Beginner 1", ms:[
+    {id:"b1_free5", name:"Équilibre libre, jambes en ciseaux", en:"Freestanding 5s In Split Leg", type:"hold", target:5, req:["st_split","st_bailc2w"],
+      desc:"Sans mur. Les jambes ouvertes en ciseaux servent de balancier, comme la perche d'un funambule : c'est la forme la plus facile à tenir.",
+      yt:[["FTnKgUnmD2E","Équilibre jambes en ciseaux"]]},
+    {id:"b2_free15", name:"Équilibre libre, jambes en ciseaux", en:"Split Leg Hold 15s", type:"hold", target:15, req:["b1_free5"],
+      desc:"La même forme, tenue 15 s : tu apprends à corriger avec les doigts et les poignets au lieu de redescendre."},
+    {id:"b2_str15", name:"Équilibre droit, jambes serrées", en:"Straight 15s", type:"hold", target:15, req:["b2_free15"],
+      desc:"Jambes jointes, corps en ligne. Plus de balancier : tout l'équilibre vient des mains et des épaules."},
+  ], videos:[["Au mur : jambes en ciseaux","Split leg balance"],["Au mur : tenues poitrine face au mur","Chest to wall holds"],["Au mur : quitter le mur en tirant avec les orteils","Leaving the wall with toe pulls"],["Monter en équilibre : limiter les variables pour être régulier","Limit the variables: tricks to increase your consistency"],["Monter en équilibre : la montée de base et la règle du 50/50","The basic kick up & 50/50 rule"]]},
+  {id:"b2", name:"Débutant 2", en:"Beginner 2", ms:[
+    {id:"in_holds", name:"Tenues de formes, niveau 1", en:"Level 1 Shape Holds", type:"check", req:["b2_str15"],
+      desc:"Tenir d'autres formes que la ligne droite : groupé, jambes écartées, ciseaux… Chaque forme déplace ton centre de gravité et t'oblige à rééquilibrer."},
+    {id:"in_changes", name:"Changements de formes, niveau 1", en:"Level 1 Shape Changes", type:"check", req:["in_holds"],
+      desc:"Passer d'une forme à l'autre sans redescendre : c'est le mouvement des jambes qui devient l'exercice."},
+    {id:"in_tuck", name:"Groupé, genoux à hauteur des hanches", en:"Tuck – Knees In Line With Hips 10s", type:"hold", target:10, req:["in_changes"],
+      desc:"Genoux pliés ramenés devant toi jusqu'à la hauteur des hanches. Les épaules doivent avancer pour compenser : très formateur.",
+      yt:[["VtipeT7CMK0","Guide de l'équilibre groupé"]]},
+    {id:"in_str40", name:"Équilibre droit", en:"Straight 40s", type:"hold", target:40, req:["b2_str15"],
+      desc:"La ligne droite, tenue 40 s : l'endurance des épaules commence à compter autant que l'équilibre.",
+      yt:[["LcM0AGa2f6A","Apprendre l'équilibre : la méthode la plus rapide"]]},
+    {id:"in_str60", name:"Équilibre droit", en:"Straight 60s", type:"hold", target:60, req:["in_str40"],
+      desc:"La minute. Le jalon qui montre que ton équilibre est acquis et plus seulement « réussi parfois »."},
+  ], videos:[["Monter en équilibre : se battre et apprendre à rattraper","The fight & learning to save"],["Monter en équilibre : 4 montées à connaître","4 kick ups you should know"],["Vers la minute : 5 formes qui te feront progresser","5 shapes that will help you improve"],["Vers la minute : il faut grouper davantage","You need to tuck more"],["Vers la minute : anatomie des omoplates","Scapula anatomy"],["Vers la minute : combien de temps ça prend, et exemples","How long does it take & examples"],["Vers la minute : arguments pour la ligne droite","Arguments for a straight line"],["Vers la minute : 10 conseils pour une ligne droite","10 tips for a straight line"]]},
+  {id:"inter", name:"Intermédiaire", en:"Intermediate", ms:[
+    {id:"in_7s", name:"Le 7 sur une jambe", en:"Single Leg 7 – 5s", type:"hold", target:5, req:BASE,
+      desc:"En équilibre, une jambe descend à l'horizontale pendant que l'autre reste verticale : de profil, le corps dessine un 7."},
+    {id:"in_7d", name:"Le 7 à deux jambes", en:"Double Leg 7 – 5s", type:"hold", target:5, req:["in_7s"],
+      desc:"Les deux jambes serrées descendent à l'horizontale. Le bassin reste au-dessus des épaules, qui avancent pour faire contrepoids."},
+    {id:"in_toes", name:"Tête rentrée, regard vers les orteils", en:"Head Looking At Toes – 15s", type:"hold", target:15, req:BASE,
+      desc:"Tu rentres la tête entre les bras et tu regardes tes pieds. Sans repère visuel au sol, l'équilibre se fait uniquement aux sensations."},
+    {id:"in_toes7", name:"Le 7, regard vers les orteils", en:"Head Looking At Toes 7 – 5s", type:"hold", target:5, req:["in_7d","in_toes"],
+      desc:"Les deux précédents réunis : en 7, tête rentrée, regard vers les orteils."},
+    {id:"oa_flaghoriz", name:"Drapeaux sous l'horizontale, de chaque côté", en:"Flags Below Horizontal – Both Sides, 5s", type:"hold", target:5, req:BASE,
+      desc:"Jambes écartées, tu inclines tout le corps sur le côté jusqu'à ce qu'une jambe passe sous l'horizontale. Le poids part sur un seul bras : préparation directe à l'équilibre sur un bras."},
+    {id:"oa_flagfloor", name:"Drapeaux jusqu'au sol", en:"Flags To Floor", sub:"parcours à venir dans le programme", type:"check", req:["oa_flaghoriz"], soon:true,
+      desc:"Le drapeau poussé jusqu'à ce que le pied touche le sol sur le côté."},
+    {id:"in_mexican", name:"Équilibre mexicain", en:"Mexican Handstand", sub:"compétence alternative", type:"check", req:BASE, alt:true,
+      desc:"Dos très cambré, épaules ouvertes : les jambes partent loin au-dessus de la tête et le buste fait contrepoids.",
+      yt:[["qBgg3POD130","Équilibre mexicain"]]},
+    {id:"in_hspu", name:"Pompes en équilibre", en:"Handstand Push Up – 3 Reps", sub:"compétence alternative", type:"reps", target:3, req:BASE, alt:true,
+      desc:"En équilibre, tu fléchis les bras jusqu'à approcher la tête du sol, puis tu repousses. Demande surtout de la force d'épaules.",
+      yt:[["-sdV7YfO73Q","Tutoriel handstand push-up"]]},
+  ], videos:[["Affiner à deux bras : conseils et astuces niveau intermédiaire","Intermediate handstand tips & tricks"],["Affiner à deux bras : souffrir avec les 7","Suffering with 7's"],["Affiner à deux bras : tu crois savoir tenir l'équilibre ?","So you think you can balance?"],["Affiner à deux bras : tête rentrée, regard vers les orteils","Head looking at toes"],["Affiner à deux bras : arguments pour la ligne droite","Arguments for a straight line"],["Affiner à deux bras : 10 conseils pour une ligne droite","10 tips for a straight line"],["Affiner à deux bras : l'alignement","Alignment"],["Un bras : les drapeaux comme préparation","Flagging as one arm handstand prep"]]},
+  {id:"onearm", name:"Un bras", en:"One Arm", ms:[
+    {id:"oa_shift", name:"Transfert de poids", en:"Weight Shifting – 2x Per Side", sub:"2 fois de chaque côté", type:"reps", target:2, req:["in_toes7","oa_flaghoriz"],
+      desc:"Tu fais passer le poids d'une main sur l'autre, puis tu reviens, sans casser la ligne."},
+    {id:"oa_finger", name:"Appui sur le bout des doigts", en:"Fingertip Support – 15s", type:"hold", target:15, req:["oa_shift"],
+      desc:"Tout le poids sur un bras ; l'autre main ne touche plus le sol que du bout des doigts, comme une béquille très légère."},
+    {id:"oa_strarm", name:"Appui bras tendu", en:"Straight Arm Support – 15s", type:"hold", target:15, req:["oa_finger"],
+      desc:"Dernière étape avant de lâcher : le bras libre, tendu, ne donne plus qu'un appui minimal."},
+    {id:"oa_oahs", name:"Équilibre sur un bras", en:"One Arm Handstand – 5s", sub:"le sommet de l'arbre", type:"hold", target:5, req:["oa_strarm"],
+      desc:"Une seule main au sol, 5 secondes."},
+  ], videos:[["Mécanique de l'équilibre sur un bras","Mechanics of a one arm"],["Transfert de poids","Weight shifting"],["Appui sur le bout des doigts","Fingertip support"],["Tenter le tout pour le tout","Going for glory"],["Appui bras tendu","Straight arm support"],["Remonter le centre de gravité","Raising center of mass"],["10 conseils pour l'équilibre sur un bras","10 tips for the OAHS"]]},
+  {id:"press", name:"Montées en force", en:"Press", ms:[
+    {id:"pr_straddle", name:"Montée en force, jambes écartées", en:"Straddle Press", type:"check", req:["in_7d"],
+      desc:"Mains au sol, bras tendus, jambes écartées : tu montes en équilibre sans élan, en avançant les épaules pour soulever le bassin."},
+    {id:"pr_pike", name:"Montée en force, jambes serrées", en:"Pike Press", type:"check", req:["pr_straddle"],
+      desc:"La même montée, jambes tendues et jointes : le levier est plus long, donc nettement plus dur."},
+    {id:"pr_stalder", name:"Stalder", en:"Stalder", sub:"parcours à venir dans le programme", type:"check", req:["pr_pike"], soon:true,
+      desc:"Montée en force depuis l'équerre jambes écartées, sans que les pieds touchent le sol."},
+  ], videos:[["Mécanique d'une montée en force","Mechanics of a press"],["La montée en force qui se dérobe","The elusive press"],["Marches et flottements","Press walks and floating"],["Du bas vers le haut, du haut vers le bas, le maillon faible","Bottom up, top down, weak link"],["Stalder","Stalder"]]},
+  {id:"low", name:"Équilibres bas", en:"Low Balances", ms:[
+    {id:"lo_elbow", name:"Planche sur les coudes", en:"Elbow Lever", type:"check", req:[],
+      desc:"Corps à l'horizontale, posé sur les deux coudes calés contre le ventre."},
+    {id:"lo_croc", name:"Crocodile", en:"Croc", type:"check", req:["lo_elbow"],
+      desc:"La même planche, sur un seul coude."},
+    {id:"lo_qdr", name:"Queda de rins", en:"QDR", type:"check", req:["lo_croc"],
+      desc:"Figure venue de la capoeira : la hanche repose sur un coude, corps de côté, en appui bas sur les mains."},
+  ], videos:[["Planche sur les coudes","Elbow lever"],["Crocodile","Croc"],["Queda de rins","QDR"]]},
+  {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l'équilibre","The undisputed fastest way to learn to handstand"]]},
 ];
+const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_free15","b2_str15"];
+const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
-  {id:"oahs", name:"One Arm Handstand 5 s", secs:["starter","b1","b2","inter","onearm"]},
-  {id:"min", name:"Handstand droit 60 s", secs:["starter","b1","b2"], extra:["in_str40","in_str60"]},
-  {id:"press", name:"Press jusqu'au Stalder", secs:["starter","b1","b2","press"]},
-  {id:"all", name:"Tout l'arbre", secs:["starter","b1","b2","inter","onearm","press","low"]},
+  {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_oahs"]},
+  {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
+  {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_straddle","pr_pike"]},
+  {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
 ];
 const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
 const MS = {}; TREE.forEach(s=>s.ms.forEach(m=>{MS[m.id]=m; m.sec=s.id;}));
@@ -220,14 +271,10 @@ const unit = m => m.type === "hold" ? "s" : m.type === "reps" ? " reps" : "";
 const fmt = (m, v) => m.type === "hold" ? (Math.round(v*10)/10) + " s" : v + " reps";
 const targetTxt = m => m.type === "check" ? "à réussir" : "objectif " + m.target + unit(m);
 
-function goalMs(){
-  const g = GOALS.find(g=>g.id===S.goal) || GOALS[0];
-  const ids = []; g.secs.forEach(s=>SEC[s].ms.forEach(m=>ids.push(m.id)));
-  (g.extra||[]).forEach(id=>ids.push(id));
-  return ids;
-}
+function goalMs(){ return (GOALS.find(g=>g.id===S.goal) || GOALS[0]).ms; }
+const msLocked = m => (m.req||[]).some(r=>!st(r).done);
 const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
-const secLocked = s => s.req.some(r=>!secDone(SEC[r]));
+const secLocked = s => s.ms.length > 0 && !secDone(s) && s.ms.filter(m=>!st(m.id).done).every(msLocked);
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
 
 // ---------- Rendu ----------
@@ -251,14 +298,14 @@ function render(){
   $("stWeek").textContent = new Set(S.log.filter(l=>l.t>weekAgo).map(l=>dayKey(l.t))).size;
   $("stDone").textContent = Object.keys(MS).filter(id=>st(id).done).length;
   // prochaine étape
-  const nextId = ids.find(id=>!st(id).done);
+  const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
   const nc = $("nextCard"); nc.textContent = "";
   if (nextId){
     const m = MS[nextId];
     nc.append(el("div","mut","Prochaine étape · " + SEC[m.sec].name));
     const h = el("h2",null, m.name + (m.target ? " — " + m.target + unit(m) : "")); h.style.margin = "4px 0";
     nc.append(h);
-    if (m.sub) nc.append(el("div","mut",m.sub));
+    if (m.desc) nc.append(el("div","mut",m.desc));
     if (m.type !== "check" && st(nextId).best) nc.append(el("div","mut","Ton record : " + fmt(m, st(nextId).best)));
     const b = el("button","primary big", m.type === "hold" ? "Lancer le chrono" : "S'entraîner"); b.style.marginTop = "12px";
     b.onclick = () => openMs(nextId); nc.append(b);
@@ -276,29 +323,33 @@ function render(){
     const g = el("span","grow"); g.append(el("h2",null,s.name));
     const n = s.ms.filter(m=>st(m.id).done).length;
     let info = s.ms.length ? n + " / " + s.ms.length + " jalons" : s.videos.length + " vidéos";
-    if (secLocked(s)) info += " · après " + s.req.map(r=>SEC[r].name).join(", ");
+    if (secLocked(s)) info += " · à débloquer";
     else if (s.ms.length && !gset.has(s.id)) info += " · hors de ton chemin";
     g.append(el("div","mut",info)); h.append(g, el("span","chev","›"));
     h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); c.classList.toggle("open"); };
     const body = el("div","sec-body");
     s.ms.forEach(m=>{
       const x = st(m.id);
-      const b = el("button","ms" + (x.done?" done":x.best?" wip":""));
-      b.append(el("span","dot", x.done ? "✓" : ""));
+      const lk = !x.done && msLocked(m);
+      const b = el("button","ms" + (x.done?" done":x.best?" wip":"") + (lk?" lk":""));
+      b.append(el("span","dot", x.done ? "✓" : lk ? "🔒" : ""));
       const t = el("span","grow"); t.append(el("div","t", m.name + (m.target ? " · " + m.target + unit(m) : "")));
-      if (m.sub) t.append(el("div","mut",m.sub));
+      const subs = [m.sub, lk ? "après : " + m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + MS[r].target + unit(MS[r]) : "")).join(" + ") : ""].filter(Boolean);
+      if (subs.length) t.append(el("div","mut",subs.join(" · ")));
       b.append(t);
+      if (m.yt) b.append(el("span","tag","▶"));
       if (m.type !== "check" && x.best) b.append(el("span","tag","record " + fmt(m,x.best)));
       b.onclick = () => openMs(m.id); body.append(b);
     });
     if (s.videos.length){
       const det = el("details"); if (!s.ms.length) det.open = true;
-      const seen = s.videos.filter(v=>S.vid[s.id+"|"+v]).length;
+      const vk = v => s.id + "|" + v[1];
+      const seen = s.videos.filter(v=>S.vid[vk(v)]).length;
       det.append(el("summary",null,"Vidéos du programme à regarder (" + seen + " / " + s.videos.length + ")"));
       s.videos.forEach(v=>{
-        const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[s.id+"|"+v];
-        cb.onchange = () => { S.vid[s.id+"|"+v] = cb.checked; save(); det.querySelector("summary").textContent = "Vidéos du programme à regarder (" + s.videos.filter(v=>S.vid[s.id+"|"+v]).length + " / " + s.videos.length + ")"; };
-        l.append(cb, el("span",null,v)); det.append(l);
+        const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vk(v)];
+        cb.onchange = () => { S.vid[vk(v)] = cb.checked; save(); det.querySelector("summary").textContent = "Vidéos du programme à regarder (" + s.videos.filter(v=>S.vid[vk(v)]).length + " / " + s.videos.length + ")"; };
+        const tx = el("span"); tx.append(el("div",null,v[0]), el("div","mut",v[1])); l.append(cb, tx); det.append(l);
       });
       body.append(det);
     }
@@ -332,6 +383,15 @@ function beep(freq, ms){
 function openMs(id){
   cur = id; const m = MS[id];
   $("dT").textContent = m.name; $("dS").textContent = [SEC[m.sec].name, m.sub, targetTxt(m)].filter(Boolean).join(" · ");
+  $("dEn").textContent = "Dans le programme : " + m.en;
+  $("dDesc").textContent = m.desc || "";
+  const dv = $("dVid"); dv.textContent = "";
+  (m.yt||[]).forEach(([id,title])=>{
+    const a = el("a","yt"); a.href = "https://www.youtube.com/watch?v=" + id; a.target = "_blank"; a.rel = "noopener";
+    const im = el("img"); im.src = "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg"; im.alt = ""; im.loading = "lazy";
+    const tx = el("span","grow"); tx.append(el("div","t",title), el("div","mut","▶ Ouvrir sur YouTube"));
+    a.append(im, tx); dv.append(a);
+  });
   $("dHold").style.display = m.type === "hold" ? "" : "none";
   $("dReps").style.display = m.type === "reps" ? "" : "none";
   $("reps").value = "";
@@ -408,7 +468,7 @@ $("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est d
 
 // ---------- Code d'accès ----------
 // Simple rideau : il écarte les curieux, mais le code de la page reste lisible par qui sait chercher.
-const GATE = "6ba6783da050a1439b916a3257ca4cd752773517f0610f3f9962d43162c6b827", GKEY = "hs-fastway-gate";
+const GATE = "ad428c43315161f9fb5c845460707bd11de8fd42b379a7a752f3a4b8dc32aead", GKEY = "hs-fastway-gate";
 async function gateHash(code){
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hs-fastway:" + code));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
