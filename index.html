@@ -77,7 +77,7 @@ select option{font:16px system-ui;background:var(--bg);color:var(--txt)}
 .sec.locked .sname{color:var(--mut)}
 .chev{color:var(--mut);transition:transform .2s}
 .sec.open .chev{transform:rotate(90deg)}
-.sec-body{display:none;padding:0 0 20px 36px}
+.sec-body{display:none;padding:0 0 20px}
 .sec.open .sec-body{display:block}
 .rail{list-style:none;margin:0;padding:0}
 .rail li{position:relative}
@@ -101,8 +101,8 @@ label.vid{display:flex;gap:12px;align-items:flex-start;padding:10px 0;font-size:
 label.vid input{width:18px;height:18px;flex:none;margin:2px 0 0;accent-color:var(--txt)}
 
 /* onglets */
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;max-width:160px;min-height:56px;color:var(--mut);font:600 15px/1 var(--disp);letter-spacing:.1em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
+nav.tabs{z-index:5;position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;max-width:130px;min-height:56px;color:var(--mut);font:600 14px/1 var(--disp);letter-spacing:.06em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
 nav.tabs button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
 .view{display:none}.view.on{display:block}
 .block{padding:24px 0;border-bottom:1px solid var(--line)}
@@ -135,6 +135,46 @@ a.yt .t{font-weight:600;line-height:1.3}
 .clock.count{color:var(--mut)}.clock.hit{color:var(--acc)}
 #clockHint{text-align:center;margin-bottom:16px}
 #dBest{margin-top:16px}
+
+/* personnage, niveau */
+.hero{display:flex;gap:18px;align-items:center;margin-bottom:24px}
+.av{flex:none;position:relative;width:104px;height:104px;display:grid;place-items:center}
+.av svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
+.av .me{color:var(--txt)}
+.lv{font-size:34px;margin:4px 0 10px}
+#xpTxt{margin-top:6px}
+/* arbre de talents */
+.graph{position:relative;margin:8px 0 4px}
+.graph svg.ed{position:absolute;inset:0;width:100%;height:100%}
+.graph svg.ed line{stroke:var(--line);stroke-width:2;vector-effect:non-scaling-stroke}
+.graph svg.ed line.on{stroke:var(--txt)}
+.tn{position:absolute;transform:translateX(-50%);width:88px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.tn.sm{width:62px}
+.tn .c{position:relative;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:inset 0 0 0 2px var(--mut);color:var(--txt)}
+.tn.sm .c{width:50px;height:50px}
+.tn.done .c{background:var(--txt);color:var(--bg);box-shadow:none}
+.tn.wip .c{box-shadow:inset 0 0 0 3px var(--acc),0 0 0 4px color-mix(in srgb,var(--acc) 22%,transparent)}
+.tn.lk .c{box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
+.tn .ck{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;box-shadow:0 0 0 2px var(--bg)}
+.tn{z-index:1}
+.tn .n,.tn .g{background:var(--bg);padding:1px 4px;border-radius:4px}
+.tn .n{font-size:12px;line-height:1.2;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tn.sm .n{font-size:11px}
+.tn.lk .n{color:var(--mut);font-weight:400}
+.tn .g{font:600 14px/1 var(--disp);color:var(--mut)}
+/* quêtes, badges */
+.q{padding:14px 0;border-top:1px solid var(--line)}
+.q .h{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
+.q .h b{font-weight:600}
+.q .h span{font:600 16px/1 var(--disp);color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
+.q .bar{margin-top:10px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:18px 10px;margin-top:16px}
+.bdg{text-align:center;font-size:12px;line-height:1.25}
+.bdg .m{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;font:600 20px/1 var(--disp);background:var(--txt);color:var(--bg);box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--acc)}
+.bdg.off{color:var(--mut)}
+.bdg.off .m{background:none;color:var(--mut);box-shadow:inset 0 0 0 1px var(--line)}
+#toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-140%);z-index:20;max-width:calc(100% - 32px);padding:12px 18px;border-radius:10px;background:var(--txt);color:var(--bg);font-weight:600;font-size:15px;transition:transform .3s;pointer-events:none}
+#toast.on{transform:translate(-50%,0)}
 
 /* séance */
 .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:20px 0 4px}
@@ -195,7 +235,16 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 <main>
   <section id="v-path" class="view on">
     <div class="goal">
-      <label class="lab" for="goal">Objectif</label>
+      <div class="hero">
+        <div class="av" id="av"></div>
+        <div class="grow">
+          <div class="lab" id="lvRank"></div>
+          <div class="disp lv" id="lvNum"></div>
+          <div class="bar"><i id="xpBar"></i></div>
+          <div class="mut" id="xpTxt"></div>
+        </div>
+      </div>
+      <label class="lab" for="goal">Quête principale</label>
       <select id="goal"></select>
       <div class="prog"><span class="disp num" id="gNum">0</span><span class="mut" id="gDen"></span><span class="disp pct" id="gPct"></span></div>
       <div class="bar"><i id="goalBar"></i></div>
@@ -213,6 +262,8 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <div id="sess"></div>
     <input type="file" id="pgFile" hidden>
   </section>
+
+  <section id="v-quest" class="view"><div id="quest"></div></section>
 
   <section id="v-log" class="view">
     <div class="block" style="border:0;padding-bottom:8px"><h2>Journal</h2><div class="mut">Tes 60 derniers essais</div></div>
@@ -239,6 +290,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 <nav class="tabs">
   <button data-v="path" class="on">Parcours</button>
   <button data-v="sess">Séance</button>
+  <button data-v="quest">Quêtes</button>
   <button data-v="log">Journal</button>
   <button data-v="set">Réglages</button>
 </nav>
@@ -264,6 +316,8 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   <div id="dLog"></div>
   <div id="dMore"></div>
 </dialog>
+
+<div id="toast" role="status" aria-live="polite"></div>
 
 <dialog id="sd">
   <div style="display:flex;gap:12px;align-items:flex-start">
@@ -464,6 +518,23 @@ const FIG = {
   lo_elbow:{l:["60,106 60,90 46,82","46,82 102,82"],h:[36,80]},
   lo_croc:{l:["60,106 60,90 46,82","46,82 102,82","46,82 16,84"],h:[38,72]},
 };
+Object.assign(FIG, {
+  _stand:{l:["60,70 54,106","60,70 66,106","60,70 60,42","60,48 47,72","60,48 73,72"],h:[60,32]},
+  pl_lean:{l:["44,106 50,78","50,78 104,104"],h:[42,72]},
+  pl_tuck:{l:["58,106 58,76","58,76 82,72 68,88"],h:[50,70]},
+  pl_adv:{l:["58,106 58,76","58,76 88,74 76,90"],h:[49,72]},
+  pl_frog:{l:["58,106 58,76","58,76 86,74 98,58"],h:[49,72]},
+  pl_pike:{l:["58,106 58,76","58,76 84,70 110,84"],h:[49,72]},
+  pl_straddle:{l:["58,106 58,76","58,76 86,74","86,74 112,66","86,74 112,84"],h:[49,74]},
+  pl_full:{l:["58,106 58,76","58,76 114,76"],h:[49,76]},
+});
+// Version réduite d'une posture, sans décor : icône d'un talent ou personnage.
+function figMini(id, size){
+  const f = FIG[id]; if (!f) return "";
+  return '<svg viewBox="0 0 120 120" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + f.l.map(p=>'<polyline points="' + p + '" stroke-width="7"/>').join("")
+    + '<circle cx="' + f.h[0] + '" cy="' + f.h[1] + '" r="8" fill="currentColor" stroke="none"/></svg>';
+}
 function figure(id){
   const f = FIG[id]; if (!f) return null;
   const pl = (pts, attr) => '<polyline points="' + pts + '" ' + attr + '/>';
@@ -505,6 +576,95 @@ const secLocked = s => s.ms.length > 0 && !secDone(s) && s.ms.filter(m=>!st(m.id
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
 const missing = m => m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + goalTxt(MS[r]) : "")).join(" + ");
 
+// ---------- Progression : compteurs, expérience, niveau, badges ----------
+const cnt = () => {
+  if (!S.cnt){ const wk = (S.pg && S.pg.wk) || {};
+    S.cnt = { sets:Object.values(wk).reduce((n,o)=>n + Object.keys(o).length, 0),
+      hold:Math.round(S.log.reduce((n,l)=>n + ((l.k === "hold" || (MS[l.id] && MS[l.id].type === "hold")) && typeof l.v === "number" ? l.v : 0), 0)),
+      sess:S.log.filter(l=>l.k === "check").length, stretch:S.log.filter(l=>l.k === "check" && /tirements/.test(l.id)).length, streak:0 }; }
+  return S.cnt;
+};
+const RANKS = ["Débutant","Apprenti","Initié","Pratiquant","Confirmé","Avancé","Expert","Maître"];
+const xpFor = l => 50 * l * (l + 1);            // expérience totale pour atteindre le niveau l + 1
+const doneIn = ids => ids.filter(id=>st(id).done).length;
+const mins = s => Math.floor(s/60);
+const BADGES = [
+  {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},
+  {id:"st3", g:"3 j", name:"Trois jours d'affilée", desc:"S'entraîner trois jours de suite.", max:3, cur:c=>c.streak},
+  {id:"st7", g:"7 j", name:"Sept jours d'affilée", desc:"S'entraîner sept jours de suite.", max:7, cur:c=>c.streak},
+  {id:"st30", g:"30 j", name:"Trente jours d'affilée", desc:"S'entraîner trente jours de suite.", max:30, cur:c=>c.streak},
+  {id:"se10", g:"10", name:"Dix séances", desc:"Terminer dix séances complètes d'un programme.", max:10, cur:c=>c.sess},
+  {id:"se50", g:"50", name:"Cinquante séances", desc:"Terminer cinquante séances complètes.", max:50, cur:c=>c.sess},
+  {id:"s100", g:"100", name:"Cent séries", desc:"Faire cent séries en séance.", max:100, cur:c=>c.sets},
+  {id:"s1000", g:"1000", name:"Mille séries", desc:"Faire mille séries en séance.", max:1000, cur:c=>c.sets},
+  {id:"h10", g:"10 min", name:"Dix minutes en appui", desc:"Cumuler dix minutes de maintien chronométré.", max:600, cur:c=>c.hold, t:1},
+  {id:"h60", g:"1 h", name:"Une heure en appui", desc:"Cumuler une heure de maintien chronométré.", max:3600, cur:c=>c.hold, t:1},
+  {id:"e10", g:"Souple", name:"Dix séances d'étirements", desc:"Terminer dix séances d'étirements.", max:10, cur:c=>c.stretch},
+  ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:"Branche " + s.name, desc:"Valider tous les jalons de la branche « " + s.name + " ».", max:s.ms.length, cur:()=>doneIn(s.ms.map(m=>m.id))})),
+  ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
+];
+function stats(){
+  const c = cnt(), days = new Set(S.log.map(l=>dayKey(l.t)));
+  let streak = 0; const d = new Date();
+  if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while (days.has(dayKey(d))) { streak++; d.setDate(d.getDate()-1); }
+  if (streak > (c.streak || 0)) c.streak = streak;
+  const done = Object.keys(MS).filter(id=>st(id).done).length, tries = S.log.filter(l=>MS[l.id]).length;
+  const ctx = Object.assign({tries}, c);
+  const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)); return Object.assign({}, b, {cur, ok:cur >= b.max}); });
+  const xp = 100*done + 5*c.sets + 5*tries + 50*badges.filter(b=>b.ok).length;
+  let lvl = 1; while (xp >= xpFor(lvl)) lvl++;
+  return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[Math.min(RANKS.length-1, Math.floor((lvl-1)/2))]};
+}
+let toastT = null;
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
+
+// ---------- Arbre de talents : une branche = un graphe de jalons reliés par leurs prérequis ----------
+function graph(s, nextId){
+  const ids = new Set(s.ms.map(m=>m.id)), depth = {}, RH = 132, pos = {}, rows = [];
+  const dep = m => depth[m.id] != null ? depth[m.id] : (depth[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>dep(MS[r]))));
+  s.ms.forEach(m=>{ (rows[dep(m)] || (rows[dep(m)] = [])).push(m); });
+  rows.forEach((r,d)=>r.forEach((m,i)=>{ pos[m.id] = [r.length === 1 ? [50,68,50,32][d % 4] : (i + 1) / (r.length + 1) * 100, d*RH + 34, r.length > 3]; }));
+  const H = rows.length * RH, g = el("div","graph"); g.style.height = H + "px";
+  let ed = '<svg class="ed" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">';
+  s.ms.forEach(m=>(m.req||[]).filter(r=>ids.has(r)).forEach(r=>{ const a = pos[r], b = pos[m.id];
+    ed += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"' + (st(r).done && st(m.id).done ? ' class="on"' : '') + '/>'; }));
+  g.innerHTML = ed + "</svg>";
+  s.ms.forEach(m=>{
+    const x = st(m.id), lk = !x.done && msLocked(m), p = pos[m.id];
+    const b = el("button","tn" + (p[2] ? " sm" : "") + (x.done ? " done" : lk ? " lk" : m.id === nextId ? " wip" : ""));
+    b.style.left = p[0] + "%"; b.style.top = (p[1] - (p[2] ? 25 : 30)) + "px";
+    b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + (x.done ? ", validé" : lk ? ", verrouillé" : ""));
+    const c = el("span","c"); c.innerHTML = figMini(m.id, p[2] ? 34 : 42) || (lk ? ICON.lock : ICON.chev);
+    if (x.done) c.append(icon("check","ck"));
+    b.append(c, el("span","n", m.name)); if (m.target) b.append(el("span","g", goalTxt(m)));
+    b.onclick = () => openMs(m.id); g.append(b);
+  });
+  return g;
+}
+function renderQuest(S0, nextId){
+  const box = $("quest"); box.textContent = "";
+  const ids = goalMs(), goal = GOALS.find(g=>g.id === S.goal) || GOALS[0], done = doneIn(ids);
+  const main = el("div","block"); main.style.border = "0";
+  main.append(el("div","lab","Quête principale"), el("h2",null,goal.name));
+  main.children[1].style.margin = "6px 0 10px";
+  const bar = el("div","bar"), bi = el("i"); bi.style.width = (ids.length ? done/ids.length*100 : 0) + "%"; bar.append(bi);
+  main.append(el("div","mut", done + " jalons sur " + ids.length + (nextId ? " · prochaine étape : " + MS[nextId].name : " · quête accomplie")), bar);
+  bar.style.marginTop = "12px";
+  if (nextId) { const b = el("button","btn","Reprendre la quête"); b.style.marginTop = "16px"; b.onclick = () => openMs(nextId); main.append(b); }
+  box.append(main);
+  const todo = S0.badges.filter(b=>!b.ok).sort((a,b)=>b.cur/b.max - a.cur/a.max), got = S0.badges.filter(b=>b.ok);
+  const side = el("div","block"); side.append(el("h2",null,"Quêtes secondaires"), el("div","mut","Chacune débloque un badge et 50 points d'expérience."));
+  todo.forEach(b=>{ const q = el("div","q"), h = el("div","h"); h.append(el("b",null,b.name), el("span",null, b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max));
+    const br = el("div","bar"), i = el("i"); i.style.width = (b.cur/b.max*100) + "%"; br.append(i); q.append(h, el("div","mut",b.desc), br); side.append(q); });
+  if (!todo.length) side.append(el("div","mut","Toutes les quêtes secondaires sont terminées."));
+  box.append(side);
+  const bd = el("div","block"); bd.style.border = "0"; bd.append(el("h2",null,"Badges"), el("div","mut", got.length + " sur " + S0.badges.length));
+  const grid = el("div","badges");
+  got.concat(todo).forEach(b=>{ const x = el("div","bdg" + (b.ok ? "" : " off")); x.append(el("div","m",b.g), el("div",null,b.name)); grid.append(x); });
+  bd.append(grid); box.append(bd);
+}
+
 // ---------- Rendu ----------
 const openSecs = new Set();
 function render(){
@@ -515,14 +675,21 @@ function render(){
   const pct = ids.length ? Math.round(done/ids.length*100) : 0;
   $("goalBar").style.width = pct + "%";
   $("gNum").textContent = done; $("gDen").textContent = "sur " + ids.length + " jalons"; $("gPct").textContent = pct + " %";
-  const days = new Set(S.log.map(l=>dayKey(l.t)));
-  let streak = 0; const d = new Date();
-  if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
-  while (days.has(dayKey(d))) { streak++; d.setDate(d.getDate()-1); }
-  const weekAgo = Date.now() - 7*864e5;
-  $("stStreak").textContent = streak;
+  const Z = stats(), weekAgo = Date.now() - 7*864e5;
+  $("stStreak").textContent = Z.streak;
   $("stWeek").textContent = new Set(S.log.filter(l=>l.t>weekAgo).map(l=>dayKey(l.t))).size;
-  $("stDone").textContent = Object.keys(MS).filter(id=>st(id).done).length;
+  $("stDone").textContent = Z.done;
+  // personnage : sa posture est celle du dernier jalon validé de la quête ; l'anneau montre la progression vers le niveau suivant
+  const stage = ids.filter(id=>st(id).done && FIG[id]).pop() || "_stand", frac = (Z.xp - Z.lo) / (Z.hi - Z.lo), R = 48, C = 2*Math.PI*R;
+  $("av").innerHTML = '<svg class="ring" viewBox="0 0 104 104" width="104" height="104" fill="none" aria-hidden="true"><circle cx="52" cy="52" r="' + R + '" stroke="var(--line)" stroke-width="4"/>'
+    + '<circle cx="52" cy="52" r="' + R + '" stroke="var(--acc)" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + (C*frac).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><span class="me">' + figMini(stage, 72) + '</span>';
+  $("av").setAttribute("aria-label","Ton personnage, niveau " + Z.lvl);
+  $("lvRank").textContent = Z.rank; $("lvNum").textContent = "Niveau " + Z.lvl;
+  $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d'expérience";
+  const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
+  if (seen){ const nb = Z.badges.find(b=>b.ok && !seen.b.includes(b.id));
+    if (nb) toast("Badge débloqué : " + nb.name); else if (Z.lvl > seen.lvl) toast("Niveau " + Z.lvl + " · " + Z.rank); }
+  if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
   const nc = $("nextCard"); nc.textContent = "";
@@ -551,7 +718,8 @@ function render(){
     h.append(el("span","cnt", s.ms.length ? s.ms.filter(m=>st(m.id).done).length + "/" + s.ms.length : ""), icon("chev","chev"));
     h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); h.setAttribute("aria-expanded", c.classList.toggle("open")); };
     const body = el("div","sec-body");
-    if (s.ms.length){
+    if (s.ms.length) body.append(graph(s, nextId));
+    if (false){
       const ol = el("ol","rail");
       s.ms.forEach(m=>{
         const x = st(m.id), lk = !x.done && msLocked(m);
@@ -586,6 +754,7 @@ function render(){
   if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Lance un chrono depuis le parcours."));
   S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
   $("countdown").value = String(S.countdown);
+  renderQuest(Z, nextId);
   renderSess();
 }
 function logRow(l, withName){
@@ -651,7 +820,7 @@ function fillDlg(){
 function record(v){
   const m = MS[cur], x = st(cur); let pr = false;
   if (v === true) { x.done = true; }
-  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target) x.done = true; }
+  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target) x.done = true; if (m.type === "hold") cnt().hold += v; }
   S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();
 }
@@ -921,7 +1090,9 @@ function openSet(bi, si){
   if (!$("sd").open) $("sd").showModal();
 }
 function storeSet(v){
-  const k = wkKey(selDay); (pg().wk[k] || (pg().wk[k] = {}))[sd.bi + "-" + sd.si] = v;
+  const k = wkKey(selDay), o = pg().wk[k] || (pg().wk[k] = {}), key = sd.bi + "-" + sd.si, fresh = o[key] == null; o[key] = v;
+  if (fresh){ const c = cnt(); c.sets++; if (sd.b.kind === "hold") c.hold += v * (sd.fx && sd.s.sides ? 2 : 1);
+    if (!nextSet()) { c.sess++; if (/^etirements/.test(P.id)) c.stretch++; } }
   const keys = Object.keys(pg().wk); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(x=>delete pg().wk[x]);
 }
 function saveFixed(){
