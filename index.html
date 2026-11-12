@@ -185,7 +185,7 @@ a.yt .t{font-weight:600;line-height:1.3}
 .jn .rg circle{stroke:var(--line);stroke-width:4;stroke-linecap:round}
 .jn .rg circle.f{stroke:var(--acc)}
 .jn.done .rg circle.f{stroke:var(--txt)}
-.jn.lk .c .sp{filter:grayscale(1);opacity:.4}
+.jn.lk .c .sp{filter:grayscale(1);opacity:.5}
 .jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent);animation:halo 2.2s ease-in-out infinite}
 @keyframes halo{50%{box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 6%,transparent)}}
 .jn.pop .c{animation:pop .6s ease-out}
@@ -322,7 +322,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     </div>
     <div class="block">
       <h2>Animations</h2>
-      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="animOn"><span>Animer les personnages du parcours<span class="mut" style="display:block">Chaque figure accessible est jouée en boucle, avec ta tenue du vestiaire.</span></span></label>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="animOn"><span>Animer les personnages du parcours<span class="mut" style="display:block">Chaque figure est jouée en boucle, avec ta tenue du vestiaire.</span></span></label>
     </div>
     <div class="block">
       <h2>Sauvegarde</h2>
@@ -816,10 +816,13 @@ function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[pose]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
   if (!R) { sp.style.backgroundImage = 'url("anim/still_' + pose + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
   sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
-  if (lk || !animOn()) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
+  if (!animOn()) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
   sp.style.backgroundPosition = "0 0"; sp.style.setProperty("--end", (-R.n * size) + "px");
   sp.style.animation = "spr " + (R.n / 10).toFixed(1) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / 10).toFixed(2) + "s";
+  if (sprIO && !sp._io) { sp._io = 1; sprIO.observe(sp); }
 }
+// seuls les personnages visibles à l'écran sont animés : le reste est en pause, pour ménager le téléphone
+const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { e.target.style.animationPlayState = e.isIntersecting ? "running" : "paused"; }), {rootMargin:"120px"}) : null;
 const sprRepaint = pose => document.querySelectorAll(".sp" + (pose ? '[data-pose="' + pose + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 function buildSprites(force){
   if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return; sprKey = key; const job = ++sprJob;
