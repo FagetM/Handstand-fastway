@@ -117,7 +117,16 @@ input[type=number]{background:var(--raise);border:1px solid var(--line);border-r
 dialog{border:0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));margin:auto auto 0;width:100%;max-width:640px;max-height:92dvh;overflow:auto;background:var(--bg);color:var(--txt);border-radius:16px 16px 0 0;border-top:1px solid var(--line)}
 dialog::backdrop{background:rgba(0,0,0,.6)}
 .x{flex:none;width:44px;height:44px;margin:-8px -10px 0 0;display:grid;place-items:center;color:var(--mut)}
-#dDesc{margin:12px 0 0;font-size:15px}
+.intro{display:flex;gap:16px;align-items:center;margin-top:14px}
+.intro #dFig:empty{display:none}
+.fig{flex:none;background:var(--raise);border-radius:8px}
+#dDesc{margin:0;font-size:15px}
+#dMore{margin-top:20px}
+#dMore h3{font-size:12px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0;padding-top:16px;border-top:1px solid var(--line)}
+#dMore ol,#dMore ul{margin:8px 0 16px;padding-left:20px;font-size:15px}
+#dMore ul{list-style:none;padding-left:0}
+#dMore li{margin:6px 0}
+#dMore ol li::marker{font:600 16px var(--disp);color:var(--mut)}
 img.ph{display:block;width:100%;max-height:240px;object-fit:contain;background:#000;border-radius:8px;margin-top:12px}
 a.yt{display:flex;gap:12px;align-items:center;margin-top:12px;color:inherit;text-decoration:none}
 a.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;background:var(--raise);flex:none}
@@ -198,7 +207,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <div class="grow"><div class="lab" id="dS"></div><h2 id="dT" style="margin-top:6px"></h2><div class="mut" id="dEn" style="margin-top:6px"></div></div>
     <button class="x" id="dX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   </div>
-  <p id="dDesc"></p>
+  <div class="intro"><div id="dFig"></div><p id="dDesc"></p></div>
   <div id="dVid"></div>
   <div id="dHold">
     <div class="clock" id="clock">0,0</div>
@@ -212,6 +221,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   <div class="btns"><button class="btn line" id="toggle"></button></div>
   <div class="mut" id="dBest"></div>
   <div id="dLog"></div>
+  <div id="dMore"></div>
 </dialog>
 
 <script>
@@ -317,6 +327,86 @@ const GOALS = [
 ];
 const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
 const MS = {}; TREE.forEach(s=>s.ms.forEach(m=>{MS[m.id]=m; m.sec=s.id;}));
+
+// ---------- Fiches détaillées : comment faire, repères, erreur fréquente, critère de validation ----------
+const DETAILS = {
+  st_bail30:{how:["Pose les mains à environ 30 cm du mur, largeur d'épaules, doigts bien écartés.","Monte en équilibre par une fente, sans chercher à tenir.","Dès que tu bascules, avance une main d'un quart de tour et laisse les jambes redescendre l'une après l'autre sur le côté, comme une roue.","Répète des deux côtés jusqu'à ce que le geste soit automatique."],cue:["Bras tendus du début à la fin.","Le regard reste au sol, entre les mains."],err:"Plier les bras, ou se laisser tomber sur le dos au lieu de pivoter.",ok:"Tu sors en roue 5 fois de suite sans hésiter, en arrivant sur les pieds."},
+  lo_frog:{how:["Accroupi, mains au sol largeur d'épaules, doigts écartés.","Grenouille : cale l'intérieur des genoux contre l'extérieur des coudes, bras fléchis, puis penche-toi vers l'avant jusqu'à ce que les pieds décollent.","Corbeau : même chose avec les genoux posés plus haut, sur l'arrière des bras, et les hanches plus hautes."],cue:["Regarde devant tes mains, pas tes pieds.","Ce sont les doigts qui freinent la bascule vers l'avant."],err:"Sauter dans la position au lieu de s'y pencher lentement.",ok:"Tu tiens chaque position 10 s sans que les pieds retouchent le sol."},
+  st_split:{how:["Monte ventre face au mur en marchant les pieds le long du mur, mains à 10–20 cm de celui-ci.","Écarte une jambe loin du mur ; l'autre pied reste posé dessus.","Appuie dans les doigts jusqu'à sentir le pied quitter le mur de lui-même.","Tiens, puis repose le pied en douceur."],cue:["Épaules poussées vers le haut, oreilles cachées par les bras.","Le pied quitte le mur parce que tu es en équilibre, pas parce que tu le repousses."],err:"Donner une impulsion sur le mur : tu pars alors à la renverse.",ok:"5 s pied décollé, 3 fois dans la même séance."},
+  st_bailc2w:{how:["Monte ventre face au mur, mains à une largeur de main du mur.","Déplace une main sur le côté en tournant le buste.","Laisse les jambes descendre l'une après l'autre du même côté.","Entraîne les deux côtés."],cue:["Choisis ton côté de sortie avant de monter."],err:"Redescendre en marchant le long du mur par habitude : la sortie doit devenir un réflexe.",ok:"Tu sors des deux côtés sans réfléchir, même fatigué."},
+  b1_free5:{how:["Loin du mur, monte par une fente, jambe arrière tendue.","Arrête-toi jambes ouvertes en ciseaux, sans chercher à les réunir.","Corrige avec les mains : appuie dans les doigts si tu pars vers l'avant, dans le talon de la main si tu reviens.","Si tu dépasses, sors en roue."],cue:["La même montée à chaque essai : même distance, même élan.","Mieux vaut monter un peu court que trop fort."],err:"Enchaîner des dizaines d'essais bâclés. Fais des séries courtes, reposé.",ok:"5 s au chrono, sans marcher sur les mains."},
+  b2_free15:{how:["Même montée, même forme.","Cherche le calme : respire, jambes immobiles.","Travaille par séries de 5 à 8 essais, avec 1 min de repos entre les séries."],cue:["Les jambes ne bougent pas : seules les mains corrigent.","Ventre et fessiers serrés."],err:"Corriger avec les jambes ou en pliant les bras.",ok:"15 s au chrono, mains immobiles."},
+  b2_str15:{how:["Monte en ciseaux, stabilise, puis réunis lentement les jambes.","Serre les jambes l'une contre l'autre, pointes tendues.","Repousse le sol pour te grandir au maximum."],cue:["Côtes rentrées, bassin basculé : pas de dos creux.","Regard entre les mains."],err:"Réunir les jambes trop vite et perdre l'équilibre que tu venais de trouver.",ok:"15 s jambes serrées, corps aligné."},
+  in_holds:{how:["Depuis l'équilibre droit, prends une forme et tiens-la : jambes écartées, ciseaux, groupé.","Commence par les jambes écartées, la plus stable.","Vise 5 à 10 s par forme."],cue:["Quand les jambes partent d'un côté, les épaules compensent de l'autre."],err:"Changer de forme avant d'avoir stabilisé la précédente.",ok:"Tu tiens chaque forme du niveau 1 environ 10 s."},
+  in_changes:{how:["En équilibre, passe lentement d'une forme à l'autre : droit, écarté, droit, groupé.","Chaque transition dure 2 à 3 s.","Marque un arrêt net dans chaque forme."],cue:["Mouvement lent et continu, sans à-coup.","Les mains anticipent le déplacement des jambes."],err:"Accélérer pour « passer » la transition.",ok:"Tu enchaînes 3 changements de forme sur une seule montée."},
+  in_tuck:{how:["Depuis l'équilibre droit, plie les genoux et descends-les lentement vers la poitrine.","Arrête quand les cuisses sont à l'horizontale, genoux à hauteur des hanches.","Laisse les épaules avancer légèrement au-dessus des doigts pour compenser."],cue:["Dos arrondi, bassin au-dessus des épaules.","Talons près des fesses."],err:"Garder les épaules fixes : le poids des genoux te ramène alors au sol.",ok:"10 s, cuisses à l'horizontale."},
+  in_str40:{how:["Travaille en séries : 3 à 5 tenues proches de ton maximum, 2 min de repos.","Ajoute des tenues poitrine face au mur de 45 à 60 s pour l'endurance des épaules.","Respire lentement pendant la tenue."],cue:["Repousse le sol en continu, épaules hautes.","Corrige petit et tôt."],err:"Retenir sa respiration : tu tiens 20 s puis tout lâche d'un coup.",ok:"40 s au chrono."},
+  in_str60:{how:["Même travail, en visant des tenues de 45 s et plus.","Garde une à deux séances par semaine pour les tenues longues.","Arrête la série quand la ligne se dégrade."],cue:["Économise-toi : le moins de corrections possible."],err:"Tenter le record à chaque séance.",ok:"60 s au chrono."},
+  in_7s:{how:["Depuis l'équilibre droit, descends une jambe tendue vers l'avant jusqu'à l'horizontale.","L'autre jambe reste verticale.","Les épaules avancent un peu pour compenser."],cue:["Jambe basse tendue, parallèle au sol.","Bassin au-dessus des épaules."],err:"Plier la jambe ou cambrer pour compenser.",ok:"5 s de chaque côté."},
+  in_7d:{how:["Depuis l'équilibre droit, descends les deux jambes serrées et tendues vers l'avant.","Arrête à l'horizontale.","Avance franchement les épaules au-dessus des doigts."],cue:["Dos plat ou arrondi, jamais creusé.","Appuie fort dans les doigts."],err:"Descendre trop vite : la bascule arrive d'un coup.",ok:"5 s jambes à l'horizontale."},
+  in_toes:{how:["En équilibre droit, rentre lentement le menton vers la poitrine.","Amène la tête entre les bras et regarde tes orteils.","Les premières fois, fais-le près d'un mur."],cue:["Tu t'équilibres à la pression dans les mains, plus à la vue.","Les épaules s'ouvrent davantage."],err:"Bouger la tête brusquement.",ok:"15 s tête rentrée."},
+  in_toes7:{how:["Installe d'abord le 7 à deux jambes.","Rentre ensuite la tête et regarde tes orteils.","Ressors la tête avant de remonter les jambes."],cue:["Un seul changement à la fois."],err:"Tout faire en même temps.",ok:"5 s en 7, tête rentrée."},
+  oa_flaghoriz:{how:["En équilibre jambes écartées, incline lentement les jambes sur le côté : une jambe descend, l'autre monte.","Le bassin se décale pour faire contrepoids et le poids se concentre sur une main.","Arrête quand la jambe basse passe sous l'horizontale, tiens, reviens."],cue:["Les deux bras restent tendus.","Le bassin s'incline sans vriller."],err:"Tourner le bassin au lieu de l'incliner.",ok:"5 s de chaque côté, jambe basse sous l'horizontale."},
+  oa_flagfloor:{how:["Même mouvement que le drapeau, poussé plus loin.","Descends la jambe basse jusqu'à effleurer le sol.","Remonte sans élan."],cue:["Contrôle la descente : le pied ne tombe pas."],err:"Poser du poids sur le pied.",ok:"Tu touches le sol et tu remontes, des deux côtés."},
+  in_mexican:{how:["Échauffe longuement les épaules et le dos.","En équilibre, laisse les jambes partir derrière toi en cambrant.","Pousse la poitrine vers l'avant, entre les bras, pour faire contrepoids."],cue:["La cambrure vient du haut du dos et des épaules, pas seulement des lombaires."],err:"Forcer sans avoir la mobilité d'épaules nécessaire.",ok:"Tu tiens la forme quelques secondes et tu reviens à l'équilibre droit."},
+  in_hspu:{how:["Commence contre un mur.","Descends en 3 s en amenant la tête en avant des mains : tête et mains forment un triangle.","Repousse jusqu'aux bras tendus."],cue:["Coudes vers l'arrière, pas écartés.","Corps gainé du début à la fin."],err:"Laisser tomber la tête sur le sol.",ok:"3 répétitions complètes d'affilée."},
+  oa_shift:{how:["En équilibre jambes écartées, déplace les épaules au-dessus d'une main.","L'autre main s'allège jusqu'à ne presque plus appuyer.","Reviens au centre, puis pars de l'autre côté."],cue:["Le bras d'appui reste vertical, épaule haute.","Lent : 2 à 3 s par transfert."],err:"Pencher le buste sans déplacer les épaules.",ok:"2 allers-retours de chaque côté sur une seule montée."},
+  oa_finger:{how:["Transfère le poids sur un bras.","Soulève la paume de l'autre main : seuls les doigts touchent le sol.","Allège progressivement : cinq doigts, puis trois, puis un."],cue:["Épaule d'appui poussée vers l'oreille.","Bassin au-dessus de la main d'appui."],err:"S'appuyer sur les doigts plus qu'on ne le croit.",ok:"15 s de chaque côté."},
+  oa_strarm:{how:["Même transfert, mais éloigne la main libre sur le côté, bras tendu.","Elle ne garde qu'un contact léger avec le sol.","Éloigne-la un peu plus à chaque séance."],cue:["Plus la main est loin, moins elle peut t'aider."],err:"Plier le bras libre pour reprendre appui.",ok:"15 s de chaque côté."},
+  oa_oahs:{how:["Depuis l'appui léger, décolle la main libre de quelques centimètres.","Garde les jambes écartées pour l'équilibre latéral.","Multiplie les essais courts et propres."],cue:["Repousse le sol, épaule haute.","Regard fixe."],err:"Lancer la main en l'air. Elle se soulève parce que le poids n'y est plus, pas l'inverse.",ok:"5 s main décollée."},
+  pr_straddle:{how:["Debout jambes très écartées, mains au sol près des pieds, bras tendus.","Avance les épaules au-dessus des doigts et monte sur la pointe des pieds.","Soulève le bassin au-dessus des épaules : les pieds décollent sans saut.","Ouvre les jambes sur les côtés, puis réunis-les en haut."],cue:["Bras tendus tout du long.","C'est le bassin qui monte, pas les pieds qui sautent."],err:"Sauter. Travaille plutôt la descente lente depuis l'équilibre.",ok:"Une montée sans saut ni bras fléchis."},
+  pr_pike:{how:["Même principe, pieds joints devant les mains.","Avance davantage les épaules.","Les jambes, tendues et serrées, montent par l'avant."],cue:["Ventre contre les cuisses au départ."],err:"Écarter les jambes en cours de montée.",ok:"Une montée jambes serrées et tendues."},
+  pr_stalder:{how:["Assis jambes écartées, mains au sol entre les jambes : soulève-toi en équerre.","Bascule le bassin vers l'arrière et le haut en avançant les épaules.","Termine comme une montée en force jambes écartées."],cue:["Les pieds ne touchent jamais le sol."],ok:"Une montée complète depuis l'équerre."},
+  lo_elbow:{how:["À genoux, mains au sol, doigts tournés vers l'extérieur ou l'arrière.","Cale les coudes contre le ventre, près des hanches.","Penche-toi vers l'avant et tends les jambes : le corps passe à l'horizontale."],cue:["Corps gainé, comme une planche posée sur un tréteau."],err:"Coudes trop écartés : ils glissent sur les côtés.",ok:"10 s à l'horizontale."},
+  lo_croc:{how:["Installe la planche sur les coudes.","Transfère le poids sur un seul coude.","Libère l'autre bras et tends-le devant toi."],cue:["Le coude d'appui est sous le centre du corps."],ok:"5 s de chaque côté."},
+  lo_qdr:{how:["Accroupi, cale un coude contre la hanche du même côté.","Pose les deux mains et le côté de la tête au sol.","Bascule le poids sur le coude et décolle les pieds, genoux groupés."],cue:["Trois appuis : les deux mains et la tête."],ok:"5 s pieds décollés."},
+};
+// ---------- Schémas de posture (vue de profil ou de face) ----------
+// l: segments du corps · g: position de départ ou d'arrivée (pointillés) · a: sens du mouvement · d: direction du regard · h: tête · w: mur
+const ARM = "60,106 60,72", STRAIGHT = [ARM,"60,72 61,42","61,42 61,8"], FRONT = ["48,106 53,74","72,106 67,74","53,74 67,74"];
+const FIG = {
+  st_bail30:{w:92,l:STRAIGHT,h:[53,84],a:["46,30 24,56"]},
+  lo_frog:{l:["56,106 64,90 52,80","52,80 80,70","80,70 64,88 86,90"],h:[42,76]},
+  st_split:{w:76,l:[ARM,"60,72 62,42","62,42 76,10","62,42 36,18"],h:[53,84]},
+  st_bailc2w:{w:72,l:[ARM,"60,72 62,42","62,42 72,8"],h:[53,84],a:["48,34 24,58"]},
+  b1_free5:{l:[ARM,"60,72 61,42","61,42 84,14","61,42 38,18"],h:[53,84]},
+  b2_free15:{l:[ARM,"60,72 61,42","61,42 84,14","61,42 38,18"],h:[53,84]},
+  b2_str15:{l:STRAIGHT,h:[53,84]}, in_str40:{l:STRAIGHT,h:[53,84]}, in_str60:{l:STRAIGHT,h:[53,84]},
+  in_holds:{l:[...FRONT,"60,74 60,46","60,46 30,22","60,46 90,22"],h:[60,88]},
+  in_changes:{l:STRAIGHT,g:["61,42 84,14","61,42 38,18"],h:[53,84]},
+  in_tuck:{l:["60,106 63,72","63,72 58,44","58,44 78,46 72,26"],h:[56,84]},
+  in_7s:{l:["60,106 62,72","62,72 60,42","60,42 60,8","60,42 94,44"],h:[55,84]},
+  in_7d:{l:["60,106 64,72","64,72 57,42","57,42 92,44"],h:[57,84]},
+  in_toes:{l:STRAIGHT,h:[60,87],d:["64,80 64,14"]},
+  in_toes7:{l:["60,106 64,72","64,72 57,42","57,42 92,44"],h:[63,87],d:["68,80 88,52"]},
+  oa_flaghoriz:{l:[...FRONT,"60,74 54,48","54,48 92,58","54,48 30,22"],h:[60,88]},
+  oa_flagfloor:{l:[...FRONT,"60,74 54,48","54,48 96,98","54,48 34,18"],h:[60,88]},
+  in_mexican:{l:["60,106 66,74","66,74 64,58 56,46","56,46 40,36 22,38"],h:[60,88]},
+  in_hspu:{l:["60,106 70,94 62,84","62,84 62,54","62,54 62,20"],h:[52,97],a:["82,72 82,42"]},
+  oa_shift:{l:["48,106 51,74","72,106 65,74","51,74 65,74","58,74 54,46","54,46 30,24","54,46 80,22"],h:[58,88],a:["90,64 72,64"]},
+  oa_finger:{l:["52,106 52,74","52,74 66,74","66,74 82,105","59,74 54,46","54,46 28,26","54,46 80,22"],h:[59,88]},
+  oa_strarm:{l:["52,106 52,74","52,74 66,74","66,74 100,105","59,74 54,46","54,46 28,26","54,46 80,22"],h:[59,88]},
+  oa_oahs:{l:["52,106 52,74","52,74 66,74","66,74 92,66","59,74 54,46","54,46 28,26","54,46 80,22"],h:[59,88]},
+  pr_straddle:{l:["60,106 66,74","66,74 56,46","56,46 84,70"],h:[58,86],a:["40,62 40,36"]},
+  pr_pike:{l:["60,106 66,74","66,74 56,46","56,46 76,98"],h:[58,86],a:["40,62 40,36"]},
+  pr_stalder:{l:["60,106 60,76","60,76 52,99","52,99 98,92"],h:[62,64],a:["36,96 36,70"]},
+  lo_elbow:{l:["60,106 60,90 46,82","46,82 102,82"],h:[36,80]},
+  lo_croc:{l:["60,106 60,90 46,82","46,82 102,82","46,82 16,84"],h:[38,72]},
+};
+function figure(id){
+  const f = FIG[id]; if (!f) return null;
+  const pl = (pts, attr) => '<polyline points="' + pts + '" ' + attr + '/>';
+  let h = '<svg viewBox="0 0 120 120" width="132" height="132" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<defs><marker id="ah" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1l5 3-5 3" fill="none" stroke="var(--acc)" stroke-width="1.6"/></marker></defs>'
+    + '<path d="M8 108h104" stroke="var(--line)" stroke-width="2"/>';
+  if (f.w) h += '<path d="M' + (f.w+3) + ' 4v104" stroke="var(--line)" stroke-width="6" stroke-linecap="butt"/>';
+  (f.g||[]).forEach(p => h += pl(p, 'stroke="var(--mut)" stroke-width="3" stroke-dasharray="1 6"'));
+  f.l.forEach(p => h += pl(p, 'stroke="var(--txt)" stroke-width="4.5"'));
+  h += '<circle cx="' + f.h[0] + '" cy="' + f.h[1] + '" r="6" fill="var(--bg)" stroke="var(--txt)" stroke-width="3"/>';
+  (f.d||[]).forEach(p => h += pl(p, 'stroke="var(--acc)" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#ah)"'));
+  (f.a||[]).forEach(p => h += pl(p, 'stroke="var(--acc)" stroke-width="2" marker-end="url(#ah)"'));
+  const w = el("div","fig"); w.innerHTML = h + '</svg>'; return w;
+}
 
 // ---------- État ----------
 const KEY = "hs-fastway-v1";
@@ -451,6 +541,16 @@ function openMs(id){
   $("dS").textContent = [SEC[m.sec].name, m.sub].filter(Boolean).join(" · ");
   $("dEn").textContent = "Dans le programme : " + m.en;
   $("dDesc").textContent = m.desc || "";
+  const fg = $("dFig"); fg.textContent = ""; const f = figure(id); if (f) fg.append(f);
+  const dd = $("dMore"); dd.textContent = ""; const D = DETAILS[id];
+  if (D){
+    const part = (title, items, ordered) => { if (!items || !items.length) return;
+      dd.append(el("h3",null,title)); const list = el(ordered ? "ol" : "ul"); items.forEach(t=>list.append(el("li",null,t))); dd.append(list); };
+    part("Comment faire", D.how, true);
+    part("Repères", D.cue);
+    part("Erreur fréquente", D.err ? [D.err] : null);
+    part("Validé quand", D.ok ? [D.ok] : null);
+  }
   const dv = $("dVid"); dv.textContent = "";
   (m.img||[]).forEach(src=>{ const im = el("img","ph"); im.src = src; im.alt = "Exemple : " + m.name; im.loading = "lazy"; dv.append(im); });
   (m.yt||[]).forEach(([vid,title])=>{
