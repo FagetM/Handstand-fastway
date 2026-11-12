@@ -163,6 +163,7 @@ a.yt .t{font-weight:600;line-height:1.3}
 .appbar button{flex:none;min-height:38px;padding:6px 14px;border-radius:19px;font-weight:600;font-size:13.5px;background:var(--acc);color:#fff}
 .appbar #insNo{background:none;color:var(--mut);padding:6px 8px;font-size:20px}
 .appbar.off{color:var(--mut)}
+[hidden]{display:none!important}
 html{overscroll-behavior-y:none}
 body{-webkit-tap-highlight-color:transparent}
 button,.jn,.src{touch-action:manipulation}
@@ -330,7 +331,8 @@ ul.plan li{margin:7px 0}
 .jn .c{position:relative;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--raise);transition:transform .25s}
 .jn:active .c{transform:scale(.94)}
 .sp{display:block;background-repeat:no-repeat;background-position:0 0;contain:strict}
-.jn .c .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);pointer-events:none}
+.jn .c .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);pointer-events:none;clip-path:circle(36px at 50% 52%)}
+.jn.alt .c .sp{clip-path:inset(0 round 20px)}
 .jn .c{background:color-mix(in srgb,var(--txt) 13%,var(--bg))}
 .sp.demo{border-radius:12px;background-color:var(--raise)}
 @keyframes spr{to{background-position-x:var(--end)}}
@@ -343,7 +345,7 @@ ul.plan li{margin:7px 0}
 @keyframes halo{50%{box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 6%,transparent)}}
 .jn.pop .c{animation:pop .6s ease-out}
 @keyframes pop{40%{transform:scale(1.22)}}
-.jn.sm{width:96px}.jn.sm .c{width:60px;height:60px}.jn.sm .rg{inset:-12px;transform:rotate(-90deg) scale(.86)}
+.jn.sm{width:96px}.jn.sm .c{width:60px;height:60px}.jn.sm .c .sp{clip-path:circle(30px at 50% 52%)}.jn.sm .rg{inset:-12px;transform:rotate(-90deg) scale(.86)}
 .jn.alt .c{border-radius:20px}.jn.alt .rg{display:none}
 .jn .ck,.jn .lkb{z-index:1;position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
 .jn .ck{background:var(--acc);color:#fff}
@@ -384,8 +386,8 @@ img.demo{display:block;border-radius:12px;background:var(--raise)}
 .bdg .bn{font-weight:600}
 .bdg.off .bn{font-weight:400;color:var(--mut)}
 .bdg .bc{font:600 13px/1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
-#toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-140%);z-index:20;max-width:calc(100% - 32px);padding:12px 18px;border-radius:10px;background:var(--txt);color:var(--bg);font-weight:600;font-size:15px;transition:transform .3s;pointer-events:none}
-#toast.on{transform:translate(-50%,0)}
+#toast{position:fixed;left:50%;top:calc(16px + env(safe-area-inset-top));transform:translate(-50%,-140%);visibility:hidden;z-index:20;max-width:calc(100% - 32px);padding:12px 18px;border-radius:10px;background:var(--txt);color:var(--bg);font-weight:600;font-size:15px;transition:transform .3s;pointer-events:none}
+#toast.on{transform:translate(-50%,0);visibility:visible}
 
 /* séance */
 .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:20px 0 4px}
@@ -902,7 +904,7 @@ function planFor(m){
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     const work = Math.max(lo, Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
-    out.n = {sets, work, tries, T, hold};
+    const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", 60 à 90 s de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
