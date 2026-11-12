@@ -968,6 +968,14 @@ const LEX = [
   ["Hollow body","Position « en cuillère » : dos légèrement rond, abdos serrés, bassin basculé. La base du gainage en gymnastique."],
   ["L-sit","Équerre : en appui sur les mains, jambes tendues à l'horizontale devant soi."],
   ["Handstand","Équilibre sur les mains."],
+  ["Headstand","Équilibre sur la tête, en appui sur la tête et les mains ou les avant-bras."],
+  ["Straddle press, pike press, tuck press","Montées en force vers l'équilibre, sans élan : jambes écartées (la plus accessible), jambes tendues serrées (la plus dure), ou genoux groupés."],
+  ["Float, hover","Flotter : les pieds quittent le sol sans élan, portés par les épaules et les abdos. Hover : tenir ce flottement."],
+  ["Toe taps","En appui sur les mains, bassin haut : décoller les pieds puis reposer seulement les orteils, par petites touches."],
+  ["Crane, crow","Posture de la grue ou du corbeau : mains au sol, genoux posés sur l'arrière des bras, pieds décollés. Bras tendus (crane) ou fléchis (crow)."],
+  ["Drill","Exercice éducatif : un geste simplifié qui prépare la figure."],
+  ["Core","La sangle abdominale : abdos, lombaires et muscles profonds du tronc."],
+  ["Block, props","Brique de yoga ; plus largement, les accessoires (chaise, briques, mur)."],
   ["Elastic band, banded","Élastique passé autour des hanches ou sous les pieds, accroché en hauteur : il porte une partie du poids et rend la figure accessible."],
   ["Parallettes","Petites barres parallèles posées au sol : poignets droits, moins de contrainte."],
   ["Try-out","Tentative : on essaie la figure visée, même si on ne la tient que quelques secondes."],
@@ -1042,6 +1050,8 @@ function renderSess(){
       : fx ? b.sets.length + (day.circuit ? " tours · " : " séries · ") + fixTxt(b, b.sets[0], day.scale)
       : b.sets.length + (b.sets.length > 1 ? " séries" : " série") + (b.sets[0].rest ? " · repos " + restTxt(b.sets[0]) : "") + (best ? " · record " + num(best) + unit(b) : "")));
     if (b.how) t.append(el("div","how",b.how));
+    if (b.terms && b.terms.length) { const det = el("details"); det.append(el("summary",null,"Les termes de ce cours · " + b.terms.length));
+      const dl = el("dl","lex"); b.terms.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); det.append(dl); t.append(det); }
     h.append(t); const vl = vidLink(b); if (vl) h.append(vl); c.append(h);
     const row = el("div","sets" + (one ? " one" : ""));
     b.sets.forEach((s,si)=>{
