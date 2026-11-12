@@ -156,6 +156,13 @@ a.lk{color:var(--mut);font-size:14px;white-space:nowrap;padding:6px 0}
 .set.dn{background:var(--raise);box-shadow:none}
 .set.dn .v{color:var(--txt)}
 #sdHint{text-align:center;margin-bottom:16px}
+.sets.one{grid-template-columns:1fr}
+.sets.one .set{min-height:48px;text-align:left;padding:8px 14px}
+.sets.one .set .v{margin:0;font-size:18px}
+input.pass{display:block;width:100%;min-height:48px;margin:16px 0 12px;padding:8px 0;border:0;border-bottom:1px solid var(--mut);border-radius:0;background:none;font-size:18px}
+input.pass:focus{outline:none;border-bottom-color:var(--acc)}
+select.big{font:600 26px/1.1 var(--disp)}
+.btn:disabled{opacity:.5}
 #sdReps{margin:20px 0 12px}
 
 /* code d'accès */
@@ -198,7 +205,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 
   <section id="v-sess" class="view">
     <div id="sess"></div>
-    <input type="file" id="pgFile" accept=".json,application/json" hidden>
+    <input type="file" id="pgFile" hidden>
   </section>
 
   <section id="v-log" class="view">
@@ -219,7 +226,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
       <div class="btns"><button class="btn line" id="exp">Exporter</button><button class="btn line" id="imp">Importer</button></div>
       <div class="btns"><button class="btn warn" id="reset">Tout effacer</button></div>
     </div>
-    <div class="block mut" style="border:0">Les programmes de l'onglet Séance ne font pas partie de l'app : ils sont importés depuis un fichier et restent sur cet appareil. Les jalons suivent l'arbre du programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube.</div>
+    <div class="block mut" style="border:0">Les programmes de l'onglet Séance sont publiés chiffrés : ils se déverrouillent avec ta phrase d'accès et restent sur cet appareil. Les jalons suivent l'arbre du programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube.</div>
   </section>
 </main>
 
@@ -466,7 +473,7 @@ function figure(id){
 
 // ---------- État ----------
 const KEY = "hs-fastway-v1";
-const blank = () => ({goal:"oahs", countdown:5, ms:{}, log:[], vid:{}, pg:{step:0, best:{}, wk:{}}});
+const blank = () => ({goal:"oahs", countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
 let S = blank();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
@@ -679,39 +686,92 @@ $("dX").onclick = () => $("dlg").close();
 $("dlg").addEventListener("close", resetClock);
 $("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
 
-// ---------- Séance : programme importé, conservé sur l'appareil uniquement ----------
-// Le contenu des programmes n'est pas dans l'app : il vient d'un fichier (format "hs-program/1") que l'on importe.
-const PKEY = "hs-fastway-prog"; let P = null;
-try { P = JSON.parse(localStorage.getItem(PKEY)); } catch(e){}
+// ---------- Séance : programmes conservés sur l'appareil uniquement ----------
+// Le contenu des programmes n'est pas lisible dans ce dépôt : il arrive chiffré (programs/*.enc, déverrouillé par une
+// phrase que seul l'utilisateur connaît) ou par import d'un fichier au format "hs-program/1".
+const PKEY = "hs-fastway-progs", PPASS = "hs-fastway-pass"; let PS = {}, P = null;
+try { PS = JSON.parse(localStorage.getItem(PKEY)) || {}; } catch(e){}
+const savePS = () => { try { localStorage.setItem(PKEY, JSON.stringify(PS)); } catch(e){} };
+try { const old = JSON.parse(localStorage.getItem("hs-fastway-prog")); if (old && old.id && !PS[old.id]) { PS[old.id] = old; savePS(); } localStorage.removeItem("hs-fastway-prog"); } catch(e){}
 const DAYK = ["mon","tue","wed","thu","fri","sat","sun"], DAYL = ["L","M","M","J","V","S","D"];
 const DAYN = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
 const todayIdx = () => (new Date().getDay() + 6) % 7;
 let selDay = todayIdx();
-const pg = () => S.pg || (S.pg = {step:0, best:{}, wk:{}});
-const pStep = () => P.steps[Math.min(pg().step, P.steps.length - 1)];
-const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + pg().step + "|" + DAYK[di]; };
+const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = g.wk || {}; g.by = g.by || {}; return g; };
+const pickP = () => { const ids = Object.keys(PS); P = PS[pg().cur] || PS[ids[0]] || null; if (P) pg().cur = P.id; };
+const pp = () => pg().by[P.id] || (pg().by[P.id] = {step:0});
+const pStep = () => P.steps[Math.min(pp().step, P.steps.length - 1)];
+const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + P.id + "|" + pp().step + "|" + DAYK[di]; };
 const wkGet = di => pg().wk[wkKey(di)] || {};
-const pDay = di => pStep().days[DAYK[di]] || {type:"rest", blocks:[]};
+const pDay = di => {
+  const stp = pStep(), d = stp.days[DAYK[di]] || {type:"rest", blocks:[]};
+  if (!d.routine) return Object.assign({blocks:[]}, d);
+  const R = (P.routines || {})[d.routine] || {blocks:[]};
+  return {type:d.type, name:R.name, equip:R.equip, blocks:R.blocks || [], scale:stp.scale || 1, routine:true};
+};
 const unit = b => b.kind === "hold" ? " s" : " rép.";
+const fixed = s => s.dur != null || s.reps != null;
+const sDur = (s, sc) => Math.max(5, Math.round(s.dur * (sc || 1)));
+const fixTxt = (b, s, sc) => (s.dur != null ? sDur(s, sc) + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
 const restTxt = s => (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
 const pTarget = (b, s) => { const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
-const ytLink = (id, txt) => { const a = el("a","lk",txt); a.href = "https://www.youtube.com/watch?v=" + id; a.target = "_blank"; a.rel = "noopener"; return a; };
+const extLink = (href, txt) => { const a = el("a","lk",txt); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
+const ytLink = (id, txt) => extLink("https://www.youtube.com/watch?v=" + id, txt);
+const vidLink = b => b.yt ? ytLink(b.yt, "Vidéo") : b.drive ? extLink("https://drive.google.com/file/d/" + b.drive + "/view", "Vidéo") : null;
+
+// Programmes chiffrés publiés avec l'app
+const normPass = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+async function decProg(o, pass){
+  const b = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+  const km = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:b(o.salt), iterations:o.iter, hash:"SHA-256"}, km, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM", iv:b(o.iv)}, key, b(o.ct))));
+}
+// Renvoie "ok", "code" (phrase refusée) ou "net" (pas de réseau / rien de publié).
+async function loadRemote(pass){
+  let idx; try { const r = await fetch("programs/index.json", {cache:"no-cache"}); if (!r.ok) throw 0; idx = await r.json(); } catch(e){ return "net"; }
+  let changed = false;
+  for (const e of idx){
+    if (PS[e.id] && PS[e.id]._v === e.v) continue;
+    let o; try { const r = await fetch(e.file, {cache:"no-cache"}); if (!r.ok) throw 0; o = await r.json(); } catch(err){ return "net"; }
+    let d; try { d = await decProg(o, pass); } catch(err){ return "code"; }
+    if (d && d.format === "hs-program/1" && Array.isArray(d.steps)) { d._v = e.v; PS[d.id] = d; changed = true; }
+  }
+  if (changed) savePS();
+  try { localStorage.setItem(PPASS, pass); } catch(e){}
+  return "ok";
+}
 
 function renderSess(){
+  pickP();
   const box = $("sess"); box.textContent = "";
   const head = el("div","block"); head.style.border = "0"; box.append(head);
-  if (!P || !Array.isArray(P.steps) || !P.steps.length){
-    head.append(el("h2",null,"Séance"), el("div","mut","Aucun programme sur cet appareil. Importe ton fichier de programme : il reste dans ce téléphone, il n'est envoyé nulle part."));
-    const b = el("button","btn","Importer un programme"); b.style.marginTop = "16px"; b.onclick = () => $("pgFile").click(); head.append(b);
+  if (!P){
+    head.append(el("h2",null,"Séance"), el("div","mut","Aucun programme sur cet appareil. Saisis ta phrase d'accès aux programmes : ils sont téléchargés, déverrouillés, puis conservés dans ce téléphone."));
+    const f = el("form"), inp = el("input"), msg = el("div","mut"), b = el("button","btn","Charger mes programmes");
+    inp.type = "text"; inp.autocapitalize = "none"; inp.autocomplete = "off"; inp.spellcheck = false; inp.setAttribute("aria-label","Phrase d'accès aux programmes"); inp.className = "pass";
+    b.type = "submit"; msg.style.marginTop = "10px";
+    f.onsubmit = async e => { e.preventDefault(); const pass = normPass(inp.value); if (!pass) return;
+      b.disabled = true; msg.textContent = "Chargement…";
+      const r = await loadRemote(pass); b.disabled = false;
+      if (r === "ok" && Object.keys(PS).length) { save(); renderSess(); }
+      else msg.textContent = r === "code" ? "Phrase incorrecte." : "Impossible de joindre les programmes. Vérifie ta connexion et réessaie."; };
+    f.append(inp, b, msg); head.append(f);
+    const alt = el("button","btn line","Importer un fichier de programme"); alt.style.marginTop = "12px"; alt.onclick = () => $("pgFile").click(); head.append(alt);
     return;
   }
-  const step = pStep();
-  head.append(el("div","lab","Programme" + (P.author ? " · " + P.author : "")), el("h2",null,P.name));
-  head.firstChild.style.marginBottom = "6px";
+  const step = pStep(), ids = Object.keys(PS);
+  head.append(el("div","lab","Programme" + (P.author ? " · " + P.author : "")));
+  if (ids.length > 1){
+    const ps = el("select"); ps.setAttribute("aria-label","Programme"); ps.className = "big";
+    ids.forEach(id=>ps.add(new Option(PS[id].name, id))); ps.value = P.id;
+    ps.onchange = () => { pg().cur = ps.value; save(); renderSess(); };
+    head.append(ps);
+  } else { const h = el("h2",null,P.name); h.style.marginTop = "6px"; head.append(h); }
   const sel = el("select"); sel.setAttribute("aria-label","Étape du programme");
-  P.steps.forEach((s,i)=>sel.add(new Option(s.name + (s.goals && s.goals.length ? " · " + s.goals[0].name + " " + s.goals[0].target : ""), i)));
-  sel.value = Math.min(pg().step, P.steps.length - 1);
-  sel.onchange = () => { pg().step = +sel.value; save(); renderSess(); };
+  P.steps.forEach((s,i)=>sel.add(new Option(s.name + (s.goals && s.goals.length ? " · " + s.goals[0].name + " " + s.goals[0].target : s.scale && s.scale < 1 ? " · semaine allégée" : ""), i)));
+  sel.value = Math.min(pp().step, P.steps.length - 1);
+  sel.onchange = () => { pp().step = +sel.value; save(); renderSess(); };
   head.append(sel);
   if (step.goals && step.goals.length) { const g = el("div","mut","Pour passer à l'étape suivante : " + step.goals.map(g=>g.name + " " + g.target).join(" · ")); g.style.marginTop = "10px"; head.append(g); }
 
@@ -729,22 +789,25 @@ function renderSess(){
   const day = pDay(selDay), vals = wkGet(selDay);
   const dh = el("div","blk"); dh.style.borderTop = "0"; dh.style.paddingTop = "4px";
   dh.append(el("h2",null,DAYN[selDay] + (selDay === todayIdx() ? ", aujourd'hui" : "")));
-  const info = day.type === "rest" ? "Récupération active : mobilité, étirements, marche. Pas de travail de force."
+  const info = !day.blocks.length ? (day.type === "rest" && !P.routines ? "Récupération active : mobilité, étirements, marche. Pas de travail de force." : "Rien de prévu ce jour-là dans ce programme.")
+    : day.routine ? day.name + (day.scale < 1 ? " · durées réduites cette semaine" : "") + ". Touche un étirement pour lancer le compte à rebours." + (day.equip ? " Matériel : " + day.equip : "")
     : day.type === "gtg" ? "Séries réparties sur la journée, bien espacées, sans aller à l'épuisement."
     : "Touche une série pour lancer le chrono. Le repos démarre tout seul après chaque série.";
   const ih = el("div","mut",info); ih.style.marginTop = "6px"; dh.append(ih); box.append(dh);
   day.blocks.forEach((b,bi)=>{
-    const c = el("div","blk"), h = el("div","blk-h"), t = el("span","grow");
+    const c = el("div","blk"), h = el("div","blk-h"), t = el("span","grow"), fx = fixed(b.sets[0]);
     t.append(el("div","t",b.name));
     const best = pg().best[b.name];
-    t.append(el("div","mut", b.sets.length + " séries · repos " + restTxt(b.sets[0]) + (best ? " · record " + num(best) + unit(b) : "")));
-    h.append(t); if (b.yt) h.append(ytLink(b.yt,"Vidéo")); c.append(h);
-    const row = el("div","sets");
+    t.append(el("div","mut", fx ? [b.pnf ? "PNF" : "", b.muscles].filter(Boolean).join(" · ")
+      : b.sets.length + " séries · repos " + restTxt(b.sets[0]) + (best ? " · record " + num(best) + unit(b) : "")));
+    h.append(t); const vl = vidLink(b); if (vl) h.append(vl); c.append(h);
+    const row = el("div","sets" + (fx ? " one" : ""));
     b.sets.forEach((s,si)=>{
       const v = vals[bi + "-" + si], tg = pTarget(b,s);
       const x = el("button","set" + (v != null ? " dn" : ""));
-      x.setAttribute("aria-label","Série " + (si+1) + " sur " + b.sets.length);
-      x.append(el("span","p", (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "")), el("span","v", v != null ? num(v) + unit(b) : tg ? tg + unit(b) : "max"));
+      if (fx) { x.setAttribute("aria-label", b.name); x.append(el("span","v", v != null ? "Fait · " + fixTxt(b,s,day.scale) : fixTxt(b,s,day.scale))); }
+      else { x.setAttribute("aria-label","Série " + (si+1) + " sur " + b.sets.length);
+        x.append(el("span","p", (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "")), el("span","v", v != null ? num(v) + unit(b) : tg ? tg + unit(b) : "max")); }
       x.onclick = () => openSet(bi, si);
       row.append(x);
     });
@@ -752,21 +815,26 @@ function renderSess(){
   });
   const foot = el("div","blk");
   if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(ytLink(k.yt, k.name))); foot.append(l); }
-  const fb = el("div","btns"), bi = el("button","btn line","Remplacer le programme"), br = el("button","btn warn","Retirer");
+  const fb = el("div","btns"), bi = el("button","btn line","Importer un fichier"), br = el("button","btn warn","Retirer");
   bi.onclick = () => $("pgFile").click();
-  br.onclick = () => { if (confirm("Retirer le programme de cet appareil ? Tes records sont conservés.")) { P = null; try { localStorage.removeItem(PKEY); } catch(e){} renderSess(); } };
+  br.onclick = () => { if (confirm("Retirer « " + P.name + " » de cet appareil ? Tes records sont conservés.")) {
+    if (P._v) { try { localStorage.removeItem(PPASS); } catch(e){} }
+    delete PS[P.id]; savePS(); pg().cur = null; renderSess(); } };
   fb.append(bi, br); foot.append(fb); box.append(foot);
 }
 $("pgFile").onchange = async e => {
   const file = e.target.files[0]; e.target.value = ""; if (!file) return;
   try {
     const d = JSON.parse(await file.text());
-    if (!d || d.format !== "hs-program/1" || !Array.isArray(d.steps) || !d.steps.length) throw 0;
-    localStorage.setItem(PKEY, JSON.stringify(d)); P = d; pg().step = Math.min(pg().step, d.steps.length - 1); save(); renderSess();
+    if (!d || d.format !== "hs-program/1" || !d.id || !Array.isArray(d.steps) || !d.steps.length) throw 0;
+    PS[d.id] = d; savePS(); pg().cur = d.id; save(); renderSess();
   } catch(err){ alert("Fichier illisible : choisis le fichier de programme (.json) tel qu'il t'a été fourni."); }
 };
+{ let sp = null; try { sp = localStorage.getItem(PPASS); } catch(e){}
+  if (sp) loadRemote(sp).then(r => { if (r === "ok") renderSess(); }); }
 
 // Série en cours : chrono (maintien) ou saisie (répétitions), puis repos automatique.
+// Étirement à durée imposée : compte à rebours, changement de côté, puis enchaînement sur le suivant.
 let sd = null, sdTimer = null, sdWake = null;
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -777,27 +845,60 @@ function nextSet(){
 }
 function openSet(bi, si){
   sdStop();
-  const b = pDay(selDay).blocks[bi], s = b.sets[si], tg = pTarget(b, s);
-  sd = {bi, si, b, s, tg, mode:"idle"};
-  $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "") + " · repos " + restTxt(s);
+  const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
+  sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   $("sdT").textContent = b.name;
-  const hold = b.kind === "hold", ck = $("sdClock");
-  ck.style.display = hold ? "" : "none"; ck.className = "clock"; ck.textContent = "0,0";
-  $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
-  $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
-  $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
-    : "Premier passage : fais ton maximum propre, il servira de référence.";
+  const ck = $("sdClock"); ck.className = "clock";
+  if (fx){
+    const timed = s.dur != null;
+    $("sdS").textContent = (bi+1) + "/" + day.blocks.length + " · " + fixTxt(b, s, day.scale) + (b.pnf ? " · PNF" : "");
+    ck.style.display = timed ? "" : "none"; if (timed) ck.textContent = mmss(sDur(s, day.scale));
+    $("sdReps").style.display = "none"; $("sdGo").style.display = ""; $("sdGo").textContent = timed ? "Démarrer" : "Fait";
+    $("sdHint").textContent = [b.pnf ? "PNF : contracte 10 s, relâche 5 s, puis gagne en amplitude." : "", b.note].filter(Boolean).join(" ");
+  } else {
+    $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "") + " · repos " + restTxt(s);
+    const hold = b.kind === "hold";
+    ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
+    $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
+    $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
+    $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
+      : "Premier passage : fais ton maximum propre, il servira de référence.";
+  }
   if (!$("sd").open) $("sd").showModal();
 }
+function storeSet(v){
+  const k = wkKey(selDay); (pg().wk[k] || (pg().wk[k] = {}))[sd.bi + "-" + sd.si] = v;
+  const keys = Object.keys(pg().wk); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(x=>delete pg().wk[x]);
+}
+function saveFixed(){
+  const {b, s, day} = sd; sdStop();
+  storeSet(s.dur != null ? sDur(s, day.scale) : s.reps);
+  const nx = nextSet();
+  if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? " · " + day.name : ""), k:"check", v:true, pr:false});
+  save(); render();
+  if (nx) openSet(nx[0], nx[1]); else $("sd").close();
+}
+function runFixed(){
+  const {s, day} = sd, ck = $("sdClock"), dur = sDur(s, day.scale), prep = sd.side === 1 ? S.countdown : 5;
+  let end = Date.now() + prep*1000, last = -1; sd.mode = prep ? "count" : "run";
+  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350); };
+  if (!prep) go(); else ck.className = "clock count";
+  $("sdGo").textContent = "Passer";
+  $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + (s.sides ? " · côté " + sd.side + "/2" : "") + (sd.b.pnf ? " · PNF" : "");
+  sdTimer = setInterval(()=>{
+    const left = (end - Date.now())/1000;
+    if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
+    else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; beep(1320, 600);
+      if (s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
+    else ck.textContent = mmss(Math.ceil(left));
+  }, 200);
+}
 function saveSet(v){
-  const {bi, si, b, s} = sd, k = wkKey(selDay);
-  (pg().wk[k] || (pg().wk[k] = {}))[bi + "-" + si] = v;
-  const keys = Object.keys(pg().wk); if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(x=>delete pg().wk[x]);
+  const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
   if (b.ms && MS[b.ms] && b.kind === "hold") { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
-  // repos
   const nx = nextSet(), end = Date.now() + s.rest*1000, ck = $("sdClock"); let done = false;
   sd.mode = "rest"; sd.next = nx;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
@@ -813,6 +914,12 @@ function saveSet(v){
 $("sdGo").onclick = async () => {
   const ck = $("sdClock");
   if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else $("sd").close(); return; }
+  if (sd.fx){
+    if (sd.s.dur == null) { saveFixed(); return; }
+    if (sd.mode === "idle") { try { if (navigator.wakeLock) sdWake = await navigator.wakeLock.request("screen"); } catch(e){} runFixed(); }
+    else { clearInterval(sdTimer); sdTimer = null; if (sd.s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
+    return;
+  }
   if (sd.mode === "idle"){
     try { if (navigator.wakeLock) sdWake = await navigator.wakeLock.request("screen"); } catch(e){}
     const left = S.countdown; let t = performance.now(), last = -1, hit = false;
