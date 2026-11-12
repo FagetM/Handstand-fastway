@@ -53,6 +53,10 @@ const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; 
 const P = (base, o) => Object.assign({}, POSES[base], o);
 const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0)});
 Object.assign(POSES, {
+  // poitrine face au mur : dos au mur au départ, mains au sol, on remonte les pieds le long du mur en rapprochant les mains
+  c2w_0:    {pitch:1.45, arm:[-1.45,-1.45], armZ:[0,0], hip:[-0.15,-0.15], hipZ:[0,0], knee:[0,0], head:-0.6},
+  c2w_1:    {pitch:2.0, arm:[-2.0,-2.0], armZ:[0,0], hip:[-0.75,-0.55], hipZ:[0,0], knee:[0.5,0.2], head:-0.5},
+  c2w_2:    {pitch:2.6, arm:[-2.6,-2.6], armZ:[0,0], hip:[-0.45,-0.2], hipZ:[0,0], knee:[0.25,0], head:-0.4},
   hs_cw1:   P("hs", {roll:1.15, hipZ:[0.8,0.8], feet:true}),                                             // sortie en roue : on bascule sur le côté…
   hs_cw2:   {pitch:PI, roll:PI, arm:[0.1,0.1], armZ:[0.3,0.3], elbow:[-0.2,-0.2], hip:[0,0], hipZ:[0.25,0.25], knee:[0,0], head:0, feet:true},   // …et on retombe debout
   hs_cw3:   {pitch:PI, roll:PI, spin:PI, arm:[0.08,0.08], armZ:[0.13,0.13], elbow:[-0.22,-0.22], hip:[0,0], hipZ:[0.05,0.05], knee:[0,0], head:0, feet:true},
@@ -88,9 +92,9 @@ Object.assign(FEET, {fold_s:1});
 // Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
 const UP = [["fold",0.45,0],["kick",0.3,0]];
 export const SCRIPTS = {
-  st_bail30: {wall:-1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
-  st_bailc2w:{wall:1,  cut:true, s:[...UP,["hs",0.5,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
-  st_split:  {wall:-1, s:[...UP,["hs_split",0.5,0.8],["hs_splitM",0.7,0.8],["hs_split",0.7,0.5]]},
+  st_bail30: {wall:1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
+  st_bailc2w:{wall:-1, cut:true, s:[["fold",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
+  st_split:  {wall:1, s:[...UP,["hs_split",0.5,0.8],["hs_splitM",0.7,0.8],["hs_split",0.7,0.5]]},
   b1_free5:  {s:[...UP,["hs_split",0.5,1.0],["hs_split2",0.5,0.4],["hs_split",0.5,0.8]]},
   b2_free15: {s:[...UP,["hs_straddle",0.5,0.8],["hs_split",0.6,0.9],["hs_straddle",0.6,0.6]], still:"hs_straddle"},
   b2_str15:  {s:[...UP,["hs_straddle",0.5,0.3],["hs",0.5,1.6]]},
@@ -358,7 +362,7 @@ export function mount(host, opts = {}){
     },
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
-    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lv_)/.test(k)),
+    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lv_|c2w_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
     jump(pose){ camD = -1; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
