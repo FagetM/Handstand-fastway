@@ -102,7 +102,7 @@ label.vid input{width:18px;height:18px;flex:none;margin:2px 0 0;accent-color:var
 
 /* onglets */
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;max-width:213px;min-height:56px;color:var(--mut);font:600 15px/1 var(--disp);letter-spacing:.1em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
+nav.tabs button{flex:1;max-width:160px;min-height:56px;color:var(--mut);font:600 15px/1 var(--disp);letter-spacing:.1em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
 nav.tabs button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
 .view{display:none}.view.on{display:block}
 .block{padding:24px 0;border-bottom:1px solid var(--line)}
@@ -135,6 +135,28 @@ a.yt .t{font-weight:600;line-height:1.3}
 .clock.count{color:var(--mut)}.clock.hit{color:var(--acc)}
 #clockHint{text-align:center;margin-bottom:16px}
 #dBest{margin-top:16px}
+
+/* séance */
+.wk{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:20px 0 4px}
+.wk button{min-height:56px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line);color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.wk button b{font:600 18px/1 var(--disp)}
+.wk button small{font-size:11px;line-height:1;min-height:11px;font-variant-numeric:tabular-nums}
+.wk button.tr{color:var(--txt)}
+.wk button.today b{color:var(--acc)}
+.wk button.on{background:var(--txt);color:var(--bg);box-shadow:none}
+.wk button.on b{color:inherit}
+.blk{padding:18px 0;border-top:1px solid var(--line)}
+.blk-h{display:flex;gap:12px;align-items:baseline}
+.blk-h .t{font-weight:600;line-height:1.3}
+a.lk{color:var(--mut);font-size:14px;white-space:nowrap;padding:6px 0}
+.sets{display:grid;grid-template-columns:repeat(auto-fill,minmax(68px,1fr));gap:6px;margin-top:12px}
+.set{min-height:60px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--line);padding:8px 4px;text-align:center}
+.set .p{display:block;font-size:12px;color:var(--mut)}
+.set .v{display:block;margin-top:4px;font:600 20px/1 var(--disp);font-variant-numeric:tabular-nums;color:var(--mut)}
+.set.dn{background:var(--raise);box-shadow:none}
+.set.dn .v{color:var(--txt)}
+#sdHint{text-align:center;margin-bottom:16px}
+#sdReps{margin:20px 0 12px}
 
 /* code d'accès */
 #gate{display:none;position:fixed;inset:0;background:var(--bg);z-index:10;place-items:center;padding:20px}
@@ -174,6 +196,11 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <div id="tree"></div>
   </section>
 
+  <section id="v-sess" class="view">
+    <div id="sess"></div>
+    <input type="file" id="pgFile" accept=".json,application/json" hidden>
+  </section>
+
   <section id="v-log" class="view">
     <div class="block" style="border:0;padding-bottom:8px"><h2>Journal</h2><div class="mut">Tes 60 derniers essais</div></div>
     <div id="logList"></div>
@@ -192,12 +219,13 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
       <div class="btns"><button class="btn line" id="exp">Exporter</button><button class="btn line" id="imp">Importer</button></div>
       <div class="btns"><button class="btn warn" id="reset">Tout effacer</button></div>
     </div>
-    <div class="block mut" style="border:0">Les jalons suivent l'arbre du programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube.</div>
+    <div class="block mut" style="border:0">Les programmes de l'onglet Séance ne font pas partie de l'app : ils sont importés depuis un fichier et restent sur cet appareil. Les jalons suivent l'arbre du programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube.</div>
   </section>
 </main>
 
 <nav class="tabs">
   <button data-v="path" class="on">Parcours</button>
+  <button data-v="sess">Séance</button>
   <button data-v="log">Journal</button>
   <button data-v="set">Réglages</button>
 </nav>
@@ -222,6 +250,17 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   <div class="mut" id="dBest"></div>
   <div id="dLog"></div>
   <div id="dMore"></div>
+</dialog>
+
+<dialog id="sd">
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div class="grow"><div class="lab" id="sdS"></div><h2 id="sdT" style="margin-top:6px"></h2></div>
+    <button class="x" id="sdX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  </div>
+  <div class="clock" id="sdClock">0,0</div>
+  <div class="mut" id="sdHint"></div>
+  <div class="btns" id="sdReps"><input type="number" id="sdNum" min="0" inputmode="numeric" aria-label="Répétitions réussies"><button class="btn" id="sdSave">Enregistrer</button></div>
+  <button class="btn" id="sdGo">Démarrer</button>
 </dialog>
 
 <script>
@@ -315,12 +354,29 @@ const TREE = [
     {id:"lo_qdr", name:"Queda de rins", en:"QDR", type:"check", req:["lo_croc"],
       desc:"Figure venue de la capoeira : la hanche repose sur un coude, corps de côté, en appui bas sur les mains."},
   ], videos:[["Planche sur les coudes","Elbow lever"],["Crocodile","Croc"],["Queda de rins","QDR"]]},
+  {id:"planche", name:"Planche", en:"Planche", ms:[
+    {id:"pl_lean", name:"Planche lean", en:"Planche lean", type:"hold", target:15, req:[],
+      desc:"Position de pompe, bras tendus, épaules avancées loin devant les mains, pieds au sol."},
+    {id:"pl_tuck", name:"Tuck planche", en:"Tuck planche", type:"hold", target:15, req:["pl_lean"],
+      desc:"Pieds décollés, genoux serrés contre la poitrine, bras tendus, dos arrondi."},
+    {id:"pl_adv", name:"Advanced tuck planche", en:"Advanced tuck planche", type:"hold", target:15, req:["pl_tuck"],
+      desc:"Le même groupé, dos à plat : les hanches montent à hauteur des épaules, les genoux s'éloignent de la poitrine."},
+    {id:"pl_frog", name:"Frog stand jambes levées", en:"Frog stand with raised legs", type:"hold", target:15, req:["pl_adv"],
+      desc:"Bras tendus, jambes écartées et fléchies, pieds relevés derrière : le bassin s'ouvre vers la planche écartée."},
+    {id:"pl_pike", name:"Pike straddle planche", en:"Pike straddle planche", type:"hold", target:15, req:["pl_frog"],
+      desc:"Jambes tendues et écartées, hanches encore un peu fléchies."},
+    {id:"pl_straddle", name:"Straddle planche", en:"Straddle planche", type:"hold", target:10, req:["pl_pike"],
+      desc:"Corps à l'horizontale, hanches ouvertes, jambes tendues écartées."},
+    {id:"pl_full", name:"Full planche", en:"Full planche", type:"hold", target:10, req:["pl_straddle"],
+      desc:"Corps à l'horizontale, jambes tendues et serrées, bras tendus."},
+  ], videos:[]},
   {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l'équilibre","The undisputed fastest way to learn to handstand"]]},
 ];
 const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_free15","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
   {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_oahs"]},
+  {id:"planche", name:"Full planche · 10 s", ms:["pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
   {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
   {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_straddle","pr_pike"]},
   {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
@@ -410,7 +466,7 @@ function figure(id){
 
 // ---------- État ----------
 const KEY = "hs-fastway-v1";
-const blank = () => ({goal:"oahs", countdown:5, ms:{}, log:[], vid:{}});
+const blank = () => ({goal:"oahs", countdown:5, ms:{}, log:[], vid:{}, pg:{step:0, best:{}, wk:{}}});
 let S = blank();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
@@ -515,9 +571,10 @@ function render(){
   if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Lance un chrono depuis le parcours."));
   S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
   $("countdown").value = String(S.countdown);
+  renderSess();
 }
 function logRow(l, withName){
-  const m = MS[l.id]; const r = el("div","log"); if (!m) { r.style.display = "none"; return r; }
+  const m = MS[l.id] || (String(l.id).startsWith("pg:") ? {name:l.id.slice(3), type:l.k} : null); const r = el("div","log"); if (!m) { r.style.display = "none"; return r; }
   const when = new Date(l.t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + ", " + new Date(l.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
   const left = el("span","grow"); if (withName) left.append(el("div",null,m.name)); left.append(el("div","mut",when + (l.pr ? " · record" : "")));
   r.append(left, el("span","v" + (l.pr ? " pr" : ""), l.v === true ? "Validé" : fmt(m,l.v)));
@@ -621,6 +678,161 @@ $("toggle").onclick = () => { const x = st(cur); if (x.done) { x.done = false; s
 $("dX").onclick = () => $("dlg").close();
 $("dlg").addEventListener("close", resetClock);
 $("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
+
+// ---------- Séance : programme importé, conservé sur l'appareil uniquement ----------
+// Le contenu des programmes n'est pas dans l'app : il vient d'un fichier (format "hs-program/1") que l'on importe.
+const PKEY = "hs-fastway-prog"; let P = null;
+try { P = JSON.parse(localStorage.getItem(PKEY)); } catch(e){}
+const DAYK = ["mon","tue","wed","thu","fri","sat","sun"], DAYL = ["L","M","M","J","V","S","D"];
+const DAYN = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
+const todayIdx = () => (new Date().getDay() + 6) % 7;
+let selDay = todayIdx();
+const pg = () => S.pg || (S.pg = {step:0, best:{}, wk:{}});
+const pStep = () => P.steps[Math.min(pg().step, P.steps.length - 1)];
+const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + pg().step + "|" + DAYK[di]; };
+const wkGet = di => pg().wk[wkKey(di)] || {};
+const pDay = di => pStep().days[DAYK[di]] || {type:"rest", blocks:[]};
+const unit = b => b.kind === "hold" ? " s" : " rép.";
+const restTxt = s => (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
+const pTarget = (b, s) => { const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
+const ytLink = (id, txt) => { const a = el("a","lk",txt); a.href = "https://www.youtube.com/watch?v=" + id; a.target = "_blank"; a.rel = "noopener"; return a; };
+
+function renderSess(){
+  const box = $("sess"); box.textContent = "";
+  const head = el("div","block"); head.style.border = "0"; box.append(head);
+  if (!P || !Array.isArray(P.steps) || !P.steps.length){
+    head.append(el("h2",null,"Séance"), el("div","mut","Aucun programme sur cet appareil. Importe ton fichier de programme : il reste dans ce téléphone, il n'est envoyé nulle part."));
+    const b = el("button","btn","Importer un programme"); b.style.marginTop = "16px"; b.onclick = () => $("pgFile").click(); head.append(b);
+    return;
+  }
+  const step = pStep();
+  head.append(el("div","lab","Programme" + (P.author ? " · " + P.author : "")), el("h2",null,P.name));
+  head.firstChild.style.marginBottom = "6px";
+  const sel = el("select"); sel.setAttribute("aria-label","Étape du programme");
+  P.steps.forEach((s,i)=>sel.add(new Option(s.name + (s.goals && s.goals.length ? " · " + s.goals[0].name + " " + s.goals[0].target : ""), i)));
+  sel.value = Math.min(pg().step, P.steps.length - 1);
+  sel.onchange = () => { pg().step = +sel.value; save(); renderSess(); };
+  head.append(sel);
+  if (step.goals && step.goals.length) { const g = el("div","mut","Pour passer à l'étape suivante : " + step.goals.map(g=>g.name + " " + g.target).join(" · ")); g.style.marginTop = "10px"; head.append(g); }
+
+  const wk = el("div","wk");
+  DAYK.forEach((k,i)=>{
+    const d = pDay(i), tot = d.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(wkGet(i)).length;
+    const b = el("button", (tot ? "tr" : "") + (i === todayIdx() ? " today" : "") + (i === selDay ? " on" : ""));
+    b.setAttribute("aria-label", DAYN[i]); b.setAttribute("aria-pressed", i === selDay);
+    b.append(el("b",null,DAYL[i]), el("small",null, !tot ? "" : dn >= tot ? "fait" : dn ? dn + "/" + tot : "·"));
+    b.onclick = () => { selDay = i; renderSess(); };
+    wk.append(b);
+  });
+  head.append(wk);
+
+  const day = pDay(selDay), vals = wkGet(selDay);
+  const dh = el("div","blk"); dh.style.borderTop = "0"; dh.style.paddingTop = "4px";
+  dh.append(el("h2",null,DAYN[selDay] + (selDay === todayIdx() ? ", aujourd'hui" : "")));
+  const info = day.type === "rest" ? "Récupération active : mobilité, étirements, marche. Pas de travail de force."
+    : day.type === "gtg" ? "Séries réparties sur la journée, bien espacées, sans aller à l'épuisement."
+    : "Touche une série pour lancer le chrono. Le repos démarre tout seul après chaque série.";
+  const ih = el("div","mut",info); ih.style.marginTop = "6px"; dh.append(ih); box.append(dh);
+  day.blocks.forEach((b,bi)=>{
+    const c = el("div","blk"), h = el("div","blk-h"), t = el("span","grow");
+    t.append(el("div","t",b.name));
+    const best = pg().best[b.name];
+    t.append(el("div","mut", b.sets.length + " séries · repos " + restTxt(b.sets[0]) + (best ? " · record " + num(best) + unit(b) : "")));
+    h.append(t); if (b.yt) h.append(ytLink(b.yt,"Vidéo")); c.append(h);
+    const row = el("div","sets");
+    b.sets.forEach((s,si)=>{
+      const v = vals[bi + "-" + si], tg = pTarget(b,s);
+      const x = el("button","set" + (v != null ? " dn" : ""));
+      x.setAttribute("aria-label","Série " + (si+1) + " sur " + b.sets.length);
+      x.append(el("span","p", (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "")), el("span","v", v != null ? num(v) + unit(b) : tg ? tg + unit(b) : "max"));
+      x.onclick = () => openSet(bi, si);
+      row.append(x);
+    });
+    c.append(row); box.append(c);
+  });
+  const foot = el("div","blk");
+  if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(ytLink(k.yt, k.name))); foot.append(l); }
+  const fb = el("div","btns"), bi = el("button","btn line","Remplacer le programme"), br = el("button","btn warn","Retirer");
+  bi.onclick = () => $("pgFile").click();
+  br.onclick = () => { if (confirm("Retirer le programme de cet appareil ? Tes records sont conservés.")) { P = null; try { localStorage.removeItem(PKEY); } catch(e){} renderSess(); } };
+  fb.append(bi, br); foot.append(fb); box.append(foot);
+}
+$("pgFile").onchange = async e => {
+  const file = e.target.files[0]; e.target.value = ""; if (!file) return;
+  try {
+    const d = JSON.parse(await file.text());
+    if (!d || d.format !== "hs-program/1" || !Array.isArray(d.steps) || !d.steps.length) throw 0;
+    localStorage.setItem(PKEY, JSON.stringify(d)); P = d; pg().step = Math.min(pg().step, d.steps.length - 1); save(); renderSess();
+  } catch(err){ alert("Fichier illisible : choisis le fichier de programme (.json) tel qu'il t'a été fourni."); }
+};
+
+// Série en cours : chrono (maintien) ou saisie (répétitions), puis repos automatique.
+let sd = null, sdTimer = null, sdWake = null;
+const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
+const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
+function nextSet(){
+  const day = pDay(selDay), vals = wkGet(selDay);
+  for (let b = 0; b < day.blocks.length; b++) for (let s = 0; s < day.blocks[b].sets.length; s++) if (vals[b + "-" + s] == null) return [b, s];
+  return null;
+}
+function openSet(bi, si){
+  sdStop();
+  const b = pDay(selDay).blocks[bi], s = b.sets[si], tg = pTarget(b, s);
+  sd = {bi, si, b, s, tg, mode:"idle"};
+  $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "") + " · repos " + restTxt(s);
+  $("sdT").textContent = b.name;
+  const hold = b.kind === "hold", ck = $("sdClock");
+  ck.style.display = hold ? "" : "none"; ck.className = "clock"; ck.textContent = "0,0";
+  $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
+  $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
+  $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
+    : "Premier passage : fais ton maximum propre, il servira de référence.";
+  if (!$("sd").open) $("sd").showModal();
+}
+function saveSet(v){
+  const {bi, si, b, s} = sd, k = wkKey(selDay);
+  (pg().wk[k] || (pg().wk[k] = {}))[bi + "-" + si] = v;
+  const keys = Object.keys(pg().wk); if (keys.length > 120) keys.slice(0, keys.length - 120).forEach(x=>delete pg().wk[x]);
+  const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
+  if (b.ms && MS[b.ms] && b.kind === "hold") { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
+  S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  save(); render();
+  // repos
+  const nx = nextSet(), end = Date.now() + s.rest*1000, ck = $("sdClock"); let done = false;
+  sd.mode = "rest"; sd.next = nx;
+  ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
+  $("sdS").textContent = "Repos · " + restTxt(s); $("sdT").textContent = "Fait : " + num(v) + unit(b) + (pr && old > 0 ? ", record" : "");
+  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Série suivante" : "Terminer la séance";
+  const nb = nx && pDay(selDay).blocks[nx[0]];
+  $("sdHint").textContent = nx ? "Ensuite : " + nb.name + ", série " + (nx[1]+1) + "/" + nb.sets.length : "C'était la dernière série du jour.";
+  const tick = () => { const left = (end - Date.now())/1000;
+    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; } }
+    else ck.textContent = mmss(Math.ceil(left)); };
+  tick(); sdTimer = setInterval(tick, 250);
+}
+$("sdGo").onclick = async () => {
+  const ck = $("sdClock");
+  if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else $("sd").close(); return; }
+  if (sd.mode === "idle"){
+    try { if (navigator.wakeLock) sdWake = await navigator.wakeLock.request("screen"); } catch(e){}
+    const left = S.countdown; let t = performance.now(), last = -1, hit = false;
+    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdGo").textContent = "Arrêter"; beep(880, 350); };
+    if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; } else run();
+    sdTimer = setInterval(()=>{
+      const e = (performance.now() - t)/1000;
+      if (sd.mode === "count"){ const r = Math.ceil(left - e); if (r <= 0) run(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
+      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!hit && sd.tg && e >= sd.tg) { hit = true; ck.className = "clock hit"; beep(1320, 600); } }
+    }, 50);
+  } else if (sd.mode === "count"){ openSet(sd.bi, sd.si); }
+  else if (sd.mode === "run"){
+    const v = Math.floor((performance.now() - sd.t0)/100)/10; clearInterval(sdTimer); sdTimer = null;
+    if (v >= 0.5) saveSet(v); else openSet(sd.bi, sd.si);
+  }
+};
+$("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (v > 0) saveSet(v); };
+$("sdX").onclick = () => $("sd").close();
+$("sd").addEventListener("close", sdStop);
+$("sd").addEventListener("click", e => { if (e.target === $("sd")) $("sd").close(); });
 
 // ---------- Navigation + réglages ----------
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
