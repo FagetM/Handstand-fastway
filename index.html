@@ -176,19 +176,23 @@ a.yt .t{font-weight:600;line-height:1.3}
 .jn{position:absolute;z-index:1;transform:translateX(-50%);width:112px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
 .jn .c{position:relative;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--raise);transition:transform .25s}
 .jn:active .c{transform:scale(.94)}
-.jn .c img{border-radius:50%;display:block}
+.sp{display:block;background-repeat:no-repeat;background-position:0 0}
+.jn .c .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-52%);pointer-events:none}
+.jn .c{background:color-mix(in srgb,var(--txt) 13%,var(--bg))}
+.sp.demo{border-radius:12px;background-color:var(--raise)}
+@keyframes spr{to{background-position-x:var(--end)}}
 .jn .rg{position:absolute;inset:-6px;transform:rotate(-90deg)}
 .jn .rg circle{stroke:var(--line);stroke-width:4;stroke-linecap:round}
 .jn .rg circle.f{stroke:var(--acc)}
 .jn.done .rg circle.f{stroke:var(--txt)}
-.jn.lk .c img{filter:grayscale(1);opacity:.4}
+.jn.lk .c .sp{filter:grayscale(1);opacity:.4}
 .jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent);animation:halo 2.2s ease-in-out infinite}
 @keyframes halo{50%{box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 6%,transparent)}}
 .jn.pop .c{animation:pop .6s ease-out}
 @keyframes pop{40%{transform:scale(1.22)}}
-.jn.sm{width:96px}.jn.sm .c{width:60px;height:60px}.jn.sm .c img{width:52px;height:52px}.jn.sm .rg{inset:-12px;transform:rotate(-90deg) scale(.86)}
-.jn.alt .c,.jn.alt .c img{border-radius:20px}.jn.alt .rg{display:none}
-.jn .ck,.jn .lkb{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
+.jn.sm{width:96px}.jn.sm .c{width:60px;height:60px}.jn.sm .rg{inset:-12px;transform:rotate(-90deg) scale(.86)}
+.jn.alt .c{border-radius:20px}.jn.alt .rg{display:none}
+.jn .ck,.jn .lkb{z-index:1;position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
 .jn .ck{background:var(--acc);color:#fff}
 .jn .lkb{background:var(--raise);color:var(--mut)}
 .jn .n,.jn .g{background:var(--bg);padding:1px 5px;border-radius:5px}
@@ -315,6 +319,10 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
       <h2>Chrono</h2>
       <label class="mut" for="countdown">Compte à rebours avant le départ, le temps de monter en équilibre</label>
       <select id="countdown"><option value="0">Aucun</option><option value="3">3 secondes</option><option value="5">5 secondes</option><option value="10">10 secondes</option></select>
+    </div>
+    <div class="block">
+      <h2>Animations</h2>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="animOn"><span>Animer les personnages du parcours<span class="mut" style="display:block">Chaque figure accessible est jouée en boucle, avec ta tenue du vestiaire.</span></span></label>
     </div>
     <div class="block">
       <h2>Sauvegarde</h2>
@@ -741,7 +749,7 @@ function journey(nextId){
     const c = el("span","c"), R = 39, C = 2*Math.PI*R, seg = C / L.length, gap = L.length > 1 ? 5 : 0;
     let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
     L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < k ? "f" : "") + '" stroke-dasharray="' + (seg - gap).toFixed(1) + ' ' + (C - seg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*seg + gap/2)).toFixed(1) + '"/>'; });
-    c.innerHTML = ring + '</svg><img alt="" width="64" height="64" loading="lazy" src="anim/' + (lk || noMotion ? "still_" : "hold_") + pose + '.webp">';
+    c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = pose; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, p[2] ? 72 : 90); c.append(sp);
     if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
     if (cur) b.append(el("span","here","Prochaine étape"));
     b.append(c, el("span","n", m.name));
@@ -800,6 +808,38 @@ const POSE3D = {st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"
   lo_frog:"crow", lo_elbow:"lever", lo_croc:"lever", lo_qdr:"lever"};
 POSE3D.oa_flaghoriz = "hs_flag";
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
+// Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
+// Chaque figure est rendue image par image dans une bande d'images, puis animée en boucle. Tant qu'elle n'est pas prête, on montre une image fixe.
+const SPR = {}, SPN = 112; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
+const animOn = () => S.anim !== false;
+function sprPaint(sp, size){
+  const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[pose]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
+  if (!R) { sp.style.backgroundImage = 'url("anim/still_' + pose + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
+  sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
+  if (lk || !animOn()) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
+  sp.style.backgroundPosition = "0 0"; sp.style.setProperty("--end", (-R.n * size) + "px");
+  sp.style.animation = "spr " + (R.n / 10).toFixed(1) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / 10).toFixed(2) + "s";
+}
+const sprRepaint = pose => document.querySelectorAll(".sp" + (pose ? '[data-pose="' + pose + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
+function buildSprites(force){
+  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return; sprKey = key; const job = ++sprJob;
+  let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
+  try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
+  const poses = [...new Set(Object.keys(MS).map(poseId))].filter(p=>p !== "stand"), A = sprA, dt = 0.1, MAXF = 56; let i = 0;
+  // d'abord les figures des jalons accessibles, pour que l'écran s'anime vite
+  const pri = p => Object.values(MS).some(m=>poseId(m.id) === p && (st(m.id).done || !msLocked(m))) ? 0 : 1; poses.sort((a,b)=>pri(a) - pri(b));
+  const one = () => { if (job !== sprJob) return; if (i >= poses.length) return; const pose = poses[i++];
+    const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = 0;
+    const snap = () => { if (n < MAXF) { A.step(dt); cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
+    A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); for (let k = 0; k < 3; k++) snap();
+    A.set({pose, fit:F, level:6}); let g = 0; do { snap(); g++; } while (A.moving() && g < 22);
+    for (let k = 0; k < 10; k++) { if (k === 4) hold = n; snap(); }
+    A.set({pose:"stand", fit:F, level:6}); g = 0; do { snap(); g++; } while (A.moving() && g < 22); snap();
+    const out = document.createElement("canvas"); out.width = n * SPN; out.height = SPN; out.getContext("2d").drawImage(sheet, 0, 0);
+    out.toBlob(b=>{ if (job !== sprJob || !b) return; const old = SPR[pose]; SPR[pose] = {url:URL.createObjectURL(b), n, hold}; sprRepaint(pose); if (old) setTimeout(()=>URL.revokeObjectURL(old.url), 2000); setTimeout(one, 30); }, "image/webp", 0.86);
+  };
+  setTimeout(one, 60);
+}
 // Vestiaire : [identifiant, nom, niveau requis]. La médaille se débloque en terminant une quête principale.
 const WARD = [
   {slot:"skin", name:"Peau", items:[["s1","Claire"],["s2","Hâlée"],["s3","Mate"],["s4","Foncée"]]},
@@ -837,7 +877,7 @@ function renderFit(){
       const ok = !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : bd ? bd.ok : Z.lvl >= need);
       const b = el("button","chip" + (F[w.slot] === id ? " on" : ""), name); b.disabled = !ok; b.setAttribute("aria-pressed", F[w.slot] === id);
       if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : bd ? "badge « " + bd.name + " »" : "niveau " + need));
-      b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } renderFit(); };
+      b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); renderFit(); };
       row.append(b); });
     s.append(row); box.append(s); });
 }
@@ -848,7 +888,7 @@ function setAvatar(s){
   a3want = s; if (A3) { A3.set(s); return; }
   if (a3tried) return; a3tried = true;
   try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) return; } catch(e){ return; }
-  import("./avatar3d.js").then(m=>{ const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); })
+  import("./avatar3d.js").then(m=>{ sprMod = m; buildSprites(); const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); })
     .catch(()=>{ $("av3d").hidden = true; $("av").style.display = ""; });
 }
 
@@ -906,7 +946,7 @@ function render(){
   const ll = $("logList"); ll.textContent = "";
   if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Lance un chrono depuis le parcours."));
   S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
-  $("countdown").value = String(S.countdown);
+  $("countdown").value = String(S.countdown); $("animOn").checked = animOn();
   renderQuest(Z, nextId);
   renderSess();
 }
@@ -936,7 +976,9 @@ function openMs(id){
   $("dEn").textContent = m.en && m.en !== m.name ? "Nom d'origine : " + m.en : "";
   $("dDesc").textContent = m.desc || "";
   const fg = $("dFig"); fg.textContent = "";
-  { const pz = poseId(id); if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (noMotion ? "still_" : "demo_") + pz + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
+  { const pz = poseId(id);
+    if (pz !== "stand" && SPR[pz]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
+    else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() ? "demo_" : "still_") + pz + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
     else { const f2 = figure(id); if (f2) fg.append(f2); } }
   const dd = $("dMore"); dd.textContent = ""; const D = DETAILS[id];
   if (D){
@@ -1366,6 +1408,7 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
 });
 $("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); pg().cur = null; save(); render(); };
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
+$("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); };
 $("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
   try { const d = JSON.parse($("io").value); if (!d || typeof d.ms !== "object" || !Array.isArray(d.log)) throw 0;

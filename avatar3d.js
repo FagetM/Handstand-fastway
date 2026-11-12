@@ -65,7 +65,7 @@ const OLD = {wraps:"wraps_o", band:"band_o", cap:"cap_o", shoes:"shoes_k", socks
 export function mount(host, opts = {}){
   const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:!!opts.manual});
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setPixelRatio(opts.manual ? 1 : Math.min(window.devicePixelRatio || 1, 2));
   const canvas = renderer.domElement; canvas.style.cssText = "display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab";
   canvas.setAttribute("role","img");
   host.append(canvas);
@@ -185,7 +185,7 @@ export function mount(host, opts = {}){
     pivot.position.y = jump;
   }
   function size(){ const w = host.clientWidth || 300, h = host.clientHeight || 240; renderer.setSize(w, h, false); cam.aspect = w / h;
-    if (opts.bare) { cam.position.set(0, 1.12, 4.75); cam.lookAt(0, 1.06, 0); } else { cam.position.set(0, 1.3, 5.6); cam.lookAt(0, 0.98, 0); }
+    if (opts.bare) { cam.position.set(0, 1.08, 4.25); cam.lookAt(0, 1.06, 0); } else { cam.position.set(0, 1.3, 5.6); cam.lookAt(0, 0.98, 0); }
     cam.updateProjectionMatrix(); }
 
   // célébration : flexion, saut bras levés avec un tour sur soi, confettis, puis retour à la posture
@@ -266,6 +266,8 @@ export function mount(host, opts = {}){
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
     jump(pose){ queue = []; seg = null; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
     busy(){ return !!(seg || queue.length || wob); },
+    moving(){ return !!(seg || queue.length); },
+    canvas,
     png(){ return canvas.toDataURL("image/png"); },
   };
 }
