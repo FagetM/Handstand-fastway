@@ -137,7 +137,15 @@ a.yt .t{font-weight:600;line-height:1.3}
 #dBest{margin-top:16px}
 
 /* personnage, niveau */
-#av3d{height:260px;margin-bottom:18px;border-radius:12px;background:var(--raise);overflow:hidden}
+#av3d{position:relative;height:280px;margin-bottom:18px;border-radius:12px;background:var(--raise);overflow:hidden}
+.wbtn{position:absolute;right:10px;bottom:10px;min-height:40px;padding:8px 14px;border-radius:8px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line);font-weight:600;font-size:14px}
+#fitDlg{max-height:58dvh}
+.slot{margin-top:18px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.chip{min-height:40px;padding:8px 14px;border-radius:20px;box-shadow:inset 0 0 0 1px var(--line);font-size:14px}
+.chip.on{background:var(--txt);color:var(--bg);box-shadow:none;font-weight:600}
+.chip:disabled{color:var(--mut);cursor:default}
+.chip small{margin-left:6px;font-size:12px}
 .hero{display:flex;gap:18px;align-items:center;margin-bottom:24px}
 .av{flex:none;position:relative;width:104px;height:104px;display:grid;place-items:center}
 .av svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
@@ -236,7 +244,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 <main>
   <section id="v-path" class="view on">
     <div class="goal">
-      <div id="av3d" hidden></div>
+      <div id="av3d" hidden><button class="wbtn" id="fitOpen">Vestiaire</button></div>
       <div class="hero">
         <div class="av" id="av"></div>
         <div class="grow">
@@ -320,6 +328,15 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 </dialog>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="fitDlg">
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div class="grow"><div class="lab">Personnage</div><h2 style="margin-top:6px">Vestiaire</h2></div>
+    <button class="x" id="fitX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  </div>
+  <div class="mut" style="margin-top:6px">Les tenues se débloquent avec les niveaux. Touche le personnage pour le voir fêter.</div>
+  <div id="fitBody"></div>
+</dialog>
 
 <dialog id="sd">
   <div style="display:flex;gap:12px;align-items:flex-start">
@@ -680,7 +697,34 @@ const POSE3D = {st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"
   in_holds:"hs_straddle", in_changes:"hs_straddle", in_tuck:"hs_tuck", in_str40:"hs", in_str60:"hs", in_7s:"hs_seven1", in_7d:"hs_seven",
   in_toes:"hs", in_toes7:"hs_seven", oa_flaghoriz:"hs_straddle", oa_shift:"hs_straddle", oa_finger:"oahs", oa_strarm:"oahs", oa_oahs:"oahs",
   pr_straddle:"hs_straddle", pr_pike:"hs"};
-let A3 = null, a3want = null, a3tried = false;
+let A3 = null, a3want = null, a3tried = false, lastZ = null;
+// Vestiaire : [identifiant, nom, niveau requis]. La médaille se débloque en terminant une quête principale.
+const WARD = [
+  {slot:"skin", name:"Peau", items:[["s1","Claire"],["s2","Hâlée"],["s3","Mate"],["s4","Foncée"]]},
+  {slot:"hair", name:"Cheveux", items:[["none","Rasés"],["short","Courts"],["bun","Chignon"]]},
+  {slot:"top", name:"Haut", items:[["none","Torse nu"],["tank_k","Débardeur noir"],["tee_w","T-shirt blanc"],["tee_k","T-shirt noir",3],["tee_o","T-shirt orange",5],["tee_b","T-shirt bleu",7]]},
+  {slot:"bottom", name:"Bas", items:[["short_k","Short noir"],["short_g","Short gris",2],["short_o","Short orange",4],["pants_k","Pantalon noir",6]]},
+  {slot:"feet", name:"Pieds", items:[["bare","Pieds nus"],["socks","Chaussettes",2],["shoes","Chaussures",4]]},
+  {slot:"wrists", name:"Poignets", items:[["none","Rien"],["wraps","Bandes de poignets",3]]},
+  {slot:"head", name:"Tête", items:[["none","Rien"],["band","Bandeau",5],["cap","Casquette",8]]},
+  {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt","Ceinture",6],["medal","Médaille","quest"]]},
+];
+const FIT0 = {skin:"s2", hair:"short", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
+const fit = () => Object.assign({}, FIT0, S.fit || {});
+function renderFit(){
+  const box = $("fitBody"), F = fit(), Z = lastZ || stats(); box.textContent = "";
+  WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const row = el("div","chips");
+    w.items.forEach(([id, name, need])=>{
+      const ok = !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : Z.lvl >= need);
+      const b = el("button","chip" + (F[w.slot] === id ? " on" : ""), name); b.disabled = !ok; b.setAttribute("aria-pressed", F[w.slot] === id);
+      if (!ok) b.append(el("small",null, need === "quest" ? "quête terminée" : "niveau " + need));
+      b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } renderFit(); };
+      row.append(b); });
+    s.append(row); box.append(s); });
+}
+$("fitOpen").onclick = () => { renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
+$("fitX").onclick = () => $("fitDlg").close();
+$("fitDlg").addEventListener("click", e => { if (e.target === $("fitDlg")) $("fitDlg").close(); });
 function setAvatar(s){
   a3want = s; if (A3) { A3.set(s); return; }
   if (a3tried) return; a3tried = true;
@@ -708,12 +752,14 @@ function render(){
   $("av").innerHTML = '<svg class="ring" viewBox="0 0 104 104" width="104" height="104" fill="none" aria-hidden="true"><circle cx="52" cy="52" r="' + R + '" stroke="var(--line)" stroke-width="4"/>'
     + '<circle cx="52" cy="52" r="' + R + '" stroke="var(--acc)" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + (C*frac).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><span class="me">' + figMini(stage, 72) + '</span>';
   $("av").setAttribute("aria-label","Ton personnage, niveau " + Z.lvl);
-  setAvatar({pose:POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), frac, rank:RANKS.indexOf(Z.rank), level:Z.lvl, label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
+  setAvatar({pose:POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), frac, level:Z.lvl, fit:fit(), label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
+  lastZ = Z;
   $("lvRank").textContent = Z.rank; $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d'expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
   if (seen){ const nb = Z.badges.find(b=>b.ok && !seen.b.includes(b.id));
-    if (nb) toast("Badge débloqué : " + nb.name); else if (Z.lvl > seen.lvl) toast("Niveau " + Z.lvl + " · " + Z.rank); }
+    if (nb) toast("Badge débloqué : " + nb.name); else if (Z.lvl > seen.lvl) toast("Niveau " + Z.lvl + " · " + Z.rank);
+    if ((nb || Z.lvl > seen.lvl) && A3) A3.celebrate(); }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
