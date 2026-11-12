@@ -159,6 +159,7 @@ a.lk{color:var(--mut);font-size:14px;white-space:nowrap;padding:6px 0}
 .how{font-size:14px;margin-top:6px}
 #sdHow{font-size:15px;margin:14px 0 0}
 #sdHow:empty{display:none}
+#sdVid a{display:inline-block}
 .lex dt{font-weight:600;margin-top:12px}
 .lex dd{margin:2px 0 0;color:var(--mut);font-size:14px}
 .sets.one{grid-template-columns:1fr}
@@ -270,6 +271,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <button class="x" id="sdX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   </div>
   <p id="sdHow"></p>
+  <div id="sdVid"></div>
   <div class="clock" id="sdClock">0,0</div>
   <div class="mut" id="sdHint"></div>
   <div class="btns" id="sdReps"><input type="number" id="sdNum" min="0" inputmode="numeric" aria-label="Répétitions réussies"><button class="btn" id="sdSave">Enregistrer</button></div>
@@ -724,7 +726,8 @@ const restTxt = s => !s.rest ? "libre" : s.rest % 60 ? s.rest + (s.restMax ? " �
 const pTarget = (b, s) => { const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
 const extLink = (href, txt) => { const a = el("a","lk",txt); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
 const ytLink = (id, txt) => extLink("https://www.youtube.com/watch?v=" + id, txt);
-const vidLink = b => b.yt ? ytLink(b.yt, "Vidéo") : b.drive ? extLink("https://drive.google.com/file/d/" + b.drive + "/view", "Vidéo") : null;
+const drv = id => "https://drive.google.com/file/d/" + id + "/view";
+const vidLink = b => b.yt ? ytLink(b.yt, "Vidéo") : b.url ? extLink(b.url, "Vidéo") : b.drive ? extLink("https://drive.google.com/file/d/" + b.drive + "/view", "Vidéo") : null;
 
 // Programmes chiffrés publiés avec l'app
 const normPass = s => String(s || "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -858,7 +861,7 @@ function renderSess(){
     c.append(row); box.append(c);
   });
   const foot = el("div","blk");
-  if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(k.url ? extLink(k.url, k.name) : ytLink(k.yt, k.name))); foot.append(l); }
+  if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(k.url ? extLink(k.url, k.name) : k.drive ? extLink(drv(k.drive), k.name) : ytLink(k.yt, k.name))); foot.append(l); }
   const lx = el("details"); lx.append(el("summary",null,"Lexique : les termes des programmes"));
   const dl = el("dl","lex"); LEX.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); lx.append(dl); foot.append(lx);
   const fb = el("div","btns"), bi = el("button","btn line","Importer un fichier"), br = el("button","btn warn","Retirer");
@@ -896,6 +899,8 @@ function openSet(bi, si){
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
+  const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
+  if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l'exercice"; sv.append(vl); }
   const ck = $("sdClock"); ck.className = "clock";
   if (fx){
     const timed = s.dur != null;
@@ -932,7 +937,7 @@ function startRest(r, nx, title){
   const end = Date.now() + r.rest*1000, ck = $("sdClock"); let done = false;
   sd.mode = "rest"; sd.next = nx;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
-  $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = "";
+  $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Continuer" : "Terminer la séance";
   const nb = nx && pDay(selDay).blocks[nx[0]];
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
