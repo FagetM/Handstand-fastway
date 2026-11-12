@@ -1,12 +1,13 @@
 // Service worker : l'app s'ouvre instantanément depuis l'appareil, même hors connexion (salle, parc…).
 // Les fichiers de l'app sont mis en cache à l'installation ; chaque nouvelle version change CACHE, s'installe en arrière-plan
 // puis attend que l'utilisateur accepte la mise à jour (ou ferme l'app), pour ne jamais couper une séance en cours.
-const CACHE = "hs-fastway-v42", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
+const CACHE = "hs-fastway-v43", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png",
   "fonts/barlow-condensed-600.woff2", "avatar3d.js", "spr-worker.js", "vendor/three.module.min.js"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache:"reload"})))));
+  e.waitUntil(caches.open(CACHE).then(c => Promise.all(CORE.map(u => c.add(new Request(u, {cache:"reload"})).catch(() => {}))))
+    .then(() => caches.open(CACHE)).then(c => c.match("index.html")).then(r => { if (!r) throw new Error("index manquant"); }));
 });
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== RUNTIME && k !== SPRITES).map(k => caches.delete(k)))).then(() => self.clients.claim()));

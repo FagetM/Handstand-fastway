@@ -1798,14 +1798,19 @@ $("gateForm").onsubmit = async e => {
 render();
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n'est appliquée que si tu l'acceptes, jamais pendant une séance.
+let updating = false, reloaded = false;
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("sw.js").then(reg => {
     const offer = () => { if (reg.waiting && navigator.serviceWorker.controller) $("updBar").hidden = false; };
     offer(); reg.addEventListener("updatefound", () => { const w = reg.installing; if (w) w.addEventListener("statechange", () => { if (w.state === "installed") offer(); }); });
-    $("updGo").onclick = () => { if (reg.waiting) reg.waiting.postMessage("skip"); };
+    // un toucher suffit : on active la nouvelle version, puis on recharge ; si le navigateur ne répond pas, on recharge quand même
+    $("updGo").onclick = async () => { const b = $("updGo"); b.disabled = true; b.textContent = "Mise à jour…"; updating = true;
+      try { await reg.update(); } catch(e){}
+      const w = reg.waiting || reg.installing; if (w) w.postMessage("skip");
+      setTimeout(() => location.reload(), w ? 4000 : 300); };
     document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(()=>{}); });
   }).catch(()=>{});
-  let reloaded = false; navigator.serviceWorker.addEventListener("controllerchange", () => { if (reloaded || !$("updBar") || $("updBar").hidden) return; reloaded = true; location.reload(); });
+  navigator.serviceWorker.addEventListener("controllerchange", () => { if (!updating || reloaded) return; reloaded = true; location.reload(); });
 }
 // Installation : le navigateur signale quand l'app peut être installée ; on propose alors un bouton, qu'on peut refuser une fois pour toutes.
 { let deferred = null; const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
