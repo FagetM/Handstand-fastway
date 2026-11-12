@@ -118,6 +118,7 @@ export const SCRIPTS = {
   lo_elbow:  {s:[["fold",0.45,0],["lever",0.7,1.9]]},
   lo_croc:   {s:[["fold",0.45,0],["lever",0.6,0.4],["lv_croc",0.7,1.6]]},
   lo_qdr:    {cut:true, yaw:-0.5, s:[["crouch",0.45,0],["lv_qdr0",0.5,0.1],["lv_qdr",0.8,1.0],["lv_qdr2",0.7,0.9],["lv_qdr",0.6,0.3],["lv_qdr0",0.6,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_qdr2"},
+  me:        {s:[["stand",0.3,1.2],["cheer",0.5,0.7],["stand",0.5,0.4],["cheer",0.5,0.7],["stand",0.5,0.8]], still:"stand"},
   pl_lean:   {s:[["fold",0.45,0],["pl_lean",0.5,2.2]]},
   pl_tuck:   {s:[["fold",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
   pl_adv:    {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_adv",0.6,1.6]]},

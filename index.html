@@ -299,6 +299,35 @@ ul.plan li{margin:7px 0}
 .fold-h .chev{margin-left:auto;transition:transform .2s}
 .fold-h[aria-expanded=true] .chev{transform:rotate(90deg)}
 #sess[hidden]{display:none}
+/* le chemin */
+.jr2 .jr-e path{stroke-width:7;stroke-opacity:.18;stroke-dasharray:none}
+.jr2 .jr-e path.on{stroke:var(--txt);stroke-opacity:.9}
+.jr2 .jr-e path.go{stroke:var(--acc);stroke-opacity:1;stroke-dasharray:1 14;stroke-width:7}
+.sign{position:absolute;left:0;right:0;display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:var(--raise);z-index:2;flex-wrap:wrap}
+.sign .md{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:600 16px/1 var(--disp);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
+.sign.done .md{background:var(--txt);color:var(--bg);box-shadow:none}
+.sign.cur{box-shadow:inset 0 0 0 2px var(--acc)}.sign.cur .md{box-shadow:inset 0 0 0 2.5px var(--acc);color:var(--acc)}
+.sign.lk{opacity:.75}
+.sign .sname{font-size:19px}
+.sign .mut{font-size:12px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.sign .cnt{font:600 16px/1 var(--disp);color:var(--mut)}
+.sign .vchip{margin:0;padding:4px 10px;min-height:28px}
+.sign.hard .sname::after{content:"Difficile";margin-left:8px;padding:2px 8px;border-radius:10px;font:600 11px/1.4 system-ui,sans-serif;vertical-align:middle;background:color-mix(in srgb,var(--acc) 22%,transparent);color:var(--acc)}
+.chest{position:absolute;z-index:1;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:4px;width:110px;color:var(--mut)}
+.chest svg{padding:10px;box-sizing:content-box;border-radius:16px;background:var(--raise)}
+.chest.open{color:#c9a227}.chest.open svg{background:color-mix(in srgb,#c9a227 18%,var(--raise))}
+.chest .cl{font-size:12px;font-weight:600;text-align:center;line-height:1.2}
+.me{position:absolute;z-index:3;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;pointer-events:none}
+.me .sp{position:relative}
+.me .tag{margin-top:-8px;padding:3px 10px;border-radius:10px;background:var(--acc);color:#fff;font:600 12px/1 var(--disp);letter-spacing:.06em;text-transform:uppercase}
+.me.lane .tag{margin-top:-4px}
+.jr2 .jn.cur .c{width:84px;height:84px}
+#qkDlg{max-height:70dvh}
+.qktop{display:flex;gap:14px;align-items:center}
+.qkart{position:relative;flex:none;width:120px;height:120px;border-radius:50%;background:var(--raise);overflow:hidden}
+.qktop h2{margin:4px 0 6px;font-size:24px}
+.qktop .pips{margin:6px 0 8px}
+.qktop .pips span{color:var(--txt)}
 /* le parcours */
 .ptop{position:sticky;top:0;z-index:4;display:flex;gap:12px;align-items:center;margin:0 -20px 14px;padding:10px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
 .ptop .here{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:#fff}
@@ -345,7 +374,7 @@ ul.plan li{margin:7px 0}
 .jr-t{position:absolute;left:0;right:0;text-align:center}
 .jr-l{position:absolute;transform:translateX(-50%);width:31%;text-align:center}
 .jr-l .sname{font-size:17px}
-.jr-l .mut{font-size:11.5px;line-height:1.25;margin-top:3px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.jr-l .mut{font-size:11.5px;line-height:1.25;margin-top:3px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .jr-l.open .mut{color:var(--acc)}
 .jn{position:absolute;z-index:1;transform:translateX(-50%);width:112px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
 .jn .c{position:relative;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--raise);transition:transform .25s}
@@ -566,6 +595,11 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   <div id="vdBody"></div>
 </dialog>
 
+<dialog id="qkDlg">
+  <div style="display:flex;justify-content:flex-end;margin:-6px -6px 0 0"><button class="x" id="qkX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button></div>
+  <div id="qkBody"></div>
+</dialog>
+
 <dialog id="plDlg">
   <div style="display:flex;justify-content:flex-end"><button class="x" id="plX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button></div>
   <div id="plBody"></div>
@@ -640,12 +674,10 @@ const TREE = [
       yt:[["OnXxclKvCTA","Équilibre poitrine face au mur"]]},
   ], videos:[["Tomber : pourquoi apprendre à tomber, et la roue ratée","Falling: why you must learn to fall & the terrible cartwheel"],["Tomber : 5 façons de prendre confiance","5 ways to gain confidence"],["Tomber : pourquoi poitrine face au mur ?","Why chest to wall?"],["Au mur : position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["Au mur : comment y monter","Entering the wall"],["Au mur : où est l'équilibre, et tirer avec les talons","Where is balance & heel pulls"],["Au mur : jambes en ciseaux","Split leg balance"]]},
   {id:"b1", name:"Débutant 1", en:"Beginner 1", ms:[
-    {id:"b1_free5", name:"Équilibre libre, jambes en ciseaux", en:"Freestanding 5s In Split Leg", type:"hold", target:5, req:["st_split","st_bailc2w"],
-      desc:"Sans mur. Les jambes ouvertes en ciseaux servent de balancier, comme la perche d'un funambule : c'est la forme la plus facile à tenir.",
+    {id:"b1_free5", name:"Équilibre libre, jambes en ciseaux", en:"Freestanding 5s In Split Leg · Split Leg Hold 15s", type:"hold", target:15, req:["st_split","st_bailc2w"],
+      desc:"Sans mur. Les jambes ouvertes en ciseaux servent de balancier, comme la perche d'un funambule : c'est la forme la plus facile à tenir. 5 s, puis 10 s, puis 15 s : tu apprends à corriger avec les doigts au lieu de redescendre.",
       yt:[["FTnKgUnmD2E","Équilibre jambes en ciseaux"]]},
-    {id:"b2_free15", name:"Équilibre libre, jambes en ciseaux", en:"Split Leg Hold 15s", type:"hold", target:15, req:["b1_free5"],
-      desc:"La même forme, tenue 15 s : tu apprends à corriger avec les doigts et les poignets au lieu de redescendre."},
-    {id:"b2_str15", name:"Équilibre droit, jambes serrées", en:"Straight 15s", type:"hold", target:15, req:["b2_free15"],
+    {id:"b2_str15", name:"Équilibre droit, jambes serrées", en:"Straight 15s", type:"hold", target:15, req:["b1_free5"],
       desc:"Jambes jointes, corps en ligne. Plus de balancier : tout l'équilibre vient des mains et des épaules."},
   ], videos:[["Au mur : jambes en ciseaux","Split leg balance"],["Au mur : tenues poitrine face au mur","Chest to wall holds"],["Au mur : quitter le mur en tirant avec les orteils","Leaving the wall with toe pulls"],["Monter en équilibre : limiter les variables pour être régulier","Limit the variables: tricks to increase your consistency"],["Monter en équilibre : la montée de base et la règle du 50/50","The basic kick up & 50/50 rule"]]},
   {id:"b2", name:"Débutant 2", en:"Beginner 2", ms:[
@@ -727,7 +759,7 @@ const TREE = [
   ], videos:[]},
   {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l'équilibre","The undisputed fastest way to learn to handstand"]]},
 ];
-const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_free15","b2_str15"];
+const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
   {id:"both", name:"Équilibre sur un bras et full planche", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","pl_lean","oa_shift","pl_tuck","oa_finger","pl_adv","oa_strarm","pl_frog","pl_pike","pl_straddle","oa_oahs","pl_full"]},
@@ -842,7 +874,11 @@ const KEY = "hs-fastway-v1";
 const blank = () => ({goal:"both", countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
 let S = blank();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
-S.sessOpen = false;   // le détail de la séance est replié à chaque ouverture
+S.sessOpen = false;
+// fusion des deux « jambes en ciseaux » : l'ancienne figure de 15 s rejoint celle de 5 s
+if (S.ms.b2_free15) { const a = S.ms.b1_free5 || (S.ms.b1_free5 = {best:0, done:false}), b = S.ms.b2_free15; a.best = Math.max(a.best || 0, b.best || 0); a.done = !!b.done; delete S.ms.b2_free15; }
+else if (S.ms.b1_free5 && S.ms.b1_free5.done && (S.ms.b1_free5.best || 0) < 15 && !S.migr15) { S.ms.b1_free5.done = false; }
+S.migr15 = true;   // le détail de la séance est replié à chaque ouverture
 S.goal = "both";   // une seule quête désormais : les deux figures finales, menées de front
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
@@ -967,95 +1003,103 @@ function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().
 const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
 let jrScrolled = false;
 const tierOpen = {};
+// Coffres : un par étage, ouvert quand l'étage est terminé ; chacun débloque une tenue.
+const CHESTS = {starter:["head","band_b","Bandeau bleu"], b1:["wrists","wraps_b","Bandes de poignets bleues"], b2:["top","tank_b","Débardeur bleu"], inter:["bottom","short_p","Short violet"],
+  onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"]};
+// Estimation, à ton rythme : semaines pour atteindre la cible d'une figure (d'après tes progrès enregistrés, sinon une estimation prudente)
+function eta(m){
+  const x = st(m.id); if (x.done || !m.target || m.type === "check") return null; const T = m.target;
+  const logs = S.log.filter(l=>(l.id === m.id || l.id === "pg:" + m.name) && typeof l.v === "number"); let wk = null;
+  if (logs.length >= 2) { const days = (Date.now() - logs[0].t) / 864e5, gain = x.best - logs[0].v; if (days >= 3 && gain > 0) wk = (T - x.best) / (gain / (days / 7)); }
+  if (wk == null) wk = 1 + 4 * (1 - Math.min(1, x.best / T));
+  return Math.max(1, Math.min(26, Math.round(wk)));
+}
+const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
+// ---------- Le parcours : un seul chemin qui serpente, figure après figure ; il se divise en trois voies au niveau difficile.
 function journey(nextId){
-  const RH = 168, BH = 74, NODE = 72, pos = {}, items = [], wrap = el("div","jr");
-  let y = 0, edges = "", n = 0;
-  // état d'un étage : fait, en cours (au moins une figure accessible à travailler) ou à venir
-  const tState = ms => { const main = ms.filter(m=>!m.alt); return main.every(m=>st(m.id).done) ? "done" : ms.some(m=>!st(m.id).done && !msLocked(m)) ? "cur" : "lk"; };
-  const isOpen = (key, state) => tierOpen[key] != null ? tierOpen[key] : state === "cur";
-  const banner = (title, sub, done, tot, cls, vid, key, state, open) => { items.push({k:"b", y, title, sub:open ? sub : "", done, tot, cls, vid:open ? vid : null, key, state, open, n:++n}); y += (open && sub ? BH + 34 : BH) + (open && vid ? 40 : 0) + (open ? 46 : 8); };
-  const strip = (ms, state) => { items.push({k:"s", y, ms, state}); y += 86; };
-  const place = (id, x, yy, small) => { pos[id] = [x, yy + NODE/2, small]; };
-  const XS = {1:[50], 2:[30,70], 3:[18,50,82]};
-  // tronc commun
+  const RH = 156, SH = 84, X = [50, 70, 78, 70, 50, 30, 22, 30], pos = {}, items = [], wrap = el("div","jr jr2");
+  let y = 10, k = 0, prev = null, edges = "", n = 0;
+  const seg = (a, b, cls) => { const my = (a[1] + b[1]) / 2; edges += '<path class="' + cls + '" d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"/>'; };
+  const eCls = (doneA, idB, lkB) => doneA && (idB ? st(idB).done : false) ? "on" : doneA && !lkB ? "go" : "";
+  const sign = (title, sid, sub) => { const ms = sid === "hard" ? HARD.flatMap(h=>SEC[h[0]].ms) : SEC[sid].ms, dn = ms.filter(m=>st(m.id).done).length,
+      state = ms.filter(m=>!m.alt).every(m=>st(m.id).done) ? "done" : ms.some(m=>!st(m.id).done && !msLocked(m)) ? "cur" : "lk";
+    items.push({k:"b", y, title, sid, sub, dn, tot:ms.length, state, n:++n}); y += SH; };
+  const node = (id, x, small) => { pos[id] = [x, y + 40, small]; items.push({k:"n", id}); };
+  const chest = (sid, x, lane) => { const done = sid === "hard" ? false : secDone(SEC[sid]); pos["chest_" + sid] = [x, y + 34]; items.push({k:"c", sid, x, y, done, lane}); };
+  const step = (id, small) => { const x = X[k++ % X.length]; node(id, x, small); if (prev) seg(pos[prev], pos[id], eCls(prev.startsWith("chest_") ? chestDone(prev) : st(prev).done, id, msLocked(MS[id]) && !st(id).done)); prev = id; y += RH; };
+  const chestDone = cid => secDone(SEC[cid.slice(6)]);
+  // le tronc commun : une figure par ligne, dans l'ordre du parcours
   ["starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
-    const state = tState(s.ms), open = isOpen(sid, state);
-    banner(s.name, TIER_TXT[sid] || "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, state === "done" ? "done" : "", sid, sid, state, open);
-    if (!open) { strip(s.ms, state); return; }
-    const main = s.ms.filter(m=>!m.alt), by = []; main.forEach(m=>{ (by[d(m)] || (by[d(m)] = [])).push(m); });
-    by.forEach(r=>{ for (let i = 0; i < r.length; i += 3){ const row = r.slice(i, i + 3);
-      row.sort((a,b)=>{ const mx = m => { const P = (m.req||[]).filter(q=>pos[q]); return P.length ? P.reduce((n,q)=>n + pos[q][0], 0)/P.length : 50; }; return mx(a) - mx(b); });
-      row.forEach((m,j)=>{ const P = (m.req||[]).filter(q=>pos[q]); place(m.id, row.length === 1 ? (P.length === 1 ? Math.max(26, Math.min(74, pos[P[0]][0] + (y/RH % 2 < 1 ? 14 : -14))) : 50) : XS[row.length][j], y); });
-      y += RH; } });
-    const alt = s.ms.filter(m=>m.alt);
-    if (alt.length){ items.push({k:"t", y:y - 14, text:"Bonus · hors du chemin"}); y += 14; alt.forEach((m,j)=>place(m.id, (XS[alt.length] || XS[3])[j], y, true)); y += RH - 22; }
-  });
-  // niveau difficile : trois voies côte à côte
-  const hardMs = HARD.flatMap(([sid])=>SEC[sid].ms);
-  { const state = tState(hardMs), open = isOpen("hard", state);
-    banner("Niveau difficile", "Trois voies : choisis la tienne, ou mène-les de front.", hardMs.filter(m=>st(m.id).done).length, hardMs.length, "hard", null, "hard", state, open);
-    if (!open) strip(hardMs, state);
-    else { const laneY = y; y += 138;
-      HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], lo = !msLocked(first) || st(first.id).done;
-        items.push({k:"l", y:laneY, x:XS[3][i], name, open:lo, vid:sid, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")});
-        s.ms.forEach((m,k)=>place(m.id, XS[3][i], y + k*RH)); });
-      y += Math.max(...HARD.map(([sid])=>SEC[sid].ms.length)) * RH; } }
-  // quête annexe
-  const low = SEC.low; banner("Bonus · " + low.name, "En appui sur les coudes, tout près du sol. Elles ne mènent pas à ta quête : c'est pour varier, dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "", "low", "low", secDone(low) ? "done" : "side", isOpen("low", "lk"));
-  if (isOpen("low", "lk")) { low.ms.forEach((m,j)=>place(m.id, XS[3][j], y)); y += RH; } else strip(low.ms, secDone(low) ? "done" : "side");
-  const H = y;
-  // liens : tronc commun quand plusieurs jalons d'une ligne partagent leurs prérequis
-  const curve = (a, b, cls) => { const horiz = Math.abs(a[1] - b[1]) < 2, my = (a[1]+b[1])/2;
-    edges += '<path class="' + cls + '" d="M' + a[0] + ' ' + a[1] + (horiz ? 'L' + b[0] + ' ' + b[1] : 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1]) + '"/>'; };
-  const eCls = (r, id) => st(r).done && st(id).done ? "on" : st(r).done && !msLocked(MS[id]) && !st(id).done ? "go" : "";
-  const trunk = new Set(["starter","b1","b2","inter"]), groups = {};
-  Object.keys(pos).forEach(id=>{ const m = MS[id]; if (m.alt) return; const rq = (m.req||[]).filter(r=>pos[r] && (MS[r].sec === m.sec || (trunk.has(MS[r].sec) && trunk.has(m.sec)))).sort(); if (!rq.length) return;
-    const k = rq.join("+") + "@" + pos[id][1]; (groups[k] || (groups[k] = {rq, ids:[]})).ids.push(id); });
-  Object.values(groups).forEach(g=>{
-    if (g.ids.length < 2 || g.rq.length < 2) { g.ids.forEach(id=>g.rq.forEach(r=>curve(pos[r], pos[id], eCls(r, id)))); return; }
-    const xs = g.ids.map(id=>pos[id][0]), yy = pos[g.ids[0]][1], jy = yy - RH/2 + 2, jx = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const allReq = g.rq.every(r=>st(r).done), any = g.ids.some(id=>st(id).done), c = allReq ? (any ? "on" : "go") : "";
-    g.rq.forEach(r=>curve(pos[r], [jx, jy], st(r).done ? c || "go" : ""));
-    edges += '<path class="' + c + '" d="M' + Math.min(...xs) + ' ' + jy + 'H' + Math.max(...xs) + '"/>';
-    g.ids.forEach(id=>{ edges += '<path class="' + (allReq ? (st(id).done ? "on" : "go") : "") + '" d="M' + pos[id][0] + ' ' + jy + 'V' + yy + '"/>'; }); });
-  const cv = el("div","jr-c"); cv.style.height = H + "px";
+    sign(s.name, sid, TIER_TXT[sid]);
+    s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
+    s.ms.filter(m=>m.alt).forEach(m=>{ const x = X[(k - 1) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40, true]; items.push({k:"n", id:m.id, alt:true}); y += 0; });
+    const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (secDone(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
+  // le niveau difficile : trois voies
+  sign("Niveau difficile", "hard", "Trois voies : choisis la tienne, ou mène-les de front.");
+  const laneY = y, LX = [17, 50, 83]; y += 104;
+  HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], lo = !msLocked(first) || st(first.id).done;
+    items.push({k:"l", y:laneY, x:LX[i], name, open:lo, sid, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")}); });
+  const y0 = y; let ymax = y;
+  HARD.forEach(([sid], i)=>{ let py = y0, last = "chest_inter"; SEC[sid].ms.forEach(m=>{ pos[m.id] = [LX[i], py + 40, false]; items.push({k:"n", id:m.id, lane:true});
+      seg(pos[last], pos[m.id], eCls(last.startsWith("chest_") ? chestDone(last) : st(last).done, m.id, msLocked(m) && !st(m.id).done)); last = m.id; py += RH; });
+    items.push({k:"c", sid, x:LX[i], y:py, done:secDone(SEC[sid]), lane:true}); pos["chest_" + sid] = [LX[i], py + 34]; seg(pos[last], pos["chest_" + sid], st(last).done ? (secDone(SEC[sid]) ? "on" : "go") : ""); ymax = Math.max(ymax, py + RH); });
+  y = ymax + 10;
+  // hors parcours : les figures au sol
+  sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
+  SEC.low.ms.forEach((m,j)=>{ pos[m.id] = [[20,50,80][j], y + 40, false]; items.push({k:"n", id:m.id}); if (j) seg(pos[SEC.low.ms[j-1].id], pos[m.id], eCls(st(SEC.low.ms[j-1].id).done, m.id, msLocked(m) && !st(m.id).done)); });
+  y += RH; chest("low", 50); seg(pos[SEC.low.ms[2].id], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20;
+  const H = y, cv = el("div","jr-c"); cv.style.height = H + "px";
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
-    if (it.k === "b"){ const b = el("div","jr-b " + it.cls + " " + it.state + (it.open ? " open" : "")); b.style.top = it.y + "px"; b.setAttribute("role","button"); b.tabIndex = 0; b.setAttribute("aria-expanded", it.open);
-      const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.key === "low" ? "+" : String(it.n);
-      const g = el("div","grow"); g.append(el("div","lab", it.key === "low" ? "Hors parcours" + (it.state === "done" ? " · terminé" : "") : "Étage " + it.n + (it.state === "done" ? " · terminé" : it.state === "cur" ? " · en cours" : " · à venir")), el("div","sname",it.title)); if (it.sub) g.append(el("div","mut",it.sub));
-      const bar = el("div","bar"), i = el("i"); i.style.width = (it.tot ? it.done/it.tot*100 : 0) + "%"; bar.append(i);
-      const row = el("div","r"); row.append(md, g, el("span","cnt", it.done + "/" + it.tot), icon("chev","chev")); b.append(row, bar); if (it.vid && SEC[it.vid].videos.length) b.append(vidChip(it.vid));
-      const tog = () => { tierOpen[it.key] = !it.open; render(); }; b.onclick = tog; b.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tog(); } }; cv.append(b); }
-    else if (it.k === "s"){ const s = el("button","jr-s " + it.state); s.style.top = it.y + "px"; const pile = el("span","pile");
-      it.ms.slice(0, 7).forEach(m=>{ const sp = el("span","sp"); sp.dataset.pose = poseId(m.id); sp.dataset.anim = m.id; sp.dataset.lk = "1"; sprPaint(sp, 46); const w = el("span","pc" + (st(m.id).done ? " ok" : "")); w.append(sp); pile.append(w); });
-      const dn = it.ms.filter(m=>st(m.id).done).length;
-      s.append(pile, el("span","st", it.state === "done" ? dn + " figures maîtrisées · revoir" : it.state === "lk" ? it.ms.length + " figures à découvrir" : (it.ms.length - dn) + " figures à travailler · ouvrir"));
-      const prev = items[items.indexOf(it) - 1]; s.onclick = () => { tierOpen[prev.key] = true; render(); }; cv.append(s); }
-    else if (it.k === "t"){ const t = el("div","jr-t lab", it.text); t.style.top = it.y + "px"; cv.append(t); }
-    else { const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); if (SEC[it.vid].videos.length) { const vc = vidChip(it.vid); vc.firstChild.textContent = "Vidéos"; l.append(vc); } cv.append(l); }
-  });
-  Object.keys(pos).forEach(id=>{
-    const m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), k = lvlOf(m), cur = id === nextId, pose = poseId(id);
-    const b = el("button","jn" + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (p[2] ? " sm" : "") + (m.alt ? " alt" : "")); b.dataset.id = id;
-    b.style.left = p[0] + "%"; b.style.top = (p[1] - NODE/2) + "px";
-    b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + ", niveau " + k + " sur " + L.length + (lk ? ", verrouillé" : ""));
-    const c = el("span","c"), R = 39, C = 2*Math.PI*R, seg = C / L.length, gap = L.length > 1 ? 5 : 0;
-    let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
-    L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < k ? "f" : "") + '" stroke-dasharray="' + (seg - gap).toFixed(1) + ' ' + (C - seg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*seg + gap/2)).toFixed(1) + '"/>'; });
-    c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = pose; sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, p[2] ? 72 : 90); c.append(sp);
-    if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
-    if (cur) b.append(el("span","here","Prochaine étape"));
-    b.append(c, el("span","n", m.name));
-    const nx = nextStep(m);
-    b.append(el("span","g", x.done ? "Maîtrisé" : lk ? (m.target ? goalTxt(m) : "Verrouillé") : L.length > 1 ? "Niv. " + k + "/" + L.length + " · " + unitTxt(m, nx) : m.alt ? "Bonus" : "À réussir"));
-    b.onclick = () => openMs(id); cv.append(b);
+    if (it.k === "b"){ const b = el("div","sign " + it.state + (it.sid === "hard" ? " hard" : "")); b.style.top = it.y + "px";
+      const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.sid === "low" ? "+" : String(it.n);
+      const g = el("div","grow"); g.append(el("div","sname", it.title), el("div","mut", it.sub));
+      b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); if (SEC[it.sid] && SEC[it.sid].videos.length) { const vc = vidChip(it.sid); vc.firstChild.textContent = "Vidéos"; b.append(vc); } cv.append(b); }
+    else if (it.k === "l"){ const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
+    else if (it.k === "c"){ const C = CHESTS[it.sid], c = el("button","chest" + (it.done ? " open" : "")); c.style.left = it.x + "%"; c.style.top = it.y + "px";
+      c.innerHTML = it.done ? '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 22h32v16H8z"/><path d="M8 22l4-12h24l4 12" fill="currentColor" fill-opacity=".25"/><path d="M24 26v6"/></svg>'
+        : '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 20h32v18H8z"/><path d="M8 20c0-6 4-10 16-10s16 4 16 10"/><path d="M8 26h32"/><rect x="21" y="23" width="6" height="7" rx="1"/></svg>';
+      c.setAttribute("aria-label", (it.done ? "Coffre ouvert : " : "Coffre fermé : ") + C[2]);
+      c.onclick = () => { if (it.done) { toast("Coffre ouvert : " + C[2] + ". Enfile-le dans le vestiaire (Profil)."); } else toast("Termine l'étage pour ouvrir ce coffre : " + C[2] + "."); };
+      c.append(el("span","cl", it.done ? C[2] : "Coffre")); cv.append(c); }
+    else { const id = it.id, m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), kk = lvlOf(m), cur = id === nextId, small = it.alt;
+      const b = el("button","jn" + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
+      b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 30 : 36)) + "px";
+      b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + ", niveau " + kk + " sur " + L.length + (lk ? ", verrouillé" : ""));
+      const c = el("span","c"), R = 39, Cc = 2*Math.PI*R, sg = Cc / L.length, gap = L.length > 1 ? 5 : 0;
+      let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
+      L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < kk ? "f" : "") + '" stroke-dasharray="' + (sg - gap).toFixed(1) + ' ' + (Cc - sg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*sg + gap/2)).toFixed(1) + '"/>'; });
+      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 72 : 90); c.append(sp);
+      if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
+      b.append(c, el("span","n", m.name));
+      const nx = nextStep(m);
+      b.append(el("span","g", x.done ? "Maîtrisé" : lk ? (m.target ? goalTxt(m) : "Verrouillé") : L.length > 1 ? "Niv. " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : "À réussir"));
+      b.onclick = () => quick(id); cv.append(b);
+      // toi, sur le chemin : ton personnage se tient à côté de ta figure du moment
+      if (cur) { const me = el("div","me" + (it.lane ? " lane" : "")), msp = el("span","sp"); msp.dataset.pose = "stand"; msp.dataset.anim = "me"; msp.dataset.lk = ""; sprPaint(msp, it.lane ? 56 : 76); me.append(msp, el("span","tag","Toi"));
+        if (it.lane) { me.style.left = p[0] + "%"; me.style.top = (p[1] - 100) + "px"; } else { me.style.left = (p[0] >= 50 ? p[0] - 30 : p[0] + 30) + "%"; me.style.top = (p[1] - 46) + "px"; }
+        cv.append(me); }
+    }
   });
   wrap.append(cv);
   { const s = SEC.key; if (s && s.videos.length) { const kb = vidChip("key"); kb.classList.add("wide"); kb.firstChild.textContent = "Concepts clés, pour tous les niveaux"; wrap.append(kb); } }
   return wrap;
 }
+// Carte rapide d'une figure : animation, niveau, estimation, et deux boutons.
+function quick(id){
+  const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
+  const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
+  const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
+  if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
+  const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Après : " + missing(m) : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : "À réussir"));
+  const top = el("div","qktop"); top.append(art, g); box.append(top);
+  const row = el("div","btns"), go = el("button","btn", lk ? "Voir quand même" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Ouvrir"), more = el("button","btn line","Détails");
+  go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold" && !lk) setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); };
+  more.onclick = () => { $("qkDlg").close(); openMs(id); };
+  row.append(go, more); box.append(row); $("qkDlg").showModal();
+}
+
 const vidKey = (s, v) => s.id + "|" + v[1];
 function vidChip(sid){ const s = SEC[sid], b = el("button","vchip"); b.append(el("span",null,"Vidéos du programme"), el("b",null, s.videos.filter(v=>S.vid[vidKey(s,v)]).length + "/" + s.videos.length)); b.onclick = e => { e.stopPropagation(); openVids(sid); }; return b; }
 function openVids(sid){ const s = SEC[sid], box = $("vdBody"); $("vdT").textContent = "Vidéos · " + s.name; box.textContent = "";
@@ -1200,11 +1244,14 @@ const poseOf = id => POSE3D[id] || (id.startsWith("pl_") ? id : null);
 function unlockedPoses(){ const out = [["stand","Debout"]], seen = new Set(["stand"]);
   Object.keys(MS).forEach(id=>{ const p = poseOf(id); if (p && st(id).done && !seen.has(p)) { seen.add(p); out.push([p, MS[id].name]); } });
   return out; }
+// les coffres du parcours ajoutent chacun une tenue au vestiaire
+Object.entries(CHESTS).forEach(([sid, [slot, id, name]])=>{ const w = WARD.find(x=>x.slot === slot); if (w && !w.items.some(it=>it[0] === id)) w.items.push([id, name, "c:" + sid]); });
+const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (need.startsWith("c:") ? secDone(SEC[need.slice(2)]) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
 const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
 function renderFit(){
   const box = $("fitBody"), F = fit(), Z = lastZ || stats(); box.textContent = "";
-  const all = WARD.flatMap(w=>w.items), okN = all.filter(([id,name,need])=>!need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok : Z.lvl >= need)).length;
+  const all = WARD.flatMap(w=>w.items), okN = all.filter(([id,name,need])=>wardOk(need, Z)).length;
   const cnt0 = el("div","mut", okN + " éléments débloqués sur " + all.length); cnt0.style.marginTop = "10px"; box.append(cnt0);
   { const s = el("div","slot"), row = el("div","chips"), cur = F.pose || "auto"; s.append(el("div","lab","Posture"));
     [["auto","Automatique (dernier jalon)"]].concat(unlockedPoses()).forEach(([id, name])=>{
@@ -1213,10 +1260,10 @@ function renderFit(){
     s.append(row, el("div","mut","Chaque jalon validé débloque sa posture.")); s.lastChild.style.marginTop = "8px"; box.append(s); }
   WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const row = el("div","chips");
     w.items.forEach(([id, name, need])=>{
-      const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null;
-      const ok = !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : bd ? bd.ok : Z.lvl >= need);
+      const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null, ch = typeof need === "string" && need.startsWith("c:") ? SEC[need.slice(2)] : null;
+      const ok = wardOk(need, Z);
       const b = el("button","chip" + (F[w.slot] === id ? " on" : ""), name); b.disabled = !ok; b.setAttribute("aria-pressed", F[w.slot] === id);
-      if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : bd ? "badge « " + bd.name + " »" : "niveau " + need));
+      if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : ch ? "coffre « " + ch.name + " »" : bd ? "badge « " + bd.name + " »" : "niveau " + need));
       b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); renderFit(); };
       row.append(b); });
     s.append(row); box.append(s); });
@@ -1224,6 +1271,7 @@ function renderFit(){
 $("fitOpen").onclick = () => { renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
 $("fitX").onclick = () => $("fitDlg").close();
 document.querySelectorAll("#fbDlg [data-k]").forEach(b=>b.onclick = () => feedback(b.dataset.k));
+{ const d = $("qkDlg"); $("qkX").onclick = () => d.close(); d.addEventListener("click", e => { if (e.target === d) d.close(); }); }
 $("plX").onclick = () => { S.placed = true; save(); $("plDlg").close(); render(); };
 ["vdDlg","bdDlg"].forEach(id=>{ const d = $(id); $(id === "vdDlg" ? "vdX" : "bdX").onclick = () => d.close(); d.addEventListener("click", e => { if (e.target === d) d.close(); }); });
 $("fitDlg").addEventListener("click", e => { if (e.target === $("fitDlg")) $("fitDlg").close(); });
@@ -1263,6 +1311,9 @@ function render(){
   if (seen){ const nb = Z.badges.find(b=>b.ok && !seen.b.includes(b.id));
     if (nb) toast("Badge débloqué : " + nb.name); else if (Z.lvl > seen.lvl) toast("Niveau " + Z.lvl + " · " + Z.rank);
     if ((nb || Z.lvl > seen.lvl) && A3) A3.celebrate(); }
+  { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && secDone(SEC[sid])), had = S.chests;
+    if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { toast("Coffre ouvert : " + CHESTS[nw][2] + " ! Va l'enfiler dans le vestiaire."); if (A3) A3.celebrate(); } }
+    if (!had || had.length !== op.length) { S.chests = op; save(); } }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
@@ -1858,7 +1909,7 @@ $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
 $("sd").addEventListener("click", e => { if (e.target === $("sd")) $("sd").close(); });
 
 // ---------- Navigation + réglages ----------
-function goHere(id){ const m = MS[id]; if (!m) return; const key = HARD.some(h=>h[0] === m.sec) ? "hard" : m.sec; if (tierOpen[key] === false) { tierOpen[key] = true; render(); }
+function goHere(id){ const m = MS[id]; if (!m) return;
   requestAnimationFrame(()=>{ const nd = document.querySelector('.jn[data-id="' + id + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }); }
 function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); }
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const was = b.classList.contains("on"); showTab(b.dataset.v); window.scrollTo(0,0);
