@@ -1091,6 +1091,9 @@ async function buildSprites(force){
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
   const ids = [...new Set(nodes.concat(Object.keys(MS)))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
+  // de préférence dans un Web Worker (hors de la page) ; sinon par petits morceaux dans la page
+  if (await sprViaWorker(ids, F, key, job)) return;
+  if (job !== sprJob) return;
   let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
   const A = sprA, dt = 1 / SPF, MAXF = 80; await idle();
@@ -1108,6 +1111,27 @@ async function buildSprites(force){
     const blob = await new Promise(r => out.toBlob(r, "image/webp", 0.84)); if (job !== sprJob || !blob) return;
     SPR[id] = {url:URL.createObjectURL(blob), n, hold}; sprRepaint(id); sprStore(key, id, blob, n, hold); await idle();
   }
+}
+let sprW = null, sprWok = null;
+function sprWorker(){
+  if (sprWok === false) return Promise.resolve(null); if (sprW) return sprWok;
+  if (!window.Worker || !window.OffscreenCanvas) { sprWok = false; return Promise.resolve(null); }
+  sprWok = new Promise(res => { try { sprW = new Worker("spr-worker.js", {type:"module"}); const t = setTimeout(()=>res(null), 8000);
+    sprW.onmessage = e => { if (e.data && e.data.ready) { clearTimeout(t); res(sprW); } }; sprW.onerror = () => { clearTimeout(t); res(null); }; } catch(e){ res(null); } })
+    .then(w => { if (!w) { sprWok = false; if (sprW) sprW.terminate(); sprW = null; } return w; });
+  return sprWok;
+}
+async function sprViaWorker(ids, F, key, job){
+  const w = await sprWorker(); if (!w) return false;
+  const cs = getComputedStyle(document.documentElement), colors = {}; ["--acc","--line","--txt","--mut"].forEach(k=>colors[k] = cs.getPropertyValue(k).trim());
+  for (const id of ids){
+    if (job !== sprJob) return true;
+    const r = await new Promise(res => { w.onmessage = e => { if (e.data && e.data.id === id) res(e.data); }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:80}); });
+    if (job !== sprJob) return true;
+    if (r.error || !r.blob) { if (Object.keys(SPR).length === 0) { sprWok = false; w.terminate(); sprW = null; return false; } continue; }
+    SPR[id] = {url:URL.createObjectURL(r.blob), n:r.n, hold:r.hold}; sprRepaint(id); sprStore(key, id, r.blob, r.n, r.hold);
+  }
+  return true;
 }
 // pendant qu'on fait défiler ou qu'on touche l'écran, le calcul des animations attend
 let sprTouch = 0; ["scroll","touchstart","touchmove","pointerdown"].forEach(ev=>window.addEventListener(ev, () => { sprTouch = Date.now(); }, {passive:true}));

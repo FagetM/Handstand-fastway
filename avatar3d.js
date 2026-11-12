@@ -140,12 +140,13 @@ const OLD = {wraps:"wraps_o", band:"band_o", cap:"cap_o", shoes:"shoes_k", socks
 
 // opts.bare : pas de socle, pas de rotation (vignettes) · opts.manual : pas d'horloge, on avance image par image avec step()
 export function mount(host, opts = {}){
-  const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:!!opts.manual});
+  // opts.offscreen : {canvas, w, h, colors} pour un rendu hors de la page (Web Worker) ; sinon rendu dans host
+  const OFF = opts.offscreen, DOM = !OFF;
+  const cssv = n => OFF ? (OFF.colors || {})[n] || "" : getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const renderer = new THREE.WebGLRenderer(Object.assign({antialias:true, alpha:true, preserveDrawingBuffer:!!opts.manual}, OFF ? {canvas:OFF.canvas} : {}));
   renderer.setPixelRatio(opts.manual ? 1 : Math.min(window.devicePixelRatio || 1, 1.5));
-  const canvas = renderer.domElement; canvas.style.cssText = "display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab";
-  canvas.setAttribute("role","img");
-  host.append(canvas);
+  const canvas = renderer.domElement;
+  if (DOM) { canvas.style.cssText = "display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab"; canvas.setAttribute("role","img"); host.append(canvas); }
   const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
   scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8a84, 1.9));
   const sun = new THREE.DirectionalLight(0xffffff, 1.6); sun.position.set(2.5, 5, 4); scene.add(sun);
@@ -272,7 +273,7 @@ export function mount(host, opts = {}){
       if (camD < 0) { camD = wantD; camY = wantY; } else { camD += (wantD - camD) * 0.22; camY += (wantY - camY) * 0.22; }
       cam.position.set(0, camY + 0.03, camD); cam.lookAt(0, camY, 0); }
   }
-  function size(){ const w = host.clientWidth || 300, h = host.clientHeight || 240; renderer.setSize(w, h, false); cam.aspect = w / h;
+  function size(){ const w = OFF ? OFF.w : host.clientWidth || 300, h = OFF ? OFF.h : host.clientHeight || 240; renderer.setSize(w, h, false); cam.aspect = w / h;
     if (opts.bare) { cam.position.set(0, 1.08, 4.25); cam.lookAt(0, 1.06, 0); } else { cam.position.set(0, 1.3, 5.6); cam.lookAt(0, 0.98, 0); }
     cam.updateProjectionMatrix(); }
 
@@ -330,6 +331,7 @@ export function mount(host, opts = {}){
     if (dirty || !reduce) { apply(cur, breath); renderer.render(scene, cam); dirty = false; }
   }
   const kick = () => { dirty = true; if (opts.manual) return; if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+  if (DOM) {
   canvas.addEventListener("pointerdown", e => { drag = {x:e.clientX, yaw, moved:false}; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = "grabbing"; });
   canvas.addEventListener("pointermove", e => { if (drag) { if (Math.abs(e.clientX - drag.x) > 4) { drag.moved = true; spin = false; } yaw = drag.yaw + (e.clientX - drag.x) * 0.012; kick(); } });
   canvas.addEventListener("pointerup", () => { const tap = drag && !drag.moved; drag = null; canvas.style.cursor = "grab"; if (tap && !party && !opts.bare) startParty(); });
@@ -338,6 +340,7 @@ export function mount(host, opts = {}){
   if (window.IntersectionObserver) new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) { if (pending) startParty(); kick(); } }).observe(host);
   document.addEventListener("visibilitychange", () => { visible = !document.hidden; if (visible) kick(); });
   if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { colors(); kick(); });
+  }
   colors(); size(); setArc(0); dress({hair:"short"});
 
   return {
@@ -349,7 +352,7 @@ export function mount(host, opts = {}){
       if (!party && goal !== restPose) { const fromName = seg ? seg.name : here; queue = route(fromName, restPose); seg = null; }
       setArc(frac || 0);
       scale = 0.9 + Math.min(10, (level || 1) - 1) * 0.012;                   // le personnage grandit légèrement avec le niveau
-      dress(fit); if (label) canvas.setAttribute("aria-label", label);
+      dress(fit); if (label && DOM) canvas.setAttribute("aria-label", label);
       colors(); kick();
     },
     // joue la célébration dès que le personnage est à l'écran

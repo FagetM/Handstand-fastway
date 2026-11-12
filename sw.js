@@ -1,9 +1,9 @@
 // Service worker : l'app s'ouvre instantanément depuis l'appareil, même hors connexion (salle, parc…).
 // Les fichiers de l'app sont mis en cache à l'installation ; chaque nouvelle version change CACHE, s'installe en arrière-plan
 // puis attend que l'utilisateur accepte la mise à jour (ou ferme l'app), pour ne jamais couper une séance en cours.
-const CACHE = "hs-fastway-v41", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
+const CACHE = "hs-fastway-v42", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png",
-  "fonts/barlow-condensed-600.woff2", "avatar3d.js", "vendor/three.module.min.js"];
+  "fonts/barlow-condensed-600.woff2", "avatar3d.js", "spr-worker.js", "vendor/three.module.min.js"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache:"reload"})))));
