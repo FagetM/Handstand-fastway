@@ -159,6 +159,7 @@ a.yt .t{font-weight:600;line-height:1.3}
 .srcs::-webkit-scrollbar{display:none}
 .src{flex:none;min-height:36px;padding:6px 14px;border-radius:18px;font-weight:600;font-size:13.5px;white-space:nowrap;color:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 30%,transparent)}
 .src.on{background:var(--bg);color:var(--txt);box-shadow:none}
+.src.lk{opacity:.45;display:inline-flex;align-items:center;gap:7px}
 .tlist{margin:6px 0 16px}
 .trow{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
 .trow:first-child{border-top:0}
@@ -763,6 +764,7 @@ const KEY = "hs-fastway-v1";
 const blank = () => ({goal:"both", countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
 let S = blank();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
+S.sessOpen = false;   // le détail de la séance est replié à chaque ouverture
 S.goal = "both";   // une seule quête désormais : les deux figures finales, menées de front
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
@@ -871,7 +873,7 @@ function planFor(m){
   }
   if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
   if (SOUPLE.has(m.id)) out.lines.push("La souplesse compte pour cette figure : ajoute deux séances d'étirements par semaine (programme Étirements).");
-  const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]]) out.prog = pp;
+  const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
   return out;
 }
 const WEEK = {oahs:["Équil.","Équil.","Souple","Équil.","Équil.","Équil.","Repos"], planche:["Planche","Équil.","Planche","Souple","Planche","Équil.","Planche"]};
@@ -1145,7 +1147,9 @@ function render(){
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
     nc.append(el("div","lab", DAYN[today] + " · séance du jour"));
     // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
-    const chips = el("div","srcs"); Object.keys(all).forEach(id=>{ const c = el("button","src" + (P.id === id ? " on" : ""), all[id].name); c.setAttribute("aria-pressed", P.id === id); c.onclick = () => { pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
+    const chips = el("div","srcs"); Object.keys(all).sort((a,b)=>(progLock(a) ? 1 : 0) - (progLock(b) ? 1 : 0)).forEach(id=>{ const lock = progLock(id), c = el("button","src" + (P.id === id ? " on" : "") + (lock ? " lk" : ""));
+      if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
+      c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s'ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
     if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
     else {
       let secs = 0; const list = el("div","tlist");
@@ -1332,7 +1336,23 @@ const PGROUPS = [
   ["Autres", id => true],
 ];
 const allP = () => Object.assign({equilibre:builtin()}, PS);
-const pickP = () => { const all = allP(); P = all[pg().cur] || all.equilibre; };
+// Un programme s'ouvre quand le parcours y mène : on ne propose pas la planche à quelqu'un qui apprend à monter au mur.
+// Renvoie null si le programme est accessible, sinon ce qu'il faut valider d'abord.
+const needMs = ids => { const miss = ids.filter(id=>!st(id).done); return miss.length ? miss.map(id=>MS[id].name + (MS[id].target ? " " + goalTxt(MS[id]) : "")).join(" + ") : null; };
+function progLock(id){
+  if (id === "equilibre" || id === "etirements-debutant") return null;
+  if (id === "etirements-avance") return cnt().stretch >= 10 ? null : "10 séances d'étirements (" + cnt().stretch + " faites)";
+  if (id === "planche-domination" || id === "planche-master-n1") return needMs(MS.pl_lean.req);
+  if (id === "quest-for-the-press") return needMs(MS.pr_straddle.req);
+  if (id === "planche-master-n2") return needMs(["pl_tuck"]);
+  if (id === "planche-master-n3" || id === "planche-routine") return needMs(["pl_adv"]);
+  return null;
+}
+// Dans Planche Domination, chaque étape s'ouvre quand la figure de l'étape précédente est validée.
+const PD_STEPS = ["pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle"];
+const stepLock = (pid, i) => pid === "planche-domination" && i > 0 ? needMs([PD_STEPS[i - 1]]) : null;
+const pickP = () => { const all = allP(); P = all[pg().cur]; if (!P) P = all.equilibre; else if (progLock(P.id)) { P = all.equilibre; pg().cur = "equilibre"; }
+  const s = pp(); while (s.step > 0 && stepLock(P.id, s.step)) s.step--; };
 const pp = () => pg().by[P.id] || (pg().by[P.id] = {step:0});
 const pStep = () => P.steps[Math.min(pp().step, P.steps.length - 1)];
 const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + P.id + "|" + pp().step + "|" + DAYK[di]; };
@@ -1420,7 +1440,7 @@ function renderSess(){
   { // en-tête repliable : la séance du jour en une ligne
     const tg = $("sessToggle"), open = !!S.sessOpen, d0 = pDay(todayIdx()), tot = d0.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(wkGet(todayIdx())).length;
     tg.textContent = ""; const g = el("span","grow");
-    g.append(el("div","t", P.name + " · " + DAYN[todayIdx()].toLowerCase()), el("div","mut", !tot ? "Rien de prévu aujourd'hui" : d0.blocks.length + (d0.blocks.length > 1 ? " exercices" : " exercice") + " · " + (dn >= tot ? "séance terminée" : dn + " / " + tot + " séries faites")));
+    g.append(el("div","t", "Détail de la séance"), el("div","mut", "Voir chaque série, changer de jour ou d'étape, lexique"));
     tg.append(g, icon("chev","chev")); tg.setAttribute("aria-expanded", open); box.hidden = !open;
     tg.onclick = () => { S.sessOpen = !S.sessOpen; save(); renderSess(); };
   }
@@ -1441,14 +1461,14 @@ function renderSess(){
   const ps = el("select"); ps.setAttribute("aria-label","Programme"); ps.className = "big";
   PGROUPS.forEach(([label, test])=>{ const ids = [...left].filter(test); if (!ids.length) return;
     const og = document.createElement("optgroup"); og.label = label;
-    ids.forEach(id=>{ left.delete(id); og.append(new Option(all[id].name, id)); }); ps.append(og); });
+    ids.forEach(id=>{ left.delete(id); const lock = progLock(id), o = new Option(all[id].name + (lock ? " · verrouillé" : ""), id); o.disabled = !!lock; og.append(o); }); ps.append(og); });
   ps.value = P.id;
-  ps.onchange = () => { pg().cur = ps.value; save(); renderSess(); };
+  ps.onchange = () => { pg().cur = ps.value; save(); render(); };
   head.append(ps);
   const sel = el("select"); sel.setAttribute("aria-label","Étape du programme");
-  P.steps.forEach((s,i)=>sel.add(new Option(s.name + (s.goals && s.goals.length ? " · " + s.goals[0].name + " " + s.goals[0].target : s.scale && s.scale < 1 ? " · semaine allégée" : ""), i)));
+  P.steps.forEach((s,i)=>{ const lock = stepLock(P.id, i), o = new Option(s.name + (lock ? " · verrouillée" : s.goals && s.goals.length ? " · " + s.goals[0].name + " " + s.goals[0].target : s.scale && s.scale < 1 ? " · semaine allégée" : ""), i); o.disabled = !!lock; sel.add(o); });
   sel.value = Math.min(pp().step, P.steps.length - 1);
-  sel.onchange = () => { pp().step = +sel.value; save(); renderSess(); };
+  sel.onchange = () => { pp().step = +sel.value; save(); render(); };
   head.append(sel);
   if (step.goals && step.goals.length) { const g = el("div","mut","Pour passer à l'étape suivante : " + step.goals.map(g=>g.name + " " + g.target).join(" · ")); g.style.marginTop = "10px"; head.append(g); }
 
