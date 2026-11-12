@@ -153,6 +153,32 @@ a.yt .t{font-weight:600;line-height:1.3}
 .av .me{color:var(--txt)}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
+/* aujourd'hui : la séance en un coup d'œil */
+.next{margin-top:14px}
+.srcs{display:flex;gap:6px;overflow-x:auto;margin:10px -20px 4px;padding:2px 20px 8px;scrollbar-width:none}
+.srcs::-webkit-scrollbar{display:none}
+.src{flex:none;min-height:36px;padding:6px 14px;border-radius:18px;font-weight:600;font-size:13.5px;white-space:nowrap;color:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 30%,transparent)}
+.src.on{background:var(--bg);color:var(--txt);box-shadow:none}
+.tlist{margin:6px 0 16px}
+.trow{display:flex;gap:14px;align-items:center;padding:10px 0;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.trow:first-child{border-top:0}
+.trow .art{position:relative;flex:none;width:64px;height:64px;border-radius:50%;background:var(--bg);display:grid;place-items:center;overflow:hidden}
+.trow .art .num{font:600 24px/1 var(--disp);color:var(--txt)}
+.trow .tn2{font-weight:600;font-size:16px;line-height:1.25}
+.trow .td{font:600 17px/1.2 var(--disp);margin-top:3px;opacity:.8}
+.trow .dots{margin-top:7px}
+.trow .dots i{background:none;box-shadow:inset 0 0 0 1.5px currentColor;opacity:.5;width:9px;height:9px}
+.trow .dots i.t{box-shadow:inset 0 0 0 1.5px var(--acc);opacity:1}
+.trow .dots i.ok{background:currentColor;opacity:1}
+.trow.ok{opacity:.55}
+.btn.big{min-height:60px;font-size:19px;background:var(--acc);color:#fff}
+.btn.big:disabled{background:var(--bg);color:var(--txt);opacity:.6}
+.tmeta{margin-top:10px;font-size:13.5px;opacity:.72;text-align:center}
+.twk{display:flex;justify-content:space-between;margin-top:20px;padding-top:14px;border-top:1px solid color-mix(in srgb,currentColor 14%,transparent)}
+.twk span{display:flex;flex-direction:column;align-items:center;gap:5px;font:600 13px/1 var(--disp);opacity:.6}
+.twk i{width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 1.5px currentColor}
+.twk .did{opacity:1}.twk .did i{background:currentColor}
+.twk .today b{color:var(--acc)}
 /* haut de page visuel : bandeau de quête, tuiles, aide en vignettes */
 .qb{display:flex;align-items:center;gap:14px;width:100%;padding:12px;border-radius:14px;background:var(--raise);text-align:left}
 .qb .art{position:relative;flex:none;width:84px;height:84px;display:grid;place-items:center}
@@ -380,7 +406,22 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 <header class="top"><div class="wm">Handstand <span>Fastway</span></div></header>
 
 <main>
-  <section id="v-path" class="view on">
+  <section id="v-today" class="view on">
+    <div class="next" id="nextCard"></div>
+    <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
+    <div id="sess"></div>
+    <input type="file" id="pgFile" hidden>
+  </section>
+
+  <section id="v-path" class="view">
+    <h2 class="sect" id="sect-tree" style="margin-top:20px">Le parcours</h2>
+    <div class="legend" aria-label="Légende">
+      <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1" stroke="var(--acc)"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4" stroke="var(--line)"/></svg>Anneau : 3 niveaux</span>
+    </div>
+    <div id="tree"></div>
+  </section>
+
+  <section id="v-me" class="view">
     <div class="goal">
       <div id="av3d" hidden><button class="wbtn" id="fitOpen">Vestiaire</button></div>
       <div class="hero">
@@ -392,50 +433,18 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
           <div class="mut" id="xpTxt"></div>
         </div>
       </div>
-      <div id="qban"></div>
       <div class="tiles">
         <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b class="disp" id="stStreak">0</b><span>jours d'affilée</span></div>
         <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><b class="disp" id="stWeek">0</b><span>séances cette semaine</span></div>
         <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.5l3 3 5-6"/></svg><b class="disp" id="stDone">0</b><span>jalons validés</span></div>
       </div>
-      <div hidden><span id="gNum"></span><span id="gDen"></span><span id="gPct"></span><i id="goalBar"></i></div>
+      <div hidden><span id="gNum"></span><span id="gDen"></span><span id="gPct"></span><i id="goalBar"></i><div id="qban"></div><select id="goal"></select><details id="howto"></details></div>
     </div>
-    <details class="howto" id="howto">
-      <summary>Comment ça marche</summary>
-      <div class="hw">
-        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 21V4M6 4h11l-2.5 4 2.5 4H6"/></svg><b>1 · Une quête</b><span>Ta destination</span></div>
-        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="12" r="2.5"/><circle cx="6" cy="18" r="2.5"/><path d="M8.3 7.2l7.4 3.6M15.7 13.2l-7.4 3.6"/></svg><b>2 · Des jalons</b><span>Une figure par cercle</span></div>
-        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4"/></svg><b>3 · Trois niveaux</b><span>Par paliers vers la cible</span></div>
-        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/></svg><b>4 · Un plan</b><span>Quoi faire chaque jour</span></div>
-        <div class="hwc"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="14" r="5.5"/><path d="M8.5 3l3.5 6 3.5-6M12 12v4"/></svg><b>5 · Des récompenses</b><span>Niveaux, badges, tenues</span></div>
-      </div>
-    </details>
-    <div class="next" id="nextCard"></div>
-    <nav class="jump" aria-label="Aller à"><button data-to="sect-sess">Séance</button><button data-to="sect-tree">Parcours</button><button data-to="sect-quest">Quêtes</button><button data-to="sect-badges">Badges</button></nav>
-    <h2 class="sect" id="sect-sess">Séance du jour</h2>
-    
-    <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
-    <div id="sess"></div>
-    <input type="file" id="pgFile" hidden>
-    <h2 class="sect" id="sect-tree">Le parcours</h2>
-
-    <div class="legend" aria-label="Légende">
-      <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1" stroke="var(--acc)"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4" stroke="var(--line)"/></svg>Anneau : 3 niveaux</span>
-    </div>
-
-    <div id="tree"></div>
-    <h2 class="sect" id="sect-quest">Quêtes</h2>
     <div id="quest"></div>
-    <label class="lab" for="goal" style="display:block;margin-top:22px">Toutes les quêtes</label>
-    <select id="goal"></select>
-  </section>
-
-  <section id="v-log" class="view">
-    <div class="block" style="border:0;padding-bottom:8px"><h2>Journal</h2><div class="mut">Tes 60 derniers essais</div></div>
+    <h2 class="sect">Journal</h2>
+    <div class="mut" style="margin-bottom:8px">Tes 60 derniers essais</div>
     <div id="logList"></div>
-  </section>
-
-  <section id="v-set" class="view">
+    <h2 class="sect">Réglages</h2>
     <div class="block">
       <h2>Chrono</h2>
       <label class="mut" for="countdown">Compte à rebours avant le départ, le temps de monter en équilibre</label>
@@ -457,9 +466,9 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 </main>
 
 <nav class="tabs">
-  <button data-v="path" class="on">Parcours</button>
-  <button data-v="log">Journal</button>
-  <button data-v="set">Réglages</button>
+  <button data-v="today" class="on">Aujourd'hui</button>
+  <button data-v="path">Parcours</button>
+  <button data-v="me">Profil</button>
 </nav>
 
 <dialog id="dlg">
@@ -613,7 +622,7 @@ const TREE = [
     {id:"pr_stalder", name:"Stalder", en:"Stalder", sub:"parcours à venir dans le programme", type:"check", req:["pr_pike"], soon:true,
       desc:"Montée en force depuis l'équerre jambes écartées, sans que les pieds touchent le sol."},
   ], videos:[["Mécanique d'une montée en force","Mechanics of a press"],["La montée en force qui se dérobe","The elusive press"],["Marches et flottements","Press walks and floating"],["Du bas vers le haut, du haut vers le bas, le maillon faible","Bottom up, top down, weak link"],["Stalder","Stalder"]]},
-  {id:"low", name:"Équilibres bas", en:"Low Balances", ms:[
+  {id:"low", name:"Figures au sol", en:"Low Balances", ms:[
     {id:"lo_elbow", name:"Planche sur les coudes", en:"Elbow Lever", type:"check", req:[],
       desc:"Corps à l'horizontale, posé sur les deux coudes calés contre le ventre."},
     {id:"lo_croc", name:"Crocodile", en:"Croc", type:"check", req:["lo_elbow"],
@@ -642,6 +651,7 @@ const TREE = [
 const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_free15","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
+  {id:"both", name:"Équilibre sur un bras et full planche", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","pl_lean","oa_shift","pl_tuck","oa_finger","pl_adv","oa_strarm","pl_frog","pl_pike","pl_straddle","oa_oahs","pl_full"]},
   {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_oahs"]},
   {id:"planche", name:"Full planche · 10 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
   {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
@@ -750,9 +760,10 @@ function figure(id){
 
 // ---------- État ----------
 const KEY = "hs-fastway-v1";
-const blank = () => ({goal:"oahs", countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
+const blank = () => ({goal:"both", countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
 let S = blank();
 try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
+S.goal = "both";   // une seule quête désormais : les deux figures finales, menées de front
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e){} };
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
@@ -866,7 +877,7 @@ function planFor(m){
 const WEEK = {oahs:["Équil.","Équil.","Souple","Équil.","Équil.","Équil.","Repos"], planche:["Planche","Équil.","Planche","Souple","Planche","Équil.","Planche"]};
 const TIER_TXT = {starter:"Apprendre à monter contre le mur et à sortir sans danger.", b1:"Tenir seul, quelques secondes, loin du mur.", b2:"Tenir longtemps, et commencer à changer de forme.",
   inter:"Contrôler le bassin et le regard : les « 7 », la tête rentrée, les drapeaux."};
-function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } S.sessOpen = true; save(); renderSess(); const t = $("sect-sess"); if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }
+function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } save(); render(); showTab("today"); window.scrollTo(0, 0); }
 
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
 const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
@@ -898,7 +909,7 @@ function journey(nextId){
     s.ms.forEach((m,k)=>place(m.id, XS[3][i], y + k*RH)); });
   y += Math.max(...HARD.map(([sid])=>SEC[sid].ms.length)) * RH;
   // quête annexe
-  const low = SEC.low; banner("Quête annexe · " + low.name, "Accessible dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "", "low");
+  const low = SEC.low; banner("Bonus · " + low.name, "En appui sur les coudes, tout près du sol. Elles ne mènent pas à ta quête : c'est pour varier, dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "", "low");
   low.ms.forEach((m,j)=>place(m.id, XS[3][j], y)); y += RH;
   const H = y;
   // liens : tronc commun quand plusieurs jalons d'une ligne partagent leurs prérequis
@@ -956,17 +967,6 @@ const BFAM = [["Régularité",["first","st3","st7","st30"]],["Séances et volume
 const badgeReward = id => { const out = []; WARD.forEach(w=>w.items.forEach(it=>{ if (it[2] === "b:" + id) out.push(it[1]); })); if (id.startsWith("goal_")) out.push("Médaille"); return out; };
 function renderQuest(S0, nextId){
   const box = $("quest"); box.textContent = "";
-  // les deux grandes quêtes : deux cartes, la figure finale animée, un anneau d'avancement
-  const cards = el("div","qcards");
-  GOALS.slice(0, 2).forEach((g, i)=>{ const dn = doneIn(g.ms), on = S.goal === g.id, fin = g.ms[g.ms.length - 1];
-    const c = el("button","qcard" + (on ? " on" : "")); c.setAttribute("aria-pressed", on);
-    const art = el("span","art"); art.innerHTML = ringSvg(dn / g.ms.length, 116, 54, 5, "rg");
-    const sp = el("span","sp"); sp.dataset.pose = poseId(fin); sp.dataset.anim = fin; sp.dataset.lk = ""; sprPaint(sp, 96); art.append(sp);
-    c.append(el("span","lab","Quête " + (i + 1)), art, el("span","qt", g.name), el("span","qn", dn + " / " + g.ms.length + " jalons"), el("span","qs", on ? "En cours" : "Choisir"));
-    c.onclick = () => { if (!on) { S.goal = g.id; openSecs.clear(); pg().cur = null; save(); render(); } };
-    cards.append(c); });
-  box.append(cards);
-  if (!GOALS.slice(0, 2).some(g=>g.id === S.goal)) { const cur = GOALS.find(g=>g.id === S.goal) || GOALS[0]; box.append(el("div","intro-t","Quête en cours : " + cur.name + " (" + doneIn(cur.ms) + " / " + cur.ms.length + ").")); }
   // badges : un médaillon par objectif, l'anneau montre l'avancement
   const head = el("h2","sect","Badges"); head.id = "sect-badges"; box.append(head);
   const got = S0.badges.filter(b=>b.ok).length;
@@ -1114,16 +1114,6 @@ function render(){
   const gsel = $("goal");
   if (!gsel.options.length) GOALS.forEach(g=>gsel.add(new Option(g.name, g.id)));
   gsel.value = S.goal;
-  { // bandeau de quête : la figure finale, l'anneau d'avancement, les étages à traverser
-    const qb = $("qban"), goal = GOALS.find(g=>g.id === S.goal) || GOALS[0], gms = goal.ms, dn = gms.filter(id=>st(id).done).length, fin = gms[gms.length - 1]; qb.textContent = "";
-    const b = el("button","qb"); b.setAttribute("aria-label","Quête : " + goal.name + ", " + dn + " jalons sur " + gms.length + ". Changer de quête.");
-    const art = el("span","art"); art.innerHTML = ringSvg(dn / gms.length, 84, 38, 4, "rg"); const sp = el("span","sp"); sp.dataset.pose = poseId(fin); sp.dataset.anim = fin; sp.dataset.lk = ""; sprPaint(sp, 68); art.append(sp);
-    const g = el("span","grow"); g.append(el("span","lab","Ta quête"), el("span","qt",goal.name));
-    const want = new Set(gms), tiers = TREE.filter(s=>s.ms.some(m=>want.has(m.id))), dots = el("span","qd");
-    tiers.forEach(s=>{ const ms = s.ms.filter(m=>want.has(m.id)), d = ms.filter(m=>st(m.id).done).length; const i = el("i", d >= ms.length ? "ok" : d > 0 || ms.some(m=>!msLocked(m)) ? "cur" : ""); i.title = s.name; dots.append(i); });
-    g.append(dots, el("span","qn", dn + " / " + gms.length + " jalons · " + tiers.length + " étages"));
-    b.append(art, g, icon("chev","chev")); b.onclick = () => $("sect-quest").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); qb.append(b);
-  }
   const ids = goalMs(), done = ids.filter(id=>st(id).done).length;
   const pct = ids.length ? Math.round(done/ids.length*100) : 0;
   $("goalBar").style.width = pct + "%";
@@ -1149,40 +1139,35 @@ function render(){
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
-  const nc = $("nextCard"); nc.textContent = "";
-  if (nextId){
-    const m = MS[nextId], pl = planFor(m), L = lvls(m), k = lvlOf(m), today = todayIdx();
-    nc.append(el("div","lab","Ton plan du jour"));
-    const PI = {warm:'<path d="M12 4a8 8 0 107.5 5.2"/><path d="M20 4v5h-5"/>', list:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 9h6M9 13h6M9 17h3"/>', calm:'<path d="M3 15c3-5 5 3 9-2s6 3 9-2"/><path d="M3 20c3-5 5 3 9-2s6 3 9-2" opacity=".5"/>'};
-    const ic = d => '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
-    const row = (iconHtml, title, chip) => { const r = el("div","pstep"), i = el("span","pi"), g = el("div","grow"); i.innerHTML = iconHtml; const h = el("div","pt",title); if (chip) h.append(el("span","pc",chip)); g.append(h); r.append(i, g); nc.append(r); return g; };
-    row(ic(PI.warm), "Échauffement", "5 min");
-    // le jalon du jour : la figure animée, ses niveaux, et la dose en chiffres
-    const jr = el("div","pjal"), art = el("span","art"), sp = el("span","sp"); sp.dataset.pose = poseId(nextId); sp.dataset.anim = nextId; sp.dataset.lk = ""; sprPaint(sp, 92); art.append(sp);
-    const jg = el("div","grow"); jg.append(el("div","pt",m.name));
-    const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < k ? "ok" : i === k ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); jg.append(pips);
-    if (pl.n && !pl.n.check){ const dose = el("div","dose"); dose.append(el("b","disp", pl.n.sets + " × " + (pl.n.hold ? pl.n.work + " s" : pl.n.work)), el("span",null,"puis " + pl.n.tries + " × " + (pl.n.hold ? pl.n.T + " s" : pl.n.T)));
-      const dots = el("div","dots"); for (let i = 0; i < pl.n.sets; i++) dots.append(el("i")); for (let i = 0; i < pl.n.tries; i++) dots.append(el("i","t")); jg.append(dose, dots); }
-    else if (pl.n){ const dose = el("div","dose"); dose.append(el("b","disp", pl.n.sets + " essais")); const dots = el("div","dots"); for (let i = 0; i < pl.n.sets; i++) dots.append(el("i")); jg.append(dose, dots); }
-    jr.append(art, jg); nc.append(jr);
-    const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche et le plan"); b.onclick = () => openMs(nextId); nc.append(b);
-    const go = el("button","golink","Voir sur le parcours"); go.onclick = () => { const nd = document.querySelector('.jn[data-id="' + nextId + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }; nc.append(go);
-    pickP(); const d0 = P ? pDay(today) : {blocks:[]}, tot = d0.blocks.reduce((n,x)=>n + x.sets.length, 0), dnS = Object.keys(wkGet(today)).length;
-    const g3 = row(ic(PI.list), P && P.builtin ? "Séance d'équilibre" : P ? P.name : "Séance", tot ? dnS + " / " + tot + " séries" : "rien aujourd'hui");
-    if (tot) { const bs = el("button","btn line2","Ouvrir la séance"); bs.onclick = () => openProg(P.id); g3.append(bs); }
-    row(ic(PI.calm), "Retour au calme", "5 min");
-    // la semaine type de la quête, en pictogrammes
-    const key = S.goal === "planche" ? "planche" : "oahs", wkPlan = WEEK[key], d = new Date(); d.setDate(d.getDate() - today);
-    const GL = {"Équil.":figMini("b2_str15", 22), "Planche":figMini("pl_full", 22), "Souple":ic(PI.calm), "Repos":'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M8 12h8"/></svg>'};
-    const wk = el("div","pweek"); nc.append(el("div","lab","Ta semaine"));
-    wkPlan.forEach((lab, i)=>{ const day = new Date(d); day.setDate(d.getDate() + i); const did = S.log.some(l=>dayKey(l.t) === dayKey(day));
-      const c = el("div","pw" + (i === today ? " today" : "") + (did ? " did" : "") + (lab === "Repos" ? " rest" : "")); c.setAttribute("aria-label", DAYN[i] + " : " + lab + (did ? ", fait" : "")); c.append(el("b",null,DAYL[i])); const gsp = el("span","gly"); gsp.innerHTML = GL[lab]; c.append(gsp); wk.append(c); });
+  { // Aujourd'hui : la séance du jour d'un coup d'œil, et un seul bouton pour tout lancer
+    const nc = $("nextCard"); nc.textContent = ""; pickP();
+    const today = todayIdx(), day = pDay(today), vals = wkGet(today), all = allP();
+    const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
+    nc.append(el("div","lab", DAYN[today] + " · séance du jour"));
+    // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
+    const chips = el("div","srcs"); Object.keys(all).forEach(id=>{ const c = el("button","src" + (P.id === id ? " on" : ""), all[id].name); c.setAttribute("aria-pressed", P.id === id); c.onclick = () => { pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
+    if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
+    else {
+      let secs = 0; const list = el("div","tlist");
+      day.blocks.forEach((b,bi)=>{ const r = el("div","trow"), art = el("span","art"), g = el("div","grow"), done = b.sets.filter((_,si)=>vals[bi + "-" + si] != null).length;
+        if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 64); art.append(sp); } else art.append(el("span","num", String(bi + 1)));
+        const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
+        const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
+        const dose = mx.length ? work.length + " × " + one(work[0]) + " · puis " + mx.length + " × " + one(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
+        g.append(el("div","tn2", b.name), el("div","td", dose));
+        const dots = el("div","dots"); b.sets.forEach((s,si)=>dots.append(el("i", (vals[bi + "-" + si] != null ? "ok" : "") + (s.max ? " t" : "")))); g.append(dots);
+        b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
+        r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
+      nc.append(list);
+      const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : "Démarrer la séance"); bt.disabled = dn >= tot;
+      bt.onclick = () => startGuided(); nc.append(bt);
+      nc.append(el("div","tmeta", dn >= tot ? "Bravo. Reviens demain, ou choisis un autre programme ci-dessus." : "Environ " + Math.max(5, Math.round(secs / 300) * 5) + " min · l'app enchaîne les séries et les repos toute seule."));
+    }
+    if (!Object.keys(PS).length) { const lk = el("button","golink","Charger mes programmes (planche, étirements…)"); lk.onclick = () => { S.sessOpen = true; save(); renderSess(); $("sess").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }; nc.append(lk); }
+    // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
+    const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
+    DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); wk.append(c); });
     nc.append(wk);
-    const lg = el("div","pleg"); [...new Set(wkPlan)].forEach(lab=>{ const s = el("span"); s.innerHTML = GL[lab]; s.append(lab === "Équil." ? "Équilibre" : lab === "Souple" ? "Souplesse" : lab); lg.append(s); }); nc.append(lg);
-    if (!openSecs.size) openSecs.add(m.sec);
-  } else {
-    nc.append(el("div","lab","Quête"), el("h2",null,"Accomplie."), el("p",null,"Choisis une autre quête pour continuer."));
-    nc.lastChild.style.margin = "0";
   }
 
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
@@ -1331,22 +1316,23 @@ const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = 
 // Séance d'équilibre : construite à partir de l'arbre (les prochains jalons accessibles de la quête 1), pas d'un programme importé.
 function builtin(){
   const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, 3);
-  const blocks = next.map(id=>{ const m = MS[id], base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:8}, ()=>({reps:1, lab:"essai"}))});
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:m.type === "hold" ? (/^(oa_|lo_)/.test(id) ? 6 : 8) : 5}, ()=>({goal:nextStep(m) || m.target, rest:75}))}); });
+  const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:pl.sets}, ()=>({reps:1, lab:"essai"}))});
+    // séries de travail (arrêt automatique à la durée prévue), puis tentatives au palier visé
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sets}, ()=>({goal:pl.work, rest:75, auto:true})).concat(Array.from({length:pl.tries}, ()=>({goal:pl.T, rest:120, max:true})))}); });
   const day = {type:"train", blocks};
-  return {id:"equilibre", name:"Séance d'équilibre", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir de ton arbre : les prochains jalons accessibles de la quête « " + GOALS[0].name + " », huit essais chacun (six pour les figures de force), en visant le palier en cours. Atteindre la cible valide le jalon.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
+  return {id:"equilibre", name:"Mes jalons", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours : tes prochains jalons accessibles, avec les séries du plan puis les tentatives au palier visé.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
 }
 const PGROUPS = [
-  ["Quête 1 · Équilibre sur un bras", id => id === "equilibre"],
-  ["Quête 2 · Full planche", id => id === "planche-domination"],
+  ["Parcours", id => id === "equilibre"],
+  ["Full planche", id => id === "planche-domination"],
   ["Autres programmes de planche", id => /^planche-/.test(id)],
   ["Souplesse", id => /^etirements/.test(id)],
   ["Secondaire · Montées en force", id => id === "quest-for-the-press"],
   ["Autres", id => true],
 ];
 const allP = () => Object.assign({equilibre:builtin()}, PS);
-const pickP = () => { const all = allP(); P = all[pg().cur] || all[S.goal === "planche" && PS["planche-domination"] ? "planche-domination" : "equilibre"]; };
+const pickP = () => { const all = allP(); P = all[pg().cur] || all.equilibre; };
 const pp = () => pg().by[P.id] || (pg().by[P.id] = {step:0});
 const pStep = () => P.steps[Math.min(pp().step, P.steps.length - 1)];
 const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + P.id + "|" + pp().step + "|" + DAYK[di]; };
@@ -1447,7 +1433,7 @@ function renderSess(){
     f.onsubmit = async e => { e.preventDefault(); const pass = normPass(inp.value); if (!pass) return;
       b.disabled = true; msg.textContent = "Chargement…";
       const r = await loadRemote(pass); b.disabled = false;
-      if (r === "ok" && Object.keys(PS).length) { save(); renderSess(); }
+      if (r === "ok" && Object.keys(PS).length) { save(); render(); }
       else msg.textContent = r === "code" ? "Phrase incorrecte." : "Impossible de joindre les programmes. Vérifie ta connexion et réessaie."; };
     f.append(inp, b, msg); w.append(f); return w; };
   const step = pStep(), all = allP(), left = new Set(Object.keys(all));
@@ -1533,15 +1519,18 @@ $("pgFile").onchange = async e => {
   try {
     const d = JSON.parse(await file.text());
     if (!d || d.format !== "hs-program/1" || !d.id || !Array.isArray(d.steps) || !d.steps.length) throw 0;
-    PS[d.id] = d; savePS(); pg().cur = d.id; save(); renderSess();
+    PS[d.id] = d; savePS(); pg().cur = d.id; save(); render();
   } catch(err){ alert("Fichier illisible : choisis le fichier de programme (.json) tel qu'il t'a été fourni."); }
 };
 { let sp = null; try { sp = localStorage.getItem(PPASS); } catch(e){}
-  if (sp) loadRemote(sp).then(r => { if (r === "ok") renderSess(); }); }
+  if (sp) loadRemote(sp).then(r => { if (r === "ok") render(); }); }
 
 // Série en cours : chrono (maintien) ou saisie (répétitions), puis repos automatique.
 // Étirement à durée imposée : compte à rebours, changement de côté, puis enchaînement sur le suivant.
-let sd = null, sdTimer = null, sdWake = null;
+let sd = null, sdTimer = null, sdWake = null, AUTO = false;
+// Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
+function startGuided(){ selDay = todayIdx(); const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
+const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd === me && sd.mode === mode && $("sd").open) $("sdGo").click(); }, ms); };
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
 function nextSet(){
@@ -1576,6 +1565,8 @@ function openSet(bi, si){
     if (b.note) $("sdHint").textContent += " " + b.note;
   }
   if (!$("sd").open) $("sd").showModal();
+  if (AUTO) { const timed = fx ? s.dur != null : b.kind === "hold";
+    if (timed) { if (!fx) $("sdHint").textContent = s.auto ? "Tiens " + tg + unit(b) + " : l'arrêt est automatique. Touche le bouton si tu chutes avant." : "Tentative : tiens le plus longtemps possible, puis touche Stop." + (tg ? " Cible : " + tg + unit(b) + "." : ""); autoGo("idle", 900); } }
 }
 function storeSet(v){
   const k = wkKey(selDay), o = pg().wk[k] || (pg().wk[k] = {}), key = sd.bi + "-" + sd.si, fresh = o[key] == null; o[key] = v;
@@ -1601,7 +1592,7 @@ function startRest(r, nx, title){
   const nb = nx && pDay(selDay).blocks[nx[0]];
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
   const tick = () => { const left = (end - Date.now())/1000;
-    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; } }
+    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else { AUTO = false; toast("Séance terminée"); $("sd").close(); } } } }
     else ck.textContent = mmss(Math.ceil(left)); };
   tick(); sdTimer = setInterval(tick, 250);
 }
@@ -1642,12 +1633,12 @@ $("sdGo").onclick = async () => {
   if (sd.mode === "idle"){
     try { if (navigator.wakeLock) sdWake = await navigator.wakeLock.request("screen"); } catch(e){}
     const left = S.countdown; let t = performance.now(), last = -1, hit = false;
-    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdGo").textContent = "Arrêter"; beep(880, 350); };
+    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdGo").textContent = AUTO && sd.s.auto ? "J'ai chuté" : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
     if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; } else run();
     sdTimer = setInterval(()=>{
       const e = (performance.now() - t)/1000;
       if (sd.mode === "count"){ const r = Math.ceil(left - e); if (r <= 0) run(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
-      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!hit && sd.tg && e >= sd.tg) { hit = true; ck.className = "clock hit"; beep(1320, 600); } }
+      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!hit && sd.tg && e >= sd.tg) { hit = true; ck.className = "clock hit"; beep(1320, 600); if (AUTO && sd.s.auto) autoGo("run", 120); } }
     }, 50);
   } else if (sd.mode === "count"){ openSet(sd.bi, sd.si); }
   else if (sd.mode === "run"){
@@ -1657,15 +1648,12 @@ $("sdGo").onclick = async () => {
 };
 $("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (v > 0) saveSet(v); };
 $("sdX").onclick = () => $("sd").close();
-$("sd").addEventListener("close", sdStop);
+$("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
 $("sd").addEventListener("click", e => { if (e.target === $("sd")) $("sd").close(); });
 
 // ---------- Navigation + réglages ----------
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x===b));
-  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id === "v-" + b.dataset.v));
-  window.scrollTo(0,0);
-});
+function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); }
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ showTab(b.dataset.v); window.scrollTo(0,0); });
 { const h = $("howto"); h.open = !S.seenHelp; h.addEventListener("toggle", () => { if (!h.open && !S.seenHelp) { S.seenHelp = true; save(); } }); }
 document.querySelectorAll(".jump button").forEach(b=>b.onclick=()=>{ const t = document.getElementById(b.dataset.to); if (b.dataset.to === "sect-sess" && !S.sessOpen) { S.sessOpen = true; save(); renderSess(); } if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); });
 $("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); pg().cur = null; save(); render(); };
