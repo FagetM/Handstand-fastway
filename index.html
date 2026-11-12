@@ -153,6 +153,44 @@ a.yt .t{font-weight:600;line-height:1.3}
 .av .me{color:var(--txt)}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
+/* accompagnement : plan du jour, aide, légende, plan d'un jalon */
+.next .pstep{display:flex;gap:14px;align-items:flex-start;margin-top:16px}
+.next .pn{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font:600 16px/1 var(--disp);background:var(--bg);color:var(--txt)}
+.next .pt{font-weight:600;font-size:17px;line-height:1.25}
+.next .pd{font-size:14px;opacity:.72;margin-top:3px}
+.next .pstep .btn{margin-top:12px}
+.next .btn.line2{background:none;color:inherit;box-shadow:inset 0 0 0 1.5px currentColor}
+.next .lab{margin-top:22px}
+.next .lab:first-child{margin-top:0}
+.pweek{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:10px 0 8px}
+.pw{padding:8px 2px;border-radius:8px;text-align:center;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 25%,transparent)}
+.pw b{display:block;font:600 15px/1 var(--disp)}
+.pw span{display:block;margin-top:5px;font-size:10.5px;line-height:1.1;opacity:.8;overflow-wrap:anywhere}
+.pw.rest{opacity:.5}
+.pw.today{box-shadow:inset 0 0 0 2px var(--acc)}
+.pw.did{background:var(--bg);color:var(--txt)}
+.howto{margin:0 0 16px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.howto ol{margin:0 0 16px;padding-left:20px;font-size:14.5px}
+.howto li{margin:8px 0}
+.intro-t{margin:-4px 0 14px;font-size:14.5px;color:var(--mut)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin:0 0 10px;font-size:13px;color:var(--mut)}
+.legend span{display:flex;align-items:center;gap:7px}
+.lg{width:16px;height:16px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--mut)}
+.lg.done{background:var(--txt);box-shadow:none}
+.lg.cur{box-shadow:inset 0 0 0 3px var(--acc)}
+.lg.open{box-shadow:inset 0 0 0 2px var(--txt)}
+.lg.lk{box-shadow:inset 0 0 0 1.5px var(--line);background:var(--raise)}
+.lg.alt{border-radius:5px}
+#dPlan{margin-top:20px}
+#dPlan h3{font-size:12px;font-weight:400;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);margin:0;padding-top:16px;border-top:1px solid var(--line)}
+.ladder{margin:8px 0 16px}
+.ladder .lv{display:flex;align-items:center;gap:12px;padding:8px 0;font-size:15px;color:var(--mut)}
+.ladder .b{flex:none;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font:600 13px/1 var(--disp);box-shadow:inset 0 0 0 1.5px var(--line)}
+.ladder .v{font:600 18px/1 var(--disp);font-variant-numeric:tabular-nums}
+.ladder .lv.ok{color:var(--txt)} .ladder .lv.ok .b{background:var(--txt);color:var(--bg);box-shadow:none}
+.ladder .lv.now{color:var(--txt);font-weight:600} .ladder .lv.now .b{box-shadow:inset 0 0 0 2px var(--acc);color:var(--acc)}
+ul.plan{margin:8px 0 16px;padding-left:18px;font-size:15px}
+ul.plan li{margin:7px 0}
 /* une seule page : titres de section, sauts, séance repliable */
 .sect{margin:34px 0 12px;font-size:30px;scroll-margin-top:60px}
 .jump{position:sticky;top:0;z-index:4;display:flex;gap:6px;margin:0 -20px;padding:8px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
@@ -307,15 +345,32 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
         <div><dt>Jalons validés</dt><dd class="disp" id="stDone">0</dd></div>
       </dl>
     </div>
+    <details class="howto" id="howto">
+      <summary>Comment ça marche</summary>
+      <ol>
+        <li><b>Une quête</b> : tu choisis ta destination ci-dessus. La première mène à l'équilibre sur un bras, la seconde à la full planche.</li>
+        <li><b>Des jalons</b> : le parcours, plus bas, est la carte de toutes les figures à apprendre, dans l'ordre. Chaque cercle est une figure.</li>
+        <li><b>Trois niveaux par jalon</b> : tu progresses par paliers vers la durée visée. Le troisième niveau valide le jalon et ouvre les suivants.</li>
+        <li><b>Un plan</b> : chaque jour, la carte « Ton plan du jour » te dit quoi faire. Chaque fiche de jalon détaille le plan pour passer au niveau suivant.</li>
+        <li><b>Des récompenses</b> : chaque essai rapporte de l'expérience. Les niveaux et les badges débloquent des tenues pour ton personnage.</li>
+      </ol>
+    </details>
     <div class="next" id="nextCard"></div>
     <nav class="jump" aria-label="Aller à"><button data-to="sect-sess">Séance</button><button data-to="sect-tree">Parcours</button><button data-to="sect-quest">Quêtes</button><button data-to="sect-badges">Badges</button></nav>
     <h2 class="sect" id="sect-sess">Séance du jour</h2>
+    <p class="intro-t">Les exercices d'aujourd'hui, série par série, avec le chrono et les repos. Touche la ligne pour ouvrir la séance ; tu peux y changer de programme.</p>
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
     <div id="sess"></div>
     <input type="file" id="pgFile" hidden>
     <h2 class="sect" id="sect-tree">Le parcours</h2>
+    <p class="intro-t">La carte complète, de haut en bas. Chaque étage a un but ; termine-le pour ouvrir le suivant. Touche une figure pour voir son plan.</p>
+    <div class="legend" aria-label="Légende">
+      <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span>
+    </div>
+    <p class="intro-t">L'anneau autour d'une figure est coupé en trois : un segment par niveau atteint.</p>
     <div id="tree"></div>
     <h2 class="sect" id="sect-quest">Quêtes</h2>
+    <p class="intro-t">Ta quête principale fixe la destination. Les quêtes secondaires récompensent la régularité et le volume : chacune donne un badge, et certains badges débloquent une tenue.</p>
     <div id="quest"></div>
   </section>
 
@@ -368,6 +423,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <div class="btns" style="margin-top:6px"><input type="number" id="reps" min="0" inputmode="numeric"><button class="btn" id="saveReps">Enregistrer</button></div>
   </div>
   <div class="btns"><button class="btn line" id="toggle"></button></div>
+  <div id="dPlan"></div>
   <div class="mut" id="dBest"></div>
   <div id="dLog"></div>
   <div id="dMore"></div>
@@ -693,6 +749,41 @@ const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;
 const noMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const poseId = id => POSE3D[id] || (id.startsWith("pl_") ? id : "stand");
 
+// ---------- Accompagnement : un plan concret pour passer au niveau suivant de chaque jalon ----------
+// Ces plans sont des repères généraux d'entraînement (les miens, pas ceux des programmes) : volume modéré, souvent, sans aller à l'échec.
+const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
+  pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
+  pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0]};
+const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
+function planFor(m){
+  const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:""};
+  if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Tu n'as plus rien à prouver ici. Refais la figure une ou deux fois par semaine pour l'entretenir, en échauffement des jalons suivants."]; return out; }
+  const miss = (m.req||[]).filter(r=>!st(r).done);
+  if (m.type === "check"){
+    out.head = "Plan pour réussir ce jalon"; out.short = "5 essais par séance, 3 séances par semaine.";
+    out.lines = ["3 séances par semaine, avec un jour de repos entre deux.", "À chaque séance : 5 essais, en prenant le temps de récupérer entre chacun.", "Arrête la série si la forme se dégrade : un essai propre vaut mieux que trois brouillons.", "Valide le jalon quand tu le réussis proprement 3 fois sur 5."];
+  } else {
+    const hold = m.type === "hold", lo = hold ? 2 : 1;
+    // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
+    const work = Math.max(lo, Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
+    out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
+    out.short = "5 × " + (hold ? work + " s" : work + " rép.") + ", puis 1 tentative à " + (hold ? T + " s" : T + " rép.") + ".";
+    out.lines = ["3 séances par semaine, avec un jour de repos entre deux.",
+      "À chaque séance : 5 " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", 60 à 90 s de repos entre chacune.",
+      "Termine par une seule tentative à " + u(T) + ". Si elle passe, le niveau est acquis et la cible suivante s'affiche.",
+      x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Il te manque " + (hold ? num(Math.max(0, T - x.best)) + " s" : Math.max(0, T - x.best) + " rép.") + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
+      "Si tu stagnes deux semaines, reviens au jalon précédent pendant quelques séances."];
+  }
+  if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
+  if (SOUPLE.has(m.id)) out.lines.push("La souplesse compte pour cette figure : ajoute deux séances d'étirements par semaine (programme Étirements).");
+  const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]]) out.prog = pp;
+  return out;
+}
+const WEEK = {oahs:["Équil.","Souple","Équil.","Repos","Équil.","Souple","Repos"], planche:["Planche","Équil.","Planche","Repos","Planche","Souple","Planche"]};
+const TIER_TXT = {starter:"Apprendre à monter contre le mur et à sortir sans danger.", b1:"Tenir seul, quelques secondes, loin du mur.", b2:"Tenir longtemps, et commencer à changer de forme.",
+  inter:"Contrôler le bassin et le regard : les « 7 », la tête rentrée, les drapeaux."};
+function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } S.sessOpen = true; save(); renderSess(); const t = $("sect-sess"); if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }
+
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
 const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
 let jrScrolled = false;
@@ -705,7 +796,7 @@ function journey(nextId){
   // tronc commun
   ["starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
-    banner(s.name, "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, secDone(s) ? "done" : "");
+    banner(s.name, TIER_TXT[sid] || "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, secDone(s) ? "done" : "");
     const main = s.ms.filter(m=>!m.alt), by = []; main.forEach(m=>{ (by[d(m)] || (by[d(m)] = [])).push(m); });
     by.forEach(r=>{ for (let i = 0; i < r.length; i += 3){ const row = r.slice(i, i + 3);
       row.sort((a,b)=>{ const mx = m => { const P = (m.req||[]).filter(q=>pos[q]); return P.length ? P.reduce((n,q)=>n + pos[q][0], 0)/P.length : 50; }; return mx(a) - mx(b); });
@@ -938,17 +1029,31 @@ function render(){
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
   const nc = $("nextCard"); nc.textContent = "";
   if (nextId){
-    const m = MS[nextId];
-    nc.append(el("div","lab","Prochaine étape · " + SEC[m.sec].name));
-    nc.append(el("h2",null, m.name + (m.target ? " · " + goalTxt(m) : "")));
-    if (m.desc) nc.append(el("p",null,m.desc));
-    if (m.type !== "check" && st(nextId).best) nc.append(el("div","rec","Record : " + fmt(m, st(nextId).best)));
-    const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche");
-    b.onclick = () => openMs(nextId); nc.append(b);
-    const go = el("button","golink","Voir sur le parcours"); go.onclick = () => { const nd = document.querySelector('.jn[data-id="' + nextId + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }; nc.append(go);
+    const m = MS[nextId], pl = planFor(m), L = lvls(m), k = lvlOf(m), today = todayIdx();
+    nc.append(el("div","lab","Ton plan du jour"));
+    const step = (n, title, text) => { const r = el("div","pstep"), g = el("div","grow"); r.append(el("span","pn",String(n)), g); g.append(el("div","pt",title)); if (text) g.append(el("div","pd",text)); nc.append(r); return g; };
+    step(1, "Échauffe-toi · 5 minutes", "Poignets dans tous les sens, épaules, quelques pompes d'omoplates.");
+    const g2 = step(2, "Travaille ton jalon : " + m.name, (L.length > 1 ? "Niveau " + k + " sur " + L.length + ". " : "") + pl.short);
+    const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche"); b.onclick = () => openMs(nextId); g2.append(b);
+    const go = el("button","golink","Voir sur le parcours"); go.onclick = () => { const nd = document.querySelector('.jn[data-id="' + nextId + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }; g2.append(go);
+    pickP(); const d0 = P ? pDay(today) : {blocks:[]}, tot = d0.blocks.reduce((n,x)=>n + x.sets.length, 0);
+    if (P && P.builtin) {   // la séance d'équilibre reprend les mêmes jalons : on la propose pour enchaîner avec les repos chronométrés
+      const g3 = step(3, "Enchaîne les jalons accessibles", tot ? "La séance d'équilibre déroule tes prochains jalons avec les repos chronométrés." : "Aucun jalon accessible pour l'instant.");
+      if (tot) { const bs = el("button","btn line2","Ouvrir la séance d'équilibre"); bs.onclick = () => openProg(P.id); g3.append(bs); }
+      step(4, "Retour au calme · 5 minutes", "Étire poignets, épaules et arrière des cuisses. Deux jours par semaine, fais une vraie séance de souplesse.");
+    } else {
+      const g3 = step(3, tot ? "Fais ta séance : " + P.name : "Séance du programme", tot ? d0.blocks.length + (d0.blocks.length > 1 ? " exercices" : " exercice") + " prévus aujourd'hui." : "Rien de prévu aujourd'hui dans « " + (P ? P.name : "") + " ». Repos, ou un peu de souplesse.");
+      if (tot) { const bs = el("button","btn line2","Ouvrir la séance"); bs.onclick = () => openProg(P.id); g3.append(bs); }
+    }
+    // la semaine type de la quête
+    const wkPlan = WEEK[S.goal === "planche" ? "planche" : "oahs"], d = new Date(); d.setDate(d.getDate() - today);
+    const wk = el("div","pweek"); nc.append(el("div","lab","Ta semaine type"));
+    wkPlan.forEach((lab, i)=>{ const day = new Date(d); day.setDate(d.getDate() + i); const did = S.log.some(l=>dayKey(l.t) === dayKey(day));
+      const c = el("div","pw" + (i === today ? " today" : "") + (did ? " did" : "") + (lab === "Repos" ? " rest" : "")); c.append(el("b",null,DAYL[i]), el("span",null,lab)); wk.append(c); });
+    nc.append(wk, el("div","pd","Une proposition : déplace les jours selon ton emploi du temps, en gardant un jour de repos entre deux séances de force."));
     if (!openSecs.size) openSecs.add(m.sec);
   } else {
-    nc.append(el("div","lab","Objectif"), el("h2",null,"Atteint."), el("p",null,"Choisis un autre objectif pour continuer."));
+    nc.append(el("div","lab","Quête"), el("h2",null,"Accomplie."), el("p",null,"Choisis une autre quête pour continuer."));
     nc.lastChild.style.margin = "0";
   }
 
@@ -1025,6 +1130,13 @@ function fillDlg(){
   if (x.done) parts.push("Jalon validé");
   if (lk) parts.push("Recommandé après : " + missing(m));
   $("dBest").textContent = parts.join(" · ");
+  { const dp = $("dPlan"), L = lvls(m), k = lvlOf(m), pl = planFor(m); dp.textContent = "";
+    if (L.length > 1){ dp.append(el("h3",null,"Les niveaux")); const ld = el("div","ladder");
+      L.forEach((v,i)=>{ const r = el("div","lv" + (i < k ? " ok" : i === k ? " now" : "")); r.append(el("span","b", i < k ? "" : String(i+1)), el("span","grow","Niveau " + (i+1) + (i === L.length - 1 ? " · jalon validé" : "")), el("span","v", unitTxt(m, v))); if (i < k) r.firstChild.innerHTML = ICON.check; ld.append(r); });
+      dp.append(ld); }
+    dp.append(el("h3",null,pl.head)); const ul = el("ul","plan"); pl.lines.forEach(t=>ul.append(el("li",null,t))); dp.append(ul);
+    if (pl.prog) { const pb = el("button","btn line","Programme associé : " + PS[pl.prog[0]].name + (PS[pl.prog[0]].steps[pl.prog[1]] && pl.prog[0] === "planche-domination" ? " · " + PS[pl.prog[0]].steps[pl.prog[1]].name : "")); pb.onclick = () => { $("dlg").close(); openProg(pl.prog[0], pl.prog[0] === "planche-domination" ? pl.prog[1] : null); }; dp.append(pb); }
+  }
   const dl = $("dLog"); dl.textContent = "";
   S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
 }
@@ -1426,6 +1538,7 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("on", v.id === "v-" + b.dataset.v));
   window.scrollTo(0,0);
 });
+{ const h = $("howto"); h.open = !S.seenHelp; h.addEventListener("toggle", () => { if (!h.open && !S.seenHelp) { S.seenHelp = true; save(); } }); }
 document.querySelectorAll(".jump button").forEach(b=>b.onclick=()=>{ const t = document.getElementById(b.dataset.to); if (b.dataset.to === "sect-sess" && !S.sessOpen) { S.sessOpen = true; save(); renderSess(); } if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); });
 $("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); pg().cur = null; save(); render(); };
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
