@@ -839,7 +839,7 @@ function buildSprites(force){
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
   // une animation par jalon, dans l'ordre du parcours (le haut de la page s'anime en premier)
   const order = [...document.querySelectorAll(".jn")].map(n=>n.dataset.id), ids = order.concat(Object.keys(MS).filter(id=>!order.includes(id)));
-  const A = sprA, dt = 1 / SPF, MAXF = 68; let i = 0;
+  const A = sprA, dt = 1 / SPF, MAXF = 80; let i = 0;
   const one = () => { if (job !== sprJob) return; if (i >= ids.length) return; const id = ids[i++], sc = sprMod.SCRIPTS[id]; if (!sc) { setTimeout(one, 0); return; }
     const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
