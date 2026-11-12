@@ -156,6 +156,11 @@ a.lk{color:var(--mut);font-size:14px;white-space:nowrap;padding:6px 0}
 .set.dn{background:var(--raise);box-shadow:none}
 .set.dn .v{color:var(--txt)}
 #sdHint{text-align:center;margin-bottom:16px}
+.how{font-size:14px;margin-top:6px}
+#sdHow{font-size:15px;margin:14px 0 0}
+#sdHow:empty{display:none}
+.lex dt{font-weight:600;margin-top:12px}
+.lex dd{margin:2px 0 0;color:var(--mut);font-size:14px}
 .sets.one{grid-template-columns:1fr}
 .sets.one .set{min-height:48px;text-align:left;padding:8px 14px}
 .sets.one .set .v{margin:0;font-size:18px}
@@ -264,6 +269,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <div class="grow"><div class="lab" id="sdS"></div><h2 id="sdT" style="margin-top:6px"></h2></div>
     <button class="x" id="sdX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   </div>
+  <p id="sdHow"></p>
   <div class="clock" id="sdClock">0,0</div>
   <div class="mut" id="sdHint"></div>
   <div class="btns" id="sdReps"><input type="number" id="sdNum" min="0" inputmode="numeric" aria-label="Répétitions réussies"><button class="btn" id="sdSave">Enregistrer</button></div>
@@ -743,6 +749,34 @@ async function loadRemote(pass){
   return "ok";
 }
 
+// Lexique : vocabulaire général de la gymnastique au poids du corps, pour lire les noms d'exercices.
+const LEX = [
+  ["Planche","Figure où le corps tient à l'horizontale, uniquement sur les mains, bras tendus. Ne pas confondre avec « plank », le gainage."],
+  ["Plank","Gainage : position de pompe (bras tendus) ou sur les avant-bras, corps aligné, tenue sans bouger."],
+  ["Lean (planche lean, plank lean)","Position de pompe où l'on avance les épaules loin devant les mains. Plus on avance, plus c'est dur : c'est le premier pas vers la planche."],
+  ["Tuck","Groupé : genoux repliés contre la poitrine. C'est la planche la plus facile, parce que le corps est ramassé près des mains."],
+  ["Advanced tuck","Groupé dos plat : les hanches montent à hauteur des épaules, les genoux s'éloignent de la poitrine."],
+  ["Straddle","Jambes tendues et écartées. Écarter rapproche le poids des mains, donc allège la figure."],
+  ["Pike","Hanches fléchies, jambes tendues : le corps forme un V."],
+  ["Full","La figure complète : jambes tendues et serrées."],
+  ["Hold, static hold, iso","Maintien : on tient la position sans bouger, pendant un temps donné."],
+  ["Push up","Pompe. « Pseudo », « lean » ou « planche » push up : pompe avec les épaules en avant des mains."],
+  ["Press","Mouvement fait bras tendus, où ce sont les épaules qui travaillent : avancer, monter le bassin, ou monter en équilibre."],
+  ["Negative","La phase de descente seule, faite lentement."],
+  ["Scapula, protraction, rétraction","Les omoplates. Protraction : on les écarte en arrondissant le haut du dos, comme pour repousser le sol. Rétraction : on les rapproche. En planche, on reste en protraction."],
+  ["Hollow body","Position « en cuillère » : dos légèrement rond, abdos serrés, bassin basculé. La base du gainage en gymnastique."],
+  ["L-sit","Équerre : en appui sur les mains, jambes tendues à l'horizontale devant soi."],
+  ["Handstand","Équilibre sur les mains."],
+  ["Elastic band, banded","Élastique passé autour des hanches ou sous les pieds, accroché en hauteur : il porte une partie du poids et rend la figure accessible."],
+  ["Parallettes","Petites barres parallèles posées au sol : poignets droits, moins de contrainte."],
+  ["Try-out","Tentative : on essaie la figure visée, même si on ne la tient que quelques secondes."],
+  ["80 % / 100 %","Intensité de la série par rapport à ton maximum sur l'exercice. 100 % : tu vas à ton record. 80 % : tu t'arrêtes avant."],
+  ["Circuit, tour (cycle)","Les exercices s'enchaînent sans pause ; on se repose seulement à la fin du tour, puis on recommence."],
+  ["Grease the groove","« Graisser le sillon » : beaucoup de petites séries faciles réparties dans la journée, jamais jusqu'à l'épuisement, pour ancrer le geste."],
+  ["TUT (time under tension)","Temps sous tension : on ralentit chaque phase du mouvement selon un tempo donné."],
+  ["ROM (range of motion)","Amplitude : faire le mouvement en entier."],
+  ["PNF","Technique d'étirement : contracter le muscle étiré 10 s, relâcher 5 s, puis aller un peu plus loin."],
+];
 function renderSess(){
   pickP();
   const box = $("sess"); box.textContent = "";
@@ -808,6 +842,7 @@ function renderSess(){
     t.append(el("div","mut", one ? [b.pnf ? "PNF" : "", b.muscles].filter(Boolean).join(" · ")
       : fx ? b.sets.length + (day.circuit ? " tours · " : " séries · ") + fixTxt(b, b.sets[0], day.scale)
       : b.sets.length + (b.sets.length > 1 ? " séries" : " série") + (b.sets[0].rest ? " · repos " + restTxt(b.sets[0]) : "") + (best ? " · record " + num(best) + unit(b) : "")));
+    if (b.how) t.append(el("div","how",b.how));
     h.append(t); const vl = vidLink(b); if (vl) h.append(vl); c.append(h);
     const row = el("div","sets" + (one ? " one" : ""));
     b.sets.forEach((s,si)=>{
@@ -824,6 +859,8 @@ function renderSess(){
   });
   const foot = el("div","blk");
   if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(k.url ? extLink(k.url, k.name) : ytLink(k.yt, k.name))); foot.append(l); }
+  const lx = el("details"); lx.append(el("summary",null,"Lexique : les termes des programmes"));
+  const dl = el("dl","lex"); LEX.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); lx.append(dl); foot.append(lx);
   const fb = el("div","btns"), bi = el("button","btn line","Importer un fichier"), br = el("button","btn warn","Retirer");
   bi.onclick = () => $("pgFile").click();
   br.onclick = () => { if (confirm("Retirer « " + P.name + " » de cet appareil ? Tes records sont conservés.")) {
@@ -858,7 +895,7 @@ function openSet(bi, si){
   sdStop();
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
-  $("sdT").textContent = b.name;
+  $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
   const ck = $("sdClock"); ck.className = "clock";
   if (fx){
     const timed = s.dur != null;
@@ -895,7 +932,7 @@ function startRest(r, nx, title){
   const end = Date.now() + r.rest*1000, ck = $("sdClock"); let done = false;
   sd.mode = "rest"; sd.next = nx;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
-  $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title;
+  $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Continuer" : "Terminer la séance";
   const nb = nx && pDay(selDay).blocks[nx[0]];
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
