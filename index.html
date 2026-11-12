@@ -168,6 +168,22 @@ html{overscroll-behavior-y:none}
 body{-webkit-tap-highlight-color:transparent}
 button,.jn,.src{touch-action:manipulation}
 @media (display-mode: standalone){header.top{padding-top:calc(14px + env(safe-area-inset-top))}}
+/* bilan de départ, temps disponible, ressenti */
+.place{display:block;width:100%;margin:12px 0 4px;padding:14px;border-radius:12px;text-align:left;background:var(--acc);color:#fff}
+.place b{display:block;font-size:17px}
+.place span{display:block;font-size:13.5px;opacity:.9;margin-top:3px}
+.mins{display:flex;align-items:center;gap:6px;margin:6px 0 2px;flex-wrap:wrap}
+.mins span{font-size:13px;opacity:.7;margin-right:4px}
+.mins button{min-height:34px;padding:5px 12px;border-radius:17px;font:600 15px/1 var(--disp);color:inherit;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 30%,transparent)}
+.mins button.on{background:var(--bg);color:var(--txt);box-shadow:none}
+.painnote{margin:10px 0 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--acc) 18%,transparent);font-size:13.5px}
+.plart{position:relative;width:150px;height:150px;margin:14px auto;border-radius:50%;background:var(--raise);overflow:hidden}
+.plq .chips{margin-top:10px}
+.fbg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fbg button{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-height:72px;padding:12px;border-radius:12px;background:var(--raise);text-align:left}
+.fbg b{font-size:17px}
+.fbg span{font-size:12.5px;color:var(--mut)}
+.fbg .pain{box-shadow:inset 0 0 0 1.5px var(--acc)}
 /* aujourd'hui : la séance en un coup d'œil */
 .next{margin-top:14px}
 .srcs{display:flex;gap:6px;overflow-x:auto;margin:10px -20px 4px;padding:2px 20px 8px;scrollbar-width:none}
@@ -549,6 +565,24 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   <div id="vdBody"></div>
 </dialog>
 
+<dialog id="plDlg">
+  <div style="display:flex;justify-content:flex-end"><button class="x" id="plX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button></div>
+  <div id="plBody"></div>
+</dialog>
+
+<dialog id="fbDlg">
+  <div class="lab">Séance terminée</div>
+  <h2 style="margin:6px 0 4px">Comment c'était ?</h2>
+  <p class="mut" style="margin:0 0 14px">Ta réponse règle la prochaine séance.</p>
+  <input type="hidden" id="fbIds">
+  <div class="fbg">
+    <button data-k="easy"><b>Facile</b><span>On augmente</span></button>
+    <button data-k="ok"><b>Bien</b><span>On garde</span></button>
+    <button data-k="hard"><b>Dur</b><span>On allège un peu</span></button>
+    <button data-k="pain" class="pain"><b>Douleur</b><span>Poignets, épaules : on lève le pied</span></button>
+  </div>
+</dialog>
+
 <dialog id="bdDlg">
   <div style="display:flex;gap:16px;align-items:center">
     <div class="bdg"><span class="m big"><span class="gl" id="bdG"></span></span></div>
@@ -888,6 +922,8 @@ const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-dominatio
   pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0]};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
+const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
+const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Tu n'as plus rien à prouver ici. Refais la figure une ou deux fois par semaine pour l'entretenir, en échauffement des jalons suivants."]; return out; }
@@ -902,7 +938,9 @@ function planFor(m){
   } else {
     const hold = m.type === "hold", lo = hold ? 2 : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
-    const work = Math.max(lo, Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
+    // charge adaptative : chaque séance règle un coefficient par figure (réussite, chutes, ressenti) ; une douleur récente allège
+    const fct = adaptOf(m.id) * (painRecent() ? 0.75 : 1);
+    const work = Math.max(lo, Math.min(T, Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
@@ -1183,6 +1221,8 @@ function renderFit(){
 }
 $("fitOpen").onclick = () => { renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
 $("fitX").onclick = () => $("fitDlg").close();
+document.querySelectorAll("#fbDlg [data-k]").forEach(b=>b.onclick = () => feedback(b.dataset.k));
+$("plX").onclick = () => { S.placed = true; save(); $("plDlg").close(); render(); };
 ["vdDlg","bdDlg"].forEach(id=>{ const d = $(id); $(id === "vdDlg" ? "vdX" : "bdX").onclick = () => d.close(); d.addEventListener("click", e => { if (e.target === d) d.close(); }); });
 $("fitDlg").addEventListener("click", e => { if (e.target === $("fitDlg")) $("fitDlg").close(); });
 function setAvatar(s){
@@ -1229,6 +1269,12 @@ function render(){
     const today = todayIdx(), day = pDay(today), vals = wkGet(today), all = allP();
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
     nc.append(el("div","lab", DAYN[today] + " · séance du jour"));
+    if (!S.placed && Object.keys(MS).filter(id=>st(id).done).length < 6) { const pb = el("button","place");
+      pb.append(el("b",null,"Fais ton bilan de départ"), el("span",null,"2 minutes : tu valides ce que tu sais déjà faire, l'app démarre au bon endroit."));
+      pb.onclick = () => startPlacement(); nc.append(pb); }
+    if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Temps dispo"));
+      [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
+    if (painRecent()) nc.append(el("div","painnote","Douleur signalée récemment : séance allégée, sans tentative maximale. Échauffe bien les poignets."));
     // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
     const chips = el("div","srcs"); Object.keys(all).sort((a,b)=>(progLock(a) ? 1 : 0) - (progLock(b) ? 1 : 0)).forEach(id=>{ const lock = progLock(id), c = el("button","src" + (P.id === id ? " on" : "") + (lock ? " lk" : ""));
       if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
@@ -1408,13 +1454,23 @@ let selDay = todayIdx();
 const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = g.wk || {}; g.by = g.by || {}; return g; };
 // Séance d'équilibre : construite à partir de l'arbre (les prochains jalons accessibles de la quête 1), pas d'un programme importé.
 function builtin(){
-  const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, 3);
+  // une fois la séance commencée, elle reste la même jusqu'au soir (les records du jour ne la modifient pas en route)
+  if (S.bday && S.bday.d === dayKey(Date.now())) return builtinOf(S.bday.blocks);
+  return builtinOf(builtinBlocks());
+}
+const builtinOf = blocks => { const day = {type:"train", blocks};
+  return {id:"equilibre", name:"Mes jalons", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours et du temps que tu as indiqué : tes prochains jalons accessibles, avec des séries ajustées à tes dernières séances.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]}; };
+function builtinBlocks(){
+  // le temps dont tu disposes aujourd'hui règle le nombre de figures et de séries (≈ 85 s par série, repos compris)
+  const mins = S.mins || 30, pain = painRecent(), nMs = mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
+  const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, nMs);
+  const budget = Math.max(4, Math.floor(mins * 60 / 85 / Math.max(1, next.length)));
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:pl.sets}, ()=>({reps:1, lab:"essai"}))});
+    const tries = pain ? 0 : pl.tries || 0, sets = Math.max(3, Math.min(14, Math.round(budget * (pain ? 0.7 : 1)) - tries));
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:sets}, ()=>({reps:1, lab:"essai"}))});
     // séries de travail (arrêt automatique à la durée prévue), puis tentatives au palier visé
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sets}, ()=>({goal:pl.work, rest:75, auto:true})).concat(Array.from({length:pl.tries}, ()=>({goal:pl.T, rest:120, max:true})))}); });
-  const day = {type:"train", blocks};
-  return {id:"equilibre", name:"Mes jalons", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours : tes prochains jalons accessibles, avec les séries du plan puis les tentatives au palier visé.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:sets}, ()=>({goal:pl.work, rest:75, auto:true})).concat(Array.from({length:tries}, ()=>({goal:pl.T, rest:120, max:true})))}); });
+  return blocks;
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -1636,9 +1692,45 @@ $("pgFile").onchange = async e => {
 
 // Série en cours : chrono (maintien) ou saisie (répétitions), puis repos automatique.
 // Étirement à durée imposée : compte à rebours, changement de côté, puis enchaînement sur le suivant.
-let sd = null, sdTimer = null, sdWake = null, AUTO = false;
+let sd = null, sdTimer = null, sdWake = null, AUTO = false, sessRes = {};
+// Bilan de départ : on parcourt les figures dans l'ordre ; tu dis ce que tu sais faire, l'app valide et se place au bon jalon.
+let plSkip = new Set(), plMiss = 0;
+function startPlacement(){ plSkip = new Set(); plMiss = 0; plStep(); $("plDlg").showModal(); }
+function plStep(){
+  const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x)), box = $("plBody"); box.textContent = "";
+  if (!id || plMiss >= 3) { S.placed = true; save(); render();
+    const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tu as tout validé !"));
+    const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
+  const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
+  box.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name), art);
+  if (m.desc) box.append(el("p","mut", m.desc));
+  const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); save(); plStep(); };
+  const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } plSkip.add(id); plMiss++; save(); plStep(); };
+  const q = el("div","plq");
+  if (m.type === "hold") { q.append(el("div","mut","Combien de temps tiens-tu cette figure ?"));
+    const row = el("div","chips"); [["Pas du tout",0]].concat(L.slice(0, -1).map(v=>["≈ " + v + " s", v])).forEach(([lab,v])=>{ const b = el("button","chip",lab); b.onclick = () => no(v); row.append(b); });
+    const ok = el("button","chip on", m.target + " s ou plus"); ok.onclick = yes; row.append(ok); q.append(row); }
+  else { q.append(el("div","mut","Sais-tu le faire proprement ?")); const row = el("div","chips"), y = el("button","chip on","Oui"), n = el("button","chip","Pas encore"); y.onclick = yes; n.onclick = () => no(0); row.append(y, n); q.append(row); }
+  box.append(q);
+}
+// Fin de séance : la charge de chaque figure s'ajuste aux séries réussies ou ratées, puis à ton ressenti.
+function endSession(){
+  const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
+  ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1;
+    ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? f0 * 1.08 : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
+  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal();
+}
+function feedback(kind){
+  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.08, ok:1, hard:0.9, pain:0.8}[kind];
+  ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
+  (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
+  if (kind === "pain") S.pain = Date.now();
+  sessRes = {}; save(); $("fbDlg").close(); render();
+  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on allège un peu la prochaine fois." : kind === "pain" ? "Noté : séances allégées pendant deux jours. Si la douleur dure, repose-toi." : "Séance enregistrée. Bravo.");
+}
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
-function startGuided(){ selDay = todayIdx(); const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
+function startGuided(){ sessRes = {}; selDay = todayIdx();
+  if (P && P.builtin && !(S.bday && S.bday.d === dayKey(Date.now()))) { S.bday = {d:dayKey(Date.now()), blocks:builtinBlocks()}; save(); pickP(); } const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
 const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd === me && sd.mode === mode && $("sd").open) $("sdGo").click(); }, ms); };
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -1701,7 +1793,7 @@ function startRest(r, nx, title){
   const nb = nx && pDay(selDay).blocks[nx[0]];
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
   const tick = () => { const left = (end - Date.now())/1000;
-    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else { AUTO = false; toast("Séance terminée"); $("sd").close(); } } } }
+    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else { AUTO = false; $("sd").close(); endSession(); } } } }
     else ck.textContent = mmss(Math.ceil(left)); };
   tick(); sdTimer = setInterval(tick, 250);
 }
@@ -1723,7 +1815,8 @@ function runFixed(){
 function saveSet(v){
   const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
-  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
+  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true;
+    if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++; } }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();
@@ -1732,7 +1825,7 @@ function saveSet(v){
 }
 $("sdGo").onclick = async () => {
   const ck = $("sdClock");
-  if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else $("sd").close(); return; }
+  if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else { const was = AUTO; $("sd").close(); if (was) endSession(); } return; }
   if (sd.fx){
     if (sd.s.dur == null) { saveFixed(); return; }
     if (sd.mode === "idle") { try { if (navigator.wakeLock) sdWake = await navigator.wakeLock.request("screen"); } catch(e){} runFixed(); }
