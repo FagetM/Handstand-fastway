@@ -252,16 +252,32 @@ ul.plan li{margin:7px 0}
 img.demo{display:block;border-radius:12px;background:var(--raise)}
 @media (prefers-reduced-motion: reduce){.jr-e path.go,.jn.cur .c,.jn.pop .c{animation:none}}
 /* quêtes, badges */
-.q{padding:14px 0;border-top:1px solid var(--line)}
-.q .h{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
-.q .h b{font-weight:600}
-.q .h span{font:600 16px/1 var(--disp);color:var(--mut);white-space:nowrap;font-variant-numeric:tabular-nums}
-.q .bar{margin-top:10px}
-.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:18px 10px;margin-top:16px}
-.bdg{text-align:center;font-size:12px;line-height:1.25}
-.bdg .m{width:64px;height:64px;margin:0 auto 8px;border-radius:50%;display:grid;place-items:center;font:600 20px/1 var(--disp);background:var(--txt);color:var(--bg);box-shadow:0 0 0 3px var(--bg),0 0 0 4px var(--acc)}
-.bdg.off{color:var(--mut)}
-.bdg.off .m{background:none;color:var(--mut);box-shadow:inset 0 0 0 1px var(--line)}
+.vchip{display:inline-flex;align-items:center;gap:8px;min-height:32px;margin-top:10px;padding:5px 12px;border-radius:16px;box-shadow:inset 0 0 0 1px color-mix(in srgb,currentColor 30%,transparent);font-size:12.5px;color:inherit}
+.vchip b{font:600 14px/1 var(--disp);font-variant-numeric:tabular-nums}
+.vchip.wide{display:flex;width:100%;justify-content:space-between;margin-top:18px;min-height:44px;border-radius:10px;color:var(--mut)}
+.jr-l .vchip{margin-top:6px;padding:4px 10px}
+.qcards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qcard{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border-radius:14px;background:var(--raise);text-align:center}
+.qcard.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.qcard .art{position:relative;width:116px;height:116px;display:grid;place-items:center;margin:4px 0}
+.qcard .art .rg{position:absolute;inset:0}
+.qcard .art .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.qcard .qt{font:600 19px/1.15 var(--disp)}
+.qcard .qn{font-size:13px;color:var(--mut)}
+.qcard .qs{margin-top:4px;padding:6px 14px;border-radius:14px;font-weight:600;font-size:13px;box-shadow:inset 0 0 0 1px var(--line)}
+.qcard.on .qs{background:var(--acc);color:#fff;box-shadow:none}
+.bfam{margin:22px 0 10px}
+.badges{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:16px 8px}
+.bdg{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;font-size:12px;line-height:1.2}
+.bdg .m{position:relative;width:76px;height:76px;display:grid;place-items:center}
+.bdg .m .rg{position:absolute;inset:0}
+.bdg .gl{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font:600 18px/1 var(--disp);background:var(--txt);color:var(--bg)}
+.bdg.off .gl{background:var(--raise);color:var(--mut)}
+.bdg .m.big{width:72px;height:72px}.bdg .m.big .gl{width:72px;height:72px;font-size:21px}
+.bdg .ck{position:absolute;right:2px;bottom:2px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:#fff;box-shadow:0 0 0 2px var(--bg)}
+.bdg .bn{font-weight:600}
+.bdg.off .bn{font-weight:400;color:var(--mut)}
+.bdg .bc{font:600 13px/1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
 #toast{position:fixed;left:50%;top:16px;transform:translate(-50%,-140%);z-index:20;max-width:calc(100% - 32px);padding:12px 18px;border-radius:10px;background:var(--txt);color:var(--bg);font-weight:600;font-size:15px;transition:transform .3s;pointer-events:none}
 #toast.on{transform:translate(-50%,0)}
 
@@ -370,7 +386,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <p class="intro-t">L'anneau autour d'une figure est coupé en trois : un segment par niveau atteint.</p>
     <div id="tree"></div>
     <h2 class="sect" id="sect-quest">Quêtes</h2>
-    <p class="intro-t">Ta quête principale fixe la destination. Les quêtes secondaires récompensent la régularité et le volume : chacune donne un badge, et certains badges débloquent une tenue.</p>
+    <p class="intro-t">Ta destination. Touche une carte pour en faire ta quête principale.</p>
     <div id="quest"></div>
   </section>
 
@@ -430,6 +446,27 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 </dialog>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<dialog id="vdDlg">
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div class="grow"><div class="lab">Programme d'origine</div><h2 id="vdT" style="margin-top:6px"></h2></div>
+    <button class="x" id="vdX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  </div>
+  <div class="mut" style="margin:6px 0 10px">Coche les vidéos que tu as vues.</div>
+  <div id="vdBody"></div>
+</dialog>
+
+<dialog id="bdDlg">
+  <div style="display:flex;gap:16px;align-items:center">
+    <div class="bdg"><span class="m big"><span class="gl" id="bdG"></span></span></div>
+    <div class="grow"><div class="lab">Badge</div><h2 id="bdT" style="margin-top:6px"></h2></div>
+    <button class="x" id="bdX" aria-label="Fermer" style="align-self:flex-start"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  </div>
+  <p id="bdD" style="margin:16px 0 10px"></p>
+  <div class="bar"><i id="bdBar"></i></div>
+  <div class="mut" id="bdC" style="margin-top:8px"></div>
+  <div class="mut" id="bdR" style="margin-top:12px"></div>
+</dialog>
 
 <dialog id="fitDlg">
   <div style="display:flex;gap:12px;align-items:flex-start">
@@ -795,13 +832,13 @@ let jrScrolled = false;
 function journey(nextId){
   const RH = 168, BH = 74, NODE = 72, pos = {}, items = [], wrap = el("div","jr");
   let y = 0, edges = "";
-  const banner = (title, sub, done, tot, cls) => { items.push({k:"b", y, title, sub, done, tot, cls}); y += sub ? BH + 34 : BH; };
+  const banner = (title, sub, done, tot, cls, vid) => { items.push({k:"b", y, title, sub, done, tot, cls, vid}); y += (sub ? BH + 34 : BH) + (vid ? 40 : 0); };
   const place = (id, x, yy, small) => { pos[id] = [x, yy + NODE/2, small]; };
   const XS = {1:[50], 2:[30,70], 3:[18,50,82]};
   // tronc commun
   ["starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
-    banner(s.name, TIER_TXT[sid] || "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, secDone(s) ? "done" : "");
+    banner(s.name, TIER_TXT[sid] || "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, secDone(s) ? "done" : "", sid);
     const main = s.ms.filter(m=>!m.alt), by = []; main.forEach(m=>{ (by[d(m)] || (by[d(m)] = [])).push(m); });
     by.forEach(r=>{ for (let i = 0; i < r.length; i += 3){ const row = r.slice(i, i + 3);
       row.sort((a,b)=>{ const mx = m => { const P = (m.req||[]).filter(q=>pos[q]); return P.length ? P.reduce((n,q)=>n + pos[q][0], 0)/P.length : 50; }; return mx(a) - mx(b); });
@@ -813,13 +850,13 @@ function journey(nextId){
   // niveau difficile : trois voies côte à côte
   const hardMs = HARD.flatMap(([sid])=>SEC[sid].ms);
   banner("Niveau difficile", "Trois voies : choisis la tienne, ou mène-les de front.", hardMs.filter(m=>st(m.id).done).length, hardMs.length, "hard");
-  const laneY = y; y += 100;
+  const laneY = y; y += 138;
   HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], open = !msLocked(first) || st(first.id).done;
-    items.push({k:"l", y:laneY, x:XS[3][i], name, open, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")});
+    items.push({k:"l", y:laneY, x:XS[3][i], name, open, vid:sid, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")});
     s.ms.forEach((m,k)=>place(m.id, XS[3][i], y + k*RH)); });
   y += Math.max(...HARD.map(([sid])=>SEC[sid].ms.length)) * RH;
   // quête annexe
-  const low = SEC.low; banner("Quête annexe · " + low.name, "Accessible dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "");
+  const low = SEC.low; banner("Quête annexe · " + low.name, "Accessible dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "", "low");
   low.ms.forEach((m,j)=>place(m.id, XS[3][j], y)); y += RH;
   const H = y;
   // liens : tronc commun quand plusieurs jalons d'une ligne partagent leurs prérequis
@@ -841,9 +878,9 @@ function journey(nextId){
   items.forEach(it=>{
     if (it.k === "b"){ const b = el("div","jr-b " + it.cls); b.style.top = it.y + "px"; const g = el("div","grow"); g.append(el("div","sname",it.title)); if (it.sub) g.append(el("div","mut",it.sub));
       const bar = el("div","bar"), i = el("i"); i.style.width = (it.tot ? it.done/it.tot*100 : 0) + "%"; bar.append(i);
-      const row = el("div","r"); row.append(g, el("span","cnt", it.done + "/" + it.tot)); b.append(row, bar); cv.append(b); }
+      const row = el("div","r"); row.append(g, el("span","cnt", it.done + "/" + it.tot)); b.append(row, bar); if (it.vid && SEC[it.vid].videos.length) b.append(vidChip(it.vid)); cv.append(b); }
     else if (it.k === "t"){ const t = el("div","jr-t lab", it.text); t.style.top = it.y + "px"; cv.append(t); }
-    else { const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
+    else { const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); if (SEC[it.vid].videos.length) { const vc = vidChip(it.vid); vc.firstChild.textContent = "Vidéos"; l.append(vc); } cv.append(l); }
   });
   Object.keys(pos).forEach(id=>{
     const m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), k = lvlOf(m), cur = id === nextId, pose = poseId(id);
@@ -862,46 +899,46 @@ function journey(nextId){
     b.onclick = () => openMs(id); cv.append(b);
   });
   wrap.append(cv);
-  // vidéos du programme, par niveau
-  TREE.filter(s=>s.videos.length).forEach(s=>{
-    const det = el("details"), vk = v => s.id + "|" + v[1];
-    const label = () => "Vidéos · " + s.name + " · " + s.videos.filter(v=>S.vid[vk(v)]).length + "/" + s.videos.length + " vues";
-    const sum = el("summary",null,label()); det.append(sum);
-    s.videos.forEach(v=>{ const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vk(v)];
-      cb.onchange = () => { S.vid[vk(v)] = cb.checked; save(); sum.textContent = label(); };
-      const tx = el("span"); tx.append(el("div",null,v[0]), el("div","orig","Titre d'origine : " + v[1])); l.append(cb, tx); det.append(l); });
-    wrap.append(det); });
+  { const s = SEC.key; if (s && s.videos.length) { const kb = vidChip("key"); kb.classList.add("wide"); kb.firstChild.textContent = "Concepts clés, pour tous les niveaux"; wrap.append(kb); } }
   return wrap;
 }
+const vidKey = (s, v) => s.id + "|" + v[1];
+function vidChip(sid){ const s = SEC[sid], b = el("button","vchip"); b.append(el("span",null,"Vidéos du programme"), el("b",null, s.videos.filter(v=>S.vid[vidKey(s,v)]).length + "/" + s.videos.length)); b.onclick = e => { e.stopPropagation(); openVids(sid); }; return b; }
+function openVids(sid){ const s = SEC[sid], box = $("vdBody"); $("vdT").textContent = "Vidéos · " + s.name; box.textContent = "";
+  s.videos.forEach(v=>{ const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vidKey(s,v)];
+    cb.onchange = () => { S.vid[vidKey(s,v)] = cb.checked; save(); render(); };
+    const tx = el("span"); tx.append(el("div",null,v[0]), el("div","orig","Titre d'origine : " + v[1])); l.append(cb, tx); box.append(l); });
+  $("vdDlg").showModal(); }
+const ringSvg = (frac, size, r, w, cls) => { const C = 2*Math.PI*r, c = size/2; return '<svg class="' + (cls || "") + '" viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" fill="none" aria-hidden="true"><circle cx="' + c + '" cy="' + c + '" r="' + r + '" stroke="var(--line)" stroke-width="' + w + '"/>' + (frac > 0 ? '<circle cx="' + c + '" cy="' + c + '" r="' + r + '" stroke="var(--acc)" stroke-width="' + w + '" stroke-linecap="round" transform="rotate(-90 ' + c + ' ' + c + ')" stroke-dasharray="' + (C*Math.min(1,frac)).toFixed(1) + ' ' + C.toFixed(1) + '"/>' : "") + '</svg>'; };
+const BFAM = [["Régularité",["first","st3","st7","st30"]],["Séances et volume",["se10","se50","s100","s1000"]],["Temps en appui et souplesse",["h10","h60","e10"]],["Étages du parcours",null,"sec_"],["Quêtes accomplies",null,"goal_"]];
+const badgeReward = id => { const out = []; WARD.forEach(w=>w.items.forEach(it=>{ if (it[2] === "b:" + id) out.push(it[1]); })); if (id.startsWith("goal_")) out.push("Médaille"); return out; };
 function renderQuest(S0, nextId){
   const box = $("quest"); box.textContent = "";
-  const ids = goalMs(), goal = GOALS.find(g=>g.id === S.goal) || GOALS[0], done = doneIn(ids);
-  const main = el("div","block"); main.style.border = "0";
-  const gi = GOALS.indexOf(goal);
-  main.append(el("div","lab","Quête principale" + (gi < 2 ? " · quête " + (gi+1) + " sur 2" : "")), el("h2",null,goal.name));
-  main.children[1].style.margin = "6px 0 10px";
-  const bar = el("div","bar"), bi = el("i"); bi.style.width = (ids.length ? done/ids.length*100 : 0) + "%"; bar.append(bi);
-  main.append(el("div","mut", done + " jalons sur " + ids.length + (nextId ? " · prochaine étape : " + MS[nextId].name : " · quête accomplie")), bar);
-  bar.style.marginTop = "12px";
-
-  GOALS.slice(0, 2).forEach((g2, i)=>{ if (g2.id === goal.id) return;
-    const q = el("div","q"), h = el("div","h"), d2 = doneIn(g2.ms); q.style.marginTop = "20px";
-    h.append(el("b",null,"Quête " + (i+1) + " · " + g2.name), el("span",null, d2 + " / " + g2.ms.length));
-    const br = el("div","bar"), bi2 = el("i"); bi2.style.width = (d2/g2.ms.length*100) + "%"; br.append(bi2);
-    const sw = el("button","btn line", d2 >= g2.ms.length ? "Revoir cette quête" : "En faire ma quête principale"); sw.style.marginTop = "12px";
-    sw.onclick = () => { S.goal = g2.id; openSecs.clear(); pg().cur = null; save(); render(); };
-    q.append(h, el("div","mut", i === 0 ? "La première : l'arbre d'équilibre, de la sortie au mur à l'équilibre sur un bras." : "La suivante : la branche Planche, du planche lean à la full planche."), br, sw); main.append(q); });
-  box.append(main);
-  const todo = S0.badges.filter(b=>!b.ok).sort((a,b)=>b.cur/b.max - a.cur/a.max), got = S0.badges.filter(b=>b.ok);
-  const side = el("div","block"); side.append(el("h2",null,"Quêtes secondaires"), el("div","mut","Chacune débloque un badge et 50 points d'expérience."));
-  todo.forEach(b=>{ const q = el("div","q"), h = el("div","h"); h.append(el("b",null,b.name), el("span",null, b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max));
-    const br = el("div","bar"), i = el("i"); i.style.width = (b.cur/b.max*100) + "%"; br.append(i); q.append(h, el("div","mut",b.desc), br); side.append(q); });
-  if (!todo.length) side.append(el("div","mut","Toutes les quêtes secondaires sont terminées."));
-  box.append(side);
-  const bd = el("div","block"); bd.style.border = "0"; bd.id = "sect-badges"; bd.style.scrollMarginTop = "60px"; bd.append(el("h2",null,"Badges"), el("div","mut", got.length + " sur " + S0.badges.length));
-  const grid = el("div","badges");
-  got.concat(todo).forEach(b=>{ const x = el("div","bdg" + (b.ok ? "" : " off")); x.append(el("div","m",b.g), el("div",null,b.name)); grid.append(x); });
-  bd.append(grid); box.append(bd);
+  // les deux grandes quêtes : deux cartes, la figure finale animée, un anneau d'avancement
+  const cards = el("div","qcards");
+  GOALS.slice(0, 2).forEach((g, i)=>{ const dn = doneIn(g.ms), on = S.goal === g.id, fin = g.ms[g.ms.length - 1];
+    const c = el("button","qcard" + (on ? " on" : "")); c.setAttribute("aria-pressed", on);
+    const art = el("span","art"); art.innerHTML = ringSvg(dn / g.ms.length, 116, 54, 5, "rg");
+    const sp = el("span","sp"); sp.dataset.pose = poseId(fin); sp.dataset.anim = fin; sp.dataset.lk = ""; sprPaint(sp, 96); art.append(sp);
+    c.append(el("span","lab","Quête " + (i + 1)), art, el("span","qt", g.name), el("span","qn", dn + " / " + g.ms.length + " jalons"), el("span","qs", on ? "En cours" : "Choisir"));
+    c.onclick = () => { if (!on) { S.goal = g.id; openSecs.clear(); pg().cur = null; save(); render(); } };
+    cards.append(c); });
+  box.append(cards);
+  if (!GOALS.slice(0, 2).some(g=>g.id === S.goal)) { const cur = GOALS.find(g=>g.id === S.goal) || GOALS[0]; box.append(el("div","intro-t","Quête en cours : " + cur.name + " (" + doneIn(cur.ms) + " / " + cur.ms.length + ").")); }
+  // badges : un médaillon par objectif, l'anneau montre l'avancement
+  const head = el("h2","sect","Badges"); head.id = "sect-badges"; box.append(head);
+  const got = S0.badges.filter(b=>b.ok).length;
+  box.append(el("p","intro-t", got + " sur " + S0.badges.length + ". L'anneau se remplit à mesure que tu avances ; touche un badge pour voir ce qu'il demande et ce qu'il débloque."));
+  BFAM.forEach(([name, ids, pre])=>{ const list = S0.badges.filter(b=>ids ? ids.includes(b.id) : b.id.startsWith(pre)); if (!list.length) return;
+    box.append(el("div","lab bfam",name)); const grid = el("div","badges");
+    list.forEach(b=>{ const x = el("button","bdg" + (b.ok ? "" : " off")); x.setAttribute("aria-label", b.name + ", " + (b.ok ? "obtenu" : b.cur + " sur " + b.max));
+      const m = el("span","m"); m.innerHTML = ringSvg(b.ok ? 0 : b.cur / b.max, 76, 35, 4, "rg"); m.append(el("span","gl", b.g)); if (b.ok) m.append(icon("check","ck"));
+      x.append(m, el("span","bn", b.name), el("span","bc", b.ok ? "Obtenu" : b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max));
+      x.onclick = () => { $("bdG").textContent = b.g; $("bdT").textContent = b.name; $("bdD").textContent = b.desc; $("bdBar").style.width = (b.cur / b.max * 100) + "%";
+        $("bdC").textContent = b.ok ? "Obtenu" : (b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max);
+        const rw = badgeReward(b.id); $("bdR").textContent = "Récompense : 50 points d'expérience" + (rw.length ? " · tenue : " + rw.join(", ") : ""); $("bdDlg").showModal(); };
+      grid.append(x); });
+    box.append(grid); });
 }
 
 // ---------- Personnage 3D (chargé à la demande ; la silhouette 2D reste en secours) ----------
@@ -992,6 +1029,7 @@ function renderFit(){
 }
 $("fitOpen").onclick = () => { renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
 $("fitX").onclick = () => $("fitDlg").close();
+["vdDlg","bdDlg"].forEach(id=>{ const d = $(id); $(id === "vdDlg" ? "vdX" : "bdX").onclick = () => d.close(); d.addEventListener("click", e => { if (e.target === d) d.close(); }); });
 $("fitDlg").addEventListener("click", e => { if (e.target === $("fitDlg")) $("fitDlg").close(); });
 function setAvatar(s){
   a3want = s; if (A3) { A3.set(s); return; }
