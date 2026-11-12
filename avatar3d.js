@@ -73,11 +73,13 @@ Object.assign(POSES, {
   hs_oafull:P("oahs", {arm:[-PI,-0.12], armZ:[0,0.28], roll:0.08, one:1}),
   fold_s:   P("fold", {hipZ:[0.55,0.55]}),
   hs_spress:P("pike", {hip:[-1.5,-1.5], hipZ:[0.85,0.85]}),
-  hs_stal0: {pitch:0.12, arch:0.3, arm:[-0.42,-0.42], armZ:[0,0], hip:[-1.85,-1.85], hipZ:[0.9,0.9], knee:[0,0], head:-0.2},      // équerre écartée, en appui sur les mains
-  hs_stal1: {pitch:1.2, arch:0.35, arm:[-1.45,-1.45], armZ:[0,0], hip:[-2.5,-2.5], hipZ:[1.0,1.0], knee:[0,0], head:-0.5},        // le bassin monte derrière, jambes le long des bras
+  hs_stal0: {pitch:0.05, arch:0.32, arm:[-0.3,-0.3], armZ:[0.12,0.12], hip:[-2.15,-2.15], hipZ:[0.85,0.85], knee:[0,0], head:-0.15},     // équerre écartée, jambes au-dessus de l'horizontale
+  hs_stal1: {pitch:1.05, arch:0.4, arm:[-1.35,-1.35], armZ:[0.05,0.05], hip:[-2.6,-2.6], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},      // le bassin monte derrière, jambes le long des bras
+  hs_stal2: {pitch:1.9, arch:0.2, arm:[-2.05,-2.05], armZ:[0,0], hip:[-2.2,-2.2], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},          // bassin au-dessus des épaules, jambes encore basses
   lv_croc:  P("lever", {arm:[-0.45,-1.5], elbow:[-1.75,-0.1], armZ:[0,0.7], one:1}),
-  lv_qdr0:  {pitch:1.2, roll:0.5, arm:[-0.9,-1.1], armZ:[0,0.3], elbow:[-0.9,-0.3], hip:[-1.6,-1.2], hipZ:[0.2,0.3], knee:[1.6,1.3], head:-0.5, feet:true},
-  lv_qdr:   {pitch:1.5, roll:1.15, arch:0.15, arm:[-0.35,-1.25], armZ:[0,0.45], elbow:[-1.9,-0.35], hip:[-1.15,0.25], hipZ:[0.15,0.55], knee:[1.25,0.75], head:-0.35, feet:true},
+  lv_qdr0:  {pitch:1.15, roll:0.45, arm:[-0.85,-1.1], armZ:[0,0.3], elbow:[-0.9,-0.3], hip:[-1.7,-1.4], hipZ:[0.2,0.3], knee:[1.7,1.5], head:-0.5, feet:true},
+  lv_qdr:   {pitch:1.98, roll:1.25, arch:0.3, arm:[-0.3,-1.35], armZ:[0,0.5], elbow:[-2.0,-0.3], hip:[-1.45,-0.35], hipZ:[0.1,0.35], knee:[1.5,1.6], head:0.35, feet:true},   // sur le côté, hanche posée sur le coude, tête près du sol, genoux fléchis en l'air
+  lv_qdr2:  {pitch:1.98, roll:1.25, arch:0.3, arm:[-0.3,-1.35], armZ:[0,0.5], elbow:[-2.0,-0.3], hip:[-0.9,0.35], hipZ:[0.1,0.55], knee:[0.6,1.35], head:0.35, feet:true},      // les jambes s'ouvrent en ciseaux
 });
 Object.assign(FEET, {fold_s:1});
 // Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
@@ -108,11 +110,11 @@ export const SCRIPTS = {
   oa_oahs:   {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,1.8]]},
   pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["hs_straddle",0.8,0.4],["hs",0.5,1.0]], still:"hs_spress"},
   pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
-  pr_stalder:{cut:true, s:[["crouch",0.4,0],["hs_stal0",0.6,0.6],["hs_stal1",0.7,0],["hs_spress",0.6,0],["hs_straddle",0.7,0.2],["hs",0.5,0.6],["hs_straddle",0.5,0],["hs_spress",0.6,0],["hs_stal1",0.6,0],["hs_stal0",0.7,0.4],["crouch",0.4,0],["stand",0.4,0.1]], still:"hs_stal1"},
+  pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["hs_straddle",0.6,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
   lo_frog:   {s:[["crouch",0.45,0.1],["crow",0.7,1.9]]},
   lo_elbow:  {s:[["fold",0.45,0],["lever",0.7,1.9]]},
   lo_croc:   {s:[["fold",0.45,0],["lever",0.6,0.4],["lv_croc",0.7,1.6]]},
-  lo_qdr:    {cut:true, s:[["crouch",0.45,0],["lv_qdr0",0.5,0.1],["lv_qdr",0.8,2.0],["lv_qdr0",0.6,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_qdr"},
+  lo_qdr:    {cut:true, yaw:-0.5, s:[["crouch",0.45,0],["lv_qdr0",0.5,0.1],["lv_qdr",0.8,1.0],["lv_qdr2",0.7,0.9],["lv_qdr",0.6,0.3],["lv_qdr0",0.6,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_qdr2"},
   pl_lean:   {s:[["fold",0.45,0],["pl_lean",0.5,2.2]]},
   pl_tuck:   {s:[["fold",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
   pl_adv:    {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_adv",0.6,1.6]]},
@@ -352,6 +354,7 @@ export function mount(host, opts = {}){
     play(steps, back){ scripted = true; holdT = 0; seg = null; queue = steps.map(s => s.slice()); if (back) { const last = steps[steps.length - 1][0]; route(last, "stand").forEach(r => queue.push([r[0], r[1], 0])); } restPose = "stand"; dirty = true; },
     at(){ return seg ? seg.name : here; },
     holding(){ return !seg && holdT > 0; },
+    view(y){ yaw = y; dirty = true; },
     wall(side){ wall.visible = !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
     canvas,
     png(){ return canvas.toDataURL("image/png"); },

@@ -844,7 +844,7 @@ function buildSprites(force){
     const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
     const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
-    A.wall(sc.wall || 0); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
+    A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
     A.play(sc.s, !sc.cut); let g = 0; do { snap(); g++; } while (A.moving() && g < MAXF); if (!sc.cut) snap();
     if (hold < 0) hold = Math.floor(n / 2);
     const out = document.createElement("canvas"); out.width = n * SPN; out.height = SPN; out.getContext("2d").drawImage(sheet, 0, 0);
