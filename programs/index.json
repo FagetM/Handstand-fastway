@@ -2,41 +2,41 @@
  {
   "id": "planche-domination",
   "file": "programs/planche-domination.enc",
-  "v": "5"
+  "v": "6"
  },
  {
   "id": "etirements-debutant",
   "file": "programs/etirements-debutant.enc",
-  "v": "5"
+  "v": "7"
  },
  {
   "id": "etirements-avance",
   "file": "programs/etirements-avance.enc",
-  "v": "5"
+  "v": "7"
  },
  {
   "id": "planche-master-n1",
   "file": "programs/planche-master-n1.enc",
-  "v": "5"
+  "v": "6"
  },
  {
   "id": "planche-master-n2",
   "file": "programs/planche-master-n2.enc",
-  "v": "5"
+  "v": "6"
  },
  {
   "id": "planche-master-n3",
   "file": "programs/planche-master-n3.enc",
-  "v": "5"
+  "v": "6"
  },
  {
   "id": "planche-routine",
   "file": "programs/planche-routine.enc",
-  "v": "5"
+  "v": "6"
  },
  {
   "id": "quest-for-the-press",
   "file": "programs/quest-for-the-press.enc",
-  "v": "5"
+  "v": "6"
  }
 ]

@@ -476,19 +476,19 @@ const TREE = [
       desc:"Figure venue de la capoeira : la hanche repose sur un coude, corps de côté, en appui bas sur les mains."},
   ], videos:[["Planche sur les coudes","Elbow lever"],["Crocodile","Croc"],["Queda de rins","QDR"]]},
   {id:"planche", name:"Planche", en:"Planche", ms:[
-    {id:"pl_lean", name:"Planche inclinée", en:"Planche lean", type:"hold", target:15, req:[],
+    {id:"pl_lean", name:"Planche lean", en:"Planche lean", type:"hold", target:15, req:[],
       desc:"Position de pompe, bras tendus, épaules avancées loin devant les mains, pieds au sol."},
-    {id:"pl_tuck", name:"Planche groupée", en:"Tuck planche", type:"hold", target:15, req:["pl_lean"],
+    {id:"pl_tuck", name:"Tuck planche", en:"Tuck planche", type:"hold", target:15, req:["pl_lean"],
       desc:"Pieds décollés, genoux serrés contre la poitrine, bras tendus, dos arrondi."},
-    {id:"pl_adv", name:"Planche groupée dos plat", en:"Advanced tuck planche", type:"hold", target:15, req:["pl_tuck"],
+    {id:"pl_adv", name:"Advanced tuck planche", en:"Advanced tuck planche", type:"hold", target:15, req:["pl_tuck"],
       desc:"Le même groupé, dos à plat : les hanches montent à hauteur des épaules, les genoux s'éloignent de la poitrine."},
-    {id:"pl_frog", name:"Grenouille jambes levées", en:"Frog stand with raised legs", type:"hold", target:15, req:["pl_adv"],
+    {id:"pl_frog", name:"Frog stand, jambes levées", en:"Frog stand with raised legs", type:"hold", target:15, req:["pl_adv"],
       desc:"Bras tendus, jambes écartées et fléchies, pieds relevés derrière : le bassin s'ouvre vers la planche écartée."},
-    {id:"pl_pike", name:"Planche écartée carpée", en:"Pike straddle planche", type:"hold", target:15, req:["pl_frog"],
+    {id:"pl_pike", name:"Pike straddle planche", en:"Pike straddle planche", type:"hold", target:15, req:["pl_frog"],
       desc:"Jambes tendues et écartées, hanches encore un peu fléchies."},
-    {id:"pl_straddle", name:"Planche écartée", en:"Straddle planche", type:"hold", target:10, req:["pl_pike"],
+    {id:"pl_straddle", name:"Straddle planche", en:"Straddle planche", type:"hold", target:10, req:["pl_pike"],
       desc:"Corps à l'horizontale, hanches ouvertes, jambes tendues écartées."},
-    {id:"pl_full", name:"Planche complète", en:"Full planche", type:"hold", target:10, req:["pl_straddle"],
+    {id:"pl_full", name:"Full planche", en:"Full planche", type:"hold", target:10, req:["pl_straddle"],
       desc:"Corps à l'horizontale, jambes tendues et serrées, bras tendus."},
   ], videos:[]},
   {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l'équilibre","The undisputed fastest way to learn to handstand"]]},
@@ -497,7 +497,7 @@ const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_free15","b2_s
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
   {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_oahs"]},
-  {id:"planche", name:"Planche complète · 10 s", ms:["pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
+  {id:"planche", name:"Full planche · 10 s", ms:["pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
   {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
   {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_straddle","pr_pike"]},
   {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
@@ -793,7 +793,7 @@ function renderQuest(S0, nextId){
     const br = el("div","bar"), bi2 = el("i"); bi2.style.width = (d2/g2.ms.length*100) + "%"; br.append(bi2);
     const sw = el("button","btn line", d2 >= g2.ms.length ? "Revoir cette quête" : "En faire ma quête principale"); sw.style.marginTop = "12px";
     sw.onclick = () => { S.goal = g2.id; openSecs.clear(); pg().cur = null; save(); render(); };
-    q.append(h, el("div","mut", i === 0 ? "La première : l'arbre d'équilibre, de la sortie au mur à l'équilibre sur un bras." : "La suivante : la branche Planche, de la planche inclinée à la planche complète."), br, sw); main.append(q); });
+    q.append(h, el("div","mut", i === 0 ? "La première : l'arbre d'équilibre, de la sortie au mur à l'équilibre sur un bras." : "La suivante : la branche Planche, du planche lean à la full planche."), br, sw); main.append(q); });
   box.append(main);
   const todo = S0.badges.filter(b=>!b.ok).sort((a,b)=>b.cur/b.max - a.cur/a.max), got = S0.badges.filter(b=>b.ok);
   const side = el("div","block"); side.append(el("h2",null,"Quêtes secondaires"), el("div","mut","Chacune débloque un badge et 50 points d'expérience."));
@@ -972,7 +972,7 @@ function render(){
   renderSess();
 }
 function logRow(l, withName){
-  const m = MS[l.id] || (String(l.id).startsWith("pg:") ? {name:l.n || l.id.slice(3), type:l.k} : null); const r = el("div","log"); if (!m) { r.style.display = "none"; return r; }
+  const m = MS[l.id] || (String(l.id).startsWith("pg:") ? {name:l.id.slice(3), type:l.k} : null); const r = el("div","log"); if (!m) { r.style.display = "none"; return r; }
   const when = new Date(l.t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + ", " + new Date(l.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
   const left = el("span","grow"); if (withName) left.append(el("div",null,m.name)); left.append(el("div","mut",when + (l.pr ? " · record" : "")));
   r.append(left, el("span","v" + (l.pr ? " pr" : ""), l.v === true ? "Validé" : fmt(m,l.v)));
@@ -1100,7 +1100,7 @@ function builtin(){
 }
 const PGROUPS = [
   ["Quête 1 · Équilibre sur un bras", id => id === "equilibre"],
-  ["Quête 2 · Planche complète", id => id === "planche-domination"],
+  ["Quête 2 · Full planche", id => id === "planche-domination"],
   ["Autres programmes de planche", id => /^planche-/.test(id)],
   ["Souplesse", id => /^etirements/.test(id)],
   ["Secondaire · Montées en force", id => id === "quest-for-the-press"],
@@ -1155,38 +1155,39 @@ async function loadRemote(pass){
 
 // Lexique : vocabulaire général de la gymnastique au poids du corps, pour lire les noms d'exercices.
 const LEX = [
-  ["Planche","Figure où le corps tient à l'horizontale, uniquement sur les mains, bras tendus. À ne pas confondre avec le gainage, que les vidéos appellent « plank »."],
-  ["Gainage (plank)","Position de pompe bras tendus, ou sur les avant-bras, corps aligné, tenue sans bouger."],
-  ["Planche inclinée (lean)","Position de pompe où l'on avance les épaules loin devant les mains. Plus on avance, plus c'est dur : c'est le premier pas vers la planche."],
-  ["Groupé (tuck)","Genoux repliés contre la poitrine. C'est la planche la plus facile, parce que le corps est ramassé près des mains."],
-  ["Groupé dos plat (advanced tuck)","Les hanches montent à hauteur des épaules, les genoux s'éloignent de la poitrine."],
-  ["Écarté (straddle)","Jambes tendues et écartées. Écarter rapproche le poids des mains, donc allège la figure."],
-  ["Carpé (pike)","Hanches fléchies, jambes tendues : le corps forme un V."],
-  ["Complète (full)","La figure entière : jambes tendues et serrées."],
-  ["Maintien (hold, iso)","On tient la position sans bouger, pendant un temps donné."],
-  ["Pompe (push up)","Avec « pseudo », « lean » ou « planche » : pompe avec les épaules en avant des mains."],
-  ["Poussée, montée en force (press)","Mouvement fait bras tendus, où ce sont les épaules qui travaillent : avancer, monter le bassin, ou monter en équilibre sans élan."],
-  ["Descente lente (negative)","La phase de descente seule, faite lentement."],
-  ["Omoplates : protraction, rétraction (scapula)","Protraction : on les écarte en arrondissant le haut du dos, comme pour repousser le sol. Rétraction : on les rapproche. En planche, on reste en protraction."],
-  ["Position cuillère (hollow body)","Dos légèrement rond, abdos serrés, bassin basculé. La base du gainage en gymnastique."],
-  ["Équerre (L-sit)","En appui sur les mains, jambes tendues à l'horizontale devant soi."],
-  ["Équilibre sur les mains (handstand)","Corps à la verticale, tête en bas, en appui sur les mains."],
-  ["Équilibre sur la tête (headstand)","En appui sur la tête et les mains ou les avant-bras."],
-  ["Flotter (float, hover)","Les pieds quittent le sol sans élan, portés par les épaules et les abdos. « Hover » : tenir ce flottement."],
-  ["Touches d'orteils (toe taps)","En appui sur les mains, bassin haut : décoller les pieds puis reposer seulement les orteils, par petites touches."],
-  ["Grue, corbeau (crane, crow)","Mains au sol, genoux posés sur l'arrière des bras, pieds décollés. Bras tendus pour la grue, fléchis pour le corbeau."],
-  ["Éducatif (drill)","Un geste simplifié qui prépare la figure."],
-  ["Sangle abdominale (core)","Abdos, lombaires et muscles profonds du tronc."],
-  ["Brique, accessoires (block, props)","Brique de yoga ; plus largement, la chaise, les briques, le mur."],
-  ["Élastique (elastic band)","Passé autour des hanches ou sous les pieds, accroché en hauteur : il porte une partie du poids et rend la figure accessible."],
+  ["Planche","Figure où le corps tient à l'horizontale, uniquement sur les mains, bras tendus. Ne pas confondre avec « plank », le gainage."],
+  ["Plank","Gainage : position de pompe (bras tendus) ou sur les avant-bras, corps aligné, tenue sans bouger."],
+  ["Lean (planche lean, plank lean)","Position de pompe où l'on avance les épaules loin devant les mains. Plus on avance, plus c'est dur : c'est le premier pas vers la planche."],
+  ["Tuck","Groupé : genoux repliés contre la poitrine. C'est la planche la plus facile, parce que le corps est ramassé près des mains."],
+  ["Advanced tuck","Groupé dos plat : les hanches montent à hauteur des épaules, les genoux s'éloignent de la poitrine."],
+  ["Straddle","Jambes tendues et écartées. Écarter rapproche le poids des mains, donc allège la figure."],
+  ["Pike","Hanches fléchies, jambes tendues : le corps forme un V."],
+  ["Full","La figure complète : jambes tendues et serrées."],
+  ["Hold, static hold, iso","Maintien : on tient la position sans bouger, pendant un temps donné."],
+  ["Push up","Pompe. « Pseudo », « lean » ou « planche » push up : pompe avec les épaules en avant des mains."],
+  ["Press","Mouvement fait bras tendus, où ce sont les épaules qui travaillent : avancer, monter le bassin, ou monter en équilibre."],
+  ["Negative","La phase de descente seule, faite lentement."],
+  ["Scapula, protraction, rétraction","Les omoplates. Protraction : on les écarte en arrondissant le haut du dos, comme pour repousser le sol. Rétraction : on les rapproche. En planche, on reste en protraction."],
+  ["Hollow body","Position « en cuillère » : dos légèrement rond, abdos serrés, bassin basculé. La base du gainage en gymnastique."],
+  ["L-sit","Équerre : en appui sur les mains, jambes tendues à l'horizontale devant soi."],
+  ["Handstand","Équilibre sur les mains."],
+  ["Headstand","Équilibre sur la tête, en appui sur la tête et les mains ou les avant-bras."],
+  ["Straddle press, pike press, tuck press","Montées en force vers l'équilibre, sans élan : jambes écartées (la plus accessible), jambes tendues serrées (la plus dure), ou genoux groupés."],
+  ["Float, hover","Flotter : les pieds quittent le sol sans élan, portés par les épaules et les abdos. Hover : tenir ce flottement."],
+  ["Toe taps","En appui sur les mains, bassin haut : décoller les pieds puis reposer seulement les orteils, par petites touches."],
+  ["Crane, crow","Posture de la grue ou du corbeau : mains au sol, genoux posés sur l'arrière des bras, pieds décollés. Bras tendus (crane) ou fléchis (crow)."],
+  ["Drill","Exercice éducatif : un geste simplifié qui prépare la figure."],
+  ["Core","La sangle abdominale : abdos, lombaires et muscles profonds du tronc."],
+  ["Block, props","Brique de yoga ; plus largement, les accessoires (chaise, briques, mur)."],
+  ["Elastic band, banded","Élastique passé autour des hanches ou sous les pieds, accroché en hauteur : il porte une partie du poids et rend la figure accessible."],
   ["Parallettes","Petites barres parallèles posées au sol : poignets droits, moins de contrainte."],
-  ["Tentative (try-out)","On essaie la figure visée, même si on ne la tient que quelques secondes."],
+  ["Try-out","Tentative : on essaie la figure visée, même si on ne la tient que quelques secondes."],
   ["80 % / 100 %","Intensité de la série par rapport à ton maximum sur l'exercice. 100 % : tu vas à ton record. 80 % : tu t'arrêtes avant."],
   ["Circuit, tour (cycle)","Les exercices s'enchaînent sans pause ; on se repose seulement à la fin du tour, puis on recommence."],
-  ["Petites séries réparties (grease the groove)","Beaucoup de petites séries faciles réparties dans la journée, jamais jusqu'à l'épuisement, pour ancrer le geste."],
-  ["Temps sous tension (TUT)","On ralentit chaque phase du mouvement selon un tempo donné."],
-  ["Amplitude (ROM)","Faire le mouvement en entier."],
-  ["Contracté-relâché (PNF)","Technique d'étirement : contracter le muscle étiré 10 s, relâcher 5 s, puis aller un peu plus loin."],
+  ["Grease the groove","« Graisser le sillon » : beaucoup de petites séries faciles réparties dans la journée, jamais jusqu'à l'épuisement, pour ancrer le geste."],
+  ["TUT (time under tension)","Temps sous tension : on ralentit chaque phase du mouvement selon un tempo donné."],
+  ["ROM (range of motion)","Amplitude : faire le mouvement en entier."],
+  ["PNF","Technique d'étirement : contracter le muscle étiré 10 s, relâcher 5 s, puis aller un peu plus loin."],
 ];
 function renderSess(){
   pickP();
@@ -1245,23 +1246,23 @@ function renderSess(){
   box.append(dh);
   day.blocks.forEach((b,bi)=>{
     const c = el("div","blk"), h = el("div","blk-h"), t = el("span","grow"), fx = fixed(b.sets[0]);
-    t.append(el("div","t",b.fr || b.name));
+    t.append(el("div","t",b.name));
     const best = pg().best[b.name];
     const one = fx && b.sets.length === 1;
     t.append(el("div","mut", one ? [b.pnf ? "PNF" : "", b.muscles].filter(Boolean).join(" · ")
       : fx ? b.sets.length + (day.circuit ? " tours · " : " séries · ") + fixTxt(b, b.sets[0], day.scale)
       : b.sets.length + (b.sets.length > 1 ? " séries" : " série") + (b.sets[0].rest ? " · repos " + restTxt(b.sets[0]) : "") + (best ? " · record " + num(best) + unit(b) : "")));
     if (b.how) t.append(el("div","how",b.how));
-    if (b.fr && b.fr !== b.name) t.append(el("div","orig","Nom d'origine : " + b.name));
-    if (b.terms && b.terms.length) { const det = el("details"); det.append(el("summary",null,"Les mots de ce cours · " + b.terms.length));
+    if (b.fr && b.fr !== b.name) t.append(el("div","orig","En français : " + b.fr));
+    if (b.terms && b.terms.length) { const det = el("details"); det.append(el("summary",null,"Les termes de ce cours · " + b.terms.length));
       const dl = el("dl","lex"); b.terms.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); det.append(dl); t.append(det); }
     h.append(t); const vl = vidLink(b); if (vl) h.append(vl); c.append(h);
     const row = el("div","sets" + (one ? " one" : ""));
     b.sets.forEach((s,si)=>{
       const v = vals[bi + "-" + si], tg = pTarget(b,s);
       const x = el("button","set" + (v != null ? " dn" : ""));
-      if (fx && !one) { x.setAttribute("aria-label", (b.fr || b.name) + ", " + (si+1) + " sur " + b.sets.length); x.append(el("span","p", (si+1) + "/" + b.sets.length), el("span","v", v != null ? "fait" : s.lab ? s.lab : s.dur != null ? sDur(s, day.scale) + " s" : "× " + s.reps)); }
-      else if (fx) { x.setAttribute("aria-label", b.fr || b.name); x.append(el("span","v", v != null ? (s.lab ? "Fait" : "Fait · " + fixTxt(b,s,day.scale)) : fixTxt(b,s,day.scale))); }
+      if (fx && !one) { x.setAttribute("aria-label", b.name + ", " + (si+1) + " sur " + b.sets.length); x.append(el("span","p", (si+1) + "/" + b.sets.length), el("span","v", v != null ? "fait" : s.lab ? s.lab : s.dur != null ? sDur(s, day.scale) + " s" : "× " + s.reps)); }
+      else if (fx) { x.setAttribute("aria-label", b.name); x.append(el("span","v", v != null ? (s.lab ? "Fait" : "Fait · " + fixTxt(b,s,day.scale)) : fixTxt(b,s,day.scale))); }
       else { x.setAttribute("aria-label","Série " + (si+1) + " sur " + b.sets.length);
         x.append(el("span","p", (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "")), el("span","v", v != null ? num(v) + unit(b) : tg ? tg + unit(b) : "max")); }
       x.onclick = () => openSet(bi, si);
@@ -1271,7 +1272,7 @@ function renderSess(){
   });
   const foot = el("div","blk");
   if (P.links && P.links.length) { const l = el("div"); l.style.cssText = "display:flex;flex-wrap:wrap;gap:4px 18px;margin-bottom:8px"; P.links.forEach(k=>l.append(k.url ? extLink(k.url, k.name) : k.drive ? extLink(drv(k.drive), k.name) : ytLink(k.yt, k.name))); foot.append(l); }
-  const lx = el("details"); lx.append(el("summary",null,"Lexique : les mots des programmes et leur nom anglais"));
+  const lx = el("details"); lx.append(el("summary",null,"Lexique : les termes des programmes"));
   const dl = el("dl","lex"); LEX.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); lx.append(dl); foot.append(lx);
   if (!Object.keys(PS).length) foot.append(passForm());
   const fb = el("div","btns"), bi = el("button","btn line","Importer un fichier"), br = el("button","btn warn","Retirer");
@@ -1308,7 +1309,7 @@ function openSet(bi, si){
   sdStop();
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
-  $("sdT").textContent = b.fr || b.name; $("sdHow").textContent = b.how || "";
+  $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
   const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
   if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l'exercice"; sv.append(vl); }
   const ck = $("sdClock"); ck.className = "clock";
@@ -1352,7 +1353,7 @@ function startRest(r, nx, title){
   $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Continuer" : "Terminer la séance";
   const nb = nx && pDay(selDay).blocks[nx[0]];
-  $("sdHint").textContent = nx ? "Ensuite : " + (nb.fr || nb.name) + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
+  $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
   const tick = () => { const left = (end - Date.now())/1000;
     if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; } }
     else ck.textContent = mmss(Math.ceil(left)); };
@@ -1377,7 +1378,7 @@ function saveSet(v){
   const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
   if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true; }
-  S.log.push({t:Date.now(), id:"pg:" + b.name, n:b.fr || b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();
   if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else $("sd").close(); return; }
