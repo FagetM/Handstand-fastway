@@ -3,131 +3,187 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f1420">
+<meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f2ec" media="(prefers-color-scheme: light)">
+<meta name="robots" content="noindex">
 <title>Handstand Fastway</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <style>
+@font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-600.woff2) format("woff2")}
 :root{
-  --bg:#0f1420; --card:#182033; --card2:#1f2940; --line:#2c3854;
-  --txt:#eef2fb; --mut:#93a0bd; --acc:#ffb020; --ok:#3ddc97; --bad:#ff6b6b; --blue:#6aa8ff;
+  color-scheme:dark;
+  --bg:#111110; --raise:#1b1b19; --line:#2c2c29; --txt:#f2f0ea; --mut:#918e86; --acc:#ff5b2e;
+  --disp:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root{color-scheme:light; --bg:#f4f2ec; --raise:#eae7df; --line:#d5d1c6; --txt:#151513; --mut:#6d6a62; --acc:#d9431a}
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-body{padding:0 0 calc(76px + env(safe-area-inset-bottom))}
-button,select,input{font:inherit;color:inherit}
-button{cursor:pointer;border:0;border-radius:12px;background:var(--card2);padding:12px 16px;min-height:44px}
-button.primary{background:var(--acc);color:#1a1300;font-weight:700}
-button.ghost{background:transparent;border:1px solid var(--line)}
-button.danger{background:transparent;border:1px solid var(--bad);color:var(--bad)}
-main{max-width:640px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:0}
-h2{font-size:17px;margin:0}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:0 0 calc(64px + env(safe-area-inset-bottom))}
+button,select,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none;padding:0;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+svg{display:block}
+main,header.top{max-width:640px;margin:0 auto;padding:0 20px}
 .mut{color:var(--mut);font-size:14px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:12px}
-.row{display:flex;align-items:center;gap:12px}
 .grow{flex:1;min-width:0}
-header.top{padding:16px 16px 0;max-width:640px;margin:0 auto}
-select{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:44px}
-.bar{height:10px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:10px}
-.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--ok));border-radius:99px;transition:width .4s}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-.stat{background:var(--card2);border-radius:12px;padding:10px;text-align:center}
-.stat b{display:block;font-size:20px}
-.next{border-color:var(--acc)}
-.sec-head{width:100%;text-align:left;background:transparent;padding:0;display:flex;align-items:center;gap:12px}
-.badge{flex:none;width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:var(--card2);font-weight:700}
-.sec.done .badge{background:var(--ok);color:#06281a}
-.sec.locked{opacity:.62}
-.sec.off-goal .badge{border:1px dashed var(--line);background:transparent}
+.lab{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.disp{font-family:var(--disp);font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
+h2{font:600 26px/1.1 var(--disp);letter-spacing:.01em;margin:0}
+
+header.top{padding-top:20px;padding-bottom:4px}
+.wm{font:600 20px/1 var(--disp);letter-spacing:.14em;text-transform:uppercase}
+.wm span{color:var(--mut)}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;padding:12px 16px;border-radius:8px;font-weight:600;background:var(--txt);color:var(--bg)}
+.btn.line{background:none;color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.warn{background:none;color:var(--acc);box-shadow:inset 0 0 0 1px var(--line)}
+.btns{display:flex;gap:8px;margin-top:12px}
+
+/* objectif */
+.goal{padding:24px 0 20px}
+select{appearance:none;-webkit-appearance:none;width:100%;min-height:44px;margin-top:6px;padding:8px 32px 8px 0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23918e86' stroke-width='1.6'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 4px center;font:600 22px/1.2 var(--disp)}
+select option{font:16px system-ui;background:var(--bg);color:var(--txt)}
+.prog{display:flex;align-items:baseline;gap:8px;margin-top:20px}
+.prog .num{font-size:56px}
+.prog .pct{margin-left:auto;font-size:22px;color:var(--mut)}
+.bar{height:3px;background:var(--line);margin-top:10px}
+.bar>i{display:block;height:100%;background:var(--acc);transition:width .4s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin:20px 0 0;border-top:1px solid var(--line)}
+.stats div{padding:12px 0 0}
+.stats div+div{padding-left:14px;border-left:1px solid var(--line)}
+.stats dt{font-size:12px;color:var(--mut)}
+.stats dd{margin:2px 0 0;font-size:28px}
+
+/* prochaine étape */
+.next{background:var(--txt);color:var(--bg);border-radius:12px;padding:20px;margin-bottom:28px}
+.next .lab,.next .mut{color:inherit;opacity:.62}
+.next h2{font-size:30px;margin:6px 0 8px}
+.next p{margin:0 0 16px;font-size:15px}
+.next .btn{background:var(--bg);color:var(--txt)}
+.next .rec{font-size:14px;margin:-8px 0 16px;opacity:.62}
+
+/* arbre */
+.sec{border-top:1px solid var(--line)}
+.sec:last-child{border-bottom:1px solid var(--line)}
+.sec-head{display:flex;align-items:center;gap:14px;width:100%;min-height:60px;text-align:left}
+.idx{font:600 15px/1 var(--disp);color:var(--mut);width:22px;font-variant-numeric:tabular-nums}
+.sname{font:600 22px/1.1 var(--disp);letter-spacing:.04em;text-transform:uppercase}
+.cnt{font:600 17px/1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
+.sec.done .cnt{color:var(--txt)}
+.sec.locked .sname{color:var(--mut)}
 .chev{color:var(--mut);transition:transform .2s}
 .sec.open .chev{transform:rotate(90deg)}
-.sec-body{display:none;margin-top:12px}
+.sec-body{display:none;padding:0 0 20px 36px}
 .sec.open .sec-body{display:block}
-.ms{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card2);margin-top:8px;padding:12px}
-.dot{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-size:14px}
-.ms.done .dot{background:var(--ok);border-color:var(--ok);color:#06281a}
-.ms.wip .dot{border-color:var(--acc)}
-.ms .t{font-weight:600}
-.tag{font-size:12px;color:var(--mut);white-space:nowrap}
-details{margin-top:12px}
-summary{color:var(--blue);cursor:pointer;padding:8px 0}
-label.vid{display:flex;gap:10px;align-items:flex-start;padding:8px 0;font-size:14px;border-top:1px solid var(--line)}
-label.vid input{width:20px;height:20px;flex:none;margin-top:1px;accent-color:var(--ok)}
-nav.tabs{position:fixed;left:0;right:0;bottom:0;background:#0b0f18;border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
-nav.tabs button{flex:1;max-width:213px;background:transparent;border-radius:0;color:var(--mut);padding:14px 4px;font-size:14px}
-nav.tabs button.on{color:var(--acc);font-weight:700}
+.rail{list-style:none;margin:0;padding:0}
+.rail li{position:relative}
+.rail li:not(:last-child)::before{content:"";position:absolute;left:11px;top:36px;bottom:-12px;width:1px;background:var(--line)}
+.ms{display:flex;align-items:flex-start;gap:14px;width:100%;padding:12px 0;text-align:left;min-height:48px}
+.node{flex:none;width:23px;height:23px;margin-top:1px;border-radius:50%;border:1.5px solid var(--mut);display:grid;place-items:center;background:var(--bg);position:relative}
+.ms.wip .node{border-color:var(--acc)}
+.ms.wip .node::after{content:"";width:7px;height:7px;border-radius:50%;background:var(--acc)}
+.ms.done .node{background:var(--txt);border-color:var(--txt);color:var(--bg)}
+.ms.lk .node{border-style:dashed;color:var(--mut)}
+.ms.lk .t,.ms.lk .tg{color:var(--mut)}
+.ms .t{display:block;font-weight:600;line-height:1.3}
+.ms .mut{display:block;margin-top:2px}
+.tg{font:600 20px/1.2 var(--disp);font-variant-numeric:tabular-nums;white-space:nowrap}
+details{margin-top:8px}
+summary{font-size:14px;color:var(--mut);cursor:pointer;padding:10px 0;min-height:44px;display:flex;align-items:center;gap:8px;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::before{content:"+";font:600 18px/1 var(--disp);width:12px}
+details[open] summary::before{content:"–"}
+label.vid{display:flex;gap:12px;align-items:flex-start;padding:10px 0;font-size:14px;border-top:1px solid var(--line)}
+label.vid input{width:18px;height:18px;flex:none;margin:2px 0 0;accent-color:var(--txt)}
+
+/* onglets */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--bg);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{flex:1;max-width:213px;min-height:56px;color:var(--mut);font:600 15px/1 var(--disp);letter-spacing:.1em;text-transform:uppercase;box-shadow:inset 0 2px 0 transparent}
+nav.tabs button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
 .view{display:none}.view.on{display:block}
-a.yt{display:flex;gap:12px;align-items:center;background:var(--card2);border-radius:12px;padding:8px;margin-top:10px;color:var(--txt);text-decoration:none}
-a.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;background:#000;flex:none}
-img.ph{display:block;width:100%;max-height:260px;object-fit:contain;background:#000;border-radius:12px;margin-top:10px}
-.ms.lk{opacity:.6}
-dialog{overflow:auto;border:0;border-radius:20px;background:var(--card);color:var(--txt);width:min(560px,calc(100vw - 24px));padding:20px;max-height:92vh}
-dialog::backdrop{background:rgba(0,0,0,.7)}
-.clock{font-variant-numeric:tabular-nums;font-size:72px;font-weight:800;text-align:center;margin:12px 0 4px;line-height:1}
-.clock.count{color:var(--acc)}.clock.hit{color:var(--ok)}
-.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.btns button{flex:1}
-.big{width:100%;min-height:64px;font-size:20px}
-input[type=number]{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:10px;width:100%;min-height:44px}
-.log{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:14px}
-.log:first-child{border-top:0}
-.pr{color:var(--ok);font-weight:700}
-textarea{width:100%;min-height:90px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px ui-monospace,monospace}
-#gate{display:none;position:fixed;inset:0;background:var(--bg);z-index:10;place-items:center;padding:16px}
+.block{padding:24px 0;border-bottom:1px solid var(--line)}
+.block h2{margin-bottom:6px}
+.log{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
+.log .v{font:600 20px/1 var(--disp);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log .v.pr{color:var(--acc)}
+textarea{width:100%;min-height:90px;margin-top:10px;background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:10px;font:13px ui-monospace,monospace}
+input[type=number]{background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:48px}
+
+/* fiche */
+dialog{border:0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));margin:auto auto 0;width:100%;max-width:640px;max-height:92dvh;overflow:auto;background:var(--bg);color:var(--txt);border-radius:16px 16px 0 0;border-top:1px solid var(--line)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.x{flex:none;width:44px;height:44px;margin:-8px -10px 0 0;display:grid;place-items:center;color:var(--mut)}
+#dDesc{margin:12px 0 0;font-size:15px}
+img.ph{display:block;width:100%;max-height:240px;object-fit:contain;background:#000;border-radius:8px;margin-top:12px}
+a.yt{display:flex;gap:12px;align-items:center;margin-top:12px;color:inherit;text-decoration:none}
+a.yt img{width:112px;aspect-ratio:16/9;object-fit:cover;border-radius:6px;background:var(--raise);flex:none}
+a.yt .t{font-weight:600;line-height:1.3}
+.clock{font:600 104px/1 var(--disp);font-variant-numeric:tabular-nums;text-align:center;margin:20px 0 2px}
+.clock.count{color:var(--mut)}.clock.hit{color:var(--acc)}
+#clockHint{text-align:center;margin-bottom:16px}
+#dBest{margin-top:16px}
+
+/* code d'accès */
+#gate{display:none;position:fixed;inset:0;background:var(--bg);z-index:10;place-items:center;padding:20px}
 body.locked #gate{display:grid}
 body.locked>header,body.locked>main,body.locked>nav{display:none}
-#gate form{width:min(340px,100%);text-align:center}
-#gate input{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;width:100%;font-size:24px;text-align:center;letter-spacing:3px;margin:16px 0 12px}
+#gate form{width:min(320px,100%)}
+#gate input{display:block;width:100%;min-height:48px;margin:28px 0 16px;padding:8px 0;border:0;border-bottom:1px solid var(--mut);border-radius:0;background:none;font-size:18px}
+#gate input:focus{outline:none;border-bottom-color:var(--acc)}
+#gateMsg{margin-top:10px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body class="locked">
 <div id="gate"><form id="gateForm">
-  <h1>🤸 Handstand Fastway</h1>
-  <div class="mut" id="gateMsg">Entre ton code d'accès</div>
+  <div class="wm">Handstand <span>Fastway</span></div>
+  <div class="mut" id="gateMsg">Code d'accès</div>
   <input id="gateCode" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Code d'accès">
-  <button class="primary big" type="submit">Ouvrir</button>
+  <button class="btn" type="submit">Ouvrir</button>
 </form></div>
-<header class="top">
-  <div class="row"><div class="grow"><h1>🤸 Handstand Fastway</h1><div class="mut">Ton arbre de compétences, étape par étape</div></div></div>
-</header>
+
+<header class="top"><div class="wm">Handstand <span>Fastway</span></div></header>
 
 <main>
   <section id="v-path" class="view on">
-    <div class="card">
-      <label class="mut" for="goal">But final</label>
+    <div class="goal">
+      <label class="lab" for="goal">Objectif</label>
       <select id="goal"></select>
+      <div class="prog"><span class="disp num" id="gNum">0</span><span class="mut" id="gDen"></span><span class="disp pct" id="gPct"></span></div>
       <div class="bar"><i id="goalBar"></i></div>
-      <div class="mut" id="goalTxt" style="margin-top:6px"></div>
-      <div class="stats">
-        <div class="stat"><b id="stStreak">0</b><span class="mut">jours d'affilée</span></div>
-        <div class="stat"><b id="stWeek">0</b><span class="mut">séances / 7 j</span></div>
-        <div class="stat"><b id="stDone">0</b><span class="mut">jalons validés</span></div>
-      </div>
+      <dl class="stats">
+        <div><dt>Jours d'affilée</dt><dd class="disp" id="stStreak">0</dd></div>
+        <div><dt>Séances, 7 jours</dt><dd class="disp" id="stWeek">0</dd></div>
+        <div><dt>Jalons validés</dt><dd class="disp" id="stDone">0</dd></div>
+      </dl>
     </div>
-    <div class="card next" id="nextCard"></div>
+    <div class="next" id="nextCard"></div>
     <div id="tree"></div>
   </section>
 
   <section id="v-log" class="view">
-    <div class="card"><h2>Journal</h2><div class="mut">Tes derniers essais</div><div id="logList" style="margin-top:8px"></div></div>
+    <div class="block" style="border:0;padding-bottom:8px"><h2>Journal</h2><div class="mut">Tes 60 derniers essais</div></div>
+    <div id="logList"></div>
   </section>
 
   <section id="v-set" class="view">
-    <div class="card">
+    <div class="block">
       <h2>Chrono</h2>
-      <div class="mut" style="margin:6px 0">Compte à rebours avant départ (le temps de monter en équilibre)</div>
-      <select id="countdown"><option value="0">Aucun</option><option value="3">3 s</option><option value="5">5 s</option><option value="10">10 s</option></select>
+      <label class="mut" for="countdown">Compte à rebours avant le départ, le temps de monter en équilibre</label>
+      <select id="countdown"><option value="0">Aucun</option><option value="3">3 secondes</option><option value="5">5 secondes</option><option value="10">10 secondes</option></select>
     </div>
-    <div class="card">
+    <div class="block">
       <h2>Sauvegarde</h2>
-      <div class="mut" style="margin:6px 0">Les données restent sur cet appareil. Exporte-les pour les garder ou changer de téléphone.</div>
-      <textarea id="io" placeholder="Colle ici une sauvegarde pour l'importer"></textarea>
-      <div class="btns"><button id="exp">Exporter</button><button id="imp">Importer</button></div>
-      <div class="btns"><button class="danger" id="reset">Tout effacer</button></div>
+      <div class="mut">Ta progression reste sur cet appareil. Exporte-la pour la conserver ou changer de téléphone.</div>
+      <textarea id="io" placeholder="Colle ici une sauvegarde pour l'importer" aria-label="Sauvegarde"></textarea>
+      <div class="btns"><button class="btn line" id="exp">Exporter</button><button class="btn line" id="imp">Importer</button></div>
+      <div class="btns"><button class="btn warn" id="reset">Tout effacer</button></div>
     </div>
-    <div class="card mut">Les jalons suivent l'arbre de ton programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube : l'app n'en contient aucune.</div>
+    <div class="block mut" style="border:0">Les jalons suivent l'arbre du programme « Handstand Toolkit » ; le nom d'origine est rappelé dans chaque fiche. Les vidéos s'ouvrent sur YouTube.</div>
   </section>
 </main>
 
@@ -138,21 +194,23 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 </nav>
 
 <dialog id="dlg">
-  <div class="row"><div class="grow"><h2 id="dT"></h2><div class="mut" id="dS"></div></div><button class="ghost" id="dX" aria-label="Fermer">✕</button></div>
-  <div class="mut" id="dEn" style="margin-top:6px"></div>
-  <p id="dDesc" style="margin:10px 0 0"></p>
+  <div style="display:flex;gap:12px;align-items:flex-start">
+    <div class="grow"><div class="lab" id="dS"></div><h2 id="dT" style="margin-top:6px"></h2><div class="mut" id="dEn" style="margin-top:6px"></div></div>
+    <button class="x" id="dX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  </div>
+  <p id="dDesc"></p>
   <div id="dVid"></div>
   <div id="dHold">
-    <div class="clock" id="clock">0.0</div>
-    <div class="mut" style="text-align:center" id="clockHint"></div>
-    <div class="btns"><button class="primary big" id="go">Démarrer</button></div>
+    <div class="clock" id="clock">0,0</div>
+    <div class="mut" id="clockHint"></div>
+    <button class="btn" id="go">Démarrer</button>
   </div>
   <div id="dReps">
-    <div class="mut" style="margin-top:12px">Répétitions réussies</div>
-    <div class="btns"><input type="number" id="reps" min="0" inputmode="numeric"><button class="primary" id="saveReps">Enregistrer</button></div>
+    <label class="mut" for="reps" style="display:block;margin-top:20px">Répétitions réussies</label>
+    <div class="btns" style="margin-top:6px"><input type="number" id="reps" min="0" inputmode="numeric"><button class="btn" id="saveReps">Enregistrer</button></div>
   </div>
-  <div class="btns"><button id="toggle"></button></div>
-  <div class="mut" id="dBest" style="margin-top:12px"></div>
+  <div class="btns"><button class="btn line" id="toggle"></button></div>
+  <div class="mut" id="dBest"></div>
   <div id="dLog"></div>
 </dialog>
 
@@ -269,28 +327,33 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
-const unit = m => m.type === "hold" ? "s" : m.type === "reps" ? " reps" : "";
-const fmt = (m, v) => m.type === "hold" ? (Math.round(v*10)/10) + " s" : v + " reps";
-const targetTxt = m => m.type === "check" ? "à réussir" : "objectif " + m.target + unit(m);
+const ICON = {
+  check:'<svg width="11" height="9" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4.5l3 3 6-6.5"/></svg>',
+  lock:'<svg width="9" height="11" fill="none" stroke="currentColor" stroke-width="1.3"><rect x=".7" y="4.7" width="7.6" height="5.6" rx="1"/><path d="M2.5 4.5V3a2 2 0 014 0v1.5"/></svg>',
+  chev:'<svg width="8" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 1l5 5-5 5"/></svg>',
+};
+const icon = (name, cls) => { const s = el("span", cls); s.innerHTML = ICON[name]; return s; };
+const num = v => (Math.round(v*10)/10).toLocaleString("fr-FR");
+const fmt = (m, v) => m.type === "hold" ? num(v) + " s" : v + " rép.";
+const goalTxt = m => m.type === "hold" ? m.target + " s" : m.type === "reps" ? "× " + m.target : "";
 
 function goalMs(){ return (GOALS.find(g=>g.id===S.goal) || GOALS[0]).ms; }
 const msLocked = m => (m.req||[]).some(r=>!st(r).done);
 const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
 const secLocked = s => s.ms.length > 0 && !secDone(s) && s.ms.filter(m=>!st(m.id).done).every(msLocked);
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
+const missing = m => m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + goalTxt(MS[r]) : "")).join(" + ");
 
 // ---------- Rendu ----------
 const openSecs = new Set();
 function render(){
-  // objectif
   const gsel = $("goal");
   if (!gsel.options.length) GOALS.forEach(g=>gsel.add(new Option(g.name, g.id)));
   gsel.value = S.goal;
   const ids = goalMs(), done = ids.filter(id=>st(id).done).length;
   const pct = ids.length ? Math.round(done/ids.length*100) : 0;
   $("goalBar").style.width = pct + "%";
-  $("goalTxt").textContent = done + " / " + ids.length + " jalons sur ce chemin · " + pct + " %";
-  // stats
+  $("gNum").textContent = done; $("gDen").textContent = "sur " + ids.length + " jalons"; $("gPct").textContent = pct + " %";
   const days = new Set(S.log.map(l=>dayKey(l.t)));
   let streak = 0; const d = new Date();
   if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
@@ -299,75 +362,75 @@ function render(){
   $("stStreak").textContent = streak;
   $("stWeek").textContent = new Set(S.log.filter(l=>l.t>weekAgo).map(l=>dayKey(l.t))).size;
   $("stDone").textContent = Object.keys(MS).filter(id=>st(id).done).length;
-  // prochaine étape
+
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
   const nc = $("nextCard"); nc.textContent = "";
   if (nextId){
     const m = MS[nextId];
-    nc.append(el("div","mut","Prochaine étape · " + SEC[m.sec].name));
-    const h = el("h2",null, m.name + (m.target ? " — " + m.target + unit(m) : "")); h.style.margin = "4px 0";
-    nc.append(h);
-    if (m.desc) nc.append(el("div","mut",m.desc));
-    if (m.type !== "check" && st(nextId).best) nc.append(el("div","mut","Ton record : " + fmt(m, st(nextId).best)));
-    const b = el("button","primary big", m.type === "hold" ? "Lancer le chrono" : "S'entraîner"); b.style.marginTop = "12px";
+    nc.append(el("div","lab","Prochaine étape · " + SEC[m.sec].name));
+    nc.append(el("h2",null, m.name + (m.target ? " · " + goalTxt(m) : "")));
+    if (m.desc) nc.append(el("p",null,m.desc));
+    if (m.type !== "check" && st(nextId).best) nc.append(el("div","rec","Record : " + fmt(m, st(nextId).best)));
+    const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche");
     b.onclick = () => openMs(nextId); nc.append(b);
     if (!openSecs.size) openSecs.add(m.sec);
   } else {
-    nc.append(el("h2",null,"🏆 But final atteint !"), el("div","mut","Choisis un autre but en haut pour continuer."));
+    nc.append(el("div","lab","Objectif"), el("h2",null,"Atteint."), el("p",null,"Choisis un autre objectif pour continuer."));
+    nc.lastChild.style.margin = "0";
   }
-  // arbre
+
   const tree = $("tree"); tree.textContent = "";
-  const gset = new Set(ids.map(id=>MS[id].sec));
-  TREE.forEach((s,i)=>{
-    const c = el("div","card sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (s.ms.length && !gset.has(s.id)?" off-goal":"") + (openSecs.has(s.id)?" open":""));
+  let n = 0;
+  TREE.forEach(s=>{
+    const c = el("section","sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (openSecs.has(s.id)?" open":""));
     const h = el("button","sec-head");
-    h.append(el("span","badge", secDone(s) ? "✓" : secLocked(s) ? "🔒" : s.ms.length ? String(i+1) : "▶"));
-    const g = el("span","grow"); g.append(el("h2",null,s.name));
-    const n = s.ms.filter(m=>st(m.id).done).length;
-    let info = s.ms.length ? n + " / " + s.ms.length + " jalons" : s.videos.length + " vidéos";
-    if (secLocked(s)) info += " · à débloquer";
-    else if (s.ms.length && !gset.has(s.id)) info += " · hors de ton chemin";
-    g.append(el("div","mut",info)); h.append(g, el("span","chev","›"));
-    h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); c.classList.toggle("open"); };
+    h.setAttribute("aria-expanded", openSecs.has(s.id));
+    h.append(el("span","idx", s.ms.length ? String(++n).padStart(2,"0") : "—"));
+    const g = el("span","grow"); g.append(el("span","sname",s.name)); h.append(g);
+    h.append(el("span","cnt", s.ms.length ? s.ms.filter(m=>st(m.id).done).length + "/" + s.ms.length : ""), icon("chev","chev"));
+    h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); h.setAttribute("aria-expanded", c.classList.toggle("open")); };
     const body = el("div","sec-body");
-    s.ms.forEach(m=>{
-      const x = st(m.id);
-      const lk = !x.done && msLocked(m);
-      const b = el("button","ms" + (x.done?" done":x.best?" wip":"") + (lk?" lk":""));
-      b.append(el("span","dot", x.done ? "✓" : lk ? "🔒" : ""));
-      const t = el("span","grow"); t.append(el("div","t", m.name + (m.target ? " · " + m.target + unit(m) : "")));
-      const subs = [m.sub, lk ? "après : " + m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + MS[r].target + unit(MS[r]) : "")).join(" + ") : ""].filter(Boolean);
-      if (subs.length) t.append(el("div","mut",subs.join(" · ")));
-      b.append(t);
-      if (m.yt || m.img) b.append(el("span","tag", m.yt ? "▶" : "📷"));
-      if (m.type !== "check" && x.best) b.append(el("span","tag","record " + fmt(m,x.best)));
-      b.onclick = () => openMs(m.id); body.append(b);
-    });
+    if (s.ms.length){
+      const ol = el("ol","rail");
+      s.ms.forEach(m=>{
+        const x = st(m.id), lk = !x.done && msLocked(m);
+        const b = el("button","ms" + (x.done?" done":lk?" lk":m.id===nextId?" wip":""));
+        const node = el("span","node"); if (x.done) node.innerHTML = ICON.check; else if (lk) node.innerHTML = ICON.lock;
+        const t = el("span","grow"); t.append(el("span","t", m.name));
+        const subs = [m.sub, lk ? "Après : " + missing(m) : "", !lk && !x.done && m.type !== "check" && x.best ? "Record " + fmt(m,x.best) : "", m.yt ? "Vidéo" : m.img ? "Photo" : ""].filter(Boolean);
+        if (subs.length) t.append(el("span","mut",subs.join(" · ")));
+        b.append(node, t);
+        if (m.target) b.append(el("span","tg",goalTxt(m)));
+        b.onclick = () => openMs(m.id);
+        const li = el("li"); li.append(b); ol.append(li);
+      });
+      body.append(ol);
+    }
     if (s.videos.length){
       const det = el("details"); if (!s.ms.length) det.open = true;
       const vk = v => s.id + "|" + v[1];
-      const seen = s.videos.filter(v=>S.vid[vk(v)]).length;
-      det.append(el("summary",null,"Vidéos du programme à regarder (" + seen + " / " + s.videos.length + ")"));
+      const label = () => "Vidéos du programme · " + s.videos.filter(v=>S.vid[vk(v)]).length + "/" + s.videos.length + " vues";
+      const sum = el("summary",null,label()); det.append(sum);
       s.videos.forEach(v=>{
         const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vk(v)];
-        cb.onchange = () => { S.vid[vk(v)] = cb.checked; save(); det.querySelector("summary").textContent = "Vidéos du programme à regarder (" + s.videos.filter(v=>S.vid[vk(v)]).length + " / " + s.videos.length + ")"; };
+        cb.onchange = () => { S.vid[vk(v)] = cb.checked; save(); sum.textContent = label(); };
         const tx = el("span"); tx.append(el("div",null,v[0]), el("div","mut",v[1])); l.append(cb, tx); det.append(l);
       });
       body.append(det);
     }
     c.append(h, body); tree.append(c);
   });
-  // journal
+
   const ll = $("logList"); ll.textContent = "";
   if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Lance un chrono depuis le parcours."));
   S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
   $("countdown").value = String(S.countdown);
 }
 function logRow(l, withName){
-  const m = MS[l.id]; const r = el("div","log"); if (!m) return r;
-  const when = new Date(l.t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + " " + new Date(l.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
-  const left = el("span","grow"); if (withName) left.append(el("div",null,m.name + (m.sub ? " · " + m.sub : ""))); left.append(el("div","mut",when));
-  r.append(left, el("span", l.pr ? "pr" : null, (l.v === true ? "validé" : fmt(m,l.v)) + (l.pr ? " ★" : "")));
+  const m = MS[l.id]; const r = el("div","log"); if (!m) { r.style.display = "none"; return r; }
+  const when = new Date(l.t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + ", " + new Date(l.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
+  const left = el("span","grow"); if (withName) left.append(el("div",null,m.name)); left.append(el("div","mut",when + (l.pr ? " · record" : "")));
+  r.append(left, el("span","v" + (l.pr ? " pr" : ""), l.v === true ? "Validé" : fmt(m,l.v)));
   return r;
 }
 
@@ -384,27 +447,32 @@ function beep(freq, ms){
 }
 function openMs(id){
   cur = id; const m = MS[id];
-  $("dT").textContent = m.name; $("dS").textContent = [SEC[m.sec].name, m.sub, targetTxt(m)].filter(Boolean).join(" · ");
+  $("dT").textContent = m.name + (m.target ? " · " + goalTxt(m) : "");
+  $("dS").textContent = [SEC[m.sec].name, m.sub].filter(Boolean).join(" · ");
   $("dEn").textContent = "Dans le programme : " + m.en;
   $("dDesc").textContent = m.desc || "";
   const dv = $("dVid"); dv.textContent = "";
   (m.img||[]).forEach(src=>{ const im = el("img","ph"); im.src = src; im.alt = "Exemple : " + m.name; im.loading = "lazy"; dv.append(im); });
-  (m.yt||[]).forEach(([id,title])=>{
-    const a = el("a","yt"); a.href = "https://www.youtube.com/watch?v=" + id; a.target = "_blank"; a.rel = "noopener";
-    const im = el("img"); im.src = "https://i.ytimg.com/vi/" + id + "/mqdefault.jpg"; im.alt = ""; im.loading = "lazy";
-    const tx = el("span","grow"); tx.append(el("div","t",title), el("div","mut","▶ Ouvrir sur YouTube"));
+  (m.yt||[]).forEach(([vid,title])=>{
+    const a = el("a","yt"); a.href = "https://www.youtube.com/watch?v=" + vid; a.target = "_blank"; a.rel = "noopener";
+    const im = el("img"); im.src = "https://i.ytimg.com/vi/" + vid + "/mqdefault.jpg"; im.alt = ""; im.loading = "lazy"; im.onerror = () => im.remove();
+    const tx = el("span","grow"); tx.append(el("div","t",title), el("div","mut","Voir sur YouTube"));
     a.append(im, tx); dv.append(a);
   });
   $("dHold").style.display = m.type === "hold" ? "" : "none";
   $("dReps").style.display = m.type === "reps" ? "" : "none";
   $("reps").value = "";
-  resetClock(); fillDlg(); $("dlg").showModal();
+  resetClock(); fillDlg(); $("dlg").showModal(); $("dlg").scrollTop = 0;
 }
 function fillDlg(){
-  const m = MS[cur], x = st(cur);
-  $("toggle").textContent = x.done ? "Retirer la validation" : (m.type === "check" ? "✓ Je l'ai réussi" : "Valider manuellement");
-  $("toggle").className = x.done ? "ghost" : (m.type === "check" ? "primary big" : "ghost");
-  $("dBest").textContent = m.type === "check" ? (x.done ? "Jalon validé ✓" : "") : (x.best ? "Record : " + fmt(m,x.best) + (x.done ? " · jalon validé ✓" : " · objectif " + m.target + unit(m)) : "Pas encore d'essai enregistré.");
+  const m = MS[cur], x = st(cur), lk = !x.done && msLocked(m);
+  $("toggle").textContent = x.done ? "Retirer la validation" : (m.type === "check" ? "Marquer comme réussi" : "Valider sans mesure");
+  $("toggle").className = "btn" + (!x.done && m.type === "check" ? "" : " line");
+  const parts = [];
+  if (m.type !== "check") parts.push(x.best ? "Record : " + fmt(m,x.best) : "Aucun essai enregistré");
+  if (x.done) parts.push("Jalon validé");
+  if (lk) parts.push("Recommandé après : " + missing(m));
+  $("dBest").textContent = parts.join(" · ");
   const dl = $("dLog"); dl.textContent = "";
   S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
 }
@@ -417,17 +485,17 @@ function record(v){
 }
 function resetClock(){
   clearInterval(timer); phase = "idle"; beeped = false;
-  $("clock").textContent = "0.0"; $("clock").className = "clock";
-  $("go").textContent = "Démarrer"; $("clockHint").textContent = "Objectif : " + (MS[cur].target || 0) + " s";
+  $("clock").textContent = "0,0"; $("clock").className = "clock";
+  $("go").textContent = "Démarrer"; $("clockHint").textContent = cur && MS[cur].target ? "Objectif : " + goalTxt(MS[cur]) : "";
   if (wake) { wake.release().catch(()=>{}); wake = null; }
 }
 $("go").onclick = async () => {
   const m = MS[cur], ck = $("clock");
   if (phase === "idle"){
     try { if (navigator.wakeLock) wake = await navigator.wakeLock.request("screen"); } catch(e){}
-    let left = S.countdown; let lastShown = -1;
-    const startRun = () => { phase = "run"; t0 = performance.now(); ck.className = "clock"; $("go").textContent = "Stop"; $("clockHint").textContent = "Touche Stop en redescendant"; beep(880, 350); };
-    if (left > 0) { phase = "count"; ck.className = "clock count"; $("go").textContent = "Annuler"; $("clockHint").textContent = "Mets-toi en place…"; t0 = performance.now(); } else startRun();
+    const left = S.countdown; let lastShown = -1;
+    const startRun = () => { phase = "run"; t0 = performance.now(); ck.className = "clock"; $("go").textContent = "Arrêter"; $("clockHint").textContent = "Appuie sur Arrêter en redescendant"; beep(880, 350); };
+    if (left > 0) { phase = "count"; ck.className = "clock count"; $("go").textContent = "Annuler"; $("clockHint").textContent = "Mets-toi en place"; t0 = performance.now(); } else startRun();
     timer = setInterval(()=>{
       const e = (performance.now() - t0) / 1000;
       if (phase === "count"){
@@ -435,7 +503,7 @@ $("go").onclick = async () => {
         if (r <= 0) startRun();
         else { ck.textContent = String(r); if (r !== lastShown) { lastShown = r; if (r <= 3) beep(440, 120); } }
       } else if (phase === "run"){
-        ck.textContent = e.toFixed(1);
+        ck.textContent = e.toFixed(1).replace(".", ",");
         if (!beeped && e >= m.target) { beeped = true; ck.className = "clock hit"; beep(1320, 600); }
       }
     }, 50);
@@ -444,7 +512,7 @@ $("go").onclick = async () => {
     const v = Math.floor((performance.now() - t0) / 100) / 10;
     clearInterval(timer); phase = "idle"; $("go").textContent = "Nouvel essai";
     if (wake) { wake.release().catch(()=>{}); wake = null; }
-    $("clockHint").textContent = v >= m.target ? "Objectif atteint 🎉" : "Encore " + (Math.round((m.target - v)*10)/10) + " s pour l'objectif";
+    $("clockHint").textContent = v >= m.target ? "Objectif atteint" : "Il manque " + num(m.target - v) + " s";
     if (v >= 0.5) record(v);
   }
 };
@@ -452,6 +520,7 @@ $("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (v >
 $("toggle").onclick = () => { const x = st(cur); if (x.done) { x.done = false; save(); fillDlg(); render(); } else record(true); };
 $("dX").onclick = () => $("dlg").close();
 $("dlg").addEventListener("close", resetClock);
+$("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
 
 // ---------- Navigation + réglages ----------
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{
@@ -483,7 +552,7 @@ $("gateForm").onsubmit = async e => {
   e.preventDefault();
   let h = ""; try { h = await gateHash($("gateCode").value.trim().toLowerCase()); } catch(err){ $("gateMsg").textContent = "Ce navigateur ne peut pas vérifier le code."; return; }
   if (h === GATE) { try { localStorage.setItem(GKEY, h); } catch(err){} unlock(); }
-  else { $("gateMsg").textContent = "Code incorrect, réessaie."; $("gateCode").value = ""; }
+  else { $("gateMsg").textContent = "Code incorrect."; $("gateCode").value = ""; }
 };
 
 render();
