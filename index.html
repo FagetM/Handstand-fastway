@@ -269,6 +269,30 @@ ul.plan li{margin:7px 0}
 .fold-h[aria-expanded=true] .chev{transform:rotate(90deg)}
 #sess[hidden]{display:none}
 /* le parcours */
+.ptop{display:flex;gap:14px;align-items:center;margin-top:18px;padding:14px;border-radius:16px;background:var(--raise)}
+.fins{display:flex;flex:none}
+.fin{position:relative;width:74px;height:84px;display:block}
+.fin + .fin{margin-left:-14px}
+.fin .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.pt2{font:600 20px/1.15 var(--disp);margin-top:4px}
+.pn2{font-size:13px;color:var(--mut);margin:6px 0 8px}
+.herebtn{margin:10px 0 14px;min-height:44px;font-size:14px}
+.jr-b{cursor:pointer}
+.jr-b .lab{margin-bottom:3px}
+.jr-b .chev{color:var(--mut);transition:transform .2s;align-self:center}
+.jr-b.open .chev{transform:rotate(90deg)}
+.jr-b.lk{opacity:.7}
+.jr-b.cur{box-shadow:inset 0 0 0 2px var(--acc)}
+.jr-b.hard .lab{color:inherit;opacity:.65}
+.jr-s{position:absolute;left:0;right:0;display:flex;align-items:center;gap:14px;padding:8px 14px 12px;text-align:left;z-index:1}
+.jr-s .pile{display:flex;flex:none}
+.jr-s .pc{position:relative;width:46px;height:46px;border-radius:50%;background:color-mix(in srgb,var(--txt) 13%,var(--bg));box-shadow:0 0 0 2px var(--bg);overflow:hidden;display:block}
+.jr-s .pc + .pc{margin-left:-14px}
+.jr-s .pc .sp{position:absolute;left:0;top:0}
+.jr-s.lk .pc .sp{filter:grayscale(1);opacity:.35}
+.jr-s .pc.ok{box-shadow:0 0 0 2px var(--txt)}
+.jr-s .st{font-size:13.5px;font-weight:600;color:var(--mut)}
+.jr-s.cur .st{color:var(--acc)}
 .jr{margin-top:6px}
 .jr-c{position:relative}
 .jr-e{position:absolute;inset:0;width:100%;height:100%}
@@ -415,7 +439,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   </section>
 
   <section id="v-path" class="view">
-    <h2 class="sect" id="sect-tree" style="margin-top:20px">Le parcours</h2>
+    <div id="pathTop"></div>
     <div class="legend" aria-label="Légende">
       <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1" stroke="var(--acc)"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4" stroke="var(--line)"/></svg>Anneau : 3 niveaux</span>
     </div>
@@ -884,16 +908,23 @@ function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
 const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
 let jrScrolled = false;
+const tierOpen = {};
 function journey(nextId){
   const RH = 168, BH = 74, NODE = 72, pos = {}, items = [], wrap = el("div","jr");
-  let y = 0, edges = "";
-  const banner = (title, sub, done, tot, cls, vid) => { items.push({k:"b", y, title, sub, done, tot, cls, vid}); y += (sub ? BH + 34 : BH) + (vid ? 40 : 0); };
+  let y = 0, edges = "", n = 0;
+  // état d'un étage : fait, en cours (au moins une figure accessible à travailler) ou à venir
+  const tState = ms => { const main = ms.filter(m=>!m.alt); return main.every(m=>st(m.id).done) ? "done" : ms.some(m=>!st(m.id).done && !msLocked(m)) ? "cur" : "lk"; };
+  const isOpen = (key, state) => tierOpen[key] != null ? tierOpen[key] : state === "cur";
+  const banner = (title, sub, done, tot, cls, vid, key, state, open) => { items.push({k:"b", y, title, sub:open ? sub : "", done, tot, cls, vid:open ? vid : null, key, state, open, n:++n}); y += (open && sub ? BH + 34 : BH) + (open && vid ? 40 : 0) + 8; };
+  const strip = (ms, state) => { items.push({k:"s", y, ms, state}); y += 86; };
   const place = (id, x, yy, small) => { pos[id] = [x, yy + NODE/2, small]; };
   const XS = {1:[50], 2:[30,70], 3:[18,50,82]};
   // tronc commun
   ["starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
-    banner(s.name, TIER_TXT[sid] || "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, secDone(s) ? "done" : "", sid);
+    const state = tState(s.ms), open = isOpen(sid, state);
+    banner(s.name, TIER_TXT[sid] || "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, state === "done" ? "done" : "", sid, sid, state, open);
+    if (!open) { strip(s.ms, state); return; }
     const main = s.ms.filter(m=>!m.alt), by = []; main.forEach(m=>{ (by[d(m)] || (by[d(m)] = [])).push(m); });
     by.forEach(r=>{ for (let i = 0; i < r.length; i += 3){ const row = r.slice(i, i + 3);
       row.sort((a,b)=>{ const mx = m => { const P = (m.req||[]).filter(q=>pos[q]); return P.length ? P.reduce((n,q)=>n + pos[q][0], 0)/P.length : 50; }; return mx(a) - mx(b); });
@@ -904,15 +935,17 @@ function journey(nextId){
   });
   // niveau difficile : trois voies côte à côte
   const hardMs = HARD.flatMap(([sid])=>SEC[sid].ms);
-  banner("Niveau difficile", "Trois voies : choisis la tienne, ou mène-les de front.", hardMs.filter(m=>st(m.id).done).length, hardMs.length, "hard");
-  const laneY = y; y += 138;
-  HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], open = !msLocked(first) || st(first.id).done;
-    items.push({k:"l", y:laneY, x:XS[3][i], name, open, vid:sid, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")});
-    s.ms.forEach((m,k)=>place(m.id, XS[3][i], y + k*RH)); });
-  y += Math.max(...HARD.map(([sid])=>SEC[sid].ms.length)) * RH;
+  { const state = tState(hardMs), open = isOpen("hard", state);
+    banner("Niveau difficile", "Trois voies : choisis la tienne, ou mène-les de front.", hardMs.filter(m=>st(m.id).done).length, hardMs.length, "hard", null, "hard", state, open);
+    if (!open) strip(hardMs, state);
+    else { const laneY = y; y += 138;
+      HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], lo = !msLocked(first) || st(first.id).done;
+        items.push({k:"l", y:laneY, x:XS[3][i], name, open:lo, vid:sid, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")});
+        s.ms.forEach((m,k)=>place(m.id, XS[3][i], y + k*RH)); });
+      y += Math.max(...HARD.map(([sid])=>SEC[sid].ms.length)) * RH; } }
   // quête annexe
-  const low = SEC.low; banner("Bonus · " + low.name, "En appui sur les coudes, tout près du sol. Elles ne mènent pas à ta quête : c'est pour varier, dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "", "low");
-  low.ms.forEach((m,j)=>place(m.id, XS[3][j], y)); y += RH;
+  const low = SEC.low; banner("Bonus · " + low.name, "En appui sur les coudes, tout près du sol. Elles ne mènent pas à ta quête : c'est pour varier, dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "", "low", "low", secDone(low) ? "done" : "side", isOpen("low", "lk"));
+  if (isOpen("low", "lk")) { low.ms.forEach((m,j)=>place(m.id, XS[3][j], y)); y += RH; } else strip(low.ms, secDone(low) ? "done" : "side");
   const H = y;
   // liens : tronc commun quand plusieurs jalons d'une ligne partagent leurs prérequis
   const curve = (a, b, cls) => { const horiz = Math.abs(a[1] - b[1]) < 2, my = (a[1]+b[1])/2;
@@ -931,9 +964,16 @@ function journey(nextId){
   const cv = el("div","jr-c"); cv.style.height = H + "px";
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
-    if (it.k === "b"){ const b = el("div","jr-b " + it.cls); b.style.top = it.y + "px"; const g = el("div","grow"); g.append(el("div","sname",it.title)); if (it.sub) g.append(el("div","mut",it.sub));
+    if (it.k === "b"){ const b = el("div","jr-b " + it.cls + " " + it.state + (it.open ? " open" : "")); b.style.top = it.y + "px"; b.setAttribute("role","button"); b.tabIndex = 0; b.setAttribute("aria-expanded", it.open);
+      const g = el("div","grow"); g.append(el("div","lab", it.key === "low" ? "Hors parcours" + (it.state === "done" ? " · terminé" : "") : "Étage " + it.n + (it.state === "done" ? " · terminé" : it.state === "cur" ? " · en cours" : " · à venir")), el("div","sname",it.title)); if (it.sub) g.append(el("div","mut",it.sub));
       const bar = el("div","bar"), i = el("i"); i.style.width = (it.tot ? it.done/it.tot*100 : 0) + "%"; bar.append(i);
-      const row = el("div","r"); row.append(g, el("span","cnt", it.done + "/" + it.tot)); b.append(row, bar); if (it.vid && SEC[it.vid].videos.length) b.append(vidChip(it.vid)); cv.append(b); }
+      const row = el("div","r"); row.append(g, el("span","cnt", it.done + "/" + it.tot), icon("chev","chev")); b.append(row, bar); if (it.vid && SEC[it.vid].videos.length) b.append(vidChip(it.vid));
+      const tog = () => { tierOpen[it.key] = !it.open; render(); }; b.onclick = tog; b.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tog(); } }; cv.append(b); }
+    else if (it.k === "s"){ const s = el("button","jr-s " + it.state); s.style.top = it.y + "px"; const pile = el("span","pile");
+      it.ms.slice(0, 7).forEach(m=>{ const sp = el("span","sp"); sp.dataset.pose = poseId(m.id); sp.dataset.anim = m.id; sp.dataset.lk = "1"; sprPaint(sp, 46); const w = el("span","pc" + (st(m.id).done ? " ok" : "")); w.append(sp); pile.append(w); });
+      const dn = it.ms.filter(m=>st(m.id).done).length;
+      s.append(pile, el("span","st", it.state === "done" ? dn + " figures maîtrisées · revoir" : it.state === "lk" ? it.ms.length + " figures à découvrir" : (it.ms.length - dn) + " figures à travailler · ouvrir"));
+      const prev = items[items.indexOf(it) - 1]; s.onclick = () => { tierOpen[prev.key] = true; render(); }; cv.append(s); }
     else if (it.k === "t"){ const t = el("div","jr-t lab", it.text); t.style.top = it.y + "px"; cv.append(t); }
     else { const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); if (SEC[it.vid].videos.length) { const vc = vidChip(it.vid); vc.firstChild.textContent = "Vidéos"; l.append(vc); } cv.append(l); }
   });
@@ -1174,6 +1214,12 @@ function render(){
     nc.append(wk);
   }
 
+  { const pt = $("pathTop"), gms = GOALS[0].ms, dn = gms.filter(id=>st(id).done).length; pt.textContent = "";
+    const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 84); w.append(sp); fins.append(w); });
+    const g = el("div","grow"); g.append(el("div","lab","Ton but"), el("div","pt2","Équilibre sur un bras et full planche"), el("div","pn2", dn + " figures sur " + gms.length));
+    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); g.append(bar);
+    c.append(fins, g); pt.append(c);
+    if (nextId) { const here = el("button","btn line herebtn","Aller à ma position : " + MS[nextId].name); here.onclick = () => goHere(nextId); pt.append(here); } }
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
@@ -1672,8 +1718,12 @@ $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
 $("sd").addEventListener("click", e => { if (e.target === $("sd")) $("sd").close(); });
 
 // ---------- Navigation + réglages ----------
+function goHere(id){ const m = MS[id]; if (!m) return; const key = HARD.some(h=>h[0] === m.sec) ? "hard" : m.sec; if (tierOpen[key] === false) { tierOpen[key] = true; render(); }
+  requestAnimationFrame(()=>{ const nd = document.querySelector('.jn[data-id="' + id + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }); }
 function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); }
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ showTab(b.dataset.v); window.scrollTo(0,0); });
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const was = b.classList.contains("on"); showTab(b.dataset.v); window.scrollTo(0,0);
+  // en arrivant sur le parcours, on t'amène à ta position
+  if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
 { const h = $("howto"); h.open = !S.seenHelp; h.addEventListener("toggle", () => { if (!h.open && !S.seenHelp) { S.seenHelp = true; save(); } }); }
 document.querySelectorAll(".jump button").forEach(b=>b.onclick=()=>{ const t = document.getElementById(b.dataset.to); if (b.dataset.to === "sect-sess" && !S.sessOpen) { S.sessOpen = true; save(); renderSess(); } if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); });
 $("goal").onchange = e => { S.goal = e.target.value; openSecs.clear(); pg().cur = null; save(); render(); };
