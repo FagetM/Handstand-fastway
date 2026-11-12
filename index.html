@@ -137,6 +137,7 @@ a.yt .t{font-weight:600;line-height:1.3}
 #dBest{margin-top:16px}
 
 /* personnage, niveau */
+#av3d{height:260px;margin-bottom:18px;border-radius:12px;background:var(--raise);overflow:hidden}
 .hero{display:flex;gap:18px;align-items:center;margin-bottom:24px}
 .av{flex:none;position:relative;width:104px;height:104px;display:grid;place-items:center}
 .av svg.ring{position:absolute;inset:0;transform:rotate(-90deg)}
@@ -235,6 +236,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 <main>
   <section id="v-path" class="view on">
     <div class="goal">
+      <div id="av3d" hidden></div>
       <div class="hero">
         <div class="av" id="av"></div>
         <div class="grow">
@@ -673,6 +675,20 @@ function renderQuest(S0, nextId){
   bd.append(grid); box.append(bd);
 }
 
+// ---------- Personnage 3D (chargé à la demande ; la silhouette 2D reste en secours) ----------
+const POSE3D = {st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_free15:"hs_straddle", b2_str15:"hs",
+  in_holds:"hs_straddle", in_changes:"hs_straddle", in_tuck:"hs_tuck", in_str40:"hs", in_str60:"hs", in_7s:"hs_seven1", in_7d:"hs_seven",
+  in_toes:"hs", in_toes7:"hs_seven", oa_flaghoriz:"hs_straddle", oa_shift:"hs_straddle", oa_finger:"oahs", oa_strarm:"oahs", oa_oahs:"oahs",
+  pr_straddle:"hs_straddle", pr_pike:"hs"};
+let A3 = null, a3want = null, a3tried = false;
+function setAvatar(s){
+  a3want = s; if (A3) { A3.set(s); return; }
+  if (a3tried) return; a3tried = true;
+  try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) return; } catch(e){ return; }
+  import("./avatar3d.js").then(m=>{ const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); })
+    .catch(()=>{ $("av3d").hidden = true; $("av").style.display = ""; });
+}
+
 // ---------- Rendu ----------
 const openSecs = new Set();
 function render(){
@@ -692,6 +708,7 @@ function render(){
   $("av").innerHTML = '<svg class="ring" viewBox="0 0 104 104" width="104" height="104" fill="none" aria-hidden="true"><circle cx="52" cy="52" r="' + R + '" stroke="var(--line)" stroke-width="4"/>'
     + '<circle cx="52" cy="52" r="' + R + '" stroke="var(--acc)" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + (C*frac).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><span class="me">' + figMini(stage, 72) + '</span>';
   $("av").setAttribute("aria-label","Ton personnage, niveau " + Z.lvl);
+  setAvatar({pose:POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), frac, rank:RANKS.indexOf(Z.rank), level:Z.lvl, label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
   $("lvRank").textContent = Z.rank; $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d'expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
