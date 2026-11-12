@@ -759,27 +759,32 @@ function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:""};
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Tu n'as plus rien à prouver ici. Refais la figure une ou deux fois par semaine pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
+  // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
+  const force = /^(pl_|pr_|oa_|lo_)/.test(m.id) || m.id === "in_hspu", days = force ? 4 : 5, sets = force ? 6 : 8, tries = 2;
+  const freq = days + " séances par semaine" + (force ? ", jamais deux jours de suite sur la même figure." : " : c'est une habileté, la fréquence compte plus que la durée.");
   if (m.type === "check"){
-    out.head = "Plan pour réussir ce jalon"; out.short = "5 essais par séance, 3 séances par semaine.";
-    out.lines = ["3 séances par semaine, avec un jour de repos entre deux.", "À chaque séance : 5 essais, en prenant le temps de récupérer entre chacun.", "Arrête la série si la forme se dégrade : un essai propre vaut mieux que trois brouillons.", "Valide le jalon quand tu le réussis proprement 3 fois sur 5."];
+    out.head = "Plan pour réussir ce jalon"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
+    out.lines = [freq, "À chaque séance : " + sets + " essais, en prenant le temps de récupérer entre chacun.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Arrête la série si la forme se dégrade : un essai propre vaut mieux que trois brouillons.", "Valide le jalon quand tu le réussis proprement 3 fois sur 5."];
   } else {
     const hold = m.type === "hold", lo = hold ? 2 : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     const work = Math.max(lo, Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
-    out.short = "5 × " + (hold ? work + " s" : work + " rép.") + ", puis 1 tentative à " + (hold ? T + " s" : T + " rép.") + ".";
-    out.lines = ["3 séances par semaine, avec un jour de repos entre deux.",
-      "À chaque séance : 5 " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", 60 à 90 s de repos entre chacune.",
-      "Termine par une seule tentative à " + u(T) + ". Si elle passe, le niveau est acquis et la cible suivante s'affiche.",
+    out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
+    out.lines = [freq,
+      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", 60 à 90 s de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
+      "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre les deux. Si l'une passe, le niveau est acquis et la cible suivante s'affiche.",
+      force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Il te manque " + (hold ? num(Math.max(0, T - x.best)) + " s" : Math.max(0, T - x.best) + " rép.") + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
-      "Si tu stagnes deux semaines, reviens au jalon précédent pendant quelques séances."];
+      "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",
+      "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes deux semaines, allège une semaine puis reprends."];
   }
   if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
   if (SOUPLE.has(m.id)) out.lines.push("La souplesse compte pour cette figure : ajoute deux séances d'étirements par semaine (programme Étirements).");
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]]) out.prog = pp;
   return out;
 }
-const WEEK = {oahs:["Équil.","Souple","Équil.","Repos","Équil.","Souple","Repos"], planche:["Planche","Équil.","Planche","Repos","Planche","Souple","Planche"]};
+const WEEK = {oahs:["Équil.","Équil.","Souple","Équil.","Équil.","Équil.","Repos"], planche:["Planche","Équil.","Planche","Souple","Planche","Équil.","Planche"]};
 const TIER_TXT = {starter:"Apprendre à monter contre le mur et à sortir sans danger.", b1:"Tenir seul, quelques secondes, loin du mur.", b2:"Tenir longtemps, et commencer à changer de forme.",
   inter:"Contrôler le bassin et le regard : les « 7 », la tête rentrée, les drapeaux."};
 function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } S.sessOpen = true; save(); renderSess(); const t = $("sect-sess"); if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }
@@ -1050,7 +1055,7 @@ function render(){
     const wk = el("div","pweek"); nc.append(el("div","lab","Ta semaine type"));
     wkPlan.forEach((lab, i)=>{ const day = new Date(d); day.setDate(d.getDate() + i); const did = S.log.some(l=>dayKey(l.t) === dayKey(day));
       const c = el("div","pw" + (i === today ? " today" : "") + (did ? " did" : "") + (lab === "Repos" ? " rest" : "")); c.append(el("b",null,DAYL[i]), el("span",null,lab)); wk.append(c); });
-    nc.append(wk, el("div","pd","Une proposition : déplace les jours selon ton emploi du temps, en gardant un jour de repos entre deux séances de force."));
+    nc.append(wk, el("div","pd","Cinq séances et une de souplesse : déplace les jours selon ton emploi du temps. Les jours d'équilibre, ajoute dix minutes d'étirements en fin de séance."));
     if (!openSecs.size) openSecs.add(m.sec);
   } else {
     nc.append(el("div","lab","Quête"), el("h2",null,"Accomplie."), el("p",null,"Choisis une autre quête pour continuer."));
@@ -1204,10 +1209,10 @@ const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = 
 function builtin(){
   const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, 3);
   const blocks = next.map(id=>{ const m = MS[id], base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:5}, ()=>({reps:1, lab:"essai"}))});
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:m.type === "hold" ? 5 : 3}, ()=>({goal:m.target, rest:60}))}); });
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:8}, ()=>({reps:1, lab:"essai"}))});
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:m.type === "hold" ? (/^(oa_|lo_)/.test(id) ? 6 : 8) : 5}, ()=>({goal:nextStep(m) || m.target, rest:75}))}); });
   const day = {type:"train", blocks};
-  return {id:"equilibre", name:"Séance d'équilibre", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir de ton arbre : les prochains jalons accessibles de la quête « " + GOALS[0].name + " », cinq essais chacun. Atteindre la cible valide le jalon.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
+  return {id:"equilibre", name:"Séance d'équilibre", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir de ton arbre : les prochains jalons accessibles de la quête « " + GOALS[0].name + " », huit essais chacun (six pour les figures de force), en visant le palier en cours. Atteindre la cible valide le jalon.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
 }
 const PGROUPS = [
   ["Quête 1 · Équilibre sur un bras", id => id === "equilibre"],
