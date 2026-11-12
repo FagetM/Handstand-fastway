@@ -33,5 +33,10 @@
   "id": "planche-routine",
   "file": "programs/planche-routine.enc",
   "v": "3"
+ },
+ {
+  "id": "quest-for-the-press",
+  "file": "programs/quest-for-the-press.enc",
+  "v": "1"
  }
 ]

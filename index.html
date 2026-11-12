@@ -890,7 +890,7 @@ const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = 
 function builtin(){
   const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, 3);
   const blocks = next.map(id=>{ const m = MS[id], base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:5}, ()=>({reps:1}))});
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:5}, ()=>({reps:1, lab:"essai"}))});
     return Object.assign(base, {kind:m.type, sets:Array.from({length:m.type === "hold" ? 5 : 3}, ()=>({goal:m.target, rest:60}))}); });
   const day = {type:"train", blocks};
   return {id:"equilibre", name:"Séance d'équilibre", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir de ton arbre : les prochains jalons accessibles de la quête « " + GOALS[0].name + " », cinq essais chacun. Atteindre la cible valide le jalon.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]};
@@ -900,6 +900,7 @@ const PGROUPS = [
   ["Quête 2 · Full planche", id => id === "planche-domination"],
   ["Autres programmes de planche", id => /^planche-/.test(id)],
   ["Souplesse", id => /^etirements/.test(id)],
+  ["Secondaire · Montées en force", id => id === "quest-for-the-press"],
   ["Autres", id => true],
 ];
 const allP = () => Object.assign({equilibre:builtin()}, PS);
@@ -918,7 +919,7 @@ const unit = b => b.kind === "hold" ? " s" : " rép.";
 const fixed = s => s.dur != null || s.reps != null;
 const sDur = (s, sc) => Math.max(5, Math.round(s.dur * (sc || 1)));
 const sRun = (s, sc) => s.durMax ? Math.max(5, Math.round(s.durMax * (sc || 1))) : sDur(s, sc);
-const fixTxt = (b, s, sc) => (s.dur != null ? sDur(s, sc) + (s.durMax ? " à " + sRun(s, sc) : "") + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
+const fixTxt = (b, s, sc) => s.lab ? s.lab : (s.dur != null ? sDur(s, sc) + (s.durMax ? " à " + sRun(s, sc) : "") + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
 const restTxt = s => !s.rest ? "libre" : s.rest % 60 ? s.rest + (s.restMax ? " à " + s.restMax : "") + " s" : (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
 const pTarget = (b, s) => { if (s.goal) return s.goal; const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
 const extLink = (href, txt) => { const a = el("a","lk",txt); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
@@ -1022,7 +1023,7 @@ function renderSess(){
   const day = pDay(selDay), vals = wkGet(selDay);
   const dh = el("div","blk"); dh.style.borderTop = "0"; dh.style.paddingTop = "4px";
   dh.append(el("h2",null,DAYN[selDay] + (selDay === todayIdx() ? ", aujourd'hui" : "")));
-  const info = !day.blocks.length ? (day.type === "rest" && !P.routines ? "Récupération active : mobilité, étirements, marche. Pas de travail de force." : "Rien de prévu ce jour-là dans ce programme.")
+  const info = !day.blocks.length ? (day.type === "rest" && !P.routines ? "Récupération active : mobilité, étirements, marche. Pas de travail de force." : day.type === "rest" ? "Jour de repos dans ce programme." : "Rien de prévu ce jour-là dans ce programme.")
     : day.circuit ? day.name + ". Circuit : " + day.circuit.rounds + " tours, les exercices s'enchaînent, repos " + restTxt(day.circuit) + " entre les tours."
     : day.routine ? day.name + (day.scale < 1 ? " · durées réduites cette semaine" : "") + ". Touche un exercice pour le lancer ; la suite s'enchaîne toute seule." + (day.equip ? " Matériel : " + day.equip : "")
     : day.type === "gtg" ? "Séries réparties sur la journée, bien espacées, sans aller à l'épuisement."
@@ -1046,8 +1047,8 @@ function renderSess(){
     b.sets.forEach((s,si)=>{
       const v = vals[bi + "-" + si], tg = pTarget(b,s);
       const x = el("button","set" + (v != null ? " dn" : ""));
-      if (fx && !one) { x.setAttribute("aria-label", b.name + ", " + (si+1) + " sur " + b.sets.length); x.append(el("span","p", (si+1) + "/" + b.sets.length), el("span","v", v != null ? "fait" : s.dur != null ? sDur(s, day.scale) + " s" : "× " + s.reps)); }
-      else if (fx) { x.setAttribute("aria-label", b.name); x.append(el("span","v", v != null ? "Fait · " + fixTxt(b,s,day.scale) : fixTxt(b,s,day.scale))); }
+      if (fx && !one) { x.setAttribute("aria-label", b.name + ", " + (si+1) + " sur " + b.sets.length); x.append(el("span","p", (si+1) + "/" + b.sets.length), el("span","v", v != null ? "fait" : s.lab ? s.lab : s.dur != null ? sDur(s, day.scale) + " s" : "× " + s.reps)); }
+      else if (fx) { x.setAttribute("aria-label", b.name); x.append(el("span","v", v != null ? (s.lab ? "Fait" : "Fait · " + fixTxt(b,s,day.scale)) : fixTxt(b,s,day.scale))); }
       else { x.setAttribute("aria-label","Série " + (si+1) + " sur " + b.sets.length);
         x.append(el("span","p", (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "")), el("span","v", v != null ? num(v) + unit(b) : tg ? tg + unit(b) : "max")); }
       x.onclick = () => openSet(bi, si);
