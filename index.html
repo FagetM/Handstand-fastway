@@ -71,9 +71,20 @@ input[type=number]{background:var(--card2);border:1px solid var(--line);border-r
 .log:first-child{border-top:0}
 .pr{color:var(--ok);font-weight:700}
 textarea{width:100%;min-height:90px;background:var(--card2);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:10px;font:13px ui-monospace,monospace}
+#gate{display:none;position:fixed;inset:0;background:var(--bg);z-index:10;place-items:center;padding:16px}
+body.locked #gate{display:grid}
+body.locked>header,body.locked>main,body.locked>nav{display:none}
+#gate form{width:min(340px,100%);text-align:center}
+#gate input{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;width:100%;font-size:24px;text-align:center;letter-spacing:6px;margin:16px 0 12px}
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="gate"><form id="gateForm">
+  <h1>🤸 Handstand Fastway</h1>
+  <div class="mut" id="gateMsg">Entre ton code d'accès</div>
+  <input id="gateCode" type="password" inputmode="numeric" autocomplete="off" aria-label="Code d'accès">
+  <button class="primary big" type="submit">Ouvrir</button>
+</form></div>
 <header class="top">
   <div class="row"><div class="grow"><h1>🤸 Handstand Fastway</h1><div class="mut">Ton arbre de compétences, étape par étape</div></div></div>
 </header>
@@ -394,6 +405,23 @@ $("imp").onclick = () => {
   catch(e){ alert("Sauvegarde illisible : colle le texte exporté tel quel."); }
 };
 $("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est définitif.")) { S = blank(); openSecs.clear(); save(); render(); } };
+
+// ---------- Code d'accès ----------
+// Simple rideau : il écarte les curieux, mais le code de la page reste lisible par qui sait chercher.
+const GATE = "6ba6783da050a1439b916a3257ca4cd752773517f0610f3f9962d43162c6b827", GKEY = "hs-fastway-gate";
+async function gateHash(code){
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hs-fastway:" + code));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
+}
+function unlock(){ document.body.classList.remove("locked"); }
+let known = null; try { known = localStorage.getItem(GKEY); } catch(e){}
+if (known === GATE) unlock(); else $("gateCode").focus();
+$("gateForm").onsubmit = async e => {
+  e.preventDefault();
+  let h = ""; try { h = await gateHash($("gateCode").value.trim()); } catch(err){ $("gateMsg").textContent = "Ce navigateur ne peut pas vérifier le code."; return; }
+  if (h === GATE) { try { localStorage.setItem(GKEY, h); } catch(err){} unlock(); }
+  else { $("gateMsg").textContent = "Code incorrect, réessaie."; $("gateCode").value = ""; }
+};
 
 render();
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
