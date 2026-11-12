@@ -24,6 +24,9 @@ const POSES = {
   pl_pike:    {pitch:1.5,  arm:[-1.12,-1.12], armZ:[0,0],       hip:[-0.28,-0.28],hipZ:[0.55,0.55], knee:[0,0],     head:-0.6},
   pl_straddle:{pitch:1.57, arm:[-1.17,-1.17], armZ:[0,0],       hip:[0,0],        hipZ:[0.6,0.6],   knee:[0,0],     head:-0.7},
   pl_full:    {pitch:1.57, arm:[-1.1,-1.1],   armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.7},
+  hs_flag:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0.25,-0.25],hip:[0,0],        hipZ:[0.95,-0.35],knee:[0,0],     head:-0.3, roll:0.28},
+  crow:       {pitch:1.2,  arm:[-0.75,-0.75], armZ:[0.1,0.1],   elbow:[-0.9,-0.9],   hip:[-2.25,-2.25],hipZ:[0.4,0.4],   knee:[2.5,2.5], head:-0.7},
+  lever:      {pitch:1.57, arm:[-0.45,-0.45], armZ:[0,0],       elbow:[-1.75,-1.75], hip:[0,0],        hipZ:[0.08,0.08], knee:[0,0],     head:-0.8},
 };
 // postures de passage, utilisées seulement pendant les transitions
 Object.assign(POSES, {
@@ -33,7 +36,7 @@ Object.assign(POSES, {
 });
 const VIA = {fold:1, kick:1, pike:1};
 const FEET = {stand:1, cheer:1, crouch:1, pl_lean:1, fold:1};
-const cat = n => n.startsWith("pl_") ? "pl" : n.startsWith("hs") || n === "oahs" || n === "kick" || n === "pike" ? "hs" : "up";
+const cat = n => n.startsWith("pl_") || n === "crow" || n === "lever" ? "pl" : n.startsWith("hs") || n === "oahs" || n === "kick" || n === "pike" ? "hs" : "up";
 // Chemin d'une posture à l'autre : [posture, durée en secondes]. On passe par un vrai mouvement
 // (flexion puis lancer de jambe pour monter en équilibre, descente carpée pour aller en planche…).
 function route(a, b){
@@ -58,9 +61,10 @@ const CLOTH = {w:"#f2f0ea", k:"#1d1d1b", g:"#8a8880", o:"#ff5b2e", b:"#3d5f94", 
 const HAIR = {brown:"#3a2a20", black:"#141312", blond:"#c9a45c", red:"#9a4a22", grey:"#9a9892"};
 const OLD = {wraps:"wraps_o", band:"band_o", cap:"cap_o", shoes:"shoes_k", socks:"socks_w", belt:"belt_o"};   // anciens identifiants de tenue
 
-export function mount(host){
+// opts.bare : pas de socle, pas de rotation (vignettes) · opts.manual : pas d'horloge, on avance image par image avec step()
+export function mount(host, opts = {}){
   const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
-  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:!!opts.manual});
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
   const canvas = renderer.domElement; canvas.style.cssText = "display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab";
   canvas.setAttribute("role","img");
@@ -129,11 +133,12 @@ export function mount(host){
   // socle : disque + arc de progression vers le niveau suivant
   const base = at(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.03, 64), soft), scene, 0, -0.016, 0);
   const track = new THREE.Mesh(new THREE.TorusGeometry(1.06, 0.018, 8, 96), soft); track.rotation.x = PI/2; scene.add(track);
+  if (opts.bare) base.visible = track.visible = false;
   const ringM = new THREE.MeshStandardMaterial({roughness:0.5});
   let arc = null;
   const setArc = frac => { if (arc) { scene.remove(arc); arc.geometry.dispose(); }
     arc = new THREE.Mesh(new THREE.TorusGeometry(1.06, 0.03, 8, 96, Math.max(0.02, Math.min(1, frac)) * 2 * PI), ringM);
-    arc.rotation.x = -PI/2; arc.rotation.z = PI/2; scene.add(arc); };
+    arc.rotation.x = -PI/2; arc.rotation.z = PI/2; arc.visible = !opts.bare; scene.add(arc); };
 
   // confettis de célébration
   const NC = 110, conf = new THREE.InstancedMesh(new THREE.PlaneGeometry(0.06, 0.035), new THREE.MeshBasicMaterial({side:THREE.DoubleSide}), NC);
@@ -161,11 +166,11 @@ export function mount(host){
   }
   function colors(){ const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
 
-  let cur = flat("stand"), yaw = -0.9, spin = true, scale = 1, jump = 0, extraYaw = 0;
+  let cur = flat("stand"), yaw = opts.yaw != null ? opts.yaw : -0.9, spin = !opts.bare, scale = 1, jump = 0, extraYaw = 0;
   let queue = [], seg = null, here = "stand", wob = null, pulse = null;      // transition en cours, posture atteinte, oscillation d'arrivée
   const off = {p:0, r:0};
   const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3();
-  const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reduce = !opts.manual && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function apply(p, breath){
     root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head;
     limbs.forEach((L, i) => {
@@ -180,7 +185,8 @@ export function mount(host){
     pivot.position.y = jump;
   }
   function size(){ const w = host.clientWidth || 300, h = host.clientHeight || 240; renderer.setSize(w, h, false); cam.aspect = w / h;
-    cam.position.set(0, 1.3, 5.6); cam.lookAt(0, 0.98, 0); cam.updateProjectionMatrix(); }
+    if (opts.bare) { cam.position.set(0, 1.12, 4.75); cam.lookAt(0, 1.06, 0); } else { cam.position.set(0, 1.3, 5.6); cam.lookAt(0, 0.98, 0); }
+    cam.updateProjectionMatrix(); }
 
   // célébration : flexion, saut bras levés avec un tour sur soi, confettis, puis retour à la posture
   let party = null, pending = false, restPose = "stand";
@@ -207,8 +213,10 @@ export function mount(host){
   }
 
   let last = performance.now(), visible = true, raf = 0, dirty = true, drag = null;
-  function frame(now){
-    raf = 0; const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  let clock = 0;
+  function frame(now){ raf = 0; const dt = Math.min(0.05, (now - last) / 1000); last = now; core(dt, now);
+    if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame); }
+  function core(dt, now){
     if (party) { partyStep(dt); dirty = true; }
     else if (seg || queue.length) {
       if (!seg) { const [name, dur] = queue.shift(); seg = {from:cur, to:flat(name), name, dur:reduce ? 0.01 : dur, t:0, last:!queue.length}; }
@@ -217,21 +225,22 @@ export function mount(host){
         if (done && !reduce) { const c = cat(here); wob = {t:0, a:c === "hs" ? 0.075 : c === "pl" ? 0.04 : 0.015}; pulse = {t:0}; } } }
     off.p = 0; off.r = 0;
     if (!party && !reduce) {
-      const c = cat(here), s = now / 1000;                                   // équilibre : micro-corrections permanentes
+      const c = cat(here), s = now / 1000, w = opts.loopT ? 2 * PI * clock / opts.loopT : 0;   // équilibre : micro-corrections permanentes
+      if (opts.loopT) { if (!seg && c === "hs") { off.r += Math.sin(w) * 0.022; off.p += Math.sin(2*w) * 0.012; } if (!seg && c === "pl") off.p += Math.sin(2*w) * 0.012; }
+      else {
       if (!seg && c === "hs") { off.r += Math.sin(s * 1.3) * 0.012; off.p += Math.sin(s * 0.9 + 1) * 0.01; }
-      if (!seg && c === "pl") { off.p += Math.sin(s * 5.1) * 0.004; }
+      if (!seg && c === "pl") { off.p += Math.sin(s * 5.1) * 0.004; } }
       if (wob) { wob.t += dt; const k = Math.exp(-3.2 * wob.t) * wob.a * Math.sin(wob.t * 9); off.r += k; off.p += k * 0.6; if (wob.t > 1.6) wob = null; dirty = true; }
       if (pulse) { pulse.t += dt; const k = 1 + Math.sin(Math.min(1, pulse.t / 0.5) * PI) * 0.05; arc.scale.setScalar(k); track.scale.setScalar(k); if (pulse.t > 0.5) { pulse = null; arc.scale.setScalar(1); track.scale.setScalar(1); } dirty = true; }
     }
     if (spin && !reduce && !drag && !party) { yaw += dt * 0.25; dirty = true; }
-    const breath = reduce ? 0 : Math.sin(now / 900) * 0.012;
+    const breath = reduce ? 0 : opts.loopT ? Math.sin(2 * PI * clock / opts.loopT) * 0.02 : Math.sin(now / 900) * 0.012;
     if (dirty || !reduce) { apply(cur, breath); renderer.render(scene, cam); dirty = false; }
-    if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame);
   }
-  const kick = () => { dirty = true; if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(frame); } };
+  const kick = () => { dirty = true; if (opts.manual) return; if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(frame); } };
   canvas.addEventListener("pointerdown", e => { drag = {x:e.clientX, yaw, moved:false}; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = "grabbing"; });
   canvas.addEventListener("pointermove", e => { if (drag) { if (Math.abs(e.clientX - drag.x) > 4) { drag.moved = true; spin = false; } yaw = drag.yaw + (e.clientX - drag.x) * 0.012; kick(); } });
-  canvas.addEventListener("pointerup", () => { const tap = drag && !drag.moved; drag = null; canvas.style.cursor = "grab"; if (tap && !party) startParty(); });
+  canvas.addEventListener("pointerup", () => { const tap = drag && !drag.moved; drag = null; canvas.style.cursor = "grab"; if (tap && !party && !opts.bare) startParty(); });
   canvas.addEventListener("pointercancel", () => { drag = null; canvas.style.cursor = "grab"; });
   if (window.ResizeObserver) new ResizeObserver(() => { size(); kick(); }).observe(host);
   if (window.IntersectionObserver) new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) { if (pending) startParty(); kick(); } }).observe(host);
@@ -253,5 +262,10 @@ export function mount(host){
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
     poses: Object.keys(POSES).filter(k => !VIA[k]),
+    // capture image par image (génération des animations des nœuds de l'arbre)
+    step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
+    jump(pose){ queue = []; seg = null; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
+    busy(){ return !!(seg || queue.length || wob); },
+    png(){ return canvas.toDataURL("image/png"); },
   };
 }

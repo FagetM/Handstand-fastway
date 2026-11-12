@@ -64,6 +64,7 @@ select option{font:16px system-ui;background:var(--bg);color:var(--txt)}
 .next h2{font-size:30px;margin:6px 0 8px}
 .next p{margin:0 0 16px;font-size:15px}
 .next .btn{background:var(--bg);color:var(--txt)}
+.next .golink{display:block;width:100%;min-height:44px;margin-top:6px;color:inherit;opacity:.75;font-weight:600;font-size:14px;text-decoration:underline;text-underline-offset:3px}
 .next .rec{font-size:14px;margin:-8px 0 16px;opacity:.62}
 
 /* arbre */
@@ -152,61 +153,53 @@ a.yt .t{font-weight:600;line-height:1.3}
 .av .me{color:var(--txt)}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
-/* arbre de talents */
-.seg{display:flex;gap:4px;padding:4px;border-radius:10px;background:var(--raise);margin-bottom:14px;scroll-margin-top:8px}
-.seg button{flex:1;min-height:40px;border-radius:7px;font-weight:600;font-size:14px;color:var(--mut)}
-.seg button.on{background:var(--bg);color:var(--txt);box-shadow:0 0 0 1px var(--line)}
-.ovinfo{display:flex;gap:12px;align-items:center;min-height:62px;padding:0 0 12px}
-.ovinfo .t{font-weight:600;line-height:1.25}
-.ovmap{display:flex;justify-content:center}
-.ovmap svg{display:block;max-width:100%}
-.ovl{font:600 10.5px var(--disp);letter-spacing:.08em;text-transform:uppercase;fill:var(--mut)}
-.ove{fill:none;stroke:var(--mut);stroke-opacity:.5;stroke-width:1.4}
-.ove.on,.ove.go{stroke-opacity:1}
-.ovz{margin-bottom:10px}
-.ovz button{min-height:34px;font-size:13px}
-.ovinfo{position:sticky;top:0;z-index:2;background:var(--bg)}
-.ove.on{stroke:var(--txt);stroke-width:2}
-.ove.go{stroke:var(--acc);stroke-width:2;stroke-dasharray:2 5;stroke-linecap:round}
-.ovn{cursor:pointer;outline:none}
-.ovn:focus-visible circle:first-of-type,.ovn:focus-visible rect{stroke:var(--acc)}
-.qmap{display:flex;gap:6px;overflow-x:auto;margin:0 -20px 18px;padding:2px 20px 6px;scrollbar-width:none}
-.qmap::-webkit-scrollbar{display:none}
-.qm{flex:1 0 auto;min-width:86px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);color:var(--mut)}
-.qm .d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 14px/1 var(--disp);box-shadow:inset 0 0 0 1.5px var(--mut)}
-.qm .nm{font-size:12px;font-weight:600;line-height:1.15;text-align:center}
-.qm .ct{font:600 13px/1 var(--disp);font-variant-numeric:tabular-nums}
-.qm.done{color:var(--txt)} .qm.done .d{background:var(--txt);color:var(--bg);box-shadow:none}
-.qm.cur{color:var(--txt);box-shadow:inset 0 0 0 2px var(--acc)} .qm.cur .d{box-shadow:inset 0 0 0 2px var(--acc);color:var(--acc)}
-.secbar{height:2px;margin-top:-2px}
-.sec:not(.open) .secbar{margin-bottom:0}
-.reqs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px}
-.reqs .lab{flex-basis:100%}
-.reqs .chip{min-height:34px;padding:6px 12px;font-size:13px}
-.graph{position:relative;margin:14px 0 4px}
-.bonus-l{position:absolute;left:0;right:0;padding-top:12px;border-top:1px dashed var(--line);text-align:center}
-.graph svg.ed{position:absolute;inset:0;width:100%;height:100%}
-.graph svg.ed path{fill:none;stroke:var(--line);stroke-width:2;vector-effect:non-scaling-stroke}
-.graph svg.ed path.on{stroke:var(--txt);stroke-width:2.5}
-.graph svg.ed path.go{stroke:var(--acc);stroke-dasharray:2 6;stroke-linecap:round;stroke-width:2.5;animation:flow 1.2s linear infinite}
-@keyframes flow{to{stroke-dashoffset:-16}}
-@media (prefers-reduced-motion: reduce){.graph svg.ed path.go{animation:none}}
-.tn{position:absolute;z-index:1;transform:translateX(-50%);width:104px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
-.tn .c{position:relative;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:inset 0 0 0 2px var(--mut);color:var(--txt)}
-.tn.done .c{background:var(--txt);color:var(--bg);box-shadow:none}
-.tn.open .c{box-shadow:inset 0 0 0 2px var(--txt)}
-.tn.wip .c{box-shadow:inset 0 0 0 3px var(--acc),0 0 0 5px color-mix(in srgb,var(--acc) 22%,transparent)}
-.tn.lk .c{box-shadow:inset 0 0 0 1.5px var(--line);color:var(--line);background:var(--raise)}
-.tn.alt .c{border-radius:18px}
-.tn .pr{position:absolute;inset:-4px;transform:rotate(-90deg)}
-.tn .ck,.tn .lkb{position:absolute;right:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 2px var(--bg)}
-.tn .ck{background:var(--acc);color:#fff}
-.tn .lkb{background:var(--raise);color:var(--mut)}
-.tn .n,.tn .g{background:var(--bg);padding:1px 4px;border-radius:4px}
-.tn .n{font-size:12.5px;line-height:1.2;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.tn.lk .n{color:var(--mut);font-weight:400}
-.tn .g{font:600 14px/1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
-.tn.wip .g{color:var(--acc)}
+/* le parcours */
+.jr{margin-top:6px}
+.jr-c{position:relative}
+.jr-e{position:absolute;inset:0;width:100%;height:100%}
+.jr-e path{fill:none;stroke:var(--mut);stroke-opacity:.4;stroke-width:3;stroke-linecap:round;vector-effect:non-scaling-stroke}
+.jr-e path.on{stroke:var(--txt);stroke-opacity:1}
+.jr-e path.go{stroke:var(--acc);stroke-opacity:1;stroke-dasharray:2 9;animation:flow 1.1s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-22}}
+.jr-b{position:absolute;left:0;right:0;padding:12px 14px;border-radius:12px;background:var(--raise);z-index:1}
+.jr-b .r{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.jr-b .mut{font-size:13px;margin-top:2px}
+.jr-b.hard{background:var(--txt);color:var(--bg)}
+.jr-b.hard .mut,.jr-b.hard .cnt{color:inherit;opacity:.7}
+.jr-b.hard .bar{background:color-mix(in srgb,var(--bg) 25%,transparent)}
+.jr-b.done .cnt{color:var(--txt)}
+.jr-t{position:absolute;left:0;right:0;text-align:center}
+.jr-l{position:absolute;transform:translateX(-50%);width:31%;text-align:center}
+.jr-l .sname{font-size:17px}
+.jr-l .mut{font-size:11.5px;line-height:1.25;margin-top:3px;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.jr-l.open .mut{color:var(--acc)}
+.jn{position:absolute;z-index:1;transform:translateX(-50%);width:112px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.jn .c{position:relative;width:72px;height:72px;border-radius:50%;display:grid;place-items:center;background:var(--raise);transition:transform .25s}
+.jn:active .c{transform:scale(.94)}
+.jn .c img{border-radius:50%;display:block}
+.jn .rg{position:absolute;inset:-6px;transform:rotate(-90deg)}
+.jn .rg circle{stroke:var(--line);stroke-width:4;stroke-linecap:round}
+.jn .rg circle.f{stroke:var(--acc)}
+.jn.done .rg circle.f{stroke:var(--txt)}
+.jn.lk .c img{filter:grayscale(1);opacity:.4}
+.jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent);animation:halo 2.2s ease-in-out infinite}
+@keyframes halo{50%{box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 6%,transparent)}}
+.jn.pop .c{animation:pop .6s ease-out}
+@keyframes pop{40%{transform:scale(1.22)}}
+.jn.sm{width:96px}.jn.sm .c{width:60px;height:60px}.jn.sm .c img{width:52px;height:52px}.jn.sm .rg{inset:-12px;transform:rotate(-90deg) scale(.86)}
+.jn.alt .c,.jn.alt .c img{border-radius:20px}.jn.alt .rg{display:none}
+.jn .ck,.jn .lkb{position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
+.jn .ck{background:var(--acc);color:#fff}
+.jn .lkb{background:var(--raise);color:var(--mut)}
+.jn .n,.jn .g{background:var(--bg);padding:1px 5px;border-radius:5px}
+.jn .n{font-size:13px;line-height:1.2;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.jn.lk .n{color:var(--mut);font-weight:400}
+.jn .g{font:600 14px/1.1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
+.jn.cur .g{color:var(--acc)}
+.jn .here{position:absolute;top:-30px;white-space:nowrap;padding:4px 10px;border-radius:12px;background:var(--acc);color:#fff;font:600 12px/1 var(--disp);letter-spacing:.06em;text-transform:uppercase}
+.jn .here::after{content:"";position:absolute;left:50%;bottom:-4px;width:8px;height:8px;background:var(--acc);transform:translateX(-50%) rotate(45deg)}
+img.demo{display:block;border-radius:12px;background:var(--raise)}
+@media (prefers-reduced-motion: reduce){.jr-e path.go,.jn.cur .c,.jn.pop .c{animation:none}}
 /* quêtes, badges */
 .q{padding:14px 0;border-top:1px solid var(--line)}
 .q .h{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
@@ -480,7 +473,7 @@ const TREE = [
       desc:"Figure venue de la capoeira : la hanche repose sur un coude, corps de côté, en appui bas sur les mains."},
   ], videos:[["Planche sur les coudes","Elbow lever"],["Crocodile","Croc"],["Queda de rins","QDR"]]},
   {id:"planche", name:"Planche", en:"Planche", ms:[
-    {id:"pl_lean", name:"Planche lean", en:"Planche lean", type:"hold", target:15, req:[],
+    {id:"pl_lean", name:"Planche lean", en:"Planche lean", type:"hold", target:15, req:["in_7d"],
       desc:"Position de pompe, bras tendus, épaules avancées loin devant les mains, pieds au sol."},
     {id:"pl_tuck", name:"Tuck planche", en:"Tuck planche", type:"hold", target:15, req:["pl_lean"],
       desc:"Pieds décollés, genoux serrés contre la poitrine, bras tendus, dos arrondi."},
@@ -501,7 +494,7 @@ const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_free15","b2_s
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
   {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_oahs"]},
-  {id:"planche", name:"Full planche · 10 s", ms:["pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
+  {id:"planche", name:"Full planche · 10 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
   {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
   {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_straddle","pr_pike"]},
   {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
@@ -668,131 +661,105 @@ function stats(){
   const done = Object.keys(MS).filter(id=>st(id).done).length, tries = S.log.filter(l=>MS[l.id]).length;
   const ctx = Object.assign({tries}, c);
   const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)); return Object.assign({}, b, {cur, ok:cur >= b.max}); });
-  const xp = 100*done + 5*c.sets + 5*tries + 50*badges.filter(b=>b.ok).length;
+  const nodeXp = Object.values(MS).reduce((n,m)=>n + Math.round(100 * lvlOf(m) / lvls(m).length), 0);
+  const xp = nodeXp + 5*c.sets + 5*tries + 50*badges.filter(b=>b.ok).length;
   let lvl = 1; while (xp >= xpFor(lvl)) lvl++;
   return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[Math.min(RANKS.length-1, Math.floor((lvl-1)/2))]};
 }
 let toastT = null;
 function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
 
-// ---------- Arbre de talents : une branche = un graphe de jalons reliés par leurs prérequis ----------
-function graph(s, nextId){
-  const ids = new Set(s.ms.map(m=>m.id)), depth = {}, RH = 146, pos = {}, byDepth = [], rows = [];
-  const dep = m => depth[m.id] != null ? depth[m.id] : (depth[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>dep(MS[r]))));
-  s.ms.forEach(m=>{ (byDepth[dep(m)] || (byDepth[dep(m)] = [])).push(m); });
-  // au plus trois nœuds par ligne ; les jalons bonus (hors chemin) passent sur leur propre ligne
-  // Le chemin principal occupe les premières lignes ; les jalons bonus (hors chemin) sont regroupés en bas, pour qu'aucun lien ne les frôle.
-  const bonus = s.ms.filter(m=>m.alt), XS = {2:[28,72], 3:[17,50,83]}, GAP = 34;
-  const px = id => pos[id] ? pos[id][0] : 50, par = m => (m.req||[]).filter(r=>ids.has(r));
-  byDepth.forEach(r=>{ const main = r.filter(m=>!m.alt); for (let i = 0; i < main.length; i += 3) rows.push(main.slice(i, i + 3)); });
-  const nMain = rows.length; for (let i = 0; i < bonus.length; i += 3) rows.push(bonus.slice(i, i + 3));
-  rows.forEach((r,d)=>{
-    // chaque jalon se range sous ses prérequis : moins de liens qui se croisent
-    if (d) r.sort((a,b)=>{ const A = par(a), B = par(b); return (A.length ? A.reduce((n,x)=>n + px(x), 0)/A.length : 50) - (B.length ? B.reduce((n,x)=>n + px(x), 0)/B.length : 50); });
-    r.forEach((m,i)=>{ const P = par(m), solo = r.length === 1;
-      const x = solo ? (P.length === 1 && d < nMain ? Math.max(30, Math.min(70, px(P[0]) + (d % 2 ? 16 : -16))) : 50) : (XS[r.length] || r.map((_,j)=>(j+1)/(r.length+1)*100))[i];
-      pos[m.id] = [x, d*RH + 38 + (d >= nMain && bonus.length && nMain ? GAP : 0)]; }); });
-  const H = rows.length * RH + (bonus.length && nMain ? GAP : 0), wrap = el("div"), g = el("div","graph"); g.style.height = H + "px";
-  // prérequis qui viennent d'une autre branche
-  const ext = [...new Set(s.ms.flatMap(m=>(m.req||[]).filter(r=>!ids.has(r))))];
-  if (ext.length){ const rq = el("div","reqs"); rq.append(el("span","lab","Pour ouvrir cette branche"));
-    ext.forEach(r=>{ const b = el("button","chip" + (st(r).done ? " on" : ""), MS[r].name + (MS[r].target ? " · " + goalTxt(MS[r]) : "")); b.onclick = () => openMs(r); rq.append(b); });
-    wrap.append(rq); }
-  let ed = '<svg class="ed" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">';
-  s.ms.forEach(m=>(m.req||[]).filter(r=>ids.has(r)).forEach(r=>{ const a = pos[r], b = pos[m.id], my = (a[1] + b[1]) / 2;
-    const cls = st(r).done && st(m.id).done ? "on" : st(r).done && !msLocked(m) ? "go" : "";
-    ed += '<path d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"' + (cls ? ' class="' + cls + '"' : '') + '/>'; }));
-  g.innerHTML = ed + "</svg>";
-  if (bonus.length && nMain){ const bl = el("div","bonus-l"); bl.append(el("span","lab","Bonus · hors du chemin principal")); bl.style.top = (nMain*RH - 6) + "px"; g.append(bl); }
-  s.ms.forEach(m=>{
-    const x = st(m.id), lk = !x.done && msLocked(m), p = pos[m.id];
-    const b = el("button","tn" + (x.done ? " done" : lk ? " lk" : m.id === nextId ? " wip" : " open") + (m.alt ? " alt" : ""));
-    b.style.left = p[0] + "%"; b.style.top = (p[1] - 32) + "px";
-    b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + (x.done ? ", validé" : lk ? ", verrouillé" : ""));
-    const c = el("span","c"); c.innerHTML = figMini(m.id, 44) || (lk ? ICON.lock : ICON.chev);
-    // anneau de progression : le record rapporté à la cible
-    if (!x.done && m.target && x.best > 0){ const R = 34, C = 2*Math.PI*R, fr = Math.min(1, x.best / m.target);
-      c.insertAdjacentHTML("beforeend", '<svg class="pr" viewBox="0 0 72 72" width="72" height="72" fill="none" aria-hidden="true"><circle cx="36" cy="36" r="' + R + '" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + (C*fr).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>'); }
-    if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
-    b.append(c, el("span","n", m.name));
-    const sub = m.alt ? "Bonus" + (m.target ? " · " + goalTxt(m) : "") : !x.done && m.target && x.best > 0 ? num(x.best) + " / " + goalTxt(m) : m.target ? goalTxt(m) : "";
-    if (sub) b.append(el("span","g", sub));
-    b.onclick = () => openMs(m.id); g.append(b);
+// ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
+const lvls = m => m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
+const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : L.filter(v=>x.best >= v).length; };
+const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
+const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;
+const noMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const poseId = id => POSE3D[id] || (id.startsWith("pl_") ? id : "stand");
+
+// ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
+const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
+let jrScrolled = false;
+function journey(nextId){
+  const RH = 168, BH = 74, NODE = 72, pos = {}, items = [], wrap = el("div","jr");
+  let y = 0, edges = "";
+  const banner = (title, sub, done, tot, cls) => { items.push({k:"b", y, title, sub, done, tot, cls}); y += sub ? BH + 34 : BH; };
+  const place = (id, x, yy, small) => { pos[id] = [x, yy + NODE/2, small]; };
+  const XS = {1:[50], 2:[30,70], 3:[18,50,82]};
+  // tronc commun
+  ["starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
+    const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
+    banner(s.name, "", s.ms.filter(m=>st(m.id).done).length, s.ms.length, secDone(s) ? "done" : "");
+    const main = s.ms.filter(m=>!m.alt), by = []; main.forEach(m=>{ (by[d(m)] || (by[d(m)] = [])).push(m); });
+    by.forEach(r=>{ for (let i = 0; i < r.length; i += 3){ const row = r.slice(i, i + 3);
+      row.sort((a,b)=>{ const mx = m => { const P = (m.req||[]).filter(q=>pos[q]); return P.length ? P.reduce((n,q)=>n + pos[q][0], 0)/P.length : 50; }; return mx(a) - mx(b); });
+      row.forEach((m,j)=>{ const P = (m.req||[]).filter(q=>pos[q]); place(m.id, row.length === 1 ? (P.length === 1 ? Math.max(26, Math.min(74, pos[P[0]][0] + (y/RH % 2 < 1 ? 14 : -14))) : 50) : XS[row.length][j], y); });
+      y += RH; } });
+    const alt = s.ms.filter(m=>m.alt);
+    if (alt.length){ items.push({k:"t", y:y - 14, text:"Bonus · hors du chemin"}); y += 14; alt.forEach((m,j)=>place(m.id, (XS[alt.length] || XS[3])[j], y, true)); y += RH - 22; }
   });
-  wrap.append(g); return wrap;
-}
-// Vue d'ensemble : tout l'arbre sur un seul écran. Quête 1 à gauche, de haut en bas ; les autres branches en colonnes à droite.
-let ovSel = null;
-function overview(nextId){
-  const W = 360, RH = 58, TOP = 30, depth = {};
-  const dep = id => depth[id] != null ? depth[id] : (depth[id] = 1 + Math.max(-1, ...(MS[id].req||[]).map(dep)));
-  const LANE = {planche:[272,"Planche"], press:[312,"Montées"], low:[344,"Bas"]}, all = Object.keys(MS), pos = {};
-  all.forEach(dep);
-  const q1 = all.filter(id=>!LANE[MS[id].sec]), rows = {};
-  q1.forEach(id=>{ (rows[depth[id]] || (rows[depth[id]] = [])).push(id); });
-  const px = id => pos[id] ? pos[id][0] : 125;
-  Object.keys(rows).map(Number).sort((a,b)=>a-b).forEach(d=>{ const r = rows[d];
-    r.sort((a,b)=>{ const m = id => { const P = (MS[id].req||[]).filter(x=>pos[x]); return P.length ? P.reduce((n,x)=>n + px(x), 0)/P.length : 125; }; return (MS[a].alt ? 1 : 0) - (MS[b].alt ? 1 : 0) || m(a) - m(b); });
-    r.forEach((id,i)=>{ const span = Math.min(206, (r.length - 1) * 86); pos[id] = [r.length === 1 ? 125 : 125 - span/2 + i * (span / (r.length - 1)), TOP + d*RH + 22]; }); });
-  all.filter(id=>LANE[MS[id].sec]).forEach(id=>{ pos[id] = [LANE[MS[id].sec][0], TOP + depth[id]*RH + 22]; });
-  const H = TOP + (Math.max(...all.map(id=>depth[id])) + 1) * RH + 6;
-  let s = "";
-  // bandes : une par branche
-  TREE.filter(t=>t.ms.length).forEach((t,i)=>{ const ys = t.ms.map(m=>pos[m.id][1]), y0 = Math.min(...ys) - 21, y1 = Math.max(...ys) + 21, L = LANE[t.id];
-    s += L ? '<rect x="' + (L[0]-17) + '" y="' + y0 + '" width="34" height="' + (y1-y0) + '" rx="17" fill="var(--raise)"/><text x="' + L[0] + '" y="' + (y0-5) + '" text-anchor="middle" class="ovl">' + L[1] + '</text>'
-      : '<rect x="0" y="' + y0 + '" width="250" height="' + (y1-y0) + '" rx="10" fill="' + (i % 2 ? "none" : "var(--raise)") + '"/><text x="6" y="' + (y0-4) + '" class="ovl">' + t.name + '</text>'; });
-  // liens : quand plusieurs jalons d'une même ligne ont exactement les mêmes prérequis, un seul tronc commun les dessert (moins de fils qui se croisent)
-  const curve = (a, b, cls) => { const my = (a[1]+b[1])/2; s += '<path class="ove ' + cls + '" d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"/>'; };
+  // niveau difficile : trois voies côte à côte
+  const hardMs = HARD.flatMap(([sid])=>SEC[sid].ms);
+  banner("Niveau difficile", "Trois voies : choisis la tienne, ou mène-les de front.", hardMs.filter(m=>st(m.id).done).length, hardMs.length, "hard");
+  const laneY = y; y += 100;
+  HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], open = !msLocked(first) || st(first.id).done;
+    items.push({k:"l", y:laneY, x:XS[3][i], name, open, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")});
+    s.ms.forEach((m,k)=>place(m.id, XS[3][i], y + k*RH)); });
+  y += Math.max(...HARD.map(([sid])=>SEC[sid].ms.length)) * RH;
+  // quête annexe
+  const low = SEC.low; banner("Quête annexe · " + low.name, "Accessible dès le départ.", low.ms.filter(m=>st(m.id).done).length, low.ms.length, secDone(low) ? "done" : "");
+  low.ms.forEach((m,j)=>place(m.id, XS[3][j], y)); y += RH;
+  const H = y;
+  // liens : tronc commun quand plusieurs jalons d'une ligne partagent leurs prérequis
+  const curve = (a, b, cls) => { const horiz = Math.abs(a[1] - b[1]) < 2, my = (a[1]+b[1])/2;
+    edges += '<path class="' + cls + '" d="M' + a[0] + ' ' + a[1] + (horiz ? 'L' + b[0] + ' ' + b[1] : 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1]) + '"/>'; };
   const eCls = (r, id) => st(r).done && st(id).done ? "on" : st(r).done && !msLocked(MS[id]) && !st(id).done ? "go" : "";
-  const groups = {};
-  all.forEach(id=>{ const rq = (MS[id].req||[]).slice().sort(); if (!rq.length) return; const k = rq.join("+") + "@" + pos[id][1]; (groups[k] || (groups[k] = {rq, ids:[]})).ids.push(id); });
+  const trunk = new Set(["starter","b1","b2","inter"]), groups = {};
+  Object.keys(pos).forEach(id=>{ const m = MS[id]; if (m.alt) return; const rq = (m.req||[]).filter(r=>pos[r] && (MS[r].sec === m.sec || (trunk.has(MS[r].sec) && trunk.has(m.sec)))).sort(); if (!rq.length) return;
+    const k = rq.join("+") + "@" + pos[id][1]; (groups[k] || (groups[k] = {rq, ids:[]})).ids.push(id); });
   Object.values(groups).forEach(g=>{
     if (g.ids.length < 2 || g.rq.length < 2) { g.ids.forEach(id=>g.rq.forEach(r=>curve(pos[r], pos[id], eCls(r, id)))); return; }
-    const xs = g.ids.map(id=>pos[id][0]), y = pos[g.ids[0]][1], jy = y - 31, jx = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const allReq = g.rq.every(r=>st(r).done), anyDone = g.ids.some(id=>st(id).done);
-    g.rq.forEach(r=>curve(pos[r], [jx, jy], st(r).done ? (anyDone ? "on" : "go") : ""));
-    s += '<path class="ove ' + (allReq ? (anyDone ? "on" : "go") : "") + '" d="M' + Math.min(...xs) + ' ' + jy + 'H' + Math.max(...xs) + '"/>';
-    g.ids.forEach(id=>{ s += '<path class="ove ' + (allReq ? (st(id).done ? "on" : "go") : "") + '" d="M' + pos[id][0] + ' ' + jy + 'V' + y + '"/>'; });
-    s += '<circle cx="' + jx + '" cy="' + jy + '" r="3" fill="' + (allReq ? "var(--txt)" : "var(--mut)") + '"/>'; });
-  all.forEach(id=>{ const m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], R = 15, F = FIG[id];
-    const fill = x.done ? "var(--txt)" : "var(--bg)", ink = x.done ? "var(--bg)" : lk ? "var(--mut)" : "var(--txt)";
-    const stroke = x.done ? "var(--txt)" : id === nextId ? "var(--acc)" : lk ? "var(--mut)" : "var(--txt)", sw = id === nextId ? 3 : lk ? 1.2 : 2;
-    s += '<g class="ovn' + (ovSel === id ? " sel" : "") + '" data-id="' + id + '" tabindex="0" role="button" aria-label="' + m.name.replace(/"/g,"") + (x.done ? ", validé" : lk ? ", verrouillé" : "") + '">'
-      + (ovSel === id ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (R+5) + '" fill="none" stroke="var(--acc)" stroke-width="2" stroke-dasharray="3 3"/>' : "")
-      + (m.alt ? '<rect x="' + (p[0]-R) + '" y="' + (p[1]-R) + '" width="' + 2*R + '" height="' + 2*R + '" rx="7" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>'
-               : '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + R + '" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + sw + '"/>')
-      + (F ? '<svg x="' + (p[0]-11) + '" y="' + (p[1]-11) + '" width="22" height="22" viewBox="0 0 120 120" fill="none" stroke="' + ink + '" stroke-linecap="round" stroke-linejoin="round">' + F.l.map(l=>'<polyline points="' + l + '" stroke-width="9"/>').join("") + '<circle cx="' + F.h[0] + '" cy="' + F.h[1] + '" r="9" fill="' + ink + '" stroke="none"/></svg>' : "")
-      + (!x.done && m.target && x.best > 0 ? '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="' + (R+2.5) + '" fill="none" stroke="var(--acc)" stroke-width="2.5" stroke-linecap="round" transform="rotate(-90 ' + p[0] + ' ' + p[1] + ')" stroke-dasharray="' + (2*Math.PI*(R+2.5)*Math.min(1, x.best/m.target)).toFixed(1) + ' 200"/>' : "")
-      + '</g>'; });
-  const wrap = el("div","ov"), info = el("div","ovinfo"), holder = el("div","ovmap");
-  const fill = () => { info.textContent = ""; const g = el("div","grow");
-    if (!ovSel) { g.append(el("div","t","Tout l'arbre"), el("div","mut","Touche un jalon pour voir son nom.")); info.append(g); return; }
-    const m = MS[ovSel], x = st(ovSel), lk = !x.done && msLocked(m);
-    g.append(el("div","t", m.name + (m.target ? " · " + goalTxt(m) : "")), el("div","mut", SEC[m.sec].name + " · " + (x.done ? "validé" : lk ? "verrouillé : " + missing(m) : m.target && x.best ? "record " + fmt(m, x.best) : "à travailler")));
-    const b = el("button","btn","Fiche"); b.style.cssText = "width:auto;min-height:40px;padding:8px 16px;flex:none"; b.onclick = () => openMs(ovSel); info.append(g, b); };
-  fill();
-  // tout doit tenir à l'écran : on réduit l'arbre à la hauteur disponible
-  // deux tailles : « large » remplit la largeur (on fait défiler), « tout voir » réduit l'arbre à la hauteur de l'écran
-  const availW = Math.min(640, window.innerWidth) - 40, fitH = S.ovFit === "h";
-  const k = fitH ? Math.min(availW / W, Math.max(0.5, (window.innerHeight - 262) / H)) : Math.min(1.7, availW / W);
-  const zb = el("div","seg ovz"); [["w","Grand"],["h","Tout sur un écran"]].forEach(([id,lab])=>{ const b = el("button", (fitH ? "h" : "w") === id ? "on" : "", lab); b.setAttribute("aria-pressed", (fitH ? "h" : "w") === id);
-    b.onclick = () => { S.ovFit = id; save(); render(); document.querySelector(".seg").scrollIntoView({block:"start"}); }; zb.append(b); });
-  holder.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + Math.round(W*k) + '" height="' + Math.round(H*k) + '">' + s + '</svg>';
-  const pick = e => { const g = e.target.closest ? e.target.closest(".ovn") : null; if (!g) return; ovSel = g.dataset.id; render(); };
-  holder.addEventListener("click", pick); holder.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(e); } });
-  wrap.append(zb, info, holder); return wrap;
-}
-// Carte de la quête : les branches à traverser, dans l'ordre, avec leur avancement.
-function questMap(nextId){
-  const want = new Set(goalMs()), secs = TREE.filter(s=>s.ms.some(m=>want.has(m.id))), nav = el("div","qmap");
-  secs.forEach((s,i)=>{ const tot = s.ms.filter(m=>want.has(m.id)), dn = tot.filter(m=>st(m.id).done).length, cur = nextId && MS[nextId].sec === s.id;
-    const b = el("button","qm" + (dn >= tot.length ? " done" : cur ? " cur" : ""));
-    b.setAttribute("aria-label", s.name + ", " + dn + " sur " + tot.length);
-    const dot = el("span","d"); if (dn >= tot.length) dot.innerHTML = ICON.check; else dot.textContent = i + 1;
-    b.append(dot, el("span","nm", s.name), el("span","ct", dn + "/" + tot.length));
-    b.onclick = () => { openSecs.add(s.id); render(); const t = document.getElementById("sec-" + s.id); if (t) t.scrollIntoView({behavior:"smooth", block:"start"}); };
-    nav.append(b); });
-  return nav;
+    const xs = g.ids.map(id=>pos[id][0]), yy = pos[g.ids[0]][1], jy = yy - RH/2 + 2, jx = (Math.min(...xs) + Math.max(...xs)) / 2;
+    const allReq = g.rq.every(r=>st(r).done), any = g.ids.some(id=>st(id).done), c = allReq ? (any ? "on" : "go") : "";
+    g.rq.forEach(r=>curve(pos[r], [jx, jy], st(r).done ? c || "go" : ""));
+    edges += '<path class="' + c + '" d="M' + Math.min(...xs) + ' ' + jy + 'H' + Math.max(...xs) + '"/>';
+    g.ids.forEach(id=>{ edges += '<path class="' + (allReq ? (st(id).done ? "on" : "go") : "") + '" d="M' + pos[id][0] + ' ' + jy + 'V' + yy + '"/>'; }); });
+  const cv = el("div","jr-c"); cv.style.height = H + "px";
+  cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
+  items.forEach(it=>{
+    if (it.k === "b"){ const b = el("div","jr-b " + it.cls); b.style.top = it.y + "px"; const g = el("div","grow"); g.append(el("div","sname",it.title)); if (it.sub) g.append(el("div","mut",it.sub));
+      const bar = el("div","bar"), i = el("i"); i.style.width = (it.tot ? it.done/it.tot*100 : 0) + "%"; bar.append(i);
+      const row = el("div","r"); row.append(g, el("span","cnt", it.done + "/" + it.tot)); b.append(row, bar); cv.append(b); }
+    else if (it.k === "t"){ const t = el("div","jr-t lab", it.text); t.style.top = it.y + "px"; cv.append(t); }
+    else { const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
+  });
+  Object.keys(pos).forEach(id=>{
+    const m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), k = lvlOf(m), cur = id === nextId, pose = poseId(id);
+    const b = el("button","jn" + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (p[2] ? " sm" : "") + (m.alt ? " alt" : "")); b.dataset.id = id;
+    b.style.left = p[0] + "%"; b.style.top = (p[1] - NODE/2) + "px";
+    b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + ", niveau " + k + " sur " + L.length + (lk ? ", verrouillé" : ""));
+    const c = el("span","c"), R = 39, C = 2*Math.PI*R, seg = C / L.length, gap = L.length > 1 ? 5 : 0;
+    let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
+    L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < k ? "f" : "") + '" stroke-dasharray="' + (seg - gap).toFixed(1) + ' ' + (C - seg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*seg + gap/2)).toFixed(1) + '"/>'; });
+    c.innerHTML = ring + '</svg><img alt="" width="64" height="64" loading="lazy" src="anim/' + (lk || noMotion ? "still_" : "hold_") + pose + '.webp">';
+    if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
+    if (cur) b.append(el("span","here","Prochaine étape"));
+    b.append(c, el("span","n", m.name));
+    const nx = nextStep(m);
+    b.append(el("span","g", x.done ? "Maîtrisé" : lk ? (m.target ? goalTxt(m) : "Verrouillé") : L.length > 1 ? "Niv. " + k + "/" + L.length + " · " + unitTxt(m, nx) : m.alt ? "Bonus" : "À réussir"));
+    b.onclick = () => openMs(id); cv.append(b);
+  });
+  wrap.append(cv);
+  // vidéos du programme, par niveau
+  TREE.filter(s=>s.videos.length).forEach(s=>{
+    const det = el("details"), vk = v => s.id + "|" + v[1];
+    const label = () => "Vidéos · " + s.name + " · " + s.videos.filter(v=>S.vid[vk(v)]).length + "/" + s.videos.length + " vues";
+    const sum = el("summary",null,label()); det.append(sum);
+    s.videos.forEach(v=>{ const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vk(v)];
+      cb.onchange = () => { S.vid[vk(v)] = cb.checked; save(); sum.textContent = label(); };
+      const tx = el("span"); tx.append(el("div",null,v[0]), el("div","orig","Titre d'origine : " + v[1])); l.append(cb, tx); det.append(l); });
+    wrap.append(det); });
+  return wrap;
 }
 function renderQuest(S0, nextId){
   const box = $("quest"); box.textContent = "";
@@ -829,7 +796,9 @@ function renderQuest(S0, nextId){
 const POSE3D = {st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_free15:"hs_straddle", b2_str15:"hs",
   in_holds:"hs_straddle", in_changes:"hs_straddle", in_tuck:"hs_tuck", in_str40:"hs", in_str60:"hs", in_7s:"hs_seven1", in_7d:"hs_seven",
   in_toes:"hs", in_toes7:"hs_seven", oa_flaghoriz:"hs_straddle", oa_shift:"hs_straddle", oa_finger:"oahs", oa_strarm:"oahs", oa_oahs:"oahs",
-  pr_straddle:"hs_straddle", pr_pike:"hs"};
+  pr_straddle:"hs_straddle", pr_pike:"hs", pr_stalder:"hs_straddle", in_mexican:"hs", in_hspu:"hs", oa_flagfloor:"hs_flag",
+  lo_frog:"crow", lo_elbow:"lever", lo_croc:"lever", lo_qdr:"lever"};
+POSE3D.oa_flaghoriz = "hs_flag";
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Vestiaire : [identifiant, nom, niveau requis]. La médaille se débloque en terminant une quête principale.
 const WARD = [
@@ -923,64 +892,16 @@ function render(){
     if (m.type !== "check" && st(nextId).best) nc.append(el("div","rec","Record : " + fmt(m, st(nextId).best)));
     const b = el("button","btn", m.type === "hold" ? "Lancer le chrono" : "Ouvrir la fiche");
     b.onclick = () => openMs(nextId); nc.append(b);
+    const go = el("button","golink","Voir sur le parcours"); go.onclick = () => { const nd = document.querySelector('.jn[data-id="' + nextId + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }; nc.append(go);
     if (!openSecs.size) openSecs.add(m.sec);
   } else {
     nc.append(el("div","lab","Objectif"), el("h2",null,"Atteint."), el("p",null,"Choisis un autre objectif pour continuer."));
     nc.lastChild.style.margin = "0";
   }
 
-  const tree = $("tree"); tree.textContent = "";
-  const mode = S.view === "branch" ? "branch" : "all", sg = el("div","seg");
-  [["all","Vue d'ensemble"],["branch","Par branche"]].forEach(([id,lab])=>{ const b = el("button", mode === id ? "on" : "", lab); b.setAttribute("aria-pressed", mode === id);
-    b.onclick = () => { S.view = id; save(); render(); document.querySelector(".seg").scrollIntoView({block:"start"}); }; sg.append(b); });
-  tree.append(sg);
-  if (mode === "all") { tree.append(overview(nextId)); }
-  else tree.append(questMap(nextId));
-  let n = 0;
-  const Q1 = new Set(GOALS[0].ms), Q2 = new Set(GOALS[1].ms);
-  const qTag = s => !s.ms.length ? "" : s.ms.some(m=>Q1.has(m.id)) ? "Quête 1" : s.ms.some(m=>Q2.has(m.id)) ? "Quête 2" : "Secondaire";
-  const qRank = s => ({"Quête 1":0, "Quête 2":1, "Secondaire":2, "":3})[qTag(s)];
-  if (mode === "branch") TREE.slice().sort((a,b)=>qRank(a) - qRank(b)).forEach(s=>{
-    const c = el("section","sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (openSecs.has(s.id)?" open":"")); c.id = "sec-" + s.id;
-    const h = el("button","sec-head");
-    h.setAttribute("aria-expanded", openSecs.has(s.id));
-    h.append(el("span","idx", s.ms.length ? String(++n).padStart(2,"0") : "—"));
-    const g = el("span","grow"); if (qTag(s)) { const tg = el("span","lab",qTag(s)); tg.style.cssText = "display:block;margin-bottom:4px"; g.append(tg); } g.append(el("span","sname",s.name)); h.append(g);
-    h.append(el("span","cnt", s.ms.length ? s.ms.filter(m=>st(m.id).done).length + "/" + s.ms.length : ""), icon("chev","chev"));
-    h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); h.setAttribute("aria-expanded", c.classList.toggle("open")); };
-    const body = el("div","sec-body");
-    if (s.ms.length) { const pb = el("div","bar secbar"), pi = el("i"); pi.style.width = (s.ms.filter(m=>st(m.id).done).length / s.ms.length * 100) + "%"; pb.append(pi); c._pb = pb; }
-    if (s.ms.length) body.append(graph(s, nextId));
-    if (false){
-      const ol = el("ol","rail");
-      s.ms.forEach(m=>{
-        const x = st(m.id), lk = !x.done && msLocked(m);
-        const b = el("button","ms" + (x.done?" done":lk?" lk":m.id===nextId?" wip":""));
-        const node = el("span","node"); if (x.done) node.innerHTML = ICON.check; else if (lk) node.innerHTML = ICON.lock;
-        const t = el("span","grow"); t.append(el("span","t", m.name));
-        const subs = [m.sub, lk ? "Après : " + missing(m) : "", !lk && !x.done && m.type !== "check" && x.best ? "Record " + fmt(m,x.best) : "", m.yt ? "Vidéo" : m.img ? "Photo" : ""].filter(Boolean);
-        if (subs.length) t.append(el("span","mut",subs.join(" · ")));
-        b.append(node, t);
-        if (m.target) b.append(el("span","tg",goalTxt(m)));
-        b.onclick = () => openMs(m.id);
-        const li = el("li"); li.append(b); ol.append(li);
-      });
-      body.append(ol);
-    }
-    if (s.videos.length){
-      const det = el("details"); if (!s.ms.length) det.open = true;
-      const vk = v => s.id + "|" + v[1];
-      const label = () => "Vidéos du programme · " + s.videos.filter(v=>S.vid[vk(v)]).length + "/" + s.videos.length + " vues";
-      const sum = el("summary",null,label()); det.append(sum);
-      s.videos.forEach(v=>{
-        const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vk(v)];
-        cb.onchange = () => { S.vid[vk(v)] = cb.checked; save(); sum.textContent = label(); };
-        const tx = el("span"); tx.append(el("div",null,v[0]), el("div","orig","Titre d'origine : " + v[1])); l.append(cb, tx); det.append(l);
-      });
-      body.append(det);
-    }
-    c.append(h); if (c._pb) c.append(c._pb); c.append(body); tree.append(c);
-  });
+  const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
+  tree.append(journey(nextId));
+  if (keepY) window.scrollTo(0, keepY);
 
   const ll = $("logList"); ll.textContent = "";
   if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Lance un chrono depuis le parcours."));
@@ -1014,7 +935,9 @@ function openMs(id){
   $("dS").textContent = [SEC[m.sec].name, m.sub].filter(Boolean).join(" · ");
   $("dEn").textContent = m.en && m.en !== m.name ? "Nom d'origine : " + m.en : "";
   $("dDesc").textContent = m.desc || "";
-  const fg = $("dFig"); fg.textContent = ""; const f = figure(id); if (f) fg.append(f);
+  const fg = $("dFig"); fg.textContent = "";
+  { const pz = poseId(id); if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (noMotion ? "still_" : "demo_") + pz + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
+    else { const f2 = figure(id); if (f2) fg.append(f2); } }
   const dd = $("dMore"); dd.textContent = ""; const D = DETAILS[id];
   if (D){
     const part = (title, items, ordered) => { if (!items || !items.length) return;
@@ -1043,6 +966,7 @@ function fillDlg(){
   $("toggle").className = "btn" + (!x.done && m.type === "check" ? "" : " line");
   const parts = [];
   if (m.type !== "check") parts.push(x.best ? "Record : " + fmt(m,x.best) : "Aucun essai enregistré");
+  { const L = lvls(m), k = lvlOf(m), nx = nextStep(m); if (L.length > 1) parts.push("Niveau " + k + " sur " + L.length + (nx ? " · palier suivant : " + unitTxt(m, nx) : "")); }
   if (x.done) parts.push("Jalon validé");
   if (lk) parts.push("Recommandé après : " + missing(m));
   $("dBest").textContent = parts.join(" · ");
@@ -1050,11 +974,13 @@ function fillDlg(){
   S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
 }
 function record(v){
-  const m = MS[cur], x = st(cur); let pr = false;
+  const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false;
   if (v === true) { x.done = true; }
   else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target) x.done = true; if (m.type === "hold") cnt().hold += v; }
   S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();
+  const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + " · niveau " + lv1 + " atteint");
+  const nd = document.querySelector('.jn[data-id="' + cur + '"]'); if (nd && lv1 > lv0) nd.classList.add("pop");
 }
 function resetClock(){
   clearInterval(timer); phase = "idle"; beeped = false;
