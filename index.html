@@ -300,13 +300,14 @@ ul.plan li{margin:7px 0}
 .fold-h[aria-expanded=true] .chev{transform:rotate(90deg)}
 #sess[hidden]{display:none}
 /* le parcours */
-.ptop{display:flex;gap:14px;align-items:center;margin-top:18px;padding:14px;border-radius:16px;background:var(--raise)}
+.ptop{position:sticky;top:0;z-index:4;display:flex;gap:12px;align-items:center;margin:0 -20px 14px;padding:10px 20px;background:var(--bg);border-bottom:1px solid var(--line)}
+.ptop .here{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:#fff}
 .fins{display:flex;flex:none}
-.fin{position:relative;width:74px;height:84px;display:block}
-.fin + .fin{margin-left:-14px}
+.fin{position:relative;width:46px;height:60px;display:block}
+.fin + .fin{margin-left:-8px}
 .fin .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-.pt2{font:600 20px/1.15 var(--disp);margin-top:4px}
-.pn2{font-size:13px;color:var(--mut);margin:6px 0 8px}
+.pt2{font:600 19px/1.1 var(--disp);margin-bottom:6px}
+.pn2{font-size:12px;color:var(--mut);margin-top:6px}
 .herebtn{margin:10px 0 14px;min-height:44px;font-size:14px}
 .jr-b{cursor:pointer}
 .jr-b .lab{margin-bottom:3px}
@@ -314,7 +315,7 @@ ul.plan li{margin:7px 0}
 .jr-b.open .chev{transform:rotate(90deg)}
 .jr-b.lk{opacity:.7}
 .jr-b.cur{box-shadow:inset 0 0 0 2px var(--acc)}
-.jr-b.hard .lab{color:inherit;opacity:.65}
+
 .jr-s{position:absolute;left:0;right:0;display:flex;align-items:center;gap:14px;padding:8px 14px 12px;text-align:left;z-index:1}
 .jr-s .pile{display:flex;flex:none}
 .jr-s .pc{position:relative;width:46px;height:46px;border-radius:50%;background:color-mix(in srgb,var(--txt) 13%,var(--bg));box-shadow:0 0 0 2px var(--bg);overflow:hidden;display:block}
@@ -333,10 +334,13 @@ ul.plan li{margin:7px 0}
 @keyframes flow{to{stroke-dashoffset:-22}}
 .jr-b{position:absolute;left:0;right:0;padding:12px 14px;border-radius:12px;background:var(--raise);z-index:1}
 .jr-b .r{display:flex;align-items:baseline;gap:12px;margin-bottom:8px}
+.jr-b .bar{margin-left:46px}
+.jr-b .vchip{margin-left:46px}
 .jr-b .mut{font-size:13px;margin-top:2px}
-.jr-b.hard{background:var(--txt);color:var(--bg)}
-.jr-b.hard .mut,.jr-b.hard .cnt{color:inherit;opacity:.7}
-.jr-b.hard .bar{background:color-mix(in srgb,var(--bg) 25%,transparent)}
+.jr-b .md{flex:none;align-self:center;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:600 16px/1 var(--disp);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
+.jr-b.done .md{background:var(--txt);color:var(--bg);box-shadow:none}
+.jr-b.cur .md{box-shadow:inset 0 0 0 2.5px var(--acc);color:var(--acc)}
+.jr-b.hard .sname::after{content:"Difficile";margin-left:10px;padding:2px 8px;border-radius:10px;font:600 11px/1.4 system-ui,sans-serif;letter-spacing:.04em;text-transform:none;vertical-align:middle;background:color-mix(in srgb,var(--acc) 22%,transparent);color:var(--acc)}
 .jr-b.done .cnt{color:var(--txt)}
 .jr-t{position:absolute;left:0;right:0;text-align:center}
 .jr-l{position:absolute;transform:translateX(-50%);width:31%;text-align:center}
@@ -475,9 +479,6 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 
   <section id="v-path" class="view">
     <div id="pathTop"></div>
-    <div class="legend" aria-label="Légende">
-      <span><i class="lg done"></i>Maîtrisé</span><span><i class="lg cur"></i>En cours</span><span><i class="lg open"></i>Accessible</span><span><i class="lg lk"></i>Verrouillé</span><span><i class="lg alt"></i>Bonus</span><span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M12 3.5a8.5 8.5 0 017.4 4.3" stroke="var(--acc)"/><path d="M20.3 11a8.5 8.5 0 01-3.6 8.1" stroke="var(--acc)"/><path d="M13.4 20.4A8.5 8.5 0 015 16.9M3.6 13.3A8.5 8.5 0 019 4" stroke="var(--line)"/></svg>Anneau : 3 niveaux</span>
-    </div>
     <div id="tree"></div>
   </section>
 
@@ -972,7 +973,7 @@ function journey(nextId){
   // état d'un étage : fait, en cours (au moins une figure accessible à travailler) ou à venir
   const tState = ms => { const main = ms.filter(m=>!m.alt); return main.every(m=>st(m.id).done) ? "done" : ms.some(m=>!st(m.id).done && !msLocked(m)) ? "cur" : "lk"; };
   const isOpen = (key, state) => tierOpen[key] != null ? tierOpen[key] : state === "cur";
-  const banner = (title, sub, done, tot, cls, vid, key, state, open) => { items.push({k:"b", y, title, sub:open ? sub : "", done, tot, cls, vid:open ? vid : null, key, state, open, n:++n}); y += (open && sub ? BH + 34 : BH) + (open && vid ? 40 : 0) + 8; };
+  const banner = (title, sub, done, tot, cls, vid, key, state, open) => { items.push({k:"b", y, title, sub:open ? sub : "", done, tot, cls, vid:open ? vid : null, key, state, open, n:++n}); y += (open && sub ? BH + 34 : BH) + (open && vid ? 40 : 0) + (open ? 46 : 8); };
   const strip = (ms, state) => { items.push({k:"s", y, ms, state}); y += 86; };
   const place = (id, x, yy, small) => { pos[id] = [x, yy + NODE/2, small]; };
   const XS = {1:[50], 2:[30,70], 3:[18,50,82]};
@@ -1022,9 +1023,10 @@ function journey(nextId){
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
     if (it.k === "b"){ const b = el("div","jr-b " + it.cls + " " + it.state + (it.open ? " open" : "")); b.style.top = it.y + "px"; b.setAttribute("role","button"); b.tabIndex = 0; b.setAttribute("aria-expanded", it.open);
+      const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.key === "low" ? "+" : String(it.n);
       const g = el("div","grow"); g.append(el("div","lab", it.key === "low" ? "Hors parcours" + (it.state === "done" ? " · terminé" : "") : "Étage " + it.n + (it.state === "done" ? " · terminé" : it.state === "cur" ? " · en cours" : " · à venir")), el("div","sname",it.title)); if (it.sub) g.append(el("div","mut",it.sub));
       const bar = el("div","bar"), i = el("i"); i.style.width = (it.tot ? it.done/it.tot*100 : 0) + "%"; bar.append(i);
-      const row = el("div","r"); row.append(g, el("span","cnt", it.done + "/" + it.tot), icon("chev","chev")); b.append(row, bar); if (it.vid && SEC[it.vid].videos.length) b.append(vidChip(it.vid));
+      const row = el("div","r"); row.append(md, g, el("span","cnt", it.done + "/" + it.tot), icon("chev","chev")); b.append(row, bar); if (it.vid && SEC[it.vid].videos.length) b.append(vidChip(it.vid));
       const tog = () => { tierOpen[it.key] = !it.open; render(); }; b.onclick = tog; b.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); tog(); } }; cv.append(b); }
     else if (it.k === "s"){ const s = el("button","jr-s " + it.state); s.style.top = it.y + "px"; const pile = el("span","pile");
       it.ms.slice(0, 7).forEach(m=>{ const sp = el("span","sp"); sp.dataset.pose = poseId(m.id); sp.dataset.anim = m.id; sp.dataset.lk = "1"; sprPaint(sp, 46); const w = el("span","pc" + (st(m.id).done ? " ok" : "")); w.append(sp); pile.append(w); });
@@ -1304,11 +1306,13 @@ function render(){
   }
 
   { const pt = $("pathTop"), gms = GOALS[0].ms, dn = gms.filter(id=>st(id).done).length; pt.textContent = "";
-    const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 84); w.append(sp); fins.append(w); });
-    const g = el("div","grow"); g.append(el("div","lab","Ton but"), el("div","pt2","Équilibre sur un bras et full planche"), el("div","pn2", dn + " figures sur " + gms.length));
-    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); g.append(bar);
-    c.append(fins, g); pt.append(c);
-    if (nextId) { const here = el("button","btn line herebtn","Aller à ma position : " + MS[nextId].name); here.onclick = () => goHere(nextId); pt.append(here); } }
+    const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
+    const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
+    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); g.append(bar, el("div","pn2","Vers l'équilibre sur un bras et la full planche"));
+    c.append(fins, g);
+    if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
+      here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
+    pt.append(c); }
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
