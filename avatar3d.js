@@ -6,7 +6,7 @@ import * as THREE from "./vendor/three.module.min.js";
 const PI = Math.PI;
 // Angles en radians. pitch : bascule du corps vers l'avant (π = tête en bas). arm / hip : flexion (négatif = vers l'avant).
 // armZ / hipZ : écartement latéral. knee : flexion (positif). elbow : flexion (négatif). Valeurs à deux éléments : [gauche, droite].
-const POSES = {
+export const POSES = {
   stand:      {pitch:0,    arm:[0.08,0.08],   armZ:[0.13,0.13], elbow:[-0.22,-0.22], hip:[0,0],        hipZ:[0.05,0.05], knee:[0,0],     head:0},
   cheer:      {pitch:0,    arm:[-2.75,-2.75], armZ:[0.5,0.5],   elbow:[-0.25,-0.25], hip:[0,0],        hipZ:[0.12,0.12], knee:[0,0],     head:0.25},
   crouch:     {pitch:0.25, arm:[0.5,0.5],     armZ:[0.2,0.2],   elbow:[-0.7,-0.7],   hip:[-1.0,-1.0],  hipZ:[0.08,0.08], knee:[1.5,1.5], head:-0.1},
@@ -51,7 +51,7 @@ function route(a, b){
 const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; };      // arrivée avec un léger dépassement          // postures en appui sur les pieds (ou pieds + mains)
 // ---------- Animations propres à chaque jalon ----------
 const P = (base, o) => Object.assign({}, POSES[base], o);
-const mirror = p => Object.assign({}, p, {arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0)});
+const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0)});
 Object.assign(POSES, {
   hs_cw1:   P("hs", {roll:1.15, hipZ:[0.8,0.8], feet:true}),                                             // sortie en roue : on bascule sur le côté…
   hs_cw2:   {pitch:PI, roll:PI, arm:[0.1,0.1], armZ:[0.3,0.3], elbow:[-0.2,-0.2], hip:[0,0], hipZ:[0.25,0.25], knee:[0,0], head:0, feet:true},   // …et on retombe debout
@@ -78,8 +78,8 @@ Object.assign(POSES, {
   hs_stal2: {pitch:1.9, arch:0.2, arm:[-2.05,-2.05], armZ:[0,0], hip:[-2.2,-2.2], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},          // bassin au-dessus des épaules, jambes encore basses
   lv_croc:  P("lever", {arm:[-0.45,-1.5], elbow:[-1.75,-0.1], armZ:[0,0.7], one:1}),
   lv_qdr0:  {pitch:1.15, roll:0.45, arm:[-0.85,-1.1], armZ:[0,0.3], elbow:[-0.9,-0.3], hip:[-1.7,-1.4], hipZ:[0.2,0.3], knee:[1.7,1.5], head:-0.5, feet:true},
-  lv_qdr:   {pitch:1.98, roll:1.25, arch:0.3, arm:[-0.3,-1.35], armZ:[0,0.5], elbow:[-2.0,-0.3], hip:[-1.45,-0.35], hipZ:[0.1,0.35], knee:[1.5,1.6], head:0.35, feet:true},   // sur le côté, hanche posée sur le coude, tête près du sol, genoux fléchis en l'air
-  lv_qdr2:  {pitch:1.98, roll:1.25, arch:0.3, arm:[-0.3,-1.35], armZ:[0,0.5], elbow:[-2.0,-0.3], hip:[-0.9,0.35], hipZ:[0.1,0.55], knee:[0.6,1.35], head:0.35, feet:true},      // les jambes s'ouvrent en ciseaux
+  lv_qdr:   {pitch:1.98, roll:1.25, arch:0.3, arm:[-0.3,-1.35], armZ:[0,0.5], elbow:[-2.0,-0.3], hip:[-1.5,-0.5], hipZ:[-0.9,0.6], hipY:[0.4,0], knee:[1.4,1.4], head:0.35, feet:true},   // sur le côté, hanche posée sur le coude, tête près du sol, genoux fléchis en l'air
+  lv_qdr2:  {pitch:1.98, roll:1.25, arch:0.3, arm:[-0.3,-1.35], armZ:[0,0.5], elbow:[-2.0,-0.3], hip:[-1.2,0.2], hipZ:[-1.0,0.7], hipY:[-0.5,0], knee:[0.9,1.2], head:0.35, feet:true},      // les jambes s'ouvrent en ciseaux
 });
 Object.assign(FEET, {fold_s:1});
 // Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
@@ -123,10 +123,10 @@ export const SCRIPTS = {
   pl_straddle:{s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
   pl_full:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
 };
-const KEYS = ["hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","knee0","knee1"];
+const KEYS = ["hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   return {hands:FEET[n] || p.feet ? 0 : 1, one:n === "oahs" || p.one ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
-    armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], knee0:p.knee[0], knee1:p.knee[1]}; };
+    armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], hipY0:(p.hipY || [0,0])[0], hipY1:(p.hipY || [0,0])[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
 
@@ -255,7 +255,7 @@ export function mount(host, opts = {}){
     root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.x = p.arch;
     limbs.forEach((L, i) => {
       L.sh.rotation.set(p["arm" + i], 0, L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i];
-      L.hip.rotation.set(p["hip" + i], 0, L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; });
+      L.hip.rotation.set(p["hip" + i], L.sx * p["hipY" + i], L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; });
     torso.scale.set(1 + breath, 1, 1 + breath); chest.scale.set(1, 1 + breath, 1 + breath);
     root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
     box.setFromObject(root); let low = box.min.y;
