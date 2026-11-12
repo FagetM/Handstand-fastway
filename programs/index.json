@@ -1,0 +1,17 @@
+[
+ {
+  "id": "planche-domination",
+  "file": "programs/planche-domination.enc",
+  "v": "1"
+ },
+ {
+  "id": "etirements-debutant",
+  "file": "programs/etirements-debutant.enc",
+  "v": "1"
+ },
+ {
+  "id": "etirements-avance",
+  "file": "programs/etirements-avance.enc",
+  "v": "1"
+ }
+]
