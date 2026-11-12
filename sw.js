@@ -1,21 +1,29 @@
-// Cache minimal pour utiliser l'app hors connexion (salle, parc…).
-const CACHE = "hs-fastway-v40";
-const FILES = ["./", "index.html", "manifest.webmanifest", "icon.svg", "fonts/barlow-condensed-600.woff2", "avatar3d.js", "vendor/three.module.min.js"];
+// Service worker : l'app s'ouvre instantanément depuis l'appareil, même hors connexion (salle, parc…).
+// Les fichiers de l'app sont mis en cache à l'installation ; chaque nouvelle version change CACHE, s'installe en arrière-plan
+// puis attend que l'utilisateur accepte la mise à jour (ou ferme l'app), pour ne jamais couper une séance en cours.
+const CACHE = "hs-fastway-v41", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
+const CORE = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png",
+  "fonts/barlow-condensed-600.woff2", "avatar3d.js", "vendor/three.module.min.js"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache:"reload"})))));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== "hs-sprites").map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== RUNTIME && k !== SPRITES).map(k => caches.delete(k)))).then(() => self.clients.claim()));
 });
-// Réseau d'abord (pour recevoir les mises à jour), cache en secours hors ligne.
+self.addEventListener("message", e => { if (e.data === "skip") self.skipWaiting(); });
+
 self.addEventListener("fetch", e => {
-  if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
-  e.respondWith(
-    fetch(e.request).then(r => {
-      const copy = r.clone();
-      caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
-      return r;
-    }).catch(() => caches.match(e.request).then(r => r || caches.match("index.html")))
-  );
+  const req = e.request, url = new URL(req.url);
+  if (req.method !== "GET" || url.origin !== location.origin) return;
+  // programmes : toujours la dernière version si le réseau répond, sinon la copie gardée
+  if (url.pathname.includes("/programs/")) {
+    e.respondWith(fetch(req).then(r => { const copy = r.clone(); caches.open(RUNTIME).then(c => c.put(req, copy)).catch(() => {}); return r; }).catch(() => caches.match(req)));
+    return;
+  }
+  // fichiers de l'app : la copie de l'appareil d'abord (ouverture immédiate) ; le reste est gardé au premier passage
+  e.respondWith(caches.match(req, {ignoreSearch:req.mode === "navigate"}).then(hit => hit || fetch(req).then(r => {
+    if (r.ok) { const copy = r.clone(); caches.open(RUNTIME).then(c => c.put(req, copy)).catch(() => {}); }
+    return r;
+  }).catch(() => req.mode === "navigate" ? caches.match("index.html") : Response.error())));
 });

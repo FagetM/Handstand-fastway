@@ -8,6 +8,11 @@ App perso pour suivre ma progression en équilibre sur les mains, jalon par jalo
 - **Journal** : historique des essais, jours d'affilée, séances sur 7 jours.
 - **Hors ligne** : les données restent sur l'appareil (export / import dans Réglages).
 
+## Application installable (PWA)
+
+L'app s'installe depuis Chrome (« Installer l'application ») : plein écran, icône, raccourcis, ouverture immédiate et utilisation hors connexion.
+Le service worker (`sw.js`) garde les fichiers sur l'appareil ; changer la constante `CACHE` à chaque version déclenche la proposition de mise à jour.
+
 ## Utilisation
 
 Aucune installation : c'est une page statique. Ouvrir `index.html`, ou la publier avec GitHub Pages

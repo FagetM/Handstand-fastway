@@ -9,7 +9,12 @@
 <title>Handstand Fastway</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="description" content="Ton parcours vers l'équilibre sur un bras et la full planche : séance du jour guidée, jalons animés, programmes.">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Handstand">
+<link rel="preload" href="fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face{font-family:"Barlow Condensed";font-weight:600;font-display:swap;src:url(fonts/barlow-condensed-600.woff2) format("woff2")}
 :root{
@@ -153,6 +158,15 @@ a.yt .t{font-weight:600;line-height:1.3}
 .av .me{color:var(--txt)}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
+/* application installable : mise à jour, installation, hors connexion */
+.appbar{display:flex;align-items:center;gap:10px;margin-top:12px;padding:10px 12px 10px 14px;border-radius:12px;background:var(--raise);font-size:14px}
+.appbar button{flex:none;min-height:38px;padding:6px 14px;border-radius:19px;font-weight:600;font-size:13.5px;background:var(--acc);color:#fff}
+.appbar #insNo{background:none;color:var(--mut);padding:6px 8px;font-size:20px}
+.appbar.off{color:var(--mut)}
+html{overscroll-behavior-y:none}
+body{-webkit-tap-highlight-color:transparent}
+button,.jn,.src{touch-action:manipulation}
+@media (display-mode: standalone){header.top{padding-top:calc(14px + env(safe-area-inset-top))}}
 /* aujourd'hui : la séance en un coup d'œil */
 .next{margin-top:14px}
 .srcs{display:flex;gap:6px;overflow-x:auto;margin:10px -20px 4px;padding:2px 20px 8px;scrollbar-width:none}
@@ -432,6 +446,9 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 
 <main>
   <section id="v-today" class="view on">
+    <div class="appbar" id="updBar" hidden><span class="grow">Une nouvelle version est prête.</span><button id="updGo">Mettre à jour</button></div>
+    <div class="appbar" id="insBar" hidden><span class="grow">Installe l'app sur ton téléphone : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
+    <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l'app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
     <div class="next" id="nextCard"></div>
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
     <div id="sess"></div>
@@ -1755,7 +1772,34 @@ $("gateForm").onsubmit = async e => {
 };
 
 render();
-if ("serviceWorker" in navigator && location.protocol.startsWith("http")) navigator.serviceWorker.register("sw.js").catch(()=>{});
+// ---------- Application installable (PWA) ----------
+// Service worker : ouverture immédiate et hors connexion. Une mise à jour n'est appliquée que si tu l'acceptes, jamais pendant une séance.
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").then(reg => {
+    const offer = () => { if (reg.waiting && navigator.serviceWorker.controller) $("updBar").hidden = false; };
+    offer(); reg.addEventListener("updatefound", () => { const w = reg.installing; if (w) w.addEventListener("statechange", () => { if (w.state === "installed") offer(); }); });
+    $("updGo").onclick = () => { if (reg.waiting) reg.waiting.postMessage("skip"); };
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) reg.update().catch(()=>{}); });
+  }).catch(()=>{});
+  let reloaded = false; navigator.serviceWorker.addEventListener("controllerchange", () => { if (reloaded || !$("updBar") || $("updBar").hidden) return; reloaded = true; location.reload(); });
+}
+// Installation : le navigateur signale quand l'app peut être installée ; on propose alors un bouton, qu'on peut refuser une fois pour toutes.
+{ let deferred = null; const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); deferred = e; let no = null; try { no = localStorage.getItem("hs-fastway-noinstall"); } catch(err){} if (!no && !standalone()) $("insBar").hidden = false; });
+  $("insGo").onclick = async () => { if (!deferred) return; $("insBar").hidden = true; deferred.prompt(); try { await deferred.userChoice; } catch(err){} deferred = null; };
+  $("insNo").onclick = () => { $("insBar").hidden = true; try { localStorage.setItem("hs-fastway-noinstall", "1"); } catch(err){} };
+  window.addEventListener("appinstalled", () => { $("insBar").hidden = true; toast("App installée"); });
+}
+// Hors connexion : on le dit, pour qu'un programme qui ne se charge pas ne surprenne pas.
+{ const net = () => { $("offBar").hidden = navigator.onLine; }; window.addEventListener("online", net); window.addEventListener("offline", net); net(); }
+// Stockage durable : on demande au navigateur de ne pas effacer la progression ni les animations quand il manque de place.
+if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist().catch(()=>{}); }).catch(()=>{});
+// Raccourcis de l'icône : « Démarrer la séance » et « Mon parcours ».
+{ const q = new URLSearchParams(location.search), go = () => { if (document.body.classList.contains("locked")) return;
+    if (q.get("tab") === "path") { showTab("path"); const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); }
+    if (q.get("go") === "session") setTimeout(()=>{ if (!$("sd").open && nextSet()) startGuided(); }, 500);
+    if (q.has("tab") || q.has("go")) history.replaceState(null, "", location.pathname); };
+  go(); }
 </script>
 </body>
 </html>
