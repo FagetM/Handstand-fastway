@@ -767,12 +767,22 @@ const WARD = [
   {slot:"head", name:"Tête", items:[["none","Rien"],["band_o","Bandeau orange",5],["band_w","Bandeau blanc",5],["beanie_k","Bonnet noir",7],["cap_o","Casquette orange",8],["cap_k","Casquette noire",9],["beanie_r","Bonnet rouge","b:s1000"],["crown","Couronne","b:goal_oahs"]]},
   {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt_w","Ceinture blanche",3],["belt_o","Ceinture orange",6],["belt_k","Ceinture noire",12],["medal","Médaille","quest"],["medal2","Deux médailles","b:goal_planche"]]},
 ];
+// Postures que le personnage peut prendre : debout, plus celle de chaque jalon validé.
+const poseOf = id => POSE3D[id] || (id.startsWith("pl_") ? id : null);
+function unlockedPoses(){ const out = [["stand","Debout"]], seen = new Set(["stand"]);
+  Object.keys(MS).forEach(id=>{ const p = poseOf(id); if (p && st(id).done && !seen.has(p)) { seen.add(p); out.push([p, MS[id].name]); } });
+  return out; }
 const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
 function renderFit(){
   const box = $("fitBody"), F = fit(), Z = lastZ || stats(); box.textContent = "";
   const all = WARD.flatMap(w=>w.items), okN = all.filter(([id,name,need])=>!need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok : Z.lvl >= need)).length;
   const cnt0 = el("div","mut", okN + " éléments débloqués sur " + all.length); cnt0.style.marginTop = "10px"; box.append(cnt0);
+  { const s = el("div","slot"), row = el("div","chips"), cur = F.pose || "auto"; s.append(el("div","lab","Posture"));
+    [["auto","Automatique (dernier jalon)"]].concat(unlockedPoses()).forEach(([id, name])=>{
+      const b = el("button","chip" + (cur === id ? " on" : ""), name); b.setAttribute("aria-pressed", cur === id);
+      b.onclick = () => { S.fit = Object.assign(fit(), {pose:id}); save(); render(); renderFit(); }; row.append(b); });
+    s.append(row, el("div","mut","Chaque jalon validé débloque sa posture.")); s.lastChild.style.marginTop = "8px"; box.append(s); }
   WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const row = el("div","chips");
     w.items.forEach(([id, name, need])=>{
       const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null;
@@ -813,7 +823,8 @@ function render(){
   $("av").innerHTML = '<svg class="ring" viewBox="0 0 104 104" width="104" height="104" fill="none" aria-hidden="true"><circle cx="52" cy="52" r="' + R + '" stroke="var(--line)" stroke-width="4"/>'
     + '<circle cx="52" cy="52" r="' + R + '" stroke="var(--acc)" stroke-width="4" stroke-linecap="round" stroke-dasharray="' + (C*frac).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg><span class="me">' + figMini(stage, 72) + '</span>';
   $("av").setAttribute("aria-label","Ton personnage, niveau " + Z.lvl);
-  setAvatar({pose:POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), frac, level:Z.lvl, fit:fit(), label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
+  const autoPose = POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), want = (S.fit || {}).pose;
+  setAvatar({pose:want && want !== "auto" && unlockedPoses().some(p=>p[0] === want) ? want : autoPose, frac, level:Z.lvl, fit:fit(), label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
   lastZ = Z;
   $("lvRank").textContent = Z.rank; $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d'expérience";

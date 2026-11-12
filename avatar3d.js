@@ -25,7 +25,27 @@ const POSES = {
   pl_straddle:{pitch:1.57, arm:[-1.17,-1.17], armZ:[0,0],       hip:[0,0],        hipZ:[0.6,0.6],   knee:[0,0],     head:-0.7},
   pl_full:    {pitch:1.57, arm:[-1.1,-1.1],   armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.7},
 };
-const FEET = {stand:1, cheer:1, crouch:1, pl_lean:1};          // postures en appui sur les pieds (ou pieds + mains)
+// postures de passage, utilisées seulement pendant les transitions
+Object.assign(POSES, {
+  fold: {pitch:1.9,  arm:[-1.9,-1.9],   armZ:[0,0], hip:[-1.9,-1.9],   hipZ:[0,0],       knee:[0.15,0.15], head:-0.4},
+  kick: {pitch:2.55, arm:[-2.6,-2.6],   armZ:[0,0], hip:[-1.5,0.25],   hipZ:[0,0],       knee:[0.3,0],     head:-0.4},
+  pike: {pitch:2.3,  arm:[-2.45,-2.45], armZ:[0,0], hip:[-1.15,-1.15], hipZ:[0.35,0.35], knee:[0,0],       head:-0.45},
+});
+const VIA = {fold:1, kick:1, pike:1};
+const FEET = {stand:1, cheer:1, crouch:1, pl_lean:1, fold:1};
+const cat = n => n.startsWith("pl_") ? "pl" : n.startsWith("hs") || n === "oahs" || n === "kick" || n === "pike" ? "hs" : "up";
+// Chemin d'une posture à l'autre : [posture, durée en secondes]. On passe par un vrai mouvement
+// (flexion puis lancer de jambe pour monter en équilibre, descente carpée pour aller en planche…).
+function route(a, b){
+  const A = cat(a), B = cat(b);
+  if (A === "up" && B === "hs") return [["fold",0.45],["kick",0.3],[b,0.55]];
+  if (A === "hs" && B === "up") return [["kick",0.35],["fold",0.35],[b,0.5]];
+  if (A === "up" && B === "pl") return b === "pl_lean" ? [["fold",0.45],[b,0.5]] : [["fold",0.45],["pl_lean",0.45],[b,0.55]];
+  if (A === "pl" && B === "up") return a === "pl_lean" ? [["fold",0.45],[b,0.5]] : [["pl_lean",0.4],["fold",0.4],[b,0.5]];
+  if (A !== B) return [["pike",0.5],[b,0.65]];
+  return [[b,0.75]];
+}
+const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; };      // arrivée avec un léger dépassement          // postures en appui sur les pieds (ou pieds + mains)
 const KEYS = ["hands","one","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   return {hands:FEET[n] ? 0 : 1, one:n === "oahs" ? 1 : 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
@@ -141,11 +161,13 @@ export function mount(host){
   }
   function colors(){ const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
 
-  let cur = flat("stand"), from = cur, to = cur, t = 1, yaw = -0.9, spin = true, scale = 1, jump = 0, extraYaw = 0;
+  let cur = flat("stand"), yaw = -0.9, spin = true, scale = 1, jump = 0, extraYaw = 0;
+  let queue = [], seg = null, here = "stand", wob = null, pulse = null;      // transition en cours, posture atteinte, oscillation d'arrivée
+  const off = {p:0, r:0};
   const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3();
   const reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function apply(p, breath){
-    root.rotation.set(p.pitch, 0, p.roll); neck.rotation.x = p.head;
+    root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head;
     limbs.forEach((L, i) => {
       L.sh.rotation.set(p["arm" + i], 0, L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i];
       L.hip.rotation.set(p["hip" + i], 0, L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; });
@@ -181,18 +203,30 @@ export function mount(host){
     cp.forEach((c, i) => { c.vy -= 5.5 * dt; c.x += c.vx * dt; c.y += c.vy * dt; c.z += c.vz * dt; if (c.y < 0.02) { c.y = 0.02; c.vx *= 0.8; c.vz *= 0.8; c.vy = 0; }
       dummy.position.set(c.x, c.y, c.z); dummy.rotation.set(c.rx + T * c.sp, c.ry + T * c.sp * 0.7, 0); dummy.scale.setScalar(T > 2.4 ? Math.max(0, 1 - (T - 2.4) / 0.6) : 1); dummy.updateMatrix(); conf.setMatrixAt(i, dummy.matrix); });
     conf.instanceMatrix.needsUpdate = true; if (conf.instanceColor) conf.instanceColor.needsUpdate = true;
-    if (T >= D) { party = null; conf.visible = false; jump = 0; extraYaw = 0; arc.scale.setScalar(1); track.scale.setScalar(1); cur = R; from = R; to = R; t = 1; }
+    if (T >= D) { party = null; conf.visible = false; jump = 0; extraYaw = 0; arc.scale.setScalar(1); track.scale.setScalar(1); cur = R; queue = []; seg = null; here = restPose; }
   }
 
   let last = performance.now(), visible = true, raf = 0, dirty = true, drag = null;
   function frame(now){
     raf = 0; const dt = Math.min(0.05, (now - last) / 1000); last = now;
     if (party) { partyStep(dt); dirty = true; }
-    else if (t < 1) { t = Math.min(1, t + dt / 0.9); cur = mix(from, to, ease(t)); dirty = true; }
+    else if (seg || queue.length) {
+      if (!seg) { const [name, dur] = queue.shift(); seg = {from:cur, to:flat(name), name, dur:reduce ? 0.01 : dur, t:0, last:!queue.length}; }
+      seg.t = Math.min(1, seg.t + dt / seg.dur); cur = mix(seg.from, seg.to, seg.last ? back(seg.t) : ease(seg.t)); dirty = true;
+      if (seg.t >= 1) { cur = seg.to; here = seg.name; const done = seg.last; seg = null;
+        if (done && !reduce) { const c = cat(here); wob = {t:0, a:c === "hs" ? 0.075 : c === "pl" ? 0.04 : 0.015}; pulse = {t:0}; } } }
+    off.p = 0; off.r = 0;
+    if (!party && !reduce) {
+      const c = cat(here), s = now / 1000;                                   // équilibre : micro-corrections permanentes
+      if (!seg && c === "hs") { off.r += Math.sin(s * 1.3) * 0.012; off.p += Math.sin(s * 0.9 + 1) * 0.01; }
+      if (!seg && c === "pl") { off.p += Math.sin(s * 5.1) * 0.004; }
+      if (wob) { wob.t += dt; const k = Math.exp(-3.2 * wob.t) * wob.a * Math.sin(wob.t * 9); off.r += k; off.p += k * 0.6; if (wob.t > 1.6) wob = null; dirty = true; }
+      if (pulse) { pulse.t += dt; const k = 1 + Math.sin(Math.min(1, pulse.t / 0.5) * PI) * 0.05; arc.scale.setScalar(k); track.scale.setScalar(k); if (pulse.t > 0.5) { pulse = null; arc.scale.setScalar(1); track.scale.setScalar(1); } dirty = true; }
+    }
     if (spin && !reduce && !drag && !party) { yaw += dt * 0.25; dirty = true; }
     const breath = reduce ? 0 : Math.sin(now / 900) * 0.012;
     if (dirty || !reduce) { apply(cur, breath); renderer.render(scene, cam); dirty = false; }
-    if (visible && (!reduce || t < 1 || party)) raf = requestAnimationFrame(frame);
+    if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame);
   }
   const kick = () => { dirty = true; if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(frame); } };
   canvas.addEventListener("pointerdown", e => { drag = {x:e.clientX, yaw, moved:false}; canvas.setPointerCapture(e.pointerId); canvas.style.cursor = "grabbing"; });
@@ -209,8 +243,8 @@ export function mount(host){
     // pose : clé de POSES · frac : progression vers le niveau suivant (0 à 1) · level : niveau · fit : tenue choisie
     set({pose, frac, level, fit, label}){
       restPose = POSES[pose] ? pose : "stand";
-      const target = flat(restPose);
-      if (!party && KEYS.some(k => Math.abs(target[k] - to[k]) > 1e-4)) { from = cur; to = target; t = 0; }
+      const goal = queue.length ? queue[queue.length - 1][0] : seg ? seg.name : here;
+      if (!party && goal !== restPose) { const fromName = seg ? seg.name : here; queue = route(fromName, restPose); seg = null; }
       setArc(frac || 0);
       scale = 0.9 + Math.min(10, (level || 1) - 1) * 0.012;                   // le personnage grandit légèrement avec le niveau
       dress(fit); if (label) canvas.setAttribute("aria-label", label);
@@ -218,6 +252,6 @@ export function mount(host){
     },
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
-    poses: Object.keys(POSES),
+    poses: Object.keys(POSES).filter(k => !VIA[k]),
   };
 }
