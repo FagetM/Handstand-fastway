@@ -167,6 +167,7 @@ a.yt .t{font-weight:600;line-height:1.3}
 .reqs .lab{flex-basis:100%}
 .reqs .chip{min-height:34px;padding:6px 12px;font-size:13px}
 .graph{position:relative;margin:14px 0 4px}
+.bonus-l{position:absolute;left:0;right:0;padding-top:12px;border-top:1px dashed var(--line);text-align:center}
 .graph svg.ed{position:absolute;inset:0;width:100%;height:100%}
 .graph svg.ed path{fill:none;stroke:var(--line);stroke-width:2;vector-effect:non-scaling-stroke}
 .graph svg.ed path.on{stroke:var(--txt);stroke-width:2.5}
@@ -662,11 +663,18 @@ function graph(s, nextId){
   const dep = m => depth[m.id] != null ? depth[m.id] : (depth[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>dep(MS[r]))));
   s.ms.forEach(m=>{ (byDepth[dep(m)] || (byDepth[dep(m)] = [])).push(m); });
   // au plus trois nœuds par ligne ; les jalons bonus (hors chemin) passent sur leur propre ligne
-  byDepth.forEach(r=>{ const main = r.filter(m=>!m.alt), alt = r.filter(m=>m.alt);
-    for (let i = 0; i < main.length; i += 3) rows.push(main.slice(i, i + 3)); if (alt.length) rows.push(alt); });
-  const XS = {2:[28,72], 3:[17,50,83]};
-  rows.forEach((r,d)=>r.forEach((m,i)=>{ pos[m.id] = [r.length === 1 ? [50,66,50,34][d % 4] : (XS[r.length] || r.map((_,j)=>(j+1)/(r.length+1)*100))[i], d*RH + 38]; }));
-  const H = rows.length * RH, wrap = el("div"), g = el("div","graph"); g.style.height = H + "px";
+  // Le chemin principal occupe les premières lignes ; les jalons bonus (hors chemin) sont regroupés en bas, pour qu'aucun lien ne les frôle.
+  const bonus = s.ms.filter(m=>m.alt), XS = {2:[28,72], 3:[17,50,83]}, GAP = 34;
+  const px = id => pos[id] ? pos[id][0] : 50, par = m => (m.req||[]).filter(r=>ids.has(r));
+  byDepth.forEach(r=>{ const main = r.filter(m=>!m.alt); for (let i = 0; i < main.length; i += 3) rows.push(main.slice(i, i + 3)); });
+  const nMain = rows.length; for (let i = 0; i < bonus.length; i += 3) rows.push(bonus.slice(i, i + 3));
+  rows.forEach((r,d)=>{
+    // chaque jalon se range sous ses prérequis : moins de liens qui se croisent
+    if (d) r.sort((a,b)=>{ const A = par(a), B = par(b); return (A.length ? A.reduce((n,x)=>n + px(x), 0)/A.length : 50) - (B.length ? B.reduce((n,x)=>n + px(x), 0)/B.length : 50); });
+    r.forEach((m,i)=>{ const P = par(m), solo = r.length === 1;
+      const x = solo ? (P.length === 1 && d < nMain ? Math.max(30, Math.min(70, px(P[0]) + (d % 2 ? 16 : -16))) : 50) : (XS[r.length] || r.map((_,j)=>(j+1)/(r.length+1)*100))[i];
+      pos[m.id] = [x, d*RH + 38 + (d >= nMain && bonus.length && nMain ? GAP : 0)]; }); });
+  const H = rows.length * RH + (bonus.length && nMain ? GAP : 0), wrap = el("div"), g = el("div","graph"); g.style.height = H + "px";
   // prérequis qui viennent d'une autre branche
   const ext = [...new Set(s.ms.flatMap(m=>(m.req||[]).filter(r=>!ids.has(r))))];
   if (ext.length){ const rq = el("div","reqs"); rq.append(el("span","lab","Pour ouvrir cette branche"));
@@ -677,6 +685,7 @@ function graph(s, nextId){
     const cls = st(r).done && st(m.id).done ? "on" : st(r).done && !msLocked(m) ? "go" : "";
     ed += '<path d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"' + (cls ? ' class="' + cls + '"' : '') + '/>'; }));
   g.innerHTML = ed + "</svg>";
+  if (bonus.length && nMain){ const bl = el("div","bonus-l"); bl.append(el("span","lab","Bonus · hors du chemin principal")); bl.style.top = (nMain*RH - 6) + "px"; g.append(bl); }
   s.ms.forEach(m=>{
     const x = st(m.id), lk = !x.done && msLocked(m), p = pos[m.id];
     const b = el("button","tn" + (x.done ? " done" : lk ? " lk" : m.id === nextId ? " wip" : " open") + (m.alt ? " alt" : ""));
