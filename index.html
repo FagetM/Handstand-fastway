@@ -153,24 +153,42 @@ a.yt .t{font-weight:600;line-height:1.3}
 .lv{font-size:34px;margin:4px 0 10px}
 #xpTxt{margin-top:6px}
 /* arbre de talents */
-.graph{position:relative;margin:8px 0 4px}
+.qmap{display:flex;gap:6px;overflow-x:auto;margin:0 -20px 18px;padding:2px 20px 6px;scrollbar-width:none}
+.qmap::-webkit-scrollbar{display:none}
+.qm{flex:1 0 auto;min-width:86px;display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 8px;border-radius:10px;box-shadow:inset 0 0 0 1px var(--line);color:var(--mut)}
+.qm .d{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:600 14px/1 var(--disp);box-shadow:inset 0 0 0 1.5px var(--mut)}
+.qm .nm{font-size:12px;font-weight:600;line-height:1.15;text-align:center}
+.qm .ct{font:600 13px/1 var(--disp);font-variant-numeric:tabular-nums}
+.qm.done{color:var(--txt)} .qm.done .d{background:var(--txt);color:var(--bg);box-shadow:none}
+.qm.cur{color:var(--txt);box-shadow:inset 0 0 0 2px var(--acc)} .qm.cur .d{box-shadow:inset 0 0 0 2px var(--acc);color:var(--acc)}
+.secbar{height:2px;margin-top:-2px}
+.sec:not(.open) .secbar{margin-bottom:0}
+.reqs{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0 6px}
+.reqs .lab{flex-basis:100%}
+.reqs .chip{min-height:34px;padding:6px 12px;font-size:13px}
+.graph{position:relative;margin:14px 0 4px}
 .graph svg.ed{position:absolute;inset:0;width:100%;height:100%}
-.graph svg.ed line{stroke:var(--line);stroke-width:2;vector-effect:non-scaling-stroke}
-.graph svg.ed line.on{stroke:var(--txt)}
-.tn{position:absolute;transform:translateX(-50%);width:88px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
-.tn.sm{width:62px}
-.tn .c{position:relative;width:60px;height:60px;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:inset 0 0 0 2px var(--mut);color:var(--txt)}
-.tn.sm .c{width:50px;height:50px}
+.graph svg.ed path{fill:none;stroke:var(--line);stroke-width:2;vector-effect:non-scaling-stroke}
+.graph svg.ed path.on{stroke:var(--txt);stroke-width:2.5}
+.graph svg.ed path.go{stroke:var(--acc);stroke-dasharray:2 6;stroke-linecap:round;stroke-width:2.5;animation:flow 1.2s linear infinite}
+@keyframes flow{to{stroke-dashoffset:-16}}
+@media (prefers-reduced-motion: reduce){.graph svg.ed path.go{animation:none}}
+.tn{position:absolute;z-index:1;transform:translateX(-50%);width:104px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.tn .c{position:relative;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:var(--bg);box-shadow:inset 0 0 0 2px var(--mut);color:var(--txt)}
 .tn.done .c{background:var(--txt);color:var(--bg);box-shadow:none}
-.tn.wip .c{box-shadow:inset 0 0 0 3px var(--acc),0 0 0 4px color-mix(in srgb,var(--acc) 22%,transparent)}
-.tn.lk .c{box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
-.tn .ck{position:absolute;right:-2px;bottom:-2px;width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;display:grid;place-items:center;box-shadow:0 0 0 2px var(--bg)}
-.tn{z-index:1}
+.tn.open .c{box-shadow:inset 0 0 0 2px var(--txt)}
+.tn.wip .c{box-shadow:inset 0 0 0 3px var(--acc),0 0 0 5px color-mix(in srgb,var(--acc) 22%,transparent)}
+.tn.lk .c{box-shadow:inset 0 0 0 1.5px var(--line);color:var(--line);background:var(--raise)}
+.tn.alt .c{border-radius:18px}
+.tn .pr{position:absolute;inset:-4px;transform:rotate(-90deg)}
+.tn .ck,.tn .lkb{position:absolute;right:-3px;bottom:-3px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 2px var(--bg)}
+.tn .ck{background:var(--acc);color:#fff}
+.tn .lkb{background:var(--raise);color:var(--mut)}
 .tn .n,.tn .g{background:var(--bg);padding:1px 4px;border-radius:4px}
-.tn .n{font-size:12px;line-height:1.2;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.tn.sm .n{font-size:11px}
+.tn .n{font-size:12.5px;line-height:1.2;font-weight:600;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .tn.lk .n{color:var(--mut);font-weight:400}
-.tn .g{font:600 14px/1 var(--disp);color:var(--mut)}
+.tn .g{font:600 14px/1 var(--disp);color:var(--mut);font-variant-numeric:tabular-nums}
+.tn.wip .g{color:var(--acc)}
 /* quêtes, badges */
 .q{padding:14px 0;border-top:1px solid var(--line)}
 .q .h{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
@@ -334,7 +352,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
     <div class="grow"><div class="lab">Personnage</div><h2 style="margin-top:6px">Vestiaire</h2></div>
     <button class="x" id="fitX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   </div>
-  <div class="mut" style="margin-top:6px">Les tenues se débloquent avec les niveaux. Touche le personnage pour le voir fêter.</div>
+  <div class="mut" style="margin-top:6px">Les tenues se débloquent avec les niveaux et les badges. Touche le personnage pour le voir fêter.</div>
   <div id="fitBody"></div>
 </dialog>
 
@@ -640,26 +658,53 @@ function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add(
 
 // ---------- Arbre de talents : une branche = un graphe de jalons reliés par leurs prérequis ----------
 function graph(s, nextId){
-  const ids = new Set(s.ms.map(m=>m.id)), depth = {}, RH = 132, pos = {}, rows = [];
+  const ids = new Set(s.ms.map(m=>m.id)), depth = {}, RH = 146, pos = {}, byDepth = [], rows = [];
   const dep = m => depth[m.id] != null ? depth[m.id] : (depth[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>dep(MS[r]))));
-  s.ms.forEach(m=>{ (rows[dep(m)] || (rows[dep(m)] = [])).push(m); });
-  rows.forEach((r,d)=>r.forEach((m,i)=>{ pos[m.id] = [r.length === 1 ? [50,68,50,32][d % 4] : (i + 1) / (r.length + 1) * 100, d*RH + 34, r.length > 3]; }));
-  const H = rows.length * RH, g = el("div","graph"); g.style.height = H + "px";
+  s.ms.forEach(m=>{ (byDepth[dep(m)] || (byDepth[dep(m)] = [])).push(m); });
+  // au plus trois nœuds par ligne ; les jalons bonus (hors chemin) passent sur leur propre ligne
+  byDepth.forEach(r=>{ const main = r.filter(m=>!m.alt), alt = r.filter(m=>m.alt);
+    for (let i = 0; i < main.length; i += 3) rows.push(main.slice(i, i + 3)); if (alt.length) rows.push(alt); });
+  const XS = {2:[28,72], 3:[17,50,83]};
+  rows.forEach((r,d)=>r.forEach((m,i)=>{ pos[m.id] = [r.length === 1 ? [50,66,50,34][d % 4] : (XS[r.length] || r.map((_,j)=>(j+1)/(r.length+1)*100))[i], d*RH + 38]; }));
+  const H = rows.length * RH, wrap = el("div"), g = el("div","graph"); g.style.height = H + "px";
+  // prérequis qui viennent d'une autre branche
+  const ext = [...new Set(s.ms.flatMap(m=>(m.req||[]).filter(r=>!ids.has(r))))];
+  if (ext.length){ const rq = el("div","reqs"); rq.append(el("span","lab","Pour ouvrir cette branche"));
+    ext.forEach(r=>{ const b = el("button","chip" + (st(r).done ? " on" : ""), MS[r].name + (MS[r].target ? " · " + goalTxt(MS[r]) : "")); b.onclick = () => openMs(r); rq.append(b); });
+    wrap.append(rq); }
   let ed = '<svg class="ed" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">';
-  s.ms.forEach(m=>(m.req||[]).filter(r=>ids.has(r)).forEach(r=>{ const a = pos[r], b = pos[m.id];
-    ed += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '"' + (st(r).done && st(m.id).done ? ' class="on"' : '') + '/>'; }));
+  s.ms.forEach(m=>(m.req||[]).filter(r=>ids.has(r)).forEach(r=>{ const a = pos[r], b = pos[m.id], my = (a[1] + b[1]) / 2;
+    const cls = st(r).done && st(m.id).done ? "on" : st(r).done && !msLocked(m) ? "go" : "";
+    ed += '<path d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"' + (cls ? ' class="' + cls + '"' : '') + '/>'; }));
   g.innerHTML = ed + "</svg>";
   s.ms.forEach(m=>{
     const x = st(m.id), lk = !x.done && msLocked(m), p = pos[m.id];
-    const b = el("button","tn" + (p[2] ? " sm" : "") + (x.done ? " done" : lk ? " lk" : m.id === nextId ? " wip" : ""));
-    b.style.left = p[0] + "%"; b.style.top = (p[1] - (p[2] ? 25 : 30)) + "px";
+    const b = el("button","tn" + (x.done ? " done" : lk ? " lk" : m.id === nextId ? " wip" : " open") + (m.alt ? " alt" : ""));
+    b.style.left = p[0] + "%"; b.style.top = (p[1] - 32) + "px";
     b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + (x.done ? ", validé" : lk ? ", verrouillé" : ""));
-    const c = el("span","c"); c.innerHTML = figMini(m.id, p[2] ? 34 : 42) || (lk ? ICON.lock : ICON.chev);
-    if (x.done) c.append(icon("check","ck"));
-    b.append(c, el("span","n", m.name)); if (m.target) b.append(el("span","g", goalTxt(m)));
+    const c = el("span","c"); c.innerHTML = figMini(m.id, 44) || (lk ? ICON.lock : ICON.chev);
+    // anneau de progression : le record rapporté à la cible
+    if (!x.done && m.target && x.best > 0){ const R = 34, C = 2*Math.PI*R, fr = Math.min(1, x.best / m.target);
+      c.insertAdjacentHTML("beforeend", '<svg class="pr" viewBox="0 0 72 72" width="72" height="72" fill="none" aria-hidden="true"><circle cx="36" cy="36" r="' + R + '" stroke="var(--acc)" stroke-width="3" stroke-linecap="round" stroke-dasharray="' + (C*fr).toFixed(1) + ' ' + C.toFixed(1) + '"/></svg>'); }
+    if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
+    b.append(c, el("span","n", m.name));
+    const sub = m.alt ? "Bonus" + (m.target ? " · " + goalTxt(m) : "") : !x.done && m.target && x.best > 0 ? num(x.best) + " / " + goalTxt(m) : m.target ? goalTxt(m) : "";
+    if (sub) b.append(el("span","g", sub));
     b.onclick = () => openMs(m.id); g.append(b);
   });
-  return g;
+  wrap.append(g); return wrap;
+}
+// Carte de la quête : les branches à traverser, dans l'ordre, avec leur avancement.
+function questMap(nextId){
+  const want = new Set(goalMs()), secs = TREE.filter(s=>s.ms.some(m=>want.has(m.id))), nav = el("div","qmap");
+  secs.forEach((s,i)=>{ const tot = s.ms.filter(m=>want.has(m.id)), dn = tot.filter(m=>st(m.id).done).length, cur = nextId && MS[nextId].sec === s.id;
+    const b = el("button","qm" + (dn >= tot.length ? " done" : cur ? " cur" : ""));
+    b.setAttribute("aria-label", s.name + ", " + dn + " sur " + tot.length);
+    const dot = el("span","d"); if (dn >= tot.length) dot.innerHTML = ICON.check; else dot.textContent = i + 1;
+    b.append(dot, el("span","nm", s.name), el("span","ct", dn + "/" + tot.length));
+    b.onclick = () => { openSecs.add(s.id); render(); const t = document.getElementById("sec-" + s.id); if (t) t.scrollIntoView({behavior:"smooth", block:"start"}); };
+    nav.append(b); });
+  return nav;
 }
 function renderQuest(S0, nextId){
   const box = $("quest"); box.textContent = "";
@@ -701,23 +746,30 @@ let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Vestiaire : [identifiant, nom, niveau requis]. La médaille se débloque en terminant une quête principale.
 const WARD = [
   {slot:"skin", name:"Peau", items:[["s1","Claire"],["s2","Hâlée"],["s3","Mate"],["s4","Foncée"]]},
-  {slot:"hair", name:"Cheveux", items:[["none","Rasés"],["short","Courts"],["bun","Chignon"]]},
-  {slot:"top", name:"Haut", items:[["none","Torse nu"],["tank_k","Débardeur noir"],["tee_w","T-shirt blanc"],["tee_k","T-shirt noir",3],["tee_o","T-shirt orange",5],["tee_b","T-shirt bleu",7]]},
-  {slot:"bottom", name:"Bas", items:[["short_k","Short noir"],["short_g","Short gris",2],["short_o","Short orange",4],["pants_k","Pantalon noir",6]]},
-  {slot:"feet", name:"Pieds", items:[["bare","Pieds nus"],["socks","Chaussettes",2],["shoes","Chaussures",4]]},
-  {slot:"wrists", name:"Poignets", items:[["none","Rien"],["wraps","Bandes de poignets",3]]},
-  {slot:"head", name:"Tête", items:[["none","Rien"],["band","Bandeau",5],["cap","Casquette",8]]},
-  {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt","Ceinture",6],["medal","Médaille","quest"]]},
+  {slot:"hair", name:"Coiffure", items:[["none","Rasés"],["short","Courts"],["bun","Chignon"],["tail","Queue de cheval"]]},
+  {slot:"hairc", name:"Couleur des cheveux", items:[["brown","Bruns"],["black","Noirs"],["blond","Blonds"],["red","Roux"],["grey","Gris"]]},
+  {slot:"top", name:"Haut", items:[["none","Torse nu"],["tank_k","Débardeur noir"],["tee_w","T-shirt blanc"],["tank_w","Débardeur blanc",2],["tee_g","T-shirt gris",2],["tee_k","T-shirt noir",3],
+    ["tee_o","T-shirt orange",5],["tank_o","Débardeur orange",6],["tee_b","T-shirt bleu",7],["ls_k","Manches longues noir",9],["tee_v","T-shirt vert",10],["ls_w","Manches longues blanc",11],
+    ["tee_y","T-shirt jaune","b:st7"],["tee_r","T-shirt rouge","b:s100"],["tee_p","T-shirt violet","b:e10"],["ls_n","Manches longues marine","b:se10"]]},
+  {slot:"bottom", name:"Bas", items:[["short_k","Short noir"],["short_g","Short gris",2],["short_o","Short orange",4],["short_b","Short bleu",5],["pants_k","Pantalon noir",6],["pants_g","Pantalon gris",8],
+    ["pants_n","Pantalon marine",10],["short_v","Short vert","b:st3"],["short_r","Short rouge","b:h10"],["pants_w","Pantalon blanc","b:st30"]]},
+  {slot:"feet", name:"Pieds", items:[["bare","Pieds nus"],["socks_w","Chaussettes blanches",2],["socks_k","Chaussettes noires",3],["shoes_k","Chaussures noires",4],["shoes_w","Chaussures blanches",6],["shoes_o","Chaussures orange",9],["shoes_y","Chaussures jaunes","b:se50"]]},
+  {slot:"wrists", name:"Poignets et mains", items:[["none","Rien"],["wraps_w","Bandes blanches",3],["wraps_o","Bandes orange",4],["wraps_k","Bandes noires",7],["chalk","Magnésie","b:h10"]]},
+  {slot:"head", name:"Tête", items:[["none","Rien"],["band_o","Bandeau orange",5],["band_w","Bandeau blanc",5],["beanie_k","Bonnet noir",7],["cap_o","Casquette orange",8],["cap_k","Casquette noire",9],["beanie_r","Bonnet rouge","b:s1000"],["crown","Couronne","b:goal_oahs"]]},
+  {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt_w","Ceinture blanche",3],["belt_o","Ceinture orange",6],["belt_k","Ceinture noire",12],["medal","Médaille","quest"],["medal2","Deux médailles","b:goal_planche"]]},
 ];
-const FIT0 = {skin:"s2", hair:"short", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
+const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
 function renderFit(){
   const box = $("fitBody"), F = fit(), Z = lastZ || stats(); box.textContent = "";
+  const all = WARD.flatMap(w=>w.items), okN = all.filter(([id,name,need])=>!need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok : Z.lvl >= need)).length;
+  const cnt0 = el("div","mut", okN + " éléments débloqués sur " + all.length); cnt0.style.marginTop = "10px"; box.append(cnt0);
   WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const row = el("div","chips");
     w.items.forEach(([id, name, need])=>{
-      const ok = !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : Z.lvl >= need);
+      const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null;
+      const ok = !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : bd ? bd.ok : Z.lvl >= need);
       const b = el("button","chip" + (F[w.slot] === id ? " on" : ""), name); b.disabled = !ok; b.setAttribute("aria-pressed", F[w.slot] === id);
-      if (!ok) b.append(el("small",null, need === "quest" ? "quête terminée" : "niveau " + need));
+      if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : bd ? "badge « " + bd.name + " »" : "niveau " + need));
       b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } renderFit(); };
       row.append(b); });
     s.append(row); box.append(s); });
@@ -779,12 +831,13 @@ function render(){
   }
 
   const tree = $("tree"); tree.textContent = "";
+  tree.append(questMap(nextId));
   let n = 0;
   const Q1 = new Set(GOALS[0].ms), Q2 = new Set(GOALS[1].ms);
   const qTag = s => !s.ms.length ? "" : s.ms.some(m=>Q1.has(m.id)) ? "Quête 1" : s.ms.some(m=>Q2.has(m.id)) ? "Quête 2" : "Secondaire";
   const qRank = s => ({"Quête 1":0, "Quête 2":1, "Secondaire":2, "":3})[qTag(s)];
   TREE.slice().sort((a,b)=>qRank(a) - qRank(b)).forEach(s=>{
-    const c = el("section","sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (openSecs.has(s.id)?" open":""));
+    const c = el("section","sec" + (secDone(s)?" done":"") + (secLocked(s)?" locked":"") + (openSecs.has(s.id)?" open":"")); c.id = "sec-" + s.id;
     const h = el("button","sec-head");
     h.setAttribute("aria-expanded", openSecs.has(s.id));
     h.append(el("span","idx", s.ms.length ? String(++n).padStart(2,"0") : "—"));
@@ -792,6 +845,7 @@ function render(){
     h.append(el("span","cnt", s.ms.length ? s.ms.filter(m=>st(m.id).done).length + "/" + s.ms.length : ""), icon("chev","chev"));
     h.onclick = () => { openSecs.has(s.id) ? openSecs.delete(s.id) : openSecs.add(s.id); h.setAttribute("aria-expanded", c.classList.toggle("open")); };
     const body = el("div","sec-body");
+    if (s.ms.length) { const pb = el("div","bar secbar"), pi = el("i"); pi.style.width = (s.ms.filter(m=>st(m.id).done).length / s.ms.length * 100) + "%"; pb.append(pi); c._pb = pb; }
     if (s.ms.length) body.append(graph(s, nextId));
     if (false){
       const ol = el("ol","rail");
@@ -821,7 +875,7 @@ function render(){
       });
       body.append(det);
     }
-    c.append(h, body); tree.append(c);
+    c.append(h); if (c._pb) c.append(c._pb); c.append(body); tree.append(c);
   });
 
   const ll = $("logList"); ll.textContent = "";

@@ -34,7 +34,9 @@ const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (
 const ease = t => t*t*(3 - 2*t);
 
 const SKIN = {s1:"#f0c8a4", s2:"#d9a074", s3:"#a86e45", s4:"#6b452b"};
-const CLOTH = {w:"#f2f0ea", k:"#1d1d1b", g:"#8a8880", o:"#ff5b2e", b:"#3d5f94"};
+const CLOTH = {w:"#f2f0ea", k:"#1d1d1b", g:"#8a8880", o:"#ff5b2e", b:"#3d5f94", v:"#4f7a5b", y:"#dba622", r:"#b3362b", p:"#6a4c93", n:"#22324f"};
+const HAIR = {brown:"#3a2a20", black:"#141312", blond:"#c9a45c", red:"#9a4a22", grey:"#9a9892"};
+const OLD = {wraps:"wraps_o", band:"band_o", cap:"cap_o", shoes:"shoes_k", socks:"socks_w", belt:"belt_o"};   // anciens identifiants de tenue
 
 export function mount(host){
   const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -49,6 +51,7 @@ export function mount(host){
 
   const M = n => new THREE.MeshStandardMaterial({roughness:n, metalness:0.03});
   const mSkin = M(0.6), mTop = M(0.85), mBot = M(0.85), mShoe = M(0.7), mAcc = M(0.6), mHair = M(0.9), mDark = M(0.4), mGold = M(0.35), soft = M(0.95);
+  const mHead = M(0.8), mWrist = M(0.8), mBelt = M(0.7), mChalk = M(0.95); mChalk.color.set("#f4f2ec");
   mHair.color.set("#2a211c"); mDark.color.set("#1b1b19"); mGold.color.set("#c9a227"); mGold.metalness = 0.6;
   const cap = (r, len, mat) => new THREE.Mesh(new THREE.CapsuleGeometry(r, len, 6, 18), mat);
   const ball = (r, mat) => new THREE.Mesh(new THREE.SphereGeometry(r, 28, 18), mat);
@@ -62,30 +65,37 @@ export function mount(host){
   const waist = at(cap(0.118, 0.1, mSkin), root, 0, 0.16, 0);
   const torso = at(cap(0.132, 0.2, mSkin), root, 0, 0.34, 0);
   const chest = cap(0.118, 0.21, mSkin); chest.rotation.z = PI/2; at(chest, root, 0, 0.47, 0);
-  const belt = at(cyl(0.136, 0.05, mAcc), root, 0, 0.09, 0);
+  const belt = at(cyl(0.136, 0.05, mBelt), root, 0, 0.09, 0);
+  const knot = at(cap(0.02, 0.07, mBelt), root, 0.03, 0.07, 0.135); knot.rotation.z = 0.5;
   const medal = grp(root, 0, 0, 0);
   const ribbon = new THREE.Mesh(new THREE.TorusGeometry(0.105, 0.012, 8, 32), mAcc); ribbon.rotation.x = 1.15; at(ribbon, medal, 0, 0.5, 0.075);
   const coin = cyl(0.042, 0.012, mGold); coin.rotation.x = PI/2; at(coin, medal, 0, 0.385, 0.142);
+  const coin2 = cyl(0.036, 0.012, mGold); coin2.rotation.x = PI/2; at(coin2, medal, 0.05, 0.345, 0.146);
   const neck = grp(root, 0, 0.6, 0);
   at(cyl(0.048, 0.1, mSkin), neck, 0, 0.03, 0);
   const head = at(ball(0.125, mSkin), neck, 0, 0.17, 0); head.scale.set(0.95, 1.05, 1);
   [-1, 1].forEach(s => at(ball(0.014, mDark), neck, s*0.045, 0.185, 0.113));
   const hairShort = new THREE.Mesh(new THREE.SphereGeometry(0.131, 28, 18, 0, 2*PI, 0, 1.25), mHair); hairShort.rotation.x = -0.45; hairShort.scale.set(0.97, 1.06, 1.02); at(hairShort, neck, 0, 0.172, -0.004);
   const bun = at(ball(0.052, mHair), neck, 0, 0.3, -0.07);
-  const headband = at(cyl(0.126, 0.034, mAcc), neck, 0, 0.215, 0); headband.rotation.x = -0.12;
+  const tail = at(cap(0.034, 0.16, mHair), neck, 0, 0.13, -0.15); tail.rotation.x = -0.35;
+  const headband = at(cyl(0.126, 0.034, mHead), neck, 0, 0.215, 0); headband.rotation.x = -0.12;
+  const beanie = new THREE.Mesh(new THREE.SphereGeometry(0.136, 28, 14, 0, 2*PI, 0, 1.75), mHead); beanie.rotation.x = -0.3; beanie.scale.set(0.99, 1.1, 1.03); at(beanie, neck, 0, 0.172, -0.002);
+  const crown = grp(neck, 0, 0.275, 0); crown.rotation.x = -0.12;
+  crown.add(new THREE.Mesh(new THREE.CylinderGeometry(0.098, 0.092, 0.045, 20, 1, true), mGold)); crown.children[0].material.side = THREE.DoubleSide;
+  for (let i = 0; i < 6; i++) { const sp = new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.055, 8), mGold), a = i / 6 * 2 * PI; sp.position.set(Math.cos(a)*0.095, 0.048, Math.sin(a)*0.095); crown.add(sp); }
   const capG = grp(neck, 0, 0.19, 0);
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.134, 28, 14, 0, 2*PI, 0, PI/2), mAcc); dome.scale.set(1, 0.85, 1.03); capG.add(dome);
-  const brim = cyl(0.1, 0.012, mAcc); brim.scale.set(1, 1, 0.8); at(brim, capG, 0, 0.004, 0.13);
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(0.134, 28, 14, 0, 2*PI, 0, PI/2), mHead); dome.scale.set(1, 0.85, 1.03); capG.add(dome);
+  const brim = cyl(0.1, 0.012, mHead); brim.scale.set(1, 1, 0.8); at(brim, capG, 0, 0.004, 0.13);
   const limbs = [0, 1].map(i => { const sx = i ? -1 : 1;
     const sh = grp(root, sx*0.215, 0.5, 0);
     const shoulder = at(ball(0.066, mSkin), sh, 0, 0, 0);
     at(cap(0.05, 0.2, mSkin), sh, 0, -0.15, 0);
     const sleeve = at(cap(0.062, 0.1, mTop), sh, 0, -0.085, 0);
     const el = grp(sh, 0, -0.3, 0);
-    at(cap(0.043, 0.19, mSkin), el, 0, -0.14, 0);
+    const fore = at(cap(0.043, 0.19, mSkin), el, 0, -0.14, 0);
     const hand = at(ball(0.052, mSkin), el, 0, -0.3, 0); hand.scale.set(0.8, 1.05, 1.15);
-    at(ball(0.02, mSkin), el, sx*-0.03, -0.285, 0.035);
-    const wrist = at(cyl(0.049, 0.06, mAcc), el, 0, -0.225, 0);
+    const thumb = at(ball(0.02, mSkin), el, sx*-0.03, -0.285, 0.035);
+    const wrist = at(cyl(0.049, 0.06, mWrist), el, 0, -0.225, 0);
     const hip = grp(root, sx*0.095, -0.03, 0);
     const thigh = at(cap(0.074, 0.3, mSkin), hip, 0, -0.22, 0);
     const short = at(cap(0.084, 0.13, mBot), hip, 0, -0.12, 0);
@@ -94,7 +104,7 @@ export function mount(host){
     const foot = cap(0.043, 0.1, mSkin); foot.rotation.x = PI/2; at(foot, kn, 0, -0.44, 0.06);
     const sock = at(cyl(0.058, 0.09, mShoe), kn, 0, -0.36, 0);
     const sole = cap(0.05, 0.13, mShoe); sole.rotation.x = PI/2; sole.scale.set(1.1, 1, 0.62); at(sole, kn, 0, -0.465, 0.07);
-    return {sx, sh, el, hip, kn, hand, shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole}; });
+    return {sx, sh, el, hip, kn, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole}; });
 
   // socle : disque + arc de progression vers le niveau suivant
   const base = at(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.03, 64), soft), scene, 0, -0.016, 0);
@@ -112,21 +122,22 @@ export function mount(host){
   cp.forEach((c, i) => conf.setColorAt(i, new THREE.Color(cols[i % cols.length])));
 
   function dress(f){
-    f = f || {};
-    mSkin.color.set(SKIN[f.skin] || SKIN.s2);
-    const top = f.top || "none", tk = top.split("_")[1], bot = f.bottom || "short_k", bk = bot.split("_")[1];
-    const topM = top === "none" ? mSkin : mTop; if (tk) mTop.color.set(CLOTH[tk]);
+    f = Object.assign({}, f || {}); Object.keys(f).forEach(k => { if (OLD[f[k]]) f[k] = OLD[f[k]]; });
+    const part = v => String(v || "none").split("_"), col = (c, d) => CLOTH[c] || CLOTH[d];
+    mSkin.color.set(SKIN[f.skin] || SKIN.s2); mHair.color.set(HAIR[f.hairc] || HAIR.brown);
+    const [tk, tc] = part(f.top), [bk, bc] = part(f.bottom || "short_k"), [fk, fc] = part(f.feet), [wk, wc] = part(f.wrists), [hk, hc] = part(f.head), [xk, xc] = part(f.extra);
+    const topM = tk === "none" ? mSkin : mTop; mTop.color.set(col(tc, "w")); mBot.color.set(col(bc, "k"));
     [waist, torso, chest].forEach(m => m.material = topM);
-    mBot.color.set(CLOTH[bk] || CLOTH.k);
-    const pants = bot.startsWith("pants");
-    limbs.forEach(L => { L.sleeve.visible = top.startsWith("tee"); L.shoulder.material = top.startsWith("tee") ? mTop : mSkin;
+    const pants = bk === "pants", sleeves = tk === "tee" || tk === "ls", long = tk === "ls", shoes = fk === "shoes", socks = fk === "socks";
+    mShoe.color.set(col(fc, shoes ? "k" : "w")); mWrist.color.set(col(wc, "o")); mHead.color.set(col(hc, "o")); mBelt.color.set(col(xc, "o"));
+    limbs.forEach(L => { L.sleeve.visible = sleeves && !long; L.shoulder.material = sleeves ? mTop : mSkin; L.upper.material = long ? mTop : mSkin; L.fore.material = long ? mTop : mSkin;
       L.thigh.material = pants ? mBot : mSkin; L.shin.material = pants ? mBot : mSkin; L.short.visible = !pants;
-      L.wrist.visible = f.wrists === "wraps";
-      L.sock.visible = f.feet === "socks" || f.feet === "shoes"; L.sole.visible = f.feet === "shoes"; L.foot.visible = f.feet !== "shoes"; L.foot.material = f.feet === "socks" ? mShoe : mSkin; });
-    mShoe.color.set(f.feet === "shoes" ? "#2b2b29" : "#f2f0ea");
-    hairShort.visible = f.hair === "short" || f.hair === "bun"; bun.visible = f.hair === "bun" && f.head !== "cap";
-    headband.visible = f.head === "band"; capG.visible = f.head === "cap";
-    belt.visible = f.extra === "belt"; medal.visible = f.extra === "medal";
+      L.wrist.visible = wk === "wraps"; L.hand.material = L.thumb.material = wk === "chalk" ? mChalk : mSkin;
+      L.sock.visible = shoes || socks; L.sole.visible = shoes; L.foot.visible = !shoes; L.foot.material = socks ? mShoe : mSkin; });
+    const covered = hk === "cap" || hk === "beanie";
+    hairShort.visible = f.hair !== "none" && f.hair != null && hk !== "beanie"; bun.visible = f.hair === "bun" && !covered; tail.visible = f.hair === "tail";
+    headband.visible = hk === "band"; capG.visible = hk === "cap"; beanie.visible = hk === "beanie"; crown.visible = hk === "crown";
+    belt.visible = knot.visible = xk === "belt"; medal.visible = xk === "medal" || xk === "medal2"; coin2.visible = xk === "medal2";
   }
   function colors(){ const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
 
@@ -192,7 +203,7 @@ export function mount(host){
   if (window.IntersectionObserver) new IntersectionObserver(es => { visible = es[0].isIntersecting; if (visible) { if (pending) startParty(); kick(); } }).observe(host);
   document.addEventListener("visibilitychange", () => { visible = !document.hidden; if (visible) kick(); });
   if (window.matchMedia) matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { colors(); kick(); });
-  colors(); size(); setArc(0); dress({});
+  colors(); size(); setArc(0); dress({hair:"short"});
 
   return {
     // pose : clé de POSES · frac : progression vers le niveau suivant (0 à 1) · level : niveau · fit : tenue choisie
