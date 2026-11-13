@@ -250,10 +250,30 @@ Object.assign(SCRIPTS, {
   pr_lsitNeg:SCRIPTS.pr_lsitHs,
 });
 
-const KEYS = ["point","hands","one","spin","arch","twist","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
+Object.assign(SCRIPTS, {
+  dr_hollow: {yaw:-1.45, s:[["stand",0.3,0.1],["crouch",0.45,0],["dr_sit",0.5,0.1],["dr_lie",0.7,0.3],["dr_hollow",0.6,0.9],["dr_hollow2",0.5,0.5],["dr_hollow",0.5,0.9],["dr_lie",0.6,0.4]], still:"dr_hollow"},
+  dr_tirage: {wall:"band", yaw:-1.35, s:[["stand",0.3,0.1],["dr_rowA",0.5,0.3],["dr_rowB",0.6,0.5],["dr_rowA",1.1,0.15],["dr_rowB",0.6,0.5],["dr_rowA",1.1,0.15],["dr_rowB",0.6,0.5],["dr_rowA",1.1,0.3]], still:"dr_rowB"},
+  dr_rotext: {wall:"band_side", yaw:-0.35, s:[["stand",0.3,0.1],["dr_erA",0.5,0.3],["dr_erB",0.8,0.4],["dr_erA",1.1,0.15],["dr_erB",0.8,0.4],["dr_erA",1.1,0.15],["dr_erB",0.8,0.4],["dr_erA",1.1,0.3]], still:"dr_erB"},
+  dr_extpoig:{wall:"band_foot", yaw:-1.0, s:[["stand",0.3,0.1],["crouch",0.4,0],["dr_wrA",0.6,0.4],["dr_wrB",0.6,0.4],["dr_wrA",1.1,0.15],["dr_wrB",0.6,0.4],["dr_wrA",1.1,0.15],["dr_wrB",0.6,0.4],["dr_wrA",1.1,0.3]], still:"dr_wrB"},
+});
+// exercices d'accompagnement de la séance (gainage, antagonistes à l'élastique)
+const DR = (o) => Object.assign({feet:true, hip:[0,0], armZ:[0.1,0.1], hipZ:[0.04,0.04], knee:[0,0], head:0}, o);
+Object.assign(POSES, {
+  dr_sit:   DR({pitch:-0.25, arch:0.2, arm:[0.5,0.5], hip:[-1.3,-1.3], knee:[0.9,0.9], point:0}),                              // assis, mains derrière
+  dr_lie:   DR({pitch:-1.57, arm:[-3.05,-3.05], armZ:[0.05,0.05], hip:[0,0], point:1}),                                       // allongé sur le dos, bras derrière la tête
+  dr_hollow:DR({pitch:-1.48, arch:0.2, arm:[-2.9,-2.9], armZ:[0.05,0.05], hip:[-0.27,-0.27], head:-0.2, point:1}),        // cuillère : épaules et jambes décollées, bas du dos au sol
+  dr_hollow2:DR({pitch:-1.5, arch:0.24, arm:[-2.85,-2.85], armZ:[0.05,0.05], hip:[-0.32,-0.32], head:-0.22, point:1}),
+  dr_rowA:  DR({pitch:-0.06, arm:[-1.45,-1.45], elbow:[-0.08,-0.08], hip:[-0.12,-0.12], knee:[0.18,0.18], point:0}),            // bras tendus devant, élastique tendu
+  dr_rowB:  DR({pitch:-0.1, arch:-0.08, arm:[0.55,0.55], armZ:[0.16,0.16], elbow:[-2.0,-2.0], hip:[-0.12,-0.12], knee:[0.18,0.18], point:0}),   // coudes tirés en arrière, omoplates serrées
+  dr_erA:   DR({pitch:0, arm:[0.02,0.08], armZ:[0.04,0.13], elbow:[-1.57,-0.22], armY:[-0.75,0], point:0}),                   // coude au corps, main devant le ventre
+  dr_erB:   DR({pitch:0, arm:[0.02,0.08], armZ:[0.04,0.13], elbow:[-1.57,-0.22], armY:[0.95,0], point:0}),                    // la main s'écarte vers l'extérieur
+  dr_wrA:   DR({pitch:0.12, arch:0.4, arm:[-0.25,0.1], armZ:[0.02,0.15], elbow:[-1.2,-0.3], hip:[-1.5,0.1], knee:[1.5,1.6], wr:[0.5,0], head:-0.25, point:0}),   // un genou au sol, avant-bras sur la cuisse, main relâchée
+  dr_wrB:   DR({pitch:0.12, arch:0.4, arm:[-0.25,0.1], armZ:[0.02,0.15], elbow:[-1.2,-0.3], hip:[-1.5,0.1], knee:[1.5,1.6], wr:[-0.95,0], head:-0.25, point:0}),  // le poing se relève
+});
+const KEYS = ["point","hands","one","spin","arch","twist","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1","armY0","armY1","wr0","wr1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   // pointes de pied : tendues dès que les pieds quittent le sol (en gym, un pied en l'air est toujours pointé)
-  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, twist:p.twist != null ? p.twist : Math.max(-0.3, Math.min(0.3, ((p.arm[0] - p.arm[1]) * 0.45 + (p.hip[1] - p.hip[0]) * 0.5) * 0.09)), pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
+  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, twist:p.twist != null ? p.twist : Math.max(-0.3, Math.min(0.3, ((p.arm[0] - p.arm[1]) * 0.45 + (p.hip[1] - p.hip[0]) * 0.5) * 0.09)), pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1], armY0:(p.armY || [0,0])[0], armY1:(p.armY || [0,0])[1], wr0:(p.wr || [0,0])[0], wr1:(p.wr || [0,0])[1],
     armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], hipY0:(p.hipY || [0,0])[0], hipY1:(p.hipY || [0,0])[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
@@ -343,8 +363,9 @@ export function mount(host, opts = {}){
     const sleeve = at(cap(0.062, 0.1, mTop), sh, 0, -0.085, 0);
     const el = grp(sh, 0, -0.3, 0);
     const fore = at(cap(0.043, 0.19, mSkin), el, 0, -0.14, 0);
-    const hand = at(ball(0.052, mSkin), el, 0, -0.3, 0); hand.scale.set(0.8, 1.05, 1.15);
-    const thumb = at(ball(0.02, mSkin), el, sx*-0.03, -0.285, 0.035);
+    const wr = grp(el, 0, -0.235, 0);   // poignet : la main peut se relever
+    const hand = at(ball(0.052, mSkin), wr, 0, -0.065, 0); hand.scale.set(0.8, 1.05, 1.15);
+    const thumb = at(ball(0.02, mSkin), wr, sx*-0.03, -0.05, 0.035);
     const wrist = at(cyl(0.049, 0.06, mWrist), el, 0, -0.225, 0);
     const hip = grp(root, sx*0.095, -0.03, 0);
     const thigh = at(cap(0.074, 0.3, mSkin), hip, 0, -0.22, 0);
@@ -356,7 +377,7 @@ export function mount(host, opts = {}){
     const sock = at(cyl(0.058, 0.09, mShoe), kn, 0, -0.36, 0);
     const sole = cap(0.05, 0.13, mShoe); sole.rotation.x = PI/2; sole.scale.set(1.1, 1, 0.62); at(sole, ank, 0, -0.025, 0.07);
     const fin = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.014, 0.3), mShoe); at(fin, ank, 0, -0.03, 0.22);
-    return {sx, sh, el, hip, kn, ank, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole, fin}; });
+    return {wr, sx, sh, el, hip, kn, ank, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole, fin}; });
   // articulation de la taille : le haut du corps (torse, cou, épaules) peut se cambrer ou s'arrondir par rapport au bassin
   const spine = grp(root, 0, 0.2, 0);
   [torso, chest, neck, medal, cape, bow, wings, limbs[0].sh, limbs[1].sh].forEach(o => { o.position.y -= 0.2; spine.add(o); });
@@ -373,6 +394,15 @@ export function mount(host, opts = {}){
   const barL = [-1, 1].map(() => { const g = grp(bars, 0, 0, 0), top = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.55, 12), barM); top.rotation.x = PI/2; top.position.y = BAR_H - 0.03; g.add(top);
     [-0.22, 0.22].forEach(z => { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, BAR_H, 10), barM); post.position.set(0, BAR_H / 2, z); g.add(post); }); return g; });
   const ringM = new THREE.MeshStandardMaterial({roughness:0.5});
+  const bandM = new THREE.MeshStandardMaterial({roughness:0.7, color:"#d2362b"}); let bandMode = null;
+  const bandL = [0, 1].map(() => { const m = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1, 8), bandM); m.visible = false; scene.add(m); return m; });
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.3, 10), barM); post.visible = false; scene.add(post);
+  const BA = new THREE.Vector3(), BH = new THREE.Vector3(), UPV = new THREE.Vector3(0, 1, 0);
+  function bandUpd(){ bandL.forEach(m => m.visible = false); post.visible = false; if (!bandMode) return; pivot.updateMatrixWorld(true);
+    limbs.forEach((L, i) => { if (bandMode === "side" && i) return; L.hand.getWorldPosition(BH);
+      if (bandMode === "foot") { if (i) return; limbs[0].foot.getWorldPosition(BA); BA.y = 0.02; }
+      else { BA.set(bandMode === "side" ? -0.75 : 0, bandMode === "side" ? 1.0 : 1.05, bandMode === "side" ? 0.15 : 0.95).applyAxisAngle(UPV, pivot.rotation.y); post.position.set(BA.x, 0.65, BA.z); post.visible = true; }
+      const m = bandL[i], d = BH.clone().sub(BA), len = d.length(); if (len < 0.02) return; m.position.copy(BA).addScaledVector(d, 0.5); m.scale.set(1, len, 1); m.quaternion.setFromUnitVectors(UPV, d.multiplyScalar(1 / len)); m.visible = true; }); }
   let arc = null;
   const setArc = frac => { if (arc) { scene.remove(arc); arc.geometry.dispose(); }
     arc = new THREE.Mesh(new THREE.TorusGeometry(1.06, 0.03, 8, 96, Math.max(0.02, Math.min(1, frac)) * 2 * PI), ringM);
@@ -452,7 +482,7 @@ export function mount(host, opts = {}){
   function apply(p, breath){
     root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.set(p.arch, p.twist, 0);   // le buste tourne sur le bassin
     limbs.forEach((L, i) => {
-      L.sh.rotation.set(p["arm" + i], 0, L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i];
+      L.sh.rotation.set(p["arm" + i], L.sx * p["armY" + i], L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i]; L.wr.rotation.x = p["wr" + i];
       L.hip.rotation.set(p["hip" + i], L.sx * p["hipY" + i], L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; L.ank.rotation.x = p.point * 1.38; });
     torso.scale.set(1 + breath, 1, 1 + breath); chest.scale.set(1, 1 + breath, 1 + breath);
     root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
@@ -543,7 +573,7 @@ export function mount(host, opts = {}){
     }
     if (spin && !reduce && !drag && !party) { yaw += dt * 0.25; dirty = true; }
     const breath = reduce ? 0 : opts.loopT ? Math.sin(2 * PI * clock / opts.loopT) * 0.02 : Math.sin(now / 900) * 0.012;
-    if (dirty || !reduce) { apply(cur, breath); renderer.render(scene, cam); dirty = false; }
+    if (dirty || !reduce) { apply(cur, breath); bandUpd(); renderer.render(scene, cam); dirty = false; }
   }
   const kick = () => { dirty = true; if (opts.manual) return; if (!raf && visible) { last = performance.now(); raf = requestAnimationFrame(frame); } };
   if (DOM) {
@@ -583,7 +613,7 @@ export function mount(host, opts = {}){
     at(){ return seg ? seg.name : here; },
     holding(){ return !seg && holdT > 0; },
     view(y){ yaw = y; dirty = true; },
-    wall(side){ bars.visible = side === "bars"; wall.visible = typeof side === "number" && !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
+    wall(side){ bandMode = typeof side === "string" && side.startsWith("band") ? (side.slice(5) || "front") : null; bars.visible = side === "bars"; wall.visible = typeof side === "number" && !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
     canvas,
     png(){ return canvas.toDataURL("image/png"); },
   };
