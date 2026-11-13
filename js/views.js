@@ -125,7 +125,7 @@ function render(){
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
         const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
-        const dose = mx.length && !work.length ? ess(mx.length) + " · tiens tant que c'est calme" : mx.length ? work.length + " × " + u(work[0]) + " · " + ess(mx.length) + " à " + u(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0)) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
+        const dose = mx.length && !work.length ? ess(mx.length) + " · tiens tant que c'est calme" : mx.length ? work.length + " × " + u(work[0]) + ", puis " + ess(mx.length) + " (cible " + u(mx[0]) + ")" : b.sets.length > 1 ? b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0)) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose));
         const dots = el("div","dots"); if (dn) b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
@@ -172,7 +172,7 @@ function logRow(l, withName){
   const m = MS[l.id] || (String(l.id).startsWith("pg:") ? {name:l.id.slice(3), type:l.k} : null); const r = el("div","log"); if (!m) { r.style.display = "none"; return r; }
   const when = new Date(l.t).toLocaleDateString("fr-FR",{day:"numeric",month:"short"}) + ", " + new Date(l.t).toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"});
   const left = el("span","grow"); if (withName) left.append(el("div",null,m.name)); left.append(el("div","mut",when + (l.pr ? " · record" : "")));
-  r.append(left, el("span","v" + (l.pr ? " pr" : ""), l.v === true ? "Validé" : fmt(m,l.v)));
+  r.append(left, el("span","v" + (l.pr ? " pr" : ""), l.v === true ? (String(l.id).startsWith("pg:") ? "Séance terminée" : "Validé") : fmt(m,l.v)));
   return r;
 }
 

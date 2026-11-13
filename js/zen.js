@@ -22,7 +22,7 @@ const W = {
   ecart:zn(2, "Écart facial actif", 30, "Assis jambes écartées, dos plat : penche-toi en avant et soulève les talons par moments."),
   chiot:zh("Posture du chiot", 60, "À genoux, bras tendus loin devant, poitrine vers le sol : ouvre les épaules."),
   chien:d => zn(3, "Chien tête en bas actif", d, "Pousse le sol, épaules aux oreilles, talons vers le sol. Les bras dans la ligne du dos."),
-  murEp:d => zn(3, "Épaules au mur", d, "Dos au sol, ou face au mur : bras tendus au-dessus de la tête, côtes rentrées, sans cambrer."),
+  murEp:d => zn(3, "Épaules au mur", d, "Dos au mur (ou allongé sur le dos) : bras tendus au-dessus de la tête, mains au mur, côtes rentrées."),
   omoP:n => zr("Pompes d'omoplates en pike", 2, n, "En V inversé, bras tendus : laisse descendre puis repousse avec les épaules seulement."),
   creux:d => zn(3, "Gainage creux", d, "Position de pompe, dos légèrement arrondi, fesses serrées. Pousse le sol."),
   pikeBox:d => zn(3, "Appui tendu en pike, pieds sur une caisse", d, "Pieds sur une chaise, bassin au-dessus des épaules, bras tendus aux oreilles. Pousse le sol."),

@@ -13,7 +13,7 @@ const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", 
 const animOn = () => S.anim !== false;
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
 const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
-const STILL_NEAR = {pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs"};
+const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs"};
 const stillOf = p => STILLS.has(p) ? p : STILL_NEAR[p] || (p.startsWith("hs") ? "hs" : p.startsWith("pl_") ? "pl_lean" : "stand");
 function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
@@ -30,7 +30,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "23-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "24-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
@@ -59,7 +59,7 @@ async function buildSprites(force){
   if (job !== sprJob) return;
   let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
-  const A = sprA, dt = 1 / SPF, MAXF = 80; await idle();
+  const A = sprA, dt = 1 / SPF, MAXF = 120; await idle();
   for (const id of ids){
     if (job !== sprJob) return; const sc = sprMod.SCRIPTS[id];
     while (document.hidden || sprBusy()) { await new Promise(r=>setTimeout(r, 400)); if (job !== sprJob) return; }
@@ -90,7 +90,7 @@ async function sprViaWorker(ids, F, key, job){
   for (const id of ids){
     if (job !== sprJob) return true;
     const r = await new Promise(res => { const to = setTimeout(() => res({error:"timeout"}), 30000);
-      w.onmessage = e => { if (e.data && e.data.id === id) { clearTimeout(to); res(e.data); } }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:80}); });
+      w.onmessage = e => { if (e.data && e.data.id === id) { clearTimeout(to); res(e.data); } }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:120}); });
     if (job !== sprJob) return true;
     if (r.error || !r.blob) { if (Object.keys(SPR).length === 0) { sprWok = false; w.terminate(); sprW = null; return false; } continue; }
     SPR[id] = {url:URL.createObjectURL(r.blob), n:r.n, hold:r.hold}; sprRepaint(id); sprStore(key, id, r.blob, r.n, r.hold);

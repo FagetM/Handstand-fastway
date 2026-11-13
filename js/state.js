@@ -46,11 +46,12 @@ function hitTarget(id, side){
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }
   if (SIDED.has(id) && side != null) { h.sc = h.d === d && h.sc ? h.sc : {}; h.sc[side] = (h.sc[side] || 0) + 1; h.n = [0, 1].filter(k => (h.sc[k] || 0) >= perSide(id)).length; } else h.n++;
   // un bras : les séances validées doivent être espacées d'au moins 2 jours (le système nerveux consolide entre deux)
-  const V = valRule(id), last = h.days.length ? h.days[h.days.length - 1] : null, gapOk = !last || (new Date(d) - new Date(last)) / 864e5 >= V.gap;
+  const V = valRule(id), last = h.days.length ? h.days[h.days.length - 1] : null, gapOk = !last || dayDiff(d, last) >= V.gap;
   if (h.n >= need && !h.days.includes(d) && gapOk) h.days.push(d);
-  const span = h.days.length ? (new Date(h.days[h.days.length - 1]) - new Date(h.days[0])) / 864e5 : 0;
+  const span = h.days.length ? dayDiff(h.days[h.days.length - 1], h.days[0]) : 0;
   if (h.days.length >= V.n && span >= V.span) { st(id).done = true; return ""; }
-  if (h.n >= need && !gapOk) return "Belle tenue. Elle comptera pour la validation à partir d'après-demain : on espace les séances validées.";
+  if (h.days.includes(d)) return "Séance déjà validée aujourd'hui (" + h.days.length + "/" + V.n + ").";
+  if (h.n >= need && !gapOk) return "Belle tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d'un côté : à l'autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";
   return "Séance validée (" + h.days.length + "/" + V.n + ") : refais-le un autre jour pour valider la figure.";
 }
@@ -70,6 +71,9 @@ const goalTxt = m => m.type === "hold" ? m.target + " s" : m.type === "reps" ? "
 const msLocked = m => (m.req||[]).some(r=>!st(r).done);
 const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
+// clé de jour → date locale à minuit (new Date("2026-10-31") serait lue en UTC, et « 2026-11-1 » en heure locale)
+const dk = k => { const [y, m, d] = String(k).split("-").map(Number); return new Date(y, m - 1, d); };
+const dayDiff = (a, b) => Math.round((dk(a) - dk(b)) / 864e5);
 const missing = m => m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + goalTxt(MS[r]) : "")).join(" + ");
 
 // ---------- Progression : compteurs, expérience, niveau, badges ----------

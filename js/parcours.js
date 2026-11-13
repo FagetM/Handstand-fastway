@@ -16,7 +16,7 @@ function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check") return null;
   const since = Date.now() - 21 * 864e5, byDay = {};
   S.log.filter(l => l.t >= since && (l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l => { const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
-  const days = Object.keys(byDay).sort(); if (days.length < 4 || hitInfo(id).days) return null;
+  const days = Object.keys(byDay).sort((a, b) => dk(a) - dk(b)); if (days.length < 4 || hitInfo(id).days) return null;
   const half = Math.floor(days.length / 2), a = Math.max(...days.slice(0, half).map(d => byDay[d])), b = Math.max(...days.slice(half).map(d => byDay[d]));
   if (b > a * 1.05) return null;
   const fbs = (S.fb || []).filter(f => f.t >= since), hard = fbs.filter(f => f.k === "hard" || f.k === "pain").length;

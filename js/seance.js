@@ -161,7 +161,7 @@ function builtinBlocks(){
     const sets = Math.max(3, Math.round(pl.sets * scale)), tries = pain || tired || deload ? 0 : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(24, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"3 réussites dans la séance comptent pour la validation (2 séances).", sets:Array.from({length:/^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (pl.sides) base.note = "Alterne le côté à chaque série (séries paires d'un côté, impaires de l'autre) : les deux doivent tenir la cible.";
     return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 180 : 120, max:true})))}); });
@@ -410,7 +410,7 @@ function plStep(){
     const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? (plN <= 3 ? "Bilan terminé en " + plN + " question" + (plN > 1 ? "s" : "") + " : tu démarres par « " + SEC[MS[nx].sec].name + " ». " : "") + "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tu as tout validé !"));
     const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
-  box.append(el("div","lab", "Question " + (++plN) + " · " + SEC[m.sec].name + (plMiss ? " · le bilan s'arrête après 3 « pas encore » (" + plMiss + "/3)" : "")), el("h2",null, m.name), art);
+  box.append(el("div","lab", "Question " + (++plN) + " · " + SEC[m.sec].name), el("h2",null, m.name), art);
   if (m.desc) box.append(el("p","mut", m.desc));
   const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); if (SAFE.has(id) || FORCE(id) || m.sec === "onearm") (S.confirm || (S.confirm = [])).push(id); save(); plStep(); };
   const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } plSkip.add(id); plMiss++; save(); plStep(); };
@@ -436,12 +436,13 @@ function feedback(kind){
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") S.pain = Date.now();
   sessRes = {}; save(); $("fbDlg").close(); render();
-  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Merci d'avoir écouté ton corps. On prend soin des poignets pendant 2 jours : gainage, respiration, souplesse." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : 48 h sans force (planche, montées, pompes), équilibre allégé." : "Noté : séances allégées pendant deux jours.") + " Si ça dure, offre-toi une vraie pause." : "Merci pour ce moment. À bientôt.");
+  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Merci d'avoir écouté ton corps. On prend soin des poignets pendant 2 jours : gainage, respiration, souplesse." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : 48 h sans force (planche, montées, pompes), équilibre allégé." : "Noté : séances allégées pendant deux jours.") + " Si ça dure, offre-toi une vraie pause." : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Merci pour ce moment. À bientôt."));
 }
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas
 function freezeDay(){ if (P && P.builtin && !(S.bday && S.bday.d === dayKey(Date.now()))) { S.bday = {d:dayKey(Date.now()), blocks:builtinBlocks()}; save(); pickP(); } }
-function startGuided(){ sessRes = {}; selDay = todayIdx(); voiceUnlock();
+let sessPR = null;   // record battu pendant la séance, annoncé à la fin
+function startGuided(){ sessPR = null; sessRes = {}; selDay = todayIdx(); voiceUnlock();
   freezeDay(); const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
 // dernière série finie : on ferme et, en séance guidée, on demande le ressenti (il règle la charge suivante)
 function closeEnd(){ const was = AUTO; $("sd").close(); if (was) endSession(); }
@@ -512,7 +513,7 @@ function saveFixed(v){
     const okN = b.sets.filter((_,i)=>wkGet(selDay)[sd.bi + "-" + i] > 0).length; S.confirm = (S.confirm || []).filter(x=>x !== b.ms);
     if (okN >= 2) toast("« " + MS[b.ms].name + " » confirmée"); else { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } }
   const nx = nextSet();
-  if (nx && AUTO && s.rest && nx[0] === sd.bi) { save(); render(); startRest(s, nx, "Fait"); return; }
+  if (nx && AUTO && s.rest && nx[0] === sd.bi) { save(); render(); startRest(s, nx, v === 0 ? "Pas encore : l'essai compte quand même" : "Fait"); return; }
   if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? " · " + day.name : ""), k:"check", v:true, pr:false});
   save(); render();
   if (nx && day.circuit && day.circuit.rest && nx[1] !== si) { startRest(day.circuit, nx, "Tour " + (si+1) + "/" + b.sets.length + " terminé"); return; }
@@ -568,7 +569,7 @@ function saveSet(v){
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd'hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });
         toast(num(v) + " s sur " + sd.tg + " : les séries suivantes visent " + ng + " s aujourd'hui. Propre avant long."); } } }
-  S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();
   if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else closeEnd(); return; }
