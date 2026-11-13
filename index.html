@@ -299,27 +299,6 @@ ul.plan li{margin:7px 0}
 .fold-h .chev{margin-left:auto;transition:transform .2s}
 .fold-h[aria-expanded=true] .chev{transform:rotate(90deg)}
 #sess[hidden]{display:none}
-/* mascotte */
-#mascot{position:fixed;right:14px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:6;width:64px;height:64px;border-radius:50%;background:var(--raise);box-shadow:0 4px 16px rgba(0,0,0,.35),inset 0 0 0 2px var(--acc);overflow:hidden;display:grid;place-items:center}
-#mascot .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
-#mascot i{position:absolute;right:8px;top:8px;width:11px;height:11px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 2px var(--raise)}
-body.locked #mascot{display:none}
-#chatDlg{height:80dvh;display:none;flex-direction:column}
-#chatDlg[open]{display:flex}
-.chhead{display:flex;gap:12px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
-.chav{position:relative;flex:none;width:44px;height:44px;border-radius:50%;background:var(--raise);overflow:hidden}
-.chav .sp{position:absolute;left:0;top:0}
-#chatLog{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:10px}
-.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:15px;line-height:1.4}
-.msg p{margin:0}
-.msg.bot{background:var(--raise);border-bottom-left-radius:4px;align-self:flex-start}
-.msg.you{background:var(--acc);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
-.msg .chip{margin-top:8px}
-.chsug{display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none}
-.chsug .chip{flex:none;white-space:nowrap}
-.chform{display:flex;gap:8px;padding-top:6px}
-.chform input{flex:1;min-height:46px;padding:8px 14px;border-radius:23px;border:1px solid var(--line);background:var(--raise);font-size:16px}
-.chform .btn{width:52px;min-height:46px;border-radius:23px;font-size:20px}
 .tip{display:flex;gap:10px;align-items:center;width:100%;margin:0 0 14px;padding:8px 12px 8px 6px;border-radius:14px;background:var(--raise);text-align:left}
 .tip .sp{position:relative;flex:none}
 .tip .tb{display:flex;flex-direction:column;gap:2px;font-size:14px;line-height:1.35}
@@ -349,7 +328,17 @@ body.locked #mascot{display:none}
 .me .tag{margin-top:-8px;padding:3px 10px;border-radius:10px;background:var(--acc);color:#fff;font:600 12px/1 var(--disp);letter-spacing:.06em;text-transform:uppercase}
 .me.lane .tag{margin-top:-4px}
 .jr2 .jn.cur .c{width:84px;height:84px}
-#qkDlg{max-height:70dvh}
+#qkDlg{max-height:88dvh}
+.qkinfo section{padding:14px 0 2px;border-top:1px solid var(--line);margin-top:14px}
+.qkinfo h3{margin:0 0 6px;font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--mut)}
+.qkinfo p{margin:0;font-size:15px;line-height:1.45}
+.qkinfo ol,.qkinfo ul{margin:0;padding-left:20px;font-size:15px;line-height:1.45}
+.qkinfo li{margin:5px 0}
+.qkinfo .drl{display:flex;flex-direction:column;gap:12px}
+.qkinfo .dr b{font-size:15px}
+.qkinfo .dr .dd{margin-left:8px;font:600 15px/1 var(--disp);color:var(--acc)}
+.qkinfo .dr p{font-size:14px;color:var(--mut);margin-top:3px}
+.qkinfo a.lk{display:block;padding:6px 0}
 .qktop{display:flex;gap:14px;align-items:center}
 .qkart{position:relative;flex:none;width:120px;height:120px;border-radius:50%;background:var(--raise);overflow:hidden}
 .qktop h2{margin:4px 0 6px;font-size:24px}
@@ -582,14 +571,6 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   </section>
 </main>
 
-<button id="mascot" aria-label="Pose une question à ton coach"><span class="sp" data-anim="me" data-pose="stand" data-lk=""></span><i id="mascotDot"></i></button>
-<dialog id="chatDlg">
-  <div class="chhead"><span class="chav"><span class="sp" data-anim="me" data-pose="stand" data-lk=""></span></span><div class="grow"><div class="lab">Ton coach</div><b>Pose-moi une question</b></div>
-    <button class="x" id="chatX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button></div>
-  <div id="chatLog" aria-live="polite"></div>
-  <div class="chsug" id="chatSug"></div>
-  <form id="chatForm" class="chform"><input id="chatIn" type="text" autocomplete="off" placeholder="Ex. : c'est quoi un straddle ?" aria-label="Ta question"><button class="btn" type="submit" aria-label="Envoyer">→</button></form>
-</dialog>
 <nav class="tabs">
   <button data-v="today" class="on">Aujourd'hui</button>
   <button data-v="path">Parcours</button>
@@ -813,7 +794,7 @@ const DETAILS = {
   lo_frog:{how:["Accroupi, mains au sol largeur d'épaules, doigts écartés.","Grenouille : cale l'intérieur des genoux contre l'extérieur des coudes, bras fléchis, puis penche-toi vers l'avant jusqu'à ce que les pieds décollent.","Corbeau : même chose avec les genoux posés plus haut, sur l'arrière des bras, et les hanches plus hautes."],cue:["Regarde devant tes mains, pas tes pieds.","Ce sont les doigts qui freinent la bascule vers l'avant."],err:"Sauter dans la position au lieu de s'y pencher lentement.",ok:"Tu tiens chaque position 10 s sans que les pieds retouchent le sol."},
   st_split:{how:["Monte ventre face au mur en marchant les pieds le long du mur, mains à 10–20 cm de celui-ci.","Écarte une jambe loin du mur ; l'autre pied reste posé dessus.","Appuie dans les doigts jusqu'à sentir le pied quitter le mur de lui-même.","Tiens, puis repose le pied en douceur."],cue:["Épaules poussées vers le haut, oreilles cachées par les bras.","Le pied quitte le mur parce que tu es en équilibre, pas parce que tu le repousses."],err:"Donner une impulsion sur le mur : tu pars alors à la renverse.",ok:"5 s pied décollé, 3 fois dans la même séance."},
   st_bailc2w:{how:["Monte ventre face au mur, mains à une largeur de main du mur.","Déplace une main sur le côté en tournant le buste.","Laisse les jambes descendre l'une après l'autre du même côté.","Entraîne les deux côtés."],cue:["Choisis ton côté de sortie avant de monter."],err:"Redescendre en marchant le long du mur par habitude : la sortie doit devenir un réflexe.",ok:"Tu sors des deux côtés sans réfléchir, même fatigué."},
-  b1_free5:{how:["Loin du mur, monte par une fente, jambe arrière tendue.","Arrête-toi jambes ouvertes en ciseaux, sans chercher à les réunir.","Corrige avec les mains : appuie dans les doigts si tu pars vers l'avant, dans le talon de la main si tu reviens.","Si tu dépasses, sors en roue."],cue:["La même montée à chaque essai : même distance, même élan.","Mieux vaut monter un peu court que trop fort."],err:"Enchaîner des dizaines d'essais bâclés. Fais des séries courtes, reposé.",ok:"5 s au chrono, sans marcher sur les mains."},
+  b1_free5:{how:["Loin du mur, monte par une fente, jambe arrière tendue.","Arrête-toi jambes ouvertes en ciseaux, sans chercher à les réunir.","Corrige avec les mains : appuie dans les doigts si tu pars vers l'avant, dans le talon de la main si tu reviens.","Si tu dépasses, sors en roue."],cue:["La même montée à chaque essai : même distance, même élan.","Mieux vaut monter un peu court que trop fort."],err:"Enchaîner des dizaines d'essais bâclés. Fais des séries courtes, reposé.",ok:"15 s au chrono, sans marcher sur les mains (paliers à 5 et 10 s)."},
   b2_free15:{how:["Même montée, même forme.","Cherche le calme : respire, jambes immobiles.","Travaille par séries de 5 à 8 essais, avec 1 min de repos entre les séries."],cue:["Les jambes ne bougent pas : seules les mains corrigent.","Ventre et fessiers serrés."],err:"Corriger avec les jambes ou en pliant les bras.",ok:"15 s au chrono, mains immobiles."},
   b2_str15:{how:["Monte en ciseaux, stabilise, puis réunis lentement les jambes.","Serre les jambes l'une contre l'autre, pointes tendues.","Repousse le sol pour te grandir au maximum."],cue:["Côtes rentrées, bassin basculé : pas de dos creux.","Regard entre les mains."],err:"Réunir les jambes trop vite et perdre l'équilibre que tu venais de trouver.",ok:"15 s jambes serrées, corps aligné."},
   in_holds:{how:["Depuis l'équilibre droit, prends une forme et tiens-la : jambes écartées, ciseaux, groupé.","Commence par les jambes écartées, la plus stable.","Vise 5 à 10 s par forme."],cue:["Quand les jambes partent d'un côté, les épaules compensent de l'autre."],err:"Changer de forme avant d'avoir stabilisé la précédente.",ok:"Tu tiens chaque forme du niveau 1 environ 10 s."},
@@ -1139,10 +1120,23 @@ function quick(id){
         + '<polyline fill="none" stroke="var(--txt)" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map((v,i)=>X(i).toFixed(1) + "," + Y(v).toFixed(1)).join(" ") + '"/>' + pts.map((v,i)=>'<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="3.5" fill="var(--txt)"/>').join("") + '</svg>';
       const h = el("div","hist"); h.append(el("div","lab","Ton historique · " + pts.length + " séances")); const gr = el("div"); gr.innerHTML = svg; h.append(gr, el("div","mut","Pointillés : la cible (" + goalTxt(m) + "). Meilleur : " + fmt(m, Math.max(...pts)) + ".")); box.append(h); }
   }
-  const row = el("div","btns"), go = el("button","btn", lk ? "Voir quand même" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Ouvrir"), more = el("button","btn line","Détails");
-  go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold" && !lk) setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); };
+  const row = el("div","btns"), go = el("button","btn", lk ? "Essayer quand même" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Je l'ai réussi"), more = el("button","btn line","Chrono et journal");
+  go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold") setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); else if (!lk) setTimeout(()=>$("toggle").scrollIntoView({block:"center"}), 250); };
   more.onclick = () => { $("qkDlg").close(); openMs(id); };
-  row.append(go, more); box.append(row); $("qkDlg").showModal();
+  row.append(go, more); top.after(row);
+  // toute l'info, directement : ce que c'est, comment faire, les repères, l'erreur à éviter, le plan, et les exercices qui y préparent
+  const D = DETAILS[id] || {}, info = el("div","qkinfo"), part = (title, node) => { const s = el("section"); s.append(el("h3",null,title), node); info.append(s); };
+  if (m.desc) part("La figure", el("p",null,m.desc));
+  if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(t=>ol.append(el("li",null,t))); part("Comment faire", ol); }
+  if (D.cue && D.cue.length) { const ul = el("ul"); D.cue.forEach(t=>ul.append(el("li",null,t))); part("Repères", ul); }
+  if (D.err) part("Erreur fréquente", el("p",null,D.err));
+  if (!x.done) { const pl = planFor(m); part(pl.head, el("p",null,pl.short)); }
+  { const dl = el("div","drl"); drillsFor(m).forEach(k=>{ const d = DRILLS[k], r = el("div","dr"); r.append(el("b",null,d.name), el("span","dd", d.sets[0] + " × " + (d.kind === "hold" ? d.sets[1] + " s" : d.sets[1])), el("p",null,d.how)); dl.append(r); });
+    if (dl.childElementCount) part("Pour y arriver · inclus dans ta séance", dl); }
+  if (D.ok) part("Validé quand", el("p",null,D.ok));
+  if (m.yt && m.yt.length) { const v = el("div"); m.yt.forEach(([vid,t])=>v.append(ytLink(vid, "Vidéo : " + t))); part("Vidéo", v); }
+  box.append(info);
+  $("qkDlg").showModal(); $("qkDlg").scrollTop = 0;
 }
 
 const vidKey = (s, v) => s.id + "|" + v[1];
@@ -1410,7 +1404,7 @@ function render(){
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
     pt.append(c);
     const tip = el("button","tip"), ts = el("span","sp"); ts.dataset.pose = "stand"; ts.dataset.anim = "me"; ts.dataset.lk = ""; sprPaint(ts, 52);
-    const tb = el("span","tb"); tb.append(el("b",null,"Conseil du jour"), el("span",null, tipOfDay())); tip.append(ts, tb); tip.onclick = openChat; pt.append(tip); }
+    const tb = el("span","tb"); tb.append(el("b",null,"Conseil du jour"), el("span",null, tipOfDay())); tip.append(ts, tb); tip.onclick = () => { const cm = curMs(); if (cm) quick(cm.id); }; pt.append(tip); }
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
@@ -1562,17 +1556,55 @@ function builtin(){
 }
 const builtinOf = blocks => { const day = {type:"train", blocks};
   return {id:"equilibre", name:"Mes jalons", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours et du temps que tu as indiqué : tes prochains jalons accessibles, avec des séries ajustées à tes dernières séances.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]}; };
+// ---------- Exercices d'accompagnement : ce qui prépare chaque figure, en plus de la figure elle-même ----------
+// sets : [séries, durée en s] (tenue) ou [séries, répétitions] (reps). Repères généraux d'entraînement.
+const DRILLS = {
+  poignets:{name:"Échauffement des poignets", kind:"reps", sets:[1,20], how:"Cercles dans les deux sens, puis appuis sur les paumes, le dos des mains et le bout des doigts, en avançant doucement les épaules."},
+  hollow:{name:"Gainage en cuillère", kind:"hold", sets:[3,25], how:"Sur le dos, bas du dos plaqué au sol, bras tendus derrière la tête, jambes tendues décollées. C'est la ligne du corps en équilibre."},
+  epaules:{name:"Ouverture des épaules", kind:"hold", sets:[2,40], how:"À genoux, mains sur une chaise ou un banc, laisse descendre la poitrine vers le sol, bras tendus. Les bras doivent pouvoir s'aligner avec le corps."},
+  omoplates:{name:"Pompes d'omoplates en équilibre au mur", kind:"reps", sets:[3,8], how:"Poitrine face au mur, bras tendus : laisse le corps descendre de quelques centimètres en relâchant les épaules, puis repousse le sol vers les oreilles."},
+  c2w:{name:"Tenue poitrine face au mur", kind:"hold", sets:[3,30], how:"Monte en marchant les pieds le long du mur, mains à une main du mur. Corps aligné, ventre rentré, poussée dans les épaules."},
+  toepull:{name:"Décollages du mur", kind:"reps", sets:[4,5], how:"En équilibre poitrine face au mur, appuie dans les doigts pour décoller les pieds du mur et tiens une ou deux secondes, puis reviens."},
+  kickup:{name:"Montées contrôlées", kind:"reps", sets:[2,8], how:"Sans mur, monte en fente et cherche à t'arrêter pile à la verticale, sans dépasser. Sors en roue si tu pars trop loin."},
+  doigts:{name:"Corrections avec les doigts", kind:"reps", sets:[3,5], how:"Au mur ou libre : volontairement, laisse partir le poids vers le dos puis rattrape-le en appuyant fort dans le bout des doigts."},
+  pike:{name:"Compressions jambes tendues", kind:"reps", sets:[3,10], how:"Assis jambes tendues, mains au sol près des genoux : décolle les talons en ramenant les jambes vers toi. Indispensable pour les 7 et les montées."},
+  pancake:{name:"Écart facial penché", kind:"hold", sets:[2,45], how:"Assis jambes écartées, dos plat, penche-toi vers l'avant le plus loin possible sans arrondir le dos."},
+  shift:{name:"Transferts de poids au mur", kind:"reps", sets:[3,6], how:"Dos au mur, jambes écartées : glisse le poids sur une main jusqu'à alléger l'autre, puis reviens au centre. Côté gauche, puis côté droit."},
+  lean:{name:"Planche inclinée", kind:"hold", sets:[3,20], how:"Position de pompe, bras tendus, épaules loin devant les mains, omoplates écartées. Avance un peu plus à chaque série."},
+  pseudo:{name:"Pompes mains aux hanches", kind:"reps", sets:[3,8], how:"Pompes avec les mains à hauteur des hanches, doigts vers l'extérieur : les épaules passent loin devant les mains."},
+  frog:{name:"Grenouille", kind:"hold", sets:[3,15], how:"Accroupi, mains au sol, genoux posés sur les coudes : bascule vers l'avant jusqu'à décoller les pieds."},
+  pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
+};
+function drillsFor(m){
+  const s = m.sec, id = m.id, out = [];
+  if (s === "starter") out.push("hollow","epaules");
+  else if (s === "b1") out.push("c2w","toepull","hollow");
+  else if (s === "b2") out.push("c2w","kickup","doigts","hollow");
+  else if (s === "inter") out.push(/7|toes/.test(id) ? "pike" : "doigts", /7/.test(id) ? "pancake" : "kickup", "omoplates");
+  else if (s === "onearm") out.push("shift","doigts","omoplates");
+  else if (s === "planche") out.push("lean","pseudo","hollow");
+  else if (s === "press") out.push("pike","pancake","lean");
+  else if (s === "low") out.push("frog","lean");
+  if (id === "in_hspu") out.unshift("pikepu");
+  return [...new Set(out)];
+}
+const drillBlock = (k, pain) => { const d = DRILLS[k], n = Math.max(1, pain ? d.sets[0] - 1 : d.sets[0]);
+  return {name:d.name, kind:d.kind, how:d.how, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d.sets[1], rest:30} : {reps:d.sets[1], rest:30})}; };
 function builtinBlocks(){
   // le temps dont tu disposes aujourd'hui règle le nombre de figures et de séries (≈ 85 s par série, repos compris)
   const mins = S.mins || 30, pain = painRecent(), nMs = mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
   const next = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])).slice(0, nMs);
-  const budget = Math.max(4, Math.floor(mins * 60 / 85 / Math.max(1, next.length)));
+  // une part du temps va aux exercices d'accompagnement (de 2 à 4 selon le temps disponible)
+  const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4, drMin = 2 + nDr * 2.2;
+  const budget = Math.max(4, Math.floor((mins - drMin) * 60 / 85 / Math.max(1, next.length)));
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const tries = pain ? 0 : pl.tries || 0, sets = Math.max(3, Math.min(14, Math.round(budget * (pain ? 0.7 : 1)) - tries));
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand le mouvement est acquis, valide le jalon depuis sa fiche dans le Parcours.", sets:Array.from({length:sets}, ()=>({reps:1, lab:"essai"}))});
     // séries de travail (arrêt automatique à la durée prévue), puis tentatives au palier visé
     return Object.assign(base, {kind:m.type, sets:Array.from({length:sets}, ()=>({goal:pl.work, rest:75, auto:true})).concat(Array.from({length:tries}, ()=>({goal:pl.T, rest:120, max:true})))}); });
-  return blocks;
+  if (!next.length) return blocks;
+  const dr = []; next.forEach(id=>drillsFor(MS[id]).forEach(k=>{ if (!dr.includes(k)) dr.push(k); }));
+  return [drillBlock("poignets", pain)].concat(blocks, dr.slice(0, nDr).map(k=>drillBlock(k, pain)));
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -1881,6 +1913,7 @@ function saveFixed(){
   const {b, s, day, si} = sd; sdStop();
   storeSet(s.dur != null ? sDur(s, day.scale) : s.reps);
   const nx = nextSet();
+  if (nx && AUTO && s.rest && nx[0] === sd.bi) { save(); render(); startRest(s, nx, "Fait"); return; }
   if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? " · " + day.name : ""), k:"check", v:true, pr:false});
   save(); render();
   if (nx && day.circuit && day.circuit.rest && nx[1] !== si) { startRest(day.circuit, nx, "Tour " + (si+1) + "/" + b.sets.length + " terminé"); return; }
@@ -1993,18 +2026,7 @@ $("gateForm").onsubmit = async e => {
 };
 
 render();
-// ---------- Mascotte : ton bonhomme répond à tes questions, hors ligne, à partir de ce que l'app sait ----------
-function nrm(s){ return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); }
-const STOP = new Set("les des une un le la du de et en au aux a sur avec pour par est ce c que qui quoi comment je tu il on mon ma mes ton ta tes faire fait quel quelle quels quelles combien".split(" "));
-const words = s => nrm(s).split(" ").filter(w=>w.length > 2 && !STOP.has(w));
-const ALIAS = {"un bras":"oa_oahs", "une main":"oa_oahs", "corbeau":"lo_frog", "grenouille":"lo_frog", "drapeau":"oa_flaghoriz", "mexicain":"in_mexican", "stalder":"pr_stalder", "crocodile":"lo_croc", "queda":"lo_qdr", "full planche":"pl_full", "planche complete":"pl_full", "tuck planche":"pl_tuck", "straddle planche":"pl_straddle", "ciseaux":"b1_free5", "pompes en equilibre":"in_hspu", "hspu":"in_hspu", "le 7":"in_7d"};
-function findMs(q){ const n = " " + nrm(q) + " "; for (const k of Object.keys(ALIAS).sort((a,b)=>b.length - a.length)) if (n.includes(" " + k + " ") || n.includes(" " + k)) return MS[ALIAS[k]];
-  const qw = new Set(words(q)); let best = null, sc = 0;
-  Object.values(MS).forEach(m=>{ const w = words(m.name + " " + (m.en || "")); const s = w.filter(x=>qw.has(x)).length / Math.max(2, Math.min(4, w.length)); if (s > sc) { sc = s; best = m; } });
-  return sc >= 0.5 ? best : null; }
-function findLex(q){ const n = nrm(q); let best = null, sc = 0; LEX.forEach(([k,v])=>{ nrm(k).split(/[ ,()]+/).filter(t=>t.length > 2).forEach(t=>{ if (n.includes(t) && t.length > sc) { sc = t.length; best = [k,v]; } }); }); return best; }
-function findEx(q){ const n = nrm(q); let best = null, sc = 0; Object.values(PS).forEach(p=>{ const all = [].concat(...Object.values(p.routines || {}).map(r=>r.blocks || []), ...p.steps.flatMap(s=>Object.values(s.days || {}).flatMap(d=>d.blocks || [])));
-  all.forEach(b=>{ if (!b.how) return; const w = words(b.name); const s = w.filter(x=>n.includes(x)).length; if (s >= 2 && s > sc) { sc = s; best = b; } }); }); return best; }
+// ---------- Conseil du jour (affiché en haut du parcours) ----------
 function curMs(){ return MS[GOALS[0].ms.find(id=>!st(id).done && !msLocked(MS[id]))]; }
 function tipOfDay(){
   const m = curMs(), days = [...new Set(S.log.map(l=>dayKey(l.t)))], today = dayKey(Date.now()), trained = days.includes(today);
@@ -2018,45 +2040,6 @@ function tipOfDay(){
   if (!S.log.length) return "Premier jour ? Commence par ton bilan de départ, puis lance la séance : je m'occupe du chrono et des repos.";
   const pl = planFor(m).n; return "Ta figure du moment : « " + m.name + " »." + (pl && pl.work ? " Objectif du jour : " + pl.sets + " tenues de " + pl.work + " s." : "");
 }
-function answer(q){
-  const n = nrm(q), has = (...k) => k.some(w=>n.includes(w)), Z = lastZ || stats(), m0 = curMs();
-  const out = (text, acts) => ({text, acts:acts || []});
-  if (!n) return out("Pose-moi une question sur ta séance, une figure ou un mot que tu ne connais pas.");
-  if (has("bonjour","salut","hello","coucou")) return out("Salut ! " + tipOfDay());
-  if (has("douleur","mal ","mal au","bless","poignet","epaule","coude")) return out("Si ça fait mal : arrête la série, pas la séance d'un coup. Échauffe longuement les poignets (rotations, appuis doigts, paumes), travaille sur parallettes, et retire deux séries. Si la douleur dure plus de quelques jours, repose-toi et consulte.", [["Signaler une douleur", () => { S.pain = Date.now(); save(); render(); say("C'est noté : séances allégées pendant deux jours, sans tentative maximale."); }]]);
-  if (has("echauff")) return out("Échauffement en 5 minutes : cercles de poignets dans les deux sens, appuis sur le dos des mains, pompes d'omoplates, quelques montées au mur faciles. Les poignets portent tout ton poids : ne les saute jamais.");
-  if (has("fatig","repos","recup","dormi","courbature")) return out("Fatigué ? Fais 15 minutes ou repose-toi : l'équilibre progresse avec la fréquence, pas avec l'épuisement. Choisis « 15 min » sur l'accueil.", [["Ouvrir l'accueil", () => { $("chatDlg").close(); showTab("today"); }]]);
-  if (has("abandon","decourag","n y arrive","narrive","pas de progres","stagn","nul")) { const dn = Object.keys(MS).filter(id=>st(id).done).length;
-    return out("Tu as déjà validé " + dn + " figure" + (dn > 1 ? "s" : "") + ", niveau " + Z.lvl + ". L'équilibre progresse par paliers : on stagne, puis ça débloque d'un coup. Si ça bloque deux semaines, allège une semaine et reprends."); }
-  if (has("niveau","xp","experience","rang")) return out("Tu es niveau " + Z.lvl + " (" + Z.rank + "), " + Z.xp + " points. Encore " + (Z.hi - Z.xp) + " points pour le niveau suivant : chaque série en rapporte 5, chaque figure validée 100.");
-  if (has("badge")) { const b = Z.badges.filter(b=>!b.ok).sort((a,b)=>b.cur/b.max - a.cur/a.max)[0]; return out(b ? "Le badge le plus proche : « " + b.name + " » (" + (b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max) + "). " + b.desc : "Tu as tous les badges !"); }
-  if (has("tenue","vestiaire","coffre","habill")) { const c = Object.keys(CHESTS).find(sid=>SEC[sid] && !chestOpen(SEC[sid])); return out(c ? "Prochain coffre : termine l'étage « " + SEC[c].name + " » pour gagner « " + CHESTS[c][2] + " ». Les tenues se choisissent dans Profil, Vestiaire." : "Tous les coffres sont ouverts !", [["Ouvrir le vestiaire", () => { $("chatDlg").close(); showTab("me"); $("fitOpen").click(); }]]); }
-  const m = findMs(q);
-  if (has("quand","combien de temps","semaine","delai","bientot")) { const t = m || m0; if (!t) return out("Tu as tout validé !"); const w = eta(t);
-    return out(st(t.id).done ? "« " + t.name + " » est déjà maîtrisé." : w ? "« " + t.name + " » : à ton rythme, " + etaTxt(w) + " pour atteindre " + goalTxt(t) + ". Plus tu enregistres de séances, plus l'estimation est juste." : "« " + t.name + " » se valide en le réussissant proprement 3 fois sur 5 : impossible de prévoir une date, mais " + planFor(t).short.toLowerCase()); }
-  if (has("record","meilleur","combien je tiens")) { const t = m || m0; if (!t) return out("Tu as tout validé !"); const x = st(t.id); return out(x.best ? "Ton record sur « " + t.name + " » : " + fmt(t, x.best) + "." + (nextStep(t) ? " Palier suivant : " + unitTxt(t, nextStep(t)) + "." : "") : "Pas encore de record sur « " + t.name + " ». Fais une tentative au chrono pour en avoir un."); }
-  if (has("aujourd","seance","quoi faire","programme du jour","que faire","je fais quoi")) { const t = m0; if (!t) return out("Tout est validé : entretiens tes figures une ou deux fois par semaine.");
-    return out("Aujourd'hui : « " + t.name + " ». " + planFor(t).short + " Touche « Démarrer la séance » sur l'accueil, je m'occupe du chrono et des repos.", [["Démarrer la séance", () => { $("chatDlg").close(); showTab("today"); setTimeout(()=>{ if (nextSet()) startGuided(); }, 300); }]]); }
-  if (m && !has("c est quoi","cest quoi","que veut dire","signifie")) { const D = DETAILS[m.id], x = st(m.id), lk = !x.done && msLocked(m);
-    return out("« " + m.name + " » — " + (m.desc || "") + (D && D.how ? " Comment faire : " + D.how.slice(0, 2).join(" ") : "") + (D && D.err ? " Erreur fréquente : " + D.err : "") + " " + (x.done ? "Tu la maîtrises." : lk ? "Elle s'ouvre après : " + missing(m) + "." : "Niveau " + lvlOf(m) + " sur " + lvls(m).length + "."), [["Voir la figure", () => { $("chatDlg").close(); quick(m.id); }]]); }
-  const lx = findLex(q); if (lx) return out(lx[0] + " : " + lx[1]);
-  if (m) return out("« " + m.name + " » — " + (m.desc || ""), [["Voir la figure", () => { $("chatDlg").close(); quick(m.id); }]]);
-  const ex = findEx(q); if (ex) return out("« " + ex.name + " » — " + ex.how);
-  if (has("planche")) { const t = GOALS[0].ms.filter(id=>id.startsWith("pl_")), d = t.filter(id=>st(id).done).length; return out("Voie Planche : " + d + " / " + t.length + " figures. " + (msLocked(MS.pl_lean) ? "Elle s'ouvre après : " + missing(MS.pl_lean) + "." : "Prochaine : « " + MS[t.find(id=>!st(id).done) || "pl_full"].name + " ».")); }
-  return out("Je ne sais répondre qu'à ce que je connais : ta séance, tes figures, tes records, le vocabulaire (straddle, tuck, lean…), la douleur, la récupération, tes badges et tes tenues. Essaie une des questions ci-dessous.");
-}
-function say(text, acts, who){ const log = $("chatLog"), b = el("div","msg " + (who || "bot")); b.append(el("p",null,text));
-  (acts || []).forEach(([lab, fn])=>{ const a = el("button","chip on", lab); a.onclick = fn; b.append(a); }); log.append(b); log.scrollTop = log.scrollHeight; }
-function ask(q){ say(q, null, "you"); const r = answer(q); setTimeout(()=>say(r.text, r.acts), 250); }
-function openChat(){ const log = $("chatLog"); if (!log.childElementCount) say("Salut ! " + tipOfDay());
-  const sug = $("chatSug"); sug.textContent = ""; ["Je fais quoi aujourd'hui ?","C'est quoi un straddle ?","Quand j'aurai ma figure ?","J'ai mal au poignet","Mon record ?"].forEach(t=>{ const c = el("button","chip",t); c.onclick = () => ask(t); sug.append(c); });
-  $("mascotDot").hidden = true; $("chatDlg").showModal(); }
-$("mascot").onclick = openChat;
-$("chatX").onclick = () => $("chatDlg").close();
-$("chatDlg").addEventListener("click", e => { if (e.target === $("chatDlg")) $("chatDlg").close(); });
-$("chatForm").onsubmit = e => { e.preventDefault(); const q = $("chatIn").value.trim(); if (!q) return; $("chatIn").value = ""; ask(q); };
-document.querySelectorAll("#mascot .sp, #chatDlg .sp").forEach(sp=>sprPaint(sp, sp.closest("#mascot") ? 58 : 44));
-
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n'est appliquée que si tu l'acceptes, jamais pendant une séance.
 let updating = false, reloaded = false;
