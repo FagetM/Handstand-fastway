@@ -34,17 +34,17 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
-const valRule = id => id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
+const valRule = id => /^ul_/.test(id) || id === "pl_press" ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","oa_shTuck","oa_shStrad","oa_shFlag","pl_1leg"]);
+const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","oa_shTuck","oa_shStrad","oa_shFlag","oa_switch","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 2 : 1;   // planche : 2 tentatives sur 3 à la cible
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
 // figure « réussi / pas réussi » : 3 réussites le même jour = une séance validée (en séance ou depuis la fiche)
 function chkHit(id){ if (!MS[id] || MS[id].type !== "check" || st(id).done) return;
-  const c = S.chk || (S.chk = {}), d = dayKey(Date.now()), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}); r.n++;
-  if (r.n === 3) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée !"); } else if (r.n < 3) toast("Réussi (" + r.n + "/3 aujourd'hui)"); }
+  const c = S.chk || (S.chk = {}), d = dayKey(Date.now()), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}), need = /^ul_/.test(id) ? 1 : 3; r.n++;   // un combo : une réussite par séance suffit
+  if (r.n === need) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée !"); } else if (r.n < need) toast("Réussi (" + r.n + "/" + need + " aujourd'hui)"); }
 function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }

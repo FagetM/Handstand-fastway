@@ -5,7 +5,7 @@ const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"hs_straddle
   in_holds:"hs_straddle", in_changes:"hs_straddle", in_tuck:"hs_tuck", in_str40:"hs", in_str60:"hs", in_7s:"hs_seven1", in_7d:"hs_seven",
   in_toes:"hs", in_toes7:"hs_seven", oa_flaghoriz:"hs_flag", oa_shift:"hs_straddle", oa_finger:"oahs", oa_strarm:"oahs", oa_oahs:"oahs", oa_strad30:"hs_straddle", oa_wall:"oahs", oa_lift:"oahs", oa_oahs10:"oahs", pl_ppp:"pl_lean", pl_1leg:"pl_adv",
   pr_straddle:"hs_straddle", pr_pike:"pk1", pr_stalder:"hs_straddle", pr_negS:"hs_spress", pr_elev:"hs_spress", pr_stradL:"hs_stal0", pr_lsit:"lsit0", pr_lsitHs:"lsit1", in_mexican:"hs", in_hspu:"hs", oa_flagfloor:"hs_flag",
-  oa_shTuck:"hs_oatuck", oa_shStrad:"hs_oastrad", oa_shFlag:"hs_oaflag", pr_vsitC:"vsitC", pr_mannaP:"mannaP", pr_manna:"manna", pl_strHs:"pl_s45", pl_hsDown:"hs_pl45", pl_press:"hs_pl45", ul_c1:"hs_oafull", ul_c2:"pl_full", ul_c3:"manna", ul_full:"manna",
+  oa_shTuck:"hs_oatuck", oa_shStrad:"hs_oastrad", oa_shFlag:"hs_oaflag", pr_vsitC:"vsitC", pr_mannaP:"mannaP", pr_manna:"manna", pl_strHs:"pl_s45", pl_hsDown:"hs_pl45", pl_press:"hs_pl45", ul_c1:"hs_oafull", ul_c2:"pl_full", ul_c3:"manna", ul_full:"manna", oa_switch:"hs_oafull", pr_extSup:"revSup", pr_vsitH:"vsitH", pl_halfPress:"pl_halfL", ul_c12:"pl_full",
   lo_frog:"crow", lo_elbow:"lever", lo_croc:"lever", lo_qdr:"lever"};
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
@@ -14,7 +14,7 @@ const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", 
 const animOn = () => S.anim !== false;
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
 const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
-const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs", hs_oatuck:"oahs", hs_oastrad:"oahs", hs_oaflag:"oahs", vsitC:"crow", mannaP:"crow", manna:"crow", hs_pl45:"pl_full", pl_s45:"pl_straddle"};
+const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs", hs_oatuck:"oahs", hs_oastrad:"oahs", hs_oaflag:"oahs", vsitC:"crow", mannaP:"crow", manna:"crow", vsitH:"crow", revSup:"stand", pl_halfL:"pl_full", hs_pl45:"pl_full", pl_s45:"pl_straddle"};
 const stillOf = p => STILLS.has(p) ? p : STILL_NEAR[p] || (p.startsWith("hs") ? "hs" : p.startsWith("pl_") ? "pl_lean" : "stand");
 function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
@@ -31,7 +31,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "30-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "31-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){

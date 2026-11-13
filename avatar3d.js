@@ -201,11 +201,20 @@ Object.assign(POSES, {
   hs_pl45:P("pl_full", {pitch:2.3, arm:[-1.75,-1.75], head:-0.55}),                                               // entre la full planche et l'équilibre, corps gainé
   pl_s45: P("pl_straddle", {pitch:2.3, arm:[-1.7,-1.7], head:-0.55}),
 });
+Object.assign(POSES, {
+  revSup:{pitch:-1.0, arch:-0.1, arm:[1.15,1.15], armZ:[0.15,0.15], hip:[-0.7,-0.7], hipZ:[0.03,0.03], knee:[0,0], head:0.2},   // appui arrière : mains derrière, bassin levé
+  vsitH: P("mannaP", {pitch:-0.6, arm:[0.8,0.8], hip:[-2.8,-2.8]}),                                                          // V haut, jambes verticales
+});
 POSES.hs_oatuckM = mirror(POSES.hs_oatuck); POSES.hs_oastradM = mirror(POSES.hs_oastrad); POSES.hs_oaflagM = mirror(POSES.hs_oaflag);
 Object.assign(SCRIPTS, {
   oa_shTuck: {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,0.5],["hs_oatuck",0.8,1.4],["hs_oafull",0.8,0.4]], still:"hs_oatuck"},
   oa_shStrad:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,0.5],["hs_oastrad",0.7,1.4],["hs_oafull",0.7,0.3]], still:"hs_oastrad"},
   oa_shFlag: {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,0.5],["hs_oastrad",0.7,0.3],["hs_oaflag",0.8,1.4],["hs_oastrad",0.8,0.3]], still:"hs_oaflag"},
+  oa_switch: {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.2],["hs_finger",0.5,0.1],["hs_oafull",0.7,1.0],["hs_straddle",0.6,0.3],["hs_fingerM",0.5,0.1],["hs_oafullM",0.7,1.0],["hs_straddle",0.6,0.3]], still:"hs_oafull"},
+  pr_extSup: {cut:true, yaw:-1.2, s:[["crouch",0.4,0],["sit",0.5,0.1],["revSup",0.8,1.6],["sit",0.6,0.1],["crouch",0.4,0],["stand",0.4,0.05]], still:"revSup"},
+  pr_vsitH:  {cut:true, yaw:-1.2, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.6,0.1],["mannaP",0.7,0.1],["vsitH",0.7,1.4],["mannaP",0.6,0],["vsitC",0.6,0],["lsit0",0.6,0.1],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"vsitH"},
+  pl_halfPress:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.1],["pl_halfL",0.6,0.6],["hs_pl45",1.0,0],["hs",0.8,0.6]], still:"pl_halfL"},
+  ul_c12:    {cut:true, yaw:-0.6, s:[["crouch",0.35,0],["sit",0.35,0],["lsit0",0.5,0.3],["lsit1",0.55,0],["lsit2",0.5,0],["lsit3",0.5,0],["hs",0.5,0.2],["hs_finger",0.4,0],["hs_oafull",0.55,0.6],["hs",0.45,0],["hs_fingerM",0.4,0],["hs_oafullM",0.55,0.6],["hs",0.45,0.1],["hs_pl45",0.8,0],["pl_full",0.7,0.7],["hs_pl45",0.8,0],["hs",0.7,0.5],["kick",0.35,0],["plant",0.3,0],["tip",0.3,0],["lunge",0.35,0],["stand",0.45,0.1]], still:"pl_full"},
   pr_vsitC:  {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.7,1.4],["lsit0",0.6,0.2],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"vsitC"},
   pr_mannaP: {cut:true, yaw:-1.2, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.6,0.2],["mannaP",0.8,1.4],["vsitC",0.6,0.1],["lsit0",0.6,0.1],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"mannaP"},
   pr_manna:  {cut:true, yaw:-1.2, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.6,0.1],["mannaP",0.7,0.1],["manna",0.8,1.4],["mannaP",0.6,0],["vsitC",0.6,0],["lsit0",0.6,0.1],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"manna"},
