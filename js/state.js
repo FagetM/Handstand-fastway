@@ -29,6 +29,8 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // Validation exigeante : une figure se valide quand la cible est tenue sur DEUX séances, deux jours différents
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
+// règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
+const valRule = id => id === "oa_oahs" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
 const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
@@ -43,10 +45,14 @@ function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }
   if (SIDED.has(id) && side != null) { h.sc = h.d === d && h.sc ? h.sc : {}; h.sc[side] = (h.sc[side] || 0) + 1; h.n = [0, 1].filter(k => (h.sc[k] || 0) >= perSide(id)).length; } else h.n++;
-  if (h.n >= need && !h.days.includes(d)) h.days.push(d);
-  if (h.days.length >= NEED_DAYS) { st(id).done = true; return ""; }
+  // un bras : les séances validées doivent être espacées d'au moins 2 jours (le système nerveux consolide entre deux)
+  const V = valRule(id), last = h.days.length ? h.days[h.days.length - 1] : null, gapOk = !last || (new Date(d) - new Date(last)) / 864e5 >= V.gap;
+  if (h.n >= need && !h.days.includes(d) && gapOk) h.days.push(d);
+  const span = h.days.length ? (new Date(h.days[h.days.length - 1]) - new Date(h.days[0])) / 864e5 : 0;
+  if (h.days.length >= V.n && span >= V.span) { st(id).done = true; return ""; }
+  if (h.n >= need && !gapOk) return "Belle tenue. Elle comptera pour la validation à partir d'après-demain : on espace les séances validées.";
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d'un côté : à l'autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";
-  return "Séance validée (" + h.days.length + "/" + NEED_DAYS + ") : refais-le un autre jour pour valider la figure.";
+  return "Séance validée (" + h.days.length + "/" + V.n + ") : refais-le un autre jour pour valider la figure.";
 }
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
@@ -112,7 +118,7 @@ let toastT = null;
 function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
-const lvls = m => m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
+const lvls = m => m.id === "oa_oahs10" ? [6, 8, 10] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
 const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
 const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;

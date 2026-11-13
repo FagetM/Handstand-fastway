@@ -51,6 +51,7 @@ const DRILLS = {
   pikepulse:{name:"Pulsations en pike", kind:"reps", sets:[3,15], how:"Assis jambes serrées tendues, mains près des chevilles, dos rond : décolle les talons et fais de petites pulsations sans reposer."},
   stradlift:{name:"Élévations jambes écartées", kind:"reps", sets:[3,8], rest:45, how:"En écart facial, mains au sol devant le bassin : lève les deux jambes tendues, tiens 2 s, repose sans bruit."},
   elevpress:{name:"Montée pieds surélevés", kind:"reps", sets:[4,2], rest:90, how:"Mains sur parallettes, pieds sur une chaise, jambes écartées : épaules devant, le bassin monte jusqu'à l'équilibre, dos au mur si besoin."},
+  stalneg:{name:"Descentes du stalder", kind:"reps", sets:[3,2], rest:120, how:"Sur parallettes : de l'équilibre à l'équerre écartée en 5 secondes, sans poser les pieds.", eq:"para"},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
 function drillsFor(m){
@@ -65,7 +66,8 @@ function drillsFor(m){
   if (["pl_frog","pl_1leg","pl_straddle"].includes(id)) out.unshift("tuck2strad");
   if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
   else if (s === "press") out.push("pikepulse","stradlift","pancake","lean");
-  if (["pr_negS","pr_elev","pr_straddle"].includes(id)) out.unshift("elevpress");
+  if (id === "pr_straddle") out.unshift("elevpress");
+  if (id === "pr_stalder" || id === "pr_lsitHs") { out.unshift("stalneg"); if ((S.equip || {}).para) out.unshift("lsitpara"); }
   else if (s === "low") out.push("frog","lean");
   if (id === "in_hspu") out.unshift("pikepu");
   const E = S.equip || {};
@@ -120,8 +122,11 @@ function fitTime(blocks, mins){
     { const pool = blocks.filter(b => !b.ms && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
     { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 8)[0]; if (att) { att.sets.splice(-1, 1); continue; } }   // équilibre : 8 essais suffisent
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
-      if (fb) { fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
-    const mx = blocks.filter(b => b.ms && b.sets.filter(s => s.max).length > (/^pl_/.test(b.ms) ? 3 : SIDED.has(b.ms) ? 2 : 1))[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
+      if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
+    const mx = blocks.filter(b => b.ms && b.sets.filter(s => s.max).length > (/^pl_/.test(b.ms) ? 3 : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
+    // derniers recours : on retire un exercice d'accompagnement entier (sauf poignets et biceps), puis l'équilibre descend à 6 essais
+    { const dI = blocks.map((b, i) => !b.ms && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
+    { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 6)[0]; if (att) { att.sets.splice(-1, 1); continue; } }
     break; }
   return blocks;
 }
@@ -155,10 +160,10 @@ function builtinBlocks(){
     const sets = Math.max(3, Math.round(pl.sets * scale)), tries = pain || tired || deload ? 0 : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(24, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"3 réussites dans la séance comptent pour la validation (2 séances).", sets:Array.from({length:Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:45}))});
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"3 réussites dans la séance comptent pour la validation (2 séances).", sets:Array.from({length:/^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (pl.sides) base.note = "Alterne le côté à chaque série (séries paires d'un côté, impaires de l'autre) : les deux doivent tenir la cible.";
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? sets * 2 : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = (S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};

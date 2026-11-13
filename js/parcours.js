@@ -26,14 +26,15 @@ function plateau(id){
 function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[id]; return !!d && Date.now() - d < 7 * 864e5; }
 function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
 function planFor(m){
-  const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
+  const x = st(m.id), L = lvls(m), k = lvlOf(m), out = {head:"", lines:[], short:"", n:null}; let T = nextStep(m);
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps", oaReps = m.sec === "onearm" && m.type === "reps", days = /^pl_/.test(m.id) || prReps ? 3 : force ? 4 : 5,
+  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps", oaReps = m.sec === "onearm" && m.type === "reps", days = /^(pl_|pr_)/.test(m.id) ? 3 : force ? 4 : 5,
     sets = oaReps ? 6 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
   const freq = days + " séances par semaine" + (force ? " : laisse un jour de douceur entre deux, ton corps construit pendant le repos." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
+  if (FREE(m) && lightWeek(m.id) && k > 0) T = L[k - 1];   // semaine plus légère : le palier précédent, pas de validation
   if (FREE(m)) { const one = m.sec === "onearm" || SIDED.has(m.id), T0 = nextStep(m) || 0, n = one ? 10 : T0 >= 40 ? 8 : 15, rest = one ? 45 : Math.max(30, Math.min(60, T0));   // tenues longues : moins d'essais, plus de repos
     out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0, rest, sides:one};
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + T + " s";
@@ -46,13 +47,13 @@ function planFor(m){
   if (m.type === "check"){
     out.n = {sets, check:true};
     out.head = "Plan pour réussir ce jalon"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + sets + " essais ; 3 réussites dans une même séance comptent, il en faut sur 2 séances.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Quand le geste fatigue, c'est le signal pour souffler, pas un échec.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
+    out.lines = [freq, "À chaque séance : " + sets + " essais ; 3 réussites dans une même séance comptent, il en faut sur 2 séances.", (FORCE(m.id) ? "Les autres jours : repos des épaules et des coudes, pas d'essai à froid." : "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste."), "Quand le geste fatigue, c'est le signal pour souffler, pas un échec.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
   } else {
     const hold = m.type === "hold", lo = hold ? 2 : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     // charge adaptative : chaque séance règle un coefficient par figure (réussite, chutes, ressenti) ; une douleur récente allège
     const fct = adaptOf(m.id) * Math.min(painRecent() ? 0.75 : 1, lightWeek(m.id) ? 0.7 : 1);
-    const work = oaReps ? T : prReps ? 1 : Math.max(lo, Math.min(T, Math.min(Math.round(T * 0.85), Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct)))),   /* le travail reste sous la cible */ u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
+    const work = oaReps ? (lightWeek(m.id) ? Math.max(1, T - 1) : T) : prReps ? 1 : Math.max(lo, Math.min(T, Math.min(Math.round(T * 0.85), Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct)))),   /* le travail reste sous la cible */ u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold, sides:SIDED.has(m.id)};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (tries2 ? ", puis " + tries2 + (tries2 > 1 ? " tentatives" : " tentative") + " à " + (hold ? T + " s" : T + " rép.") : "") + ". " + days + " séances par semaine.";
@@ -183,7 +184,7 @@ function quick(id){
     if (x.done) { blk.classList.add("ok"); const nx = GOALS[0].ms.find(i=>!st(i).done && !msLocked(MS[i])); blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
     else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d'abord." : "Valide-la d'abord.") + " Tu peux quand même essayer."));
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? "Semaine plus légère en cours sur cette figure, puis on repart." : "Elle sera allégée une semaine à sa prochaine séance."))); bar(Math.min(1, x.best / (m.target || 1))); }
-    else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + NEED_DAYS), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / NEED_DAYS); }
+    else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / valRule(id).n); }
     else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + " · cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép.") + "." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(x.best / m.target); }
     else blk.append(el("b",null,"Pour valider"), el("p",null, D0.ok || (m.target ? goalTxt(m) + ", sur 2 séances." : "Réussie sur 2 séances.")));
     top.after(blk); }

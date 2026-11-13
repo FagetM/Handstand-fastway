@@ -27,7 +27,7 @@ export const POSES = {
   pl_1legP:   {pitch:1.57, arm:[-1.12,-1.12], armZ:[0,0], hip:[-1.55,0], hipZ:[0,0], knee:[2.0,0], head:-0.6},   // advanced tuck, une jambe tendue derrière
   pl_pdown:   {feet:true, pitch:1.34, arm:[-0.3,-0.3], armZ:[0.15,0.15], elbow:[-1.3,-1.3], hip:[-0.05,-0.05], hipZ:[0,0], knee:[0,0], head:-0.6, point:0},   // pompe pseudo planche, en bas
   pl_full:    {pitch:1.57, arm:[-0.95,-0.95],   armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.7},
-  hs_flag:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0.34,-0.34],hip:[0,0],        hipZ:[1.5,-0.3],  knee:[0,0],     head:-0.3, roll:0.34},   // drapeau : le bassin part d'un côté, la jambe basse passe sous l'horizontale
+  hs_flag:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0,0.5],     hip:[0,0],        hipZ:[1.8,-0.4],  knee:[0,0],     head:-0.3, roll:-0.1},   // drapeau : le bassin part d'un côté, la jambe basse passe sous l'horizontale
   crow:       {pitch:1.2,  arm:[-0.75,-0.75], armZ:[0.1,0.1],   elbow:[-0.9,-0.9],   hip:[-2.25,-2.25],hipZ:[0.4,0.4],   knee:[2.5,2.5], head:-0.7},
   lever:      {pitch:1.57, arm:[-0.2,-0.2],   armZ:[0,0],       elbow:[-1.0,-1.0], hip:[0,0],        hipZ:[0.08,0.08], knee:[0,0],     head:-0.8},
 };
@@ -105,7 +105,10 @@ Object.assign(POSES, {
   // de l'équerre (L-sit, jambes serrées) à l'équilibre : le bassin monte derrière, les jambes restent serrées et passent au-dessus
   lsit0:    {pitch:0.05, arch:0.3, arm:[-0.3,-0.3], armZ:[0.22,0.22], hip:[-1.75,-1.75], hipZ:[0.03,0.03], knee:[0,0], head:-0.1},
   lsit1:    {pitch:1.0, arch:0.4, arm:[-1.3,-1.3], armZ:[0.26,0.26], hip:[-2.75,-2.75], hipZ:[0.03,0.03], knee:[0,0], head:-0.5},
-  lsit2:    {pitch:1.85, arch:0.2, arm:[-2.0,-2.0], armZ:[0.2,0.2], hip:[-2.45,-2.45], hipZ:[0.03,0.03], knee:[0,0], head:-0.5},
+  lsit2:    {pitch:1.9, arch:0.3, arm:[-2.0,-2.0], armZ:[0.2,0.2], hip:[-2.8,-2.8], hipZ:[0.03,0.03], knee:[0,0], head:-0.5},
+  // assis jambes tendues (serrées ou écartées), entre l'accroupi et l'équerre : les pieds ne traversent plus le sol
+  sit:      {feet:true, pitch:0, arch:0.3, arm:[-0.25,-0.25], armZ:[0.22,0.22], hip:[-1.57,-1.57], hipZ:[0.03,0.03], knee:[0,0], head:-0.1, point:1},
+  sit_s:    {feet:true, pitch:0, arch:0.3, arm:[-0.25,-0.25], armZ:[0.22,0.22], hip:[-1.7,-1.7], hipZ:[0.85,0.85], knee:[0,0], head:-0.1, point:1},
   hs_stal2: {pitch:1.9, arch:0.2, arm:[-2.05,-2.05], armZ:[0,0], hip:[-2.2,-2.2], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},          // bassin au-dessus des épaules, jambes encore basses
   lv_croc:  P("lever", {roll:0.35, arm:[-0.2,-0.35], elbow:[-1.0,-0.2], armZ:[0,0.35]}),   // deux mains au sol, un seul coude calé dans la hanche
   lv_qdr0:  {pitch:1.15, roll:0.45, arm:[-0.85,-1.1], armZ:[0,0.3], elbow:[-0.9,-0.3], hip:[-1.7,-1.4], hipZ:[0.2,0.3], knee:[1.7,1.5], head:-0.5, feet:true},
@@ -114,6 +117,7 @@ Object.assign(POSES, {
 });
 Object.assign(FEET, {fold_s:1});
 // Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
+POSES.lsit3 = P("pk2", {hip:[-2.2,-2.2]});   // passage jambes serrées au-dessus des mains, pieds au-dessus du sol
 const UP = [["reach",0.3,0.1],["lunge",0.4,0.25],["tip",0.3,0],["plant",0.2,0],["kick",0.25,0]];
 export const SCRIPTS = {
   st_bail30: {wall:1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
@@ -146,11 +150,11 @@ export const SCRIPTS = {
   pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["sp2",0.6,0.2],["hs_straddle",0.6,0.3],["hs",0.5,1.0]], still:"hs_spress"},
   pr_elev:   {s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["sp2",0.6,0.2],["hs_straddle",0.6,0.3],["hs",0.5,1.0]], still:"hs_spress"},
   pr_negS:   {cut:true, s:[...UP,["hs_straddle",0.5,0.6],["hs_spress",1.6,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},
-  pr_stradL: {cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,2.2],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"hs_stal0"},
+  pr_stradL: {cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,2.2],["sit_s",0.4,0],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"hs_stal0"},
   pr_pike:   {s:[["fold",0.5,0.3],["pk1",0.9,0.2],["pk2",0.7,0.1],["hs",0.8,1.2]], still:"pk1"},
-  pr_lsit:   {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["lsit0",0.6,2.0],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"lsit0"},
-  pr_lsitHs: {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["lsit0",0.6,0.6],["lsit1",0.7,0],["lsit2",0.6,0],["pk2",0.6,0],["hs",0.6,0.6],["pk2",0.6,0],["lsit2",0.6,0],["lsit1",0.6,0],["lsit0",0.6,0.3],["crouch",0.4,0],["stand",0.4,0.05]], still:"lsit1"},
-  pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["sp2",0.5,0.1],["hs_straddle",0.5,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["sp2",0.5,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
+  pr_lsit:   {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,2.0],["sit",0.4,0],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"lsit0"},
+  pr_lsitHs: {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.6],["lsit1",0.7,0],["lsit2",0.6,0],["lsit3",0.6,0],["hs",0.6,0.6],["lsit3",0.6,0],["lsit2",0.6,0],["lsit1",0.6,0],["lsit0",0.6,0.3],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"lsit1"},
+  pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["sp2",0.5,0.1],["hs_straddle",0.5,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["sp2",0.5,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["sit_s",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
   lo_frog:   {cut:true, yaw:-0.7, s:[["crouch",0.45,0],["lv_crow0",0.5,0.2],["lv_frog",0.6,1.1],["lv_crow",0.7,1.1],["lv_frog",0.5,0.1],["lv_crow0",0.5,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_frog"},
   lo_elbow:  {s:[["squat",0.45,0],["lever",0.7,1.9]]},
   lo_croc:   {s:[["squat",0.45,0],["lever",0.6,0.4],["lv_croc",0.7,1.6]]},
@@ -315,7 +319,11 @@ export function mount(host, opts = {}){
     root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
     box.setFromObject(root); let low = box.min.y;
     if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx > 0 || p.one < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); }); }
-    tmp.set((box.min.x + box.max.x) / 2, 0, (box.min.z + box.max.z) / 2); pivot.worldToLocal(tmp);
+    // centrage : sur le corps quand on est debout, sur les mains d'appui quand on est en appui (les mains ne glissent plus au sol)
+    let cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2; const w = Math.max(0, Math.min(1, p.hands));
+    if (w > 0) { let hx = 0, hz = 0, n = 0; limbs.forEach(L => { if (L.sx > 0 || p.one < 0.5) { hb.setFromObject(L.hand); hx += (hb.min.x + hb.max.x) / 2; hz += (hb.min.z + hb.max.z) / 2; n++; } });
+      if (n) { cx += (hx / n - cx) * w; cz += (hz / n - cz) * w; } }
+    tmp.set(cx, 0, cz); pivot.worldToLocal(tmp);
     root.position.set(-tmp.x, -low / scale, -tmp.z);                         // l'appui touche le socle, le corps est centré dessus
     pivot.position.y = jump + (bars.visible && p.hands > 0.5 ? BAR_H : 0);   // debout entre les barres, puis en appui dessus
     // les barres suivent les mains (écartement et avancée)
@@ -416,7 +424,7 @@ export function mount(host, opts = {}){
     },
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
-    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|pk1|pk2|sp2|lv_|c2w_|pu_)/.test(k)),
+    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|sit|pk1|pk2|sp2|lv_|c2w_|pu_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
     jump(pose){ camD = -1; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
