@@ -234,7 +234,7 @@ function openMs(id){
   });
   $("dHold").style.display = m.type === "hold" ? "" : "none";
   $("dReps").style.display = m.type === "reps" ? "" : "none";
-  $("reps").value = "";
+  $("reps").value = String(st(id).best > 0 ? st(id).best : m.target || 1);   // un compteur déjà réglé : on ajuste avec − et +, pas besoin du clavier
   resetClock(); fillDlg(); $("dlg").showModal(); $("dlg").scrollTop = 0;
 }
 function fillDlg(){
@@ -299,6 +299,8 @@ $("go").onclick = async () => {
     if (v >= 0.5) record(v);
   }
 };
-$("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (!saneReps(v, MS[cur] && MS[cur].target)) return; record(v); $("reps").value = ""; };
+$("repsM").onclick = () => { $("reps").value = String(Math.max(1, (parseInt($("reps").value, 10) || 1) - 1)); };
+$("repsP").onclick = () => { $("reps").value = String((parseInt($("reps").value, 10) || 0) + 1); };
+$("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (!saneReps(v, MS[cur] && MS[cur].target)) return; record(v); };
 $("toggle").onclick = () => { const x = st(cur); if (x.done) { if (!confirm("Retirer la validation de « " + MS[cur].name + " » ?")) return; x.done = false; if (S.hit && S.hit[cur]) S.hit[cur].days = (S.hit[cur].days || []).slice(0, -1); if (S.chk) delete S.chk[cur]; save(); fillDlg(); render(); } else record(true); };
 $("dlg").addEventListener("close", resetClock);

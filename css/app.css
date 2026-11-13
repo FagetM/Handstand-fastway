@@ -571,3 +571,9 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .etr.ok .etn,.etr.ok .etd{color:var(--mut)}.etr.goal .etn,.etr.goal .etd{font-weight:700;color:var(--acc)}
 .etr.lev{align-items:center}.etr.lev .etd{color:var(--acc);font-weight:600}
 .etnote{font-size:12.5px;line-height:1.5}
+
+/* compteur de répétitions : moins, valeur, plus */
+.stepper{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:10px}
+.stepper button{flex:none;width:56px;height:56px;border-radius:50%;background:var(--card,var(--bg));border:1px solid var(--line);font:600 28px/1 var(--disp);color:inherit}
+.stepper input{width:110px;height:64px;border:0;border-bottom:2px solid var(--acc);border-radius:0;background:none;text-align:center;font:700 40px/1 var(--disp);color:inherit;-moz-appearance:textfield;appearance:textfield}
+.stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
