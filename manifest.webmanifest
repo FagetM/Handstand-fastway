@@ -10,14 +10,13 @@
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
   "orientation": "portrait",
-  "background_color": "#1e1f24",
+  "background_color": "#252429",
   "theme_color": "#1e1f24",
   "categories": ["health", "fitness", "sports"],
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+    { "src": "icon-mask-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
   "shortcuts": [
     { "name": "Démarrer la séance", "short_name": "Séance", "url": "./?go=session", "icons": [{ "src": "icon-192.png", "sizes": "192x192", "type": "image/png" }] },
