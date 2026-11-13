@@ -75,7 +75,8 @@ function drillsFor(m){
   if (E.para && (s === "planche" || s === "press")) out.push("lsitpara");
   if (E.kg && ["pl_lean","pl_ppp","pl_tuck"].includes(id) && st("fd_push").done) out.push("pushW");
   const iw = out.indexOf("dipsW"); if (iw > 0) { out.splice(iw, 1); out.unshift("dipsW"); }   // la force de base de la planche passe en premier
-  return [...new Set(out)];
+  const dup = {oa_tuckflag:"tuckflag", oa_shrug:"oashrug", pr_pikeLift:"pikepulse", pr_stradLift:"stradlift", pl_strBand:"bandpl", pl_strBandL:"bandpl", pl_fullBand:"bandpl"}[id];
+  return [...new Set(out)].filter(k => k !== dup);
 }
 // gilet lesté : « pas de gilet aujourd'hui » remplace les exercices lestés par leur version lente, sans charge
 const noVest = () => S.noVest === dayKey(Date.now());
@@ -131,7 +132,7 @@ function fitTime(blocks, mins){
   return blocks;
 }
 // repos entre séries de planche : il augmente avec la difficulté
-const PL_REST = {pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:150, pl_frog:150, pl_1leg:150, pl_straddle:180, pl_full:180, pl_pike:150};
+const PL_REST = {pl_lean2:90, pl_tuckP:120, pl_tuckPu:120, pl_tuckO:120, pl_strBand:150, pl_strBandL:150, pl_strNar:180, pl_half:180, pl_fullBand:180, pl_fullNeg:180, pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:150, pl_frog:150, pl_1leg:150, pl_straddle:180, pl_full:180, pl_pike:150};
 function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
@@ -199,7 +200,7 @@ function progLock(id){
   return null;
 }
 // Dans Planche Domination, chaque étape s'ouvre quand la figure de l'étape précédente est validée.
-const PD_STEPS = ["pl_lean","pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle"];   // figure à valider pour ouvrir l'étape suivante du programme
+const PD_STEPS = ["pl_lean","pl_tuck","pl_adv","pl_adv","pl_1leg","pl_straddle"];   // figure à valider pour ouvrir l'étape suivante du programme
 const stepLock = (pid, i) => pid === "planche-domination" && i > 0 ? needMs([PD_STEPS[i - 1]]) : null;
 const pickP = () => { const all = allP(); P = all[pg().cur]; if (!P) P = all.equilibre; else if (progLock(P.id)) { P = all.equilibre; pg().cur = "equilibre"; }
   const s = pp(); while (s.step > 0 && stepLock(P.id, s.step)) s.step--; };

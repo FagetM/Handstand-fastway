@@ -12,6 +12,9 @@ else if (S.ms.b1_free5 && S.ms.b1_free5.done && (S.ms.b1_free5.best || 0) < 15 &
 S.migr15 = true;
 // Fondations : qui savait déjà sortir en roue au mur maîtrise la roue, le gainage et la tenue au mur
 // nouvelles étapes vers le un bras et la planche : qui avait déjà validé l'étape d'après garde sa place
+// cohérence : une figure validée implique ses prérequis (les nouvelles étapes intermédiaires sont acquises si l'étape d'après l'est)
+if (!S.migrDec) { const mark = id => { (MS[id] && MS[id].req || []).forEach(r => { if (!(S.ms[r] && S.ms[r].done)) { S.ms[r] = {best:MS[r].target || 0, done:true}; mark(r); } }); };
+  Object.keys(S.ms).filter(id => MS[id] && S.ms[id].done).forEach(mark); S.migrDec = true; }
 if (!S.migrPr) { if (S.ms.pr_straddle && S.ms.pr_straddle.done) S.ms.pr_negS = {best:3, done:true}; S.migrPr = true; }
 if (!S.migrPr2) { const dn = id => S.ms[id] && S.ms[id].done; if (dn("pr_straddle")) S.ms.pr_elev = {best:3, done:true}; if (dn("pr_stradL")) S.ms.pr_lsit = {best:15, done:true}; S.migrPr2 = true; }   // les descentes passent avant la montée
 if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[id] = {best:MS[id].target || 0, done:true}; };
@@ -30,9 +33,9 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
-const valRule = id => id === "oa_oahs" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
+const valRule = id => id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
+const SIDED = new Set(["oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
@@ -122,7 +125,9 @@ let toastT = null;
 function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
-const lvls = m => m.id === "oa_oahs10" ? [6, 8, 10] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
+// paliers sur mesure quand les tiers de la cible n'ont pas de sens
+const LVLS = {oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
+const lvls = m => LVLS[m.id] ? LVLS[m.id] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
 const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
 const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;

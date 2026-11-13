@@ -3,14 +3,14 @@
 // ---------- Accompagnement : un plan concret pour passer au niveau suivant de chaque jalon ----------
 // Ces plans sont des repères généraux d'entraînement (les miens, pas ceux des programmes) : volume modéré, souvent, sans aller à l'échec.
 const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
-  pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
+  pl_lean2:["planche-domination",0], pl_tuckP:["planche-domination",1], pl_tuckPu:["planche-domination",1], pl_tuckO:["planche-domination",2], pl_strBand:["planche-domination",5], pl_strBandL:["planche-domination",5], pl_strNar:["planche-domination",6], pl_half:["planche-domination",6], pl_fullBand:["planche-domination",6], pl_fullNeg:["planche-domination",6], pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
 // habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall";   // un bras au mur : séries de force par côté
-const FORCE = id => (/^(pl_|pr_)/.test(id) && id !== "pr_lsit" && id !== "pr_stradL") || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
+const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit"].includes(id)) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check") return null;
@@ -105,22 +105,14 @@ function journey(nextId){
   const step = (id, small) => { const x = X[k++ % X.length]; node(id, x, small); if (prev) seg(pos[prev], pos[id], eCls(prev.startsWith("chest_") ? chestDone(prev) : st(prev).done, id, msLocked(MS[id]) && !st(id).done)); prev = id; y += RH; };
   const chestDone = cid => chestOpen(SEC[cid.slice(6)]);
   // le tronc commun : une figure par ligne, dans l'ordre du parcours
-  ["base","starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
+  // un seul chemin qui serpente, étage après étage ; les trois disciplines difficiles ont chacune le leur (plus de lignes droites)
+  ["base","starter","b1","b2","inter",...HARD.map(h=>h[0])].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
+    if (HARD.some(h=>h[0] === sid)) prev = null;
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, "");
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
     s.ms.filter(m=>m.alt).forEach(m=>{ const x = X[(k - 1) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40, true]; items.push({k:"n", id:m.id, alt:true}); y += 0; });
     const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
-  // le niveau difficile : trois voies
-  sign("Niveau difficile", "hard", "Trois voies : choisis la tienne, ou mène-les de front.");
-  const laneY = y, LX = [17, 50, 83]; y += 104;
-  HARD.forEach(([sid, name], i)=>{ const s = SEC[sid], first = s.ms[0], lo = !msLocked(first) || st(first.id).done;
-    items.push({k:"l", y:laneY, x:LX[i], name, open:lo, sid, after:(first.req||[]).filter(r=>!st(r).done).map(r=>MS[r].name).join(" + ")}); });
-  const y0 = y; let ymax = y;
-  HARD.forEach(([sid], i)=>{ let py = y0, last = "chest_inter"; SEC[sid].ms.forEach(m=>{ pos[m.id] = [LX[i], py + 40, false]; items.push({k:"n", id:m.id, lane:true});
-      seg(pos[last], pos[m.id], eCls(last.startsWith("chest_") ? chestDone(last) : st(last).done, m.id, msLocked(m) && !st(m.id).done)); last = m.id; py += RH; });
-    items.push({k:"c", sid, x:LX[i], y:py, done:chestOpen(SEC[sid]), lane:true}); pos["chest_" + sid] = [LX[i], py + 34]; seg(pos[last], pos["chest_" + sid], st(last).done ? (chestOpen(SEC[sid]) ? "on" : "go") : ""); ymax = Math.max(ymax, py + RH); });
-  y = ymax + 10;
   // hors parcours : les figures au sol
   sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
   SEC.low.ms.forEach((m,j)=>{ pos[m.id] = [[20,50,80][j], y + 40, false]; items.push({k:"n", id:m.id}); if (j) seg(pos[SEC.low.ms[j-1].id], pos[m.id], eCls(st(SEC.low.ms[j-1].id).done, m.id, msLocked(m) && !st(m.id).done)); });

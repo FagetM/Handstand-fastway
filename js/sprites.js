@@ -1,7 +1,7 @@
 // Personnage 3D et animations des figures (bandes d'images calculées puis gardées sur l'appareil).
 "use strict";
 // ---------- Personnage 3D (chargé à la demande ; la silhouette 2D reste en secours) ----------
-const POSE3D = {fd_plank:"pl_lean", fd_roue:"hs_straddle", fd_push:"pl_lean", fd_c2w:"hs", fd_dips:"sup_up", st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_str15:"hs",
+const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"oahs", oa_flagfloor:"hs_flag", oa_finger3:"oahs", oa_finger2:"oahs", oa_finger1:"oahs", oa_oahsw:"oahs", pl_lean2:"pl_lean", pl_tuckP:"pl_tuck", pl_tuckPu:"pl_tuck", pl_tuckO:"pl_adv", pl_strBand:"pl_straddle", pl_strBandL:"pl_straddle", pl_strNar:"pl_straddle", pl_half:"pl_adv", pl_fullBand:"pl_full", pl_fullNeg:"pl_full", pr_pikeLift:"lsit0", pr_stradLift:"hs_stal0", pr_wallNeg:"hs_spress", pr_elevLow:"hs_spress", pr_negP:"pk1", pr_vsit:"hs_stal0", pr_halfSt:"hs_stal1", pr_tuckUp:"lsit1", pr_stalPart:"hs_stal1", pr_lsitNeg:"lsit1", fd_plank:"pl_lean", fd_roue:"hs_straddle", fd_push:"pl_lean", fd_c2w:"hs", fd_dips:"sup_up", st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_str15:"hs",
   in_holds:"hs_straddle", in_changes:"hs_straddle", in_tuck:"hs_tuck", in_str40:"hs", in_str60:"hs", in_7s:"hs_seven1", in_7d:"hs_seven",
   in_toes:"hs", in_toes7:"hs_seven", oa_flaghoriz:"hs_flag", oa_shift:"hs_straddle", oa_finger:"oahs", oa_strarm:"oahs", oa_oahs:"oahs", oa_strad30:"hs_straddle", oa_wall:"oahs", oa_lift:"oahs", oa_oahs10:"oahs", pl_ppp:"pl_lean", pl_1leg:"pl_adv",
   pr_straddle:"hs_straddle", pr_pike:"pk1", pr_stalder:"hs_straddle", pr_negS:"hs_spress", pr_elev:"hs_spress", pr_stradL:"hs_stal0", pr_lsit:"lsit0", pr_lsitHs:"lsit1", in_mexican:"hs", in_hspu:"hs", oa_flagfloor:"hs_flag",
@@ -30,7 +30,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "24-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "25-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){

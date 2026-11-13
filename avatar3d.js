@@ -175,7 +175,11 @@ export const SCRIPTS = {
   pl_pike:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_pike",0.7,1.6]]},
   pl_straddle:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
   pl_full:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
-};
+};// étapes intermédiaires : elles reprennent l'animation de la figure dont elles dérivent
+Object.assign(SCRIPTS, {oa_tuckflag:SCRIPTS.oa_flaghoriz, oa_shrug:SCRIPTS.oa_wall, oa_sidehold:SCRIPTS.oa_shift, oa_finger3:SCRIPTS.oa_finger, oa_finger2:SCRIPTS.oa_finger, oa_finger1:SCRIPTS.oa_finger, oa_oahsw:SCRIPTS.oa_oahs,
+  pl_lean2:SCRIPTS.pl_lean, pl_tuckP:SCRIPTS.pl_tuck, pl_tuckPu:SCRIPTS.pl_ppp, pl_tuckO:SCRIPTS.pl_adv, pl_strBand:SCRIPTS.pl_straddle, pl_strBandL:SCRIPTS.pl_straddle, pl_strNar:SCRIPTS.pl_straddle, pl_half:SCRIPTS.pl_1leg, pl_fullBand:SCRIPTS.pl_full, pl_fullNeg:SCRIPTS.pl_full,
+  pr_pikeLift:SCRIPTS.pr_lsit, pr_stradLift:SCRIPTS.pr_stradL, pr_vsit:SCRIPTS.pr_stradL, pr_wallNeg:SCRIPTS.pr_negS, pr_elevLow:SCRIPTS.pr_elev, pr_negP:SCRIPTS.pr_pike, pr_halfSt:SCRIPTS.pr_stalder, pr_tuckUp:SCRIPTS.pr_lsitHs, pr_stalPart:SCRIPTS.pr_stalder, pr_lsitNeg:SCRIPTS.pr_lsitHs});
+
 const KEYS = ["point","hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   // pointes de pied : tendues dès que les pieds quittent le sol (en gym, un pied en l'air est toujours pointé)
