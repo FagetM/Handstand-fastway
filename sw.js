@@ -1,17 +1,20 @@
 // Service worker : l'app s'ouvre instantanément depuis l'appareil, même hors connexion (salle, parc…).
 // Les fichiers de l'app sont mis en cache à l'installation ; chaque nouvelle version change CACHE, s'installe en arrière-plan
 // puis attend que l'utilisateur accepte la mise à jour (ou ferme l'app), pour ne jamais couper une séance en cours.
-const CACHE = "hs-fastway-v97", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
+const CACHE = "hs-fastway-v98", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-180.png", "icon-192.png", "icon-512.png",
   "fonts/nunito-latin.woff2", "avatar3d.js", "spr-worker.js", "vendor/three.module.min.js",
   "css/app.css", "js/data.js", "js/state.js", "js/parcours.js", "js/sprites.js", "js/views.js", "js/voice.js", "js/seance.js", "js/zen.js", "js/main.js"];
 
 self.addEventListener("install", e => {
-  e.waitUntil(caches.open(CACHE).then(c => Promise.all(CORE.map(u => c.add(new Request(u, {cache:"reload"})).catch(() => {}))))
-    .then(() => caches.open(CACHE)).then(c => Promise.all(["index.html", "js/main.js"].map(u => c.match(u)))).then(r => { if (r.some(x => !x)) throw new Error("fichier manquant"); }));
+  // tout ou rien : si un seul fichier manque (réseau instable), la nouvelle version ne s'installe pas et l'ancienne reste entière
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache:"reload"})))).catch(err => caches.delete(CACHE).then(() => { throw err; })));
 });
 self.addEventListener("activate", e => {
-  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== RUNTIME && k !== SPRITES).map(k => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== RUNTIME && k !== SPRITES).map(k => caches.delete(k))))
+    // les copies de passage des fichiers de l'app sont purgées : jamais de mélange entre deux versions
+    .then(() => caches.open(RUNTIME)).then(c => c.keys().then(ks => Promise.all(ks.filter(r => !new URL(r.url).pathname.includes("/programs/") && !new URL(r.url).pathname.includes("/anim/")).map(r => c.delete(r)))))
+    .then(() => self.clients.claim()));
 });
 self.addEventListener("message", e => { if (e.data === "skip") self.skipWaiting(); });
 

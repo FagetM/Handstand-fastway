@@ -8,13 +8,17 @@ const PKEY = "hs-fastway-progs", PPASS = "hs-fastway-pass"; let PS = {}, P = nul
 try { PS = JSON.parse(localStorage.getItem(PKEY)) || {}; } catch(e){}
 const savePS = () => { try { localStorage.setItem(PKEY, JSON.stringify(PS)); } catch(e){} };
 const DAYN = ["Lundi","Mardi","Mercredi","Jeudi","Vendredi","Samedi","Dimanche"];
-const todayIdx = () => (new Date().getDay() + 6) % 7;
+// pendant une séance guidée, le « jour » reste celui du départ : passer minuit ne change ni la séance ni la semaine
+let sessT = 0; const nowS = () => sessT && $("sd") && $("sd").open ? sessT : Date.now();
+const todayIdx = () => (new Date(nowS()).getDay() + 6) % 7;
+// une faute de frappe (9999) ne doit pas devenir un record : au-delà de 3 fois la cible, on demande confirmation
+const saneReps = (v, tg) => v <= Math.max(30, 3 * (tg || 0)) || confirm(v + " répétitions : c'est bien ça ?");
 let selDay = todayIdx();
 const pg = () => { const g = S.pg || (S.pg = {}); g.best = g.best || {}; g.wk = g.wk || {}; g.by = g.by || {}; return g; };
 // Séance d'équilibre : construite à partir de l'arbre (les prochains jalons accessibles de la quête 1), pas d'un programme importé.
 function builtin(){
   // une fois la séance commencée, elle reste la même jusqu'au soir (les records du jour ne la modifient pas en route)
-  if (S.bday && S.bday.d === dayKey(Date.now())) return builtinOf(S.bday.blocks);
+  if (S.bday && S.bday.d === dayKey(nowS())) return builtinOf(S.bday.blocks);
   // calculée une fois par état : render() la demande plusieurs fois (programmes, séance, carte du jour)
   return window._bb || (window._bb = builtinOf(builtinBlocks()));
 }
@@ -234,7 +238,7 @@ const pickP = () => { const all = allP(); P = all[pg().cur]; if (!P) P = all.equ
   const s = pp(); while (s.step > 0 && stepLock(P.id, s.step)) s.step--; };
 const pp = () => pg().by[P.id] || (pg().by[P.id] = {step:0});
 const pStep = () => P.steps[Math.min(pp().step, P.steps.length - 1)];
-const wkKey = di => { const d = new Date(); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + P.id + "|" + pp().step + "|" + DAYK[di]; };
+const wkKey = di => { const d = new Date(nowS()); d.setDate(d.getDate() - todayIdx()); return dayKey(d) + "|" + P.id + "|" + pp().step + "|" + DAYK[di]; };
 const wkGet = di => pg().wk[wkKey(di)] || {};
 const pDay = di => {
   const stp = pStep(), d = stp.days[DAYK[di]] || {type:"rest", blocks:[]};
@@ -469,9 +473,9 @@ function feedback(kind){
 }
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas
-function freezeDay(){ if (P && P.builtin && !(S.bday && S.bday.d === dayKey(Date.now()))) { S.bday = {d:dayKey(Date.now()), blocks:builtinBlocks()}; save(); pickP(); } }
+function freezeDay(){ if (P && P.builtin && !(S.bday && S.bday.d === dayKey(nowS()))) { S.bday = {d:dayKey(nowS()), blocks:builtinBlocks()}; save(); pickP(); } }
 let sessPR = null;   // record battu pendant la séance, annoncé à la fin
-function startGuided(){ sessPR = null; sessRes = {}; selDay = todayIdx(); voiceUnlock();
+function startGuided(){ sessPR = null; sessRes = {}; sessT = 0; selDay = todayIdx(); sessT = Date.now(); voiceUnlock();
   freezeDay(); const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
 // dernière série finie : on ferme et, en séance guidée, on demande le ressenti (il règle la charge suivante)
 function closeEnd(){ const was = AUTO; $("sd").close(); if (was) endSession(); }
@@ -554,7 +558,7 @@ function startRest(r, nx, title){
   sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
   $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
-  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance";
+  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance"; $("sdGo").disabled = true; setTimeout(() => { $("sdGo").disabled = false; }, 600);   /* un double appui sur « Enregistrer » ne saute pas le repos */
   const nb = nx && pDay(selDay).blocks[nx[0]];
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C'était la dernière série. Bravo.");
@@ -633,7 +637,7 @@ $("sdGo").onclick = async e => {
     if (v >= 0.5) saveSet(v); else openSet(sd.bi, sd.si);
   }
 };
-$("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (v > 0) saveSet(v); };
+$("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (saneReps(v, sd && sd.tg)) saveSet(v); };
 $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
 $("sdX").addEventListener("click", hush);
 // douleur pendant la séance : on arrête tout de suite et on demande où

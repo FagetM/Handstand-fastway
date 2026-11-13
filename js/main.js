@@ -17,8 +17,8 @@ $("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); }
   $("eqKg").onchange = e => { E().kg = +e.target.value; redo(); }; }
 $("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
-  try { const d = JSON.parse($("io").value); if (!d || typeof d.ms !== "object" || !Array.isArray(d.log)) throw 0;
-    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { S = Object.assign(blank(), d); delete S.equip; save(); alert("Sauvegarde importée."); location.reload(); } }
+  try { const d = JSON.parse($("io").value); if (!d || !d.ms || typeof d.ms !== "object" || Array.isArray(d.ms) || !Array.isArray(d.log)) throw 0;
+    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { S = Object.assign(blank(), d); save(); alert("Sauvegarde importée."); location.reload(); } }
   catch(e){ alert("Sauvegarde illisible : colle le texte exporté tel quel."); }
 };
 $("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est définitif.")) { S = blank(); save(); location.reload(); } };   // le rechargement relance les migrations et réglages par défaut
@@ -89,3 +89,7 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persisted(
     if (q.get("go") === "session") setTimeout(()=>{ if (!$("sd").open && nextSet()) startGuided(); }, 500);
     if (q.has("tab") || q.has("go")) history.replaceState(null, "", location.pathname); };
   go(); }
+
+// l'app est restée ouverte la nuit : au retour, on affiche le bon jour
+{ let seenDay = dayKey(Date.now()); const wake = () => { const d = dayKey(Date.now()); if (d !== seenDay && !document.querySelector("dialog[open]")) { seenDay = d; selDay = todayIdx(); pickP(); render(); } };
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) wake(); }); addEventListener("focus", wake); setInterval(wake, 60000); }

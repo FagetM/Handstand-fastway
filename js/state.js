@@ -4,7 +4,9 @@
 const KEY = "hs-fastway-v1";
 const blank = () => ({countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
 let S = blank();
-try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
+let loadErr = false;
+try { const raw = localStorage.getItem(KEY); if (raw) { try { S = Object.assign(blank(), JSON.parse(raw)); } catch(e){ loadErr = true; try { localStorage.setItem(KEY + ".bak", raw); } catch(_){} } } } catch(e){}   // sauvegarde illisible : on en garde une copie avant de repartir
+if (!S.ms || typeof S.ms !== "object") S.ms = {}; if (!Array.isArray(S.log)) S.log = []; if (!S.pg || typeof S.pg !== "object") S.pg = blank().pg; if (!S.vid) S.vid = {};
 S.sessOpen = false;
 // fusion des deux « jambes en ciseaux » : l'ancienne figure de 15 s rejoint celle de 5 s
 if (S.ms.b2_free15) { const a = S.ms.b1_free5 || (S.ms.b1_free5 = {best:0, done:false}), b = S.ms.b2_free15; a.best = Math.max(a.best || 0, b.best || 0); a.done = !!b.done; delete S.ms.b2_free15; }
@@ -25,7 +27,10 @@ if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[
 if (!S.equip) S.equip = {band:true, para:true, kg:10};
 if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue","fd_c2w"].forEach(id=>{ S.ms[id] = {best:Math.max(MS[id].target || 0, 0), done:true}; }); S.migrFd = true; }   // le détail de la séance est replié à chaque ouverture
 let saveWarned = false;
-const save = () => { window._bb = null; try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; } catch(e){ if (!saveWarned && window.toast) { saveWarned = true; toast("Enregistrement impossible : la mémoire de l'appareil est pleine."); } } };
+const save = () => { window._bb = null; try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l'appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
+// bandeau qui reste affiché tant que le problème dure (un toast disparaît trop vite)
+function warnBar(msg){ let b = document.getElementById("warnBar"); if (!msg) { if (b) b.remove(); return; } if (!b) { b = document.createElement("div"); b.id = "warnBar"; b.setAttribute("role","alert"); } b.textContent = msg; ([...document.querySelectorAll("dialog[open]")].pop() || document.body).append(b); }
+if (loadErr) addEventListener("load", () => warnBar("Ta sauvegarde était illisible : l'app repart de zéro. Une copie est gardée sur l'appareil."));
 // si l'app est ouverte dans deux onglets, l'autre onglet se recharge (hors séance) pour ne pas écraser les données
 window.addEventListener("storage", e => { if (e.key === KEY && !document.querySelector("dialog[open]")) location.reload(); });
 // l'écran reste allumé pendant le chrono ; on n'attend pas la réponse, pour qu'un double appui ne lance pas deux chronos
@@ -128,7 +133,8 @@ function stats(){
 }
 let toastT = null;
 function toast(msg){ const t = $("toast"), dl = [...document.querySelectorAll("dialog[open]")].pop(); (dl || document.body).append(t);   // au-dessus de la fenêtre ouverte (séance, fiche)
-  t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
+  t.textContent = msg; t.classList.add("on"); if (dl && !dl._tb) { dl._tb = 1; dl.addEventListener("close", () => { if (dl.contains(t)) document.body.append(t); }); }   /* la fenêtre se ferme : le message reste visible */
+  clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
 // paliers sur mesure quand les tiers de la cible n'ont pas de sens

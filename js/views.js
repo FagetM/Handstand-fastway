@@ -284,6 +284,6 @@ $("go").onclick = async () => {
     if (v >= 0.5) record(v);
   }
 };
-$("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (v > 0) { record(v); $("reps").value = ""; } };
-$("toggle").onclick = () => { const x = st(cur); if (x.done) { x.done = false; if (S.hit) delete S.hit[cur]; save(); fillDlg(); render(); } else record(true); };
+$("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (!saneReps(v, MS[cur] && MS[cur].target)) return; record(v); $("reps").value = ""; };
+$("toggle").onclick = () => { const x = st(cur); if (x.done) { if (!confirm("Retirer la validation de « " + MS[cur].name + " » ?")) return; x.done = false; if (S.hit && S.hit[cur]) S.hit[cur].days = (S.hit[cur].days || []).slice(0, -1); if (S.chk) delete S.chk[cur]; save(); fillDlg(); render(); } else record(true); };
 $("dlg").addEventListener("close", resetClock);
