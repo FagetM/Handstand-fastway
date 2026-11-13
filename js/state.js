@@ -39,7 +39,7 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
-const valRule = id => /^ul_/.test(id) || id === "pl_press" || (/^pl_/.test(id) && MS[id] && MS[id].type === "hold" && !/^pl_(lean|ppp)/.test(id)) ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
+const valRule = id => /^pl_(straddle|strNar|half|full)$/.test(id) ? {n:3, gap:2, span:21} /* grands leviers sans aide : trois semaines, le temps que les tendons suivent */ : /^ul_/.test(id) || id === "pl_press" || (/^pl_/.test(id) && MS[id] && MS[id].type === "hold" && !/^pl_(lean|ppp)/.test(id)) ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
 const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","oa_shTuck","oa_shStrad","oa_shFlag","oa_switch","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
