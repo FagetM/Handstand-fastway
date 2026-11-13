@@ -14,8 +14,9 @@ export const POSES = {
   hs_split:   {pitch:PI,   arm:[-PI,-PI],     armZ:[0,0],       hip:[-0.75,0.75], hipZ:[0,0],       knee:[0,0],     head:-0.35},
   hs_straddle:{pitch:PI,   arm:[-PI,-PI],     armZ:[0,0],       hip:[0,0],        hipZ:[0.7,0.7],   knee:[0,0],     head:-0.35},
   hs_tuck:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0,0],       hip:[-1.9,-1.9],  hipZ:[0,0],       knee:[2.1,2.1], head:-0.35},
-  hs_seven1:  {pitch:PI-0.3,arm:[-PI+0.12,-PI+0.12],armZ:[0,0],   hip:[-1.45,0],    hipZ:[0,0],       knee:[0,0],     head:-0.45},
-  hs_seven:   {pitch:PI-0.42,arm:[-PI+0.18,-PI+0.18],armZ:[0,0],  hip:[-1.4,-1.4],  hipZ:[0,0],       knee:[0,0],     head:-0.5},
+  hs_seven1:  {pitch:PI+0.14,arm:[-PI-0.08,-PI-0.08],armZ:[0,0],  hip:[-1.7,0.05],     hipZ:[0,0],       knee:[0,0],     head:-0.45},
+  // le 7 : bassin au-dessus des mains (légèrement en arrière), jambes tendues fermées à l'équerre, à l'horizontale ou un peu au-dessus
+  hs_seven:   {pitch:PI+0.28,arm:[-PI-0.2,-PI-0.2],armZ:[0,0],   hip:[-1.8,-1.8],  hipZ:[0,0],       knee:[0,0],     head:-0.5, arch:-0.12},
   oahs:       {pitch:PI,   arm:[-PI,-0.2],    armZ:[0,1.35],    hip:[0,0],        hipZ:[0.55,0.55], knee:[0,0],     head:-0.3, roll:0.1},
   pl_lean:    {pitch:1.17, arm:[-0.85,-0.85], armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.5},
   pl_tuck:    {pitch:1.78, arm:[-1.4,-1.4], armZ:[0,0], arch:-0.4, hip:[-2.65,-2.65], hipZ:[0,0], knee:[2.55,2.55], head:-0.6},
