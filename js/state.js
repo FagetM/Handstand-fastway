@@ -31,6 +31,7 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 const NEED_DAYS = 2;
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
 const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
+const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
@@ -40,8 +41,8 @@ function chkHit(id){ if (!MS[id] || MS[id].type !== "check" || st(id).done) retu
   if (r.n === 3) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée : réussie sur deux séances !"); } else if (r.n < 3) toast("Réussi (" + r.n + "/3 aujourd'hui)"); }
 function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
-  const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; }
-  if (SIDED.has(id) && side != null) { h.sd = h.sd || []; if (!h.sd.includes(side)) h.sd.push(side); h.n = h.sd.length; } else h.n++;
+  const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }
+  if (SIDED.has(id) && side != null) { h.sc = h.d === d && h.sc ? h.sc : {}; h.sc[side] = (h.sc[side] || 0) + 1; h.n = [0, 1].filter(k => (h.sc[k] || 0) >= perSide(id)).length; } else h.n++;
   if (h.n >= need && !h.days.includes(d)) h.days.push(d);
   if (h.days.length >= NEED_DAYS) { st(id).done = true; return ""; }
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d'un côté : à l'autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";

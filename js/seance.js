@@ -72,6 +72,7 @@ function drillsFor(m){
   if (E.band && ["pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle","pl_full"].includes(id)) out.unshift("bandpl");
   if (E.para && (s === "planche" || s === "press")) out.push("lsitpara");
   if (E.kg && ["pl_lean","pl_ppp","pl_tuck"].includes(id) && st("fd_push").done) out.push("pushW");
+  const iw = out.indexOf("dipsW"); if (iw > 0) { out.splice(iw, 1); out.unshift("dipsW"); }   // la force de base de la planche passe en premier
   return [...new Set(out)];
 }
 // gilet lesté : « pas de gilet aujourd'hui » remplace les exercices lestés par leur version lente, sans charge
@@ -95,6 +96,8 @@ function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name
   const ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   if (d.has(ago(1)) && d.has(ago(2))) return false; let n = 0; for (let k = 1; k <= 6; k++) if (d.has(ago(k))) n++; return n < 4 || d.has(ago(0)); }
 // trois jours d'entraînement de suite : le lendemain, on récupère (mobilité, poignets)
+function plancheDays(){ const names = new Set(SEC.planche.ms.map(m => "pg:" + m.name)), since = Date.now() - 7 * 864e5, today = dayKey(Date.now());
+  return new Set(S.log.filter(l => l.t >= since && dayKey(l.t) !== today && (names.has(l.id) || /^pl_/.test(l.id))).map(l => dayKey(l.t))).size; }
 function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t))), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + " · vérification"] = m.id; });
@@ -114,13 +117,16 @@ function fitTime(blocks, mins){
   while (estSecs(blocks) > cap && guard--) {
     const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
       if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
-    if (cut(blocks.filter(b => !b.ms && b.name !== DRILLS.poignets.name), 1)) continue;
-    { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
+    { const pool = blocks.filter(b => !b.ms && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
+    { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 8)[0]; if (att) { att.sets.splice(-1, 1); continue; } }   // équilibre : 8 essais suffisent
+    { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
       if (fb) { fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
     const mx = blocks.filter(b => b.ms && b.sets.filter(s => s.max).length > (/^pl_/.test(b.ms) ? 3 : SIDED.has(b.ms) ? 2 : 1))[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
     break; }
   return blocks;
 }
+// repos entre séries de planche : il augmente avec la difficulté
+const PL_REST = {pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:150, pl_frog:150, pl_1leg:150, pl_straddle:180, pl_full:180, pl_pike:150};
 function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
@@ -136,7 +142,7 @@ function builtinBlocks(){
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
   let nonF = open.filter(id => !FORCE(id) && (oaOk || MS[id].sec !== "onearm"));
   // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
-  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (dn % 3 !== 2 && plF[0]) || F[0];
+  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (plancheDays() < 3 && plF[0]) || F.find(id => !/^pl_/.test(id)) || F[0];   // la planche 3 jours sur 7, le reste de la force ensuite
   let next;
   if (fok && pickF) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);
@@ -152,7 +158,7 @@ function builtinBlocks(){
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:"3 réussites dans la séance comptent pour la validation (2 séances).", sets:Array.from({length:Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:45}))});
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (pl.sides) base.note = "Alterne le côté à chaque série (séries paires d'un côté, impaires de l'autre) : les deux doivent tenir la cible.";
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:sets}, ()=>({goal:pl.work, rest:short ? 120 : pr ? 150 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? sets * 2 : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = (S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
