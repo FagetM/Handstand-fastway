@@ -136,6 +136,8 @@ export const SCRIPTS = {
   oa_wall:   {wall:1, yaw:0.4, s:[...UP,["hs_straddle",0.5,0.4],["hs_finger",0.6,0.3],["hs_oafull",0.7,1.8]], still:"hs_oafull"},
   oa_strad30:{s:[...UP,["hs_straddle",0.5,2.4]]},
   pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["hs_straddle",0.8,0.4],["hs",0.5,1.0]], still:"hs_spress"},
+  pr_negS:   {cut:true, s:[...UP,["hs_straddle",0.5,0.6],["hs_spress",1.6,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},
+  pr_stradL: {cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,2.2],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"hs_stal0"},
   pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
   pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["hs_straddle",0.6,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
   lo_frog:   {cut:true, yaw:-0.7, s:[["crouch",0.45,0],["lv_crow0",0.5,0.2],["lv_frog",0.6,1.1],["lv_crow",0.7,1.1],["lv_frog",0.5,0.1],["lv_crow0",0.5,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_frog"},

@@ -44,8 +44,8 @@ const DRILLS = {
   // avec du matériel (réglages › Mon matériel)
   bandpl:{name:"Planche à l'élastique", kind:"hold", sets:[4,10], how:"Élastique sous les hanches, accroché en hauteur : tiens la position de l'étape suivante, bras verrouillés, omoplates écartées.", eq:"band"},
   lsitpara:{name:"L-sit sur parallettes", kind:"hold", sets:[3,15], how:"Bras verrouillés, épaules abaissées loin des oreilles, jambes tendues à l'horizontale (groupé si besoin).", eq:"para"},
-  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], how:"Entre deux chaises solides ou aux barres, gilet sur le dos : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
-  pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], how:"Gilet lesté, corps gainé, poitrine jusqu'au sol. Pour construire la force qui porte la planche.", eq:"kg"},
+  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], alt:{name:"Dips lents (sans gilet)", reps:10, how:"Sans gilet aujourd'hui : descente en 3 secondes, une seconde en bas, remontée bras verrouillés."}, how:"Entre deux chaises solides ou aux barres, gilet sur le dos : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
+  pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], alt:{name:"Pompes lentes (sans gilet)", reps:12, how:"Sans gilet aujourd'hui : descente en 3 secondes, poitrine au sol, épaules devant les mains."}, how:"Gilet lesté, corps gainé, poitrine jusqu'au sol. Pour construire la force qui porte la planche.", eq:"kg"},
   protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
@@ -66,14 +66,23 @@ function drillsFor(m){
   const E = S.equip || {};
   if (E.band && ["pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle","pl_full"].includes(id)) out.unshift("bandpl");
   if (E.para && (s === "planche" || s === "press")) out.push("lsitpara");
-  if (E.kg && (id === "fd_dips" || s === "planche") && st("fd_dips").done) out.push("dipsW");
-  if (E.kg && id === "fd_push" && st("fd_push").done) out.push("pushW");
+  if (E.kg && s === "planche" && st("fd_dips").done) out.push("dipsW");
+  if (E.kg && ["pl_lean","pl_ppp","pl_tuck"].includes(id) && st("fd_push").done) out.push("pushW");
   return [...new Set(out)];
 }
-const drillBlock = (k, pain) => { const d = DRILLS[k], n = Math.max(1, pain ? d.sets[0] - 1 : d.sets[0]);
+// gilet lesté : « pas de gilet aujourd'hui » remplace les exercices lestés par leur version lente, sans charge
+const noVest = () => S.noVest === dayKey(Date.now());
+function setNoVest(on){ S.noVest = on ? dayKey(Date.now()) : null;
+  const bd = S.bday && S.bday.d === dayKey(Date.now()) ? S.bday : null;   // séance du jour déjà composée : on échange les blocs lestés restants
+  if (bd) bd.blocks = bd.blocks.map((b, bi) => b.dk && DRILLS[b.dk].eq === "kg" && !Object.keys(wkGet(todayIdx())).some(x => x.startsWith(bi + "-")) ? drillBlock(b.dk, painRecent()) : b);
+  save(); render(); }
+const drillBlock = (k, pain) => { const d = DRILLS[k];
   // parallettes : les exercices d'appui se font dessus ; lest : on indique la charge
-  const E = S.equip || {}, how = d.how + (E.para && ["lean","pseudo","protrac","bandpl"].includes(k) ? " Sur parallettes si tu veux : poignets ménagés." : "") + (d.eq === "kg" ? " Charge : jusqu'à " + E.kg + " kg, en gardant la forme." : "");
-  return {name:d.name, kind:d.kind, how, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d.sets[1], rest:30} : {reps:d.sets[1], rest:30})}; };
+  const E = S.equip || {}, nv = d.eq === "kg" && noVest() && d.alt, d2 = nv ? Object.assign({}, d, {name:d.alt.name, how:d.alt.how, sets:[d.sets[0], d.alt.reps]}) : d;
+  const how = d2.how + (E.para && ["lean","pseudo","protrac","bandpl"].includes(k) ? " Sur parallettes si tu veux : poignets ménagés." : "")
+    + (d.eq === "kg" && !nv ? " Charge : commence à 5 kg, monte jusqu'à " + E.kg + " kg quand les 3 séries sont propres." : "");
+  const n = Math.max(1, pain ? d2.sets[0] - 1 : d2.sets[0]);
+  return {name:d2.name, kind:d.kind, how, dk:k, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d2.sets[1], rest:30} : {reps:d2.sets[1], rest:30})}; };
 // jours où une figure de force a été travaillée (planche, montées, pompes, dips)
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; });
   return new Set(S.log.filter(l=>FORCE(MS[l.id] ? l.id : byName[l.id] || "")).map(l=>dayKey(l.t))); }
@@ -389,6 +398,7 @@ function openSet(bi, si){
   { const art = $("sdArt"); art.textContent = ""; if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } }
   const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
   if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l'exercice"; sv.append(vl); }
+  if (b.dk && DRILLS[b.dk].eq === "kg" && !noVest() && P.builtin) { const nv = el("button","golink","Pas de gilet sous la main ? Version sans charge"); nv.onclick = () => { setNoVest(true); openSet(sd.bi, sd.si); }; sv.append(nv); }
   const ck = $("sdClock"); ck.className = "clock";
   if (fx){
     const timed = s.dur != null;
