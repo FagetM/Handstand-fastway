@@ -141,7 +141,7 @@ export const SCRIPTS = {
   oa_oahs:   {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,1.8]]},
   oa_oahs10: {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,2.4]]},
   oa_lift:   {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_oastr",0.6,0.6],["hs_oafull",0.5,0.6],["hs_oastr",0.5,0.6],["hs_oafull",0.5,0.6],["hs_oastr",0.5,0.3]], still:"hs_oafull"},
-  oa_wall:   {wall:1, yaw:0.4, s:[...UP,["hs_straddle",0.5,0.4],["hs_finger",0.6,0.3],["hs_oafull",0.7,1.8]], still:"hs_oafull"},
+  oa_wall:   {wall:-1, yaw:0.4, s:[...UP,["hs_straddle",0.5,0.4],["hs_finger",0.6,0.3],["hs_oafull",0.7,1.8]], still:"hs_oafull"},
   oa_strad30:{s:[...UP,["hs_straddle",0.5,2.4]]},
   pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["sp2",0.6,0.2],["hs_straddle",0.6,0.3],["hs",0.5,1.0]], still:"hs_spress"},
   pr_elev:   {s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["sp2",0.6,0.2],["hs_straddle",0.6,0.3],["hs",0.5,1.0]], still:"hs_spress"},
@@ -304,7 +304,7 @@ export function mount(host, opts = {}){
   let cur = flat("stand"), yaw = opts.yaw != null ? opts.yaw : -0.9, spin = !opts.bare, scale = 1, jump = 0, extraYaw = 0;
   let queue = [], seg = null, here = "stand", wob = null, pulse = null, holdT = 0, scripted = false;      // transition en cours, posture atteinte, oscillation d'arrivée
   const off = {p:0, r:0};
-  const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3(); let camD = -1, camY = 1;
+  const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3(); let camD = -1, camY = 1, camX = 0, camZ = 0;
   const reduce = !opts.manual && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function apply(p, breath){
     root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.x = p.arch;
@@ -326,9 +326,11 @@ export function mount(host, opts = {}){
       root.position.z += (surf - ext) / scale; pivot.rotation.y = ry; pivot.updateMatrixWorld(true); }
     // vignettes : la caméra suit le personnage et se rapproche quand la figure est basse ou ramassée
     if (opts.bare) { pivot.updateMatrixWorld(true); box.setFromObject(root); box.getSize(tmp); const r = 0.5 * Math.hypot(tmp.x, tmp.y, tmp.z), cy = (box.min.y + box.max.y) / 2;
-      const wantD = Math.max(2.5, Math.min(4.3, r * 1.22 / 0.268)), wantY = Math.max(0.42, cy);
-      if (camD < 0) { camD = wantD; camY = wantY; } else { camD += (wantD - camD) * 0.22; camY += (wantY - camY) * 0.22; }
-      cam.position.set(0, camY + 0.03, camD); cam.lookAt(0, camY, 0); }
+      // cadrage : la caméra suit aussi le centre horizontal (mur, barres, figures décalées) et recule assez pour tout voir
+      const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
+      const wantD = Math.max(2.5, Math.min(5.2, r * 1.32 / 0.268)), wantY = Math.max(0.42, cy);
+      if (camD < 0) { camD = wantD; camY = wantY; camX = cx; camZ = cz; } else { const k = 0.22; camD += (wantD - camD) * k; camY += (wantY - camY) * k; camX += (cx - camX) * k; camZ += (cz - camZ) * k; }
+      cam.position.set(camX, camY + 0.03, camZ + camD); cam.lookAt(camX, camY, camZ); }
   }
   function size(){ const w = OFF ? OFF.w : host.clientWidth || 300, h = OFF ? OFF.h : host.clientHeight || 240; renderer.setSize(w, h, false); cam.aspect = w / h;
     if (opts.bare) { cam.position.set(0, 1.08, 4.25); cam.lookAt(0, 1.06, 0); } else { cam.position.set(0, 1.3, 5.6); cam.lookAt(0, 0.98, 0); }
