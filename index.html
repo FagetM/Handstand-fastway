@@ -65,8 +65,8 @@
     <h2 class="sect">Réglages</h2>
     <div class="block">
       <h2>Chrono</h2>
-      <label class="mut" for="countdown">Compte à rebours avant le départ, le temps de monter en équilibre</label>
-      <select id="countdown"><option value="0">Aucun</option><option value="3">3 secondes</option><option value="5">5 secondes</option><option value="10">10 secondes</option></select>
+      <label class="mut" for="countdown">Compte à rebours avant le départ du chrono, le temps de te mettre en position</label>
+      <select id="countdown"><option value="3">3 secondes</option><option value="5">5 secondes</option><option value="10">10 secondes</option></select>
     </div>
     <div class="block">
       <h2>Mon matériel</h2>
@@ -211,6 +211,8 @@
   <div class="mut" id="sdHint"></div>
   <div class="btns" id="sdReps"><div class="srcs" id="sdQuick"></div><input type="number" id="sdNum" min="0" inputmode="numeric" placeholder="Répétitions propres" aria-label="Répétitions propres"><button class="btn" id="sdSave">Enregistrer</button></div>
   <button class="btn" id="sdGo">Démarrer</button>
+  <button class="btn line" id="sdRedo" hidden>Faux départ : recommencer</button>
+  <div id="sdNote" hidden><div class="mut">Ou note ta tenue toi-même, sans le chrono :</div><div class="srcs" id="sdNoteQ"></div></div>
   <button class="btn line" id="sdNo" hidden>Pas encore</button>
   <button class="lnk" id="sdPain">Ça fait mal : arrêter</button>
 </dialog>

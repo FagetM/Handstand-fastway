@@ -169,7 +169,7 @@ function render(){
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
 
-  $("countdown").value = String(S.countdown);
+  $("countdown").value = String(Math.max(3, S.countdown || 0));
   renderQuest(Z, nextId);
   renderSess();
 }
@@ -276,7 +276,7 @@ $("go").onclick = async () => {
   const m = MS[cur], ck = $("clock");
   if (phase === "idle"){
     keepAwake(w => wake = w);
-    const left = S.countdown; let lastShown = -1;
+    const left = cdSec(); let lastShown = -1;
     const startRun = () => { phase = "run"; t0 = performance.now(); ck.className = "clock"; $("go").textContent = "Arrêter"; $("clockHint").textContent = "Appuie sur Arrêter en redescendant"; beep(880, 350); };
     if (left > 0) { phase = "count"; ck.className = "clock count"; $("go").textContent = "Annuler"; $("clockHint").textContent = "Mets-toi en place"; t0 = performance.now(); } else startRun();
     timer = setInterval(()=>{

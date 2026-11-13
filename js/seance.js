@@ -506,6 +506,7 @@ function startGuided(){ sessVal = null; sessPR = null; sessRes = {}; sessT = 0; 
 // dernière série finie : on ferme et, en séance guidée, on demande le ressenti (il règle la charge suivante)
 function closeEnd(){ const was = AUTO; $("sd").close(); if (was) endSession(); }
 const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd === me && sd.mode === mode && $("sd").open) $("sdGo").click(); }, ms); };
+const cdSec = () => Math.max(3, S.countdown || 0);   // toujours au moins 3 secondes pour se placer
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
 function nextSet(){
@@ -516,7 +517,7 @@ function nextSet(){
   return null;
 }
 function openSet(bi, si){
-  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true;
+  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true;
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
@@ -538,6 +539,8 @@ function openSet(bi, si){
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
     { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","src", String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); }); }
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
+    // tenue libre : impossible de toucher Stop la tête en bas, alors on peut noter sa tenue après coup
+    if (hold) { const q = $("sdNoteQ"), T = tg || 10; q.textContent = ""; [...new Set([0.3, 0.5, 0.75, 1, 1.25, 1.5].map(k => Math.max(1, Math.round(T * k))))].forEach(n => { const bq = el("button","src", n + " s"); bq.setAttribute("aria-label", "Tenue de " + n + " secondes"); bq.onclick = () => { clearInterval(sdTimer); sdTimer = null; saveSet(n); }; q.append(bq); }); $("sdNote").hidden = false; }
     $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
       : "Premier passage : fais ton maximum propre, il servira de référence.";
     if (b.note) $("sdHint").textContent += " " + b.note;
@@ -597,7 +600,8 @@ function startRest(r, nx, title){
 }
 function runFixed(){
   const {s, day, b} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), zen = !!b.zen;
-  const prep = zen ? (sd.side === 1 ? 6 : 4) : sd.side === 1 ? S.countdown : 5;
+  const prep = zen ? (sd.side === 1 ? 6 : 4) : sd.side === 1 ? cdSec() : 5; $("sdRedo").hidden = false;
+  if (prep && !zen && sd.side === 1) say("Départ dans " + prep + " secondes.", true);
   let end = Date.now() + prep*1000, last = -1; sd.mode = prep ? "count" : "run";
   let said10 = dur < 25, saidHalf = zen || dur < 60;
   const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350);
@@ -647,10 +651,10 @@ $("sdGo").onclick = async e => {
   }
   if (sd.mode === "idle"){
     keepAwake(sdKeep);
-    const left = S.countdown; let t = performance.now(), last = -1, hit = false;
+    const left = cdSec(), hint0 = $("sdHint").textContent; let t = performance.now(), last = -1, hit = false; $("sdRedo").hidden = false;
     let said3 = !(sd.tg >= 8);
-    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); $("sdGo").textContent = AUTO && sd.s.auto ? (/^(st_|b1_|b2_|in_|oa_|pr_)/.test(sd.b.ms || "") ? "J'ai chuté" : "J'arrête") : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
-    if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; } else run();
+    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdHint").textContent = hint0; setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); $("sdGo").textContent = AUTO && sd.s.auto ? (/^(st_|b1_|b2_|in_|oa_|pr_)/.test(sd.b.ms || "") ? "J'ai chuté" : "J'arrête") : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
+    if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; $("sdHint").textContent = "Mets-toi en position : le chrono démarre dans " + left + " secondes."; say("Départ dans " + left + " secondes.", true); } else run();
     sdTimer = setInterval(()=>{
       const e = (performance.now() - t)/1000;
       if (sd.mode === "count"){ const r = Math.ceil(left - e); if (r <= 0) run(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
@@ -663,6 +667,8 @@ $("sdGo").onclick = async e => {
     if (v >= 0.5) saveSet(v); else openSet(sd.bi, sd.si);
   }
 };
+// faux départ : on efface le chrono et on repart du décompte, sans rien enregistrer
+$("sdRedo").onclick = () => { if (!sd) return; hush(); const a = AUTO; openSet(sd.bi, sd.si); if (!a && sd.mode === "idle") $("sdGo").click(); };
 $("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (saneReps(v, sd && sd.tg)) saveSet(v); };
 $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
 $("sdX").addEventListener("click", hush);
