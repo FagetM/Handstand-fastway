@@ -130,7 +130,7 @@ function journey(nextId){
       const c = el("span","c"), R = 39, Cc = 2*Math.PI*R, sg = Cc / L.length, gap = L.length > 1 ? 5 : 0;
       let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
       L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < kk ? "f" : "") + '" stroke-dasharray="' + (sg - gap).toFixed(1) + ' ' + (Cc - sg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*sg + gap/2)).toFixed(1) + '"/>'; });
-      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 96 : cur ? 140 : 124); c.append(sp);
+      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; if (!cur) sp.dataset.still = 1; sprPaint(sp, small ? 72 : cur ? 104 : 92); c.append(sp);
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
       b.append(c, el("span","n", m.name));
       const nx = nextStep(m);

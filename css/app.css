@@ -377,12 +377,12 @@ ul.plan li{margin:7px 0}
 .jn .c{position:relative;width:96px;height:96px;border-radius:50%;display:grid;place-items:center;background:var(--raise);transition:transform .25s}
 .jn:active .c{transform:scale(.94)}
 .sp{display:block;background-repeat:no-repeat;background-position:0 0;contain:strict}
-.jn .c .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-56%);pointer-events:none;filter:drop-shadow(0 2px 3px rgba(0,0,0,.25))}
+.jn .c .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;clip-path:circle(50% at 50% 50%)}
 
 .jn .c{background:color-mix(in srgb,var(--txt) 13%,var(--bg))}
 .sp.demo{border-radius:20px;background-color:var(--raise)}
 @keyframes spr{to{background-position-x:var(--end)}}
-.jn .rg{position:absolute;inset:-6px;transform:rotate(-90deg)}
+.jn .rg{position:absolute;left:-6px;top:-6px;width:calc(100% + 12px);height:calc(100% + 12px);transform:rotate(-90deg)}
 .jn .rg circle{stroke:var(--line);stroke-width:4;stroke-linecap:round}
 .jn .rg circle.f{stroke:var(--acc)}
 .jn.done .rg circle.f{stroke:var(--txt)}
@@ -394,7 +394,7 @@ ul.plan li{margin:7px 0}
 .jn.pop .c{animation:bloom .7s cubic-bezier(.2,.8,.2,1)}
 @keyframes bloom{0%{transform:scale(.9);opacity:.4}60%{transform:scale(1.05);opacity:1}}
 @keyframes pop{40%{transform:scale(1.22)}}
-.jn.sm{width:108px}.jn.sm .c{width:76px;height:76px}.jn.sm .rg{inset:-12px;transform:rotate(-90deg) scale(.86)}
+.jn.sm{width:108px}.jn.sm .c{width:76px;height:76px}.jn.sm .rg{display:none}
 .jn.alt .c{border-radius:20px}.jn.alt .rg{display:none}
 .jn .ck,.jn .lkb{z-index:1;position:absolute;right:-4px;bottom:-4px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;box-shadow:0 0 0 3px var(--bg)}
 .jn .ck{background:var(--acc);color:var(--onacc)}

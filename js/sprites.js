@@ -1,7 +1,7 @@
 // Personnage 3D et animations des figures (bandes d'images calculées puis gardées sur l'appareil).
 "use strict";
 // ---------- Personnage 3D (chargé à la demande ; la silhouette 2D reste en secours) ----------
-const POSE3D = {fd_plank:"pl_lean", fd_roue:"hs_straddle", fd_push:"pl_lean", fd_c2w:"hs", fd_dips:"stand", st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_str15:"hs",
+const POSE3D = {fd_plank:"pl_lean", fd_roue:"hs_straddle", fd_push:"pl_lean", fd_c2w:"hs", fd_dips:"sup_up", st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_str15:"hs",
   in_holds:"hs_straddle", in_changes:"hs_straddle", in_tuck:"hs_tuck", in_str40:"hs", in_str60:"hs", in_7s:"hs_seven1", in_7d:"hs_seven",
   in_toes:"hs", in_toes7:"hs_seven", oa_flaghoriz:"hs_flag", oa_shift:"hs_straddle", oa_finger:"oahs", oa_strarm:"oahs", oa_oahs:"oahs", oa_strad30:"hs_straddle", oa_wall:"oahs", oa_lift:"oahs", oa_oahs10:"oahs", pl_ppp:"pl_lean", pl_1leg:"pl_adv",
   pr_straddle:"hs_straddle", pr_pike:"hs", pr_stalder:"hs_straddle", in_mexican:"hs", in_hspu:"hs", oa_flagfloor:"hs_flag",
@@ -15,7 +15,8 @@ function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
   if (!R) { sp.style.backgroundImage = 'url("anim/still_' + pose + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
   sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
-  if (!animOn()) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
+  // still : on montre la posture tenue de la figure, sans boucle (nœuds du parcours)
+  if (!animOn() || sp.dataset.still) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
   sp.style.backgroundPosition = "0 0"; sp.style.setProperty("--end", (-R.n * size) + "px");
   sp.style.animation = "spr " + (R.n / SPF).toFixed(2) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / SPF).toFixed(2) + "s";
   if (sprIO && !sp._io) { sp._io = 1; sprIO.observe(sp); }
@@ -25,7 +26,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "12-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "13-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){

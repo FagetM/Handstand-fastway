@@ -36,6 +36,9 @@ Object.assign(POSES, {
   // montée en fente : bras tendus au-dessus de la tête, grand pas en avant genou fléchi (le bassin descend), puis bascule d'un bloc
   // accroupi pour poser les mains : genoux fléchis, bassin bas (avant la planche, les pompes, la montée face au mur)
   squat:{pitch:0.85, arch:0.1, arm:[-1.25,-1.25], armZ:[0.12,0.12], elbow:[-0.1,-0.1], hip:[-2.1,-2.1], hipZ:[0.18,0.18], knee:[2.15,2.15], head:-0.25, point:0},
+  // appui sur barres ou parallettes, jambes groupées : bras tendus (haut) puis coudes à 90° (bas)
+  sup_up:{pitch:0.08, arm:[0.1,0.1], armZ:[0.25,0.25], elbow:[0,0], hip:[0.05,0.05], hipZ:[0.06,0.06], knee:[1.5,1.5], head:-0.05},
+  sup_dn:{pitch:0.4, arm:[1.05,1.05], armZ:[0.22,0.22], elbow:[-1.6,-1.6], hip:[-0.25,-0.25], hipZ:[0.06,0.06], knee:[1.5,1.5], head:-0.25},
   reach:{pitch:0,    arm:[-2.95,-2.95], armZ:[0.05,0.05], hip:[0,0],      hipZ:[0.03,0.03], knee:[0,0],      head:0.05},
   lunge:{pitch:0.15, arm:[-3.0,-3.0],   armZ:[0.05,0.05], hip:[-1.5,0.8], hipZ:[0.04,0.04], knee:[1.5,0.08], head:0, point:0},   // genou avant à 90°, jambe arrière loin derrière
   tip:  {pitch:0.95, arch:-0.1, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-2.1,0.1], hipZ:[0.03,0.03], knee:[1.3,0], head:-0.15, point:0},
@@ -141,6 +144,7 @@ export const SCRIPTS = {
   fd_plank:  {s:[["squat",0.45,0],["c2w_0",0.5,2.4]], still:"c2w_0"},
   fd_push:   {s:[["squat",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.6]], still:"pu_down"},
   fd_roue:   {cut:true, s:[["stand",0.2,0.2],...UP,["hs_straddle",0.45,0.2],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs_straddle"},
+  fd_dips:   {wall:"bars", s:[["stand",0.3,0.1],["sup_up",0.5,0.4],["sup_dn",0.7,0.1],["sup_up",0.6,0.2],["sup_dn",0.7,0.1],["sup_up",0.6,0.6]], still:"sup_up"},
   fd_c2w:    {wall:-1, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.6],["c2w_2",0.6,0],["c2w_1",0.6,0],["c2w_0",0.6,0.2]], still:"hs"},
   me:        {s:[["stand",0.3,1.2],["cheer",0.5,0.7],["stand",0.5,0.4],["cheer",0.5,0.7],["stand",0.5,0.8]], still:"stand"},
   pl_lean:   {s:[["squat",0.45,0],["pl_lean",0.5,2.2]]},
@@ -247,6 +251,10 @@ export function mount(host, opts = {}){
   // mur des exercices au mur : un panneau derrière ou devant le personnage
   const wall = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.06), new THREE.MeshStandardMaterial({roughness:1, transparent:true, opacity:0.5})); wall.position.set(0, 1.25, -0.42); wall.visible = false;
   const wallPivot = grp(scene, 0, 0, 0); wallPivot.add(wall);                 // le mur suit la vue, pas les pirouettes du personnage
+  // barres parallèles (dips) : deux barres sous les mains, à hauteur de hanches
+  const BAR_H = 0.95, bars = grp(wallPivot, 0, 0, 0), barM = new THREE.MeshStandardMaterial({roughness:0.6, metalness:0.2}); bars.visible = false;
+  const barL = [-1, 1].map(() => { const g = grp(bars, 0, 0, 0), top = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.9, 12), barM); top.rotation.x = PI/2; top.position.y = BAR_H - 0.03; g.add(top);
+    [-0.38, 0.38].forEach(z => { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, BAR_H, 10), barM); post.position.set(0, BAR_H / 2, z); g.add(post); }); return g; });
   const ringM = new THREE.MeshStandardMaterial({roughness:0.5});
   let arc = null;
   const setArc = frac => { if (arc) { scene.remove(arc); arc.geometry.dispose(); }
@@ -277,7 +285,7 @@ export function mount(host, opts = {}){
     headband.visible = hk === "band"; capG.visible = hk === "cap"; beanie.visible = hk === "beanie"; crown.visible = hk === "crown";
     belt.visible = knot.visible = xk === "belt"; medal.visible = xk === "medal" || xk === "medal2"; coin2.visible = xk === "medal2";
   }
-  function colors(){ wall.material.color.set(cssv("--mut") || "#918e86"); const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
+  function colors(){ wall.material.color.set(cssv("--mut") || "#918e86"); barM.color.set(cssv("--mut") || "#918e86"); const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
 
   let cur = flat("stand"), yaw = opts.yaw != null ? opts.yaw : -0.9, spin = !opts.bare, scale = 1, jump = 0, extraYaw = 0;
   let queue = [], seg = null, here = "stand", wob = null, pulse = null, holdT = 0, scripted = false;      // transition en cours, posture atteinte, oscillation d'arrivée
@@ -295,7 +303,9 @@ export function mount(host, opts = {}){
     if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx > 0 || p.one < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); }); }
     tmp.set((box.min.x + box.max.x) / 2, 0, (box.min.z + box.max.z) / 2); pivot.worldToLocal(tmp);
     root.position.set(-tmp.x, -low / scale, -tmp.z);                         // l'appui touche le socle, le corps est centré dessus
-    pivot.position.y = jump;
+    pivot.position.y = jump + (bars.visible && p.hands > 0.5 ? BAR_H : 0);   // debout entre les barres, puis en appui dessus
+    // les barres suivent les mains (écartement et avancée)
+    if (bars.visible) { pivot.updateMatrixWorld(true); limbs.forEach((L, i) => { hb.setFromObject(L.hand); hb.getCenter(tmp); wallPivot.worldToLocal(tmp); barL[i].position.x = tmp.x; barL[i].position.z = tmp.z; }); }
     // exercices au mur : le personnage reste au contact du mur (talons, pieds ou poitrine), au lieu de le traverser
     if (wall.visible) { const ry = pivot.rotation.y; pivot.rotation.y = p.spin; pivot.updateMatrixWorld(true); box.setFromObject(root);
       const side = wall.position.z > 0 ? 1 : -1, surf = side * (Math.abs(wall.position.z) - 0.03), ext = side > 0 ? box.max.z : box.min.z;
@@ -401,7 +411,7 @@ export function mount(host, opts = {}){
     at(){ return seg ? seg.name : here; },
     holding(){ return !seg && holdT > 0; },
     view(y){ yaw = y; dirty = true; },
-    wall(side){ wall.visible = !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
+    wall(side){ bars.visible = side === "bars"; wall.visible = typeof side === "number" && !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
     canvas,
     png(){ return canvas.toDataURL("image/png"); },
   };
