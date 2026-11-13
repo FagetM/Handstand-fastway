@@ -10,7 +10,7 @@ const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
 // habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
-const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit"].includes(id)) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
+const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit","pr_vsitC"].includes(id)) || /^ul_/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check" || (m.target && st(id).best >= m.target)) return null;   // cible déjà tenue : il reste à valider, pas un plateau
@@ -122,6 +122,8 @@ function journey(nextId){
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
     s.ms.filter(m=>m.alt).forEach((m, i)=>{ const x = X[(k - 1 - i + 99 * X.length) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40 - i * RH, true];   /* plusieurs bonus : un par rangée, jamais superposés */ items.push({k:"n", id:m.id, alt:true}); y += 0; });
     const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
+  // le sommet : le combo ultime, qui réunit les trois disciplines
+  { const s = SEC.ultime; sign(s.name, "ultime", "Un bras, planche et montées réunis, sans poser les pieds."); prev = null; s.ms.forEach(m=>step(m.id)); y += 30; }
   // hors parcours : les figures au sol
   sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
   prev = null; SEC.low.ms.forEach(m=>step(m.id));   // chemin sinueux, plus de figures collées

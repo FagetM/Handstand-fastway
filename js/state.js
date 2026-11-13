@@ -36,7 +36,7 @@ const NEED_DAYS = 2;
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
 const valRule = id => id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
+const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","oa_shTuck","oa_shStrad","oa_shFlag","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 2 : 1;   // planche : 2 tentatives sur 3 à la cible
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
@@ -131,7 +131,7 @@ function toast(msg){ const t = $("toast"), dl = [...document.querySelectorAll("d
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
 // paliers sur mesure quand les tiers de la cible n'ont pas de sens
-const LVLS = {pr_negS:[3], pr_negP:[3], pr_halfSt:[3], pr_lsitNeg:[3], pr_wallNeg:[5], oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
+const LVLS = {pr_negS:[3], pr_negP:[3], pr_halfSt:[3], pr_lsitNeg:[3], pr_wallNeg:[5], oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], oa_shTuck:[2,3,5], oa_shStrad:[2,3,5], oa_shFlag:[2,3,5], pr_manna:[1,2,3], pl_strHs:[1,2], pl_hsDown:[1,2,3], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
 const lvls = m => LVLS[m.id] ? LVLS[m.id] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
 const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };

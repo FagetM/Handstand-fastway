@@ -38,8 +38,8 @@ Object.assign(POSES, {
   // accroupi pour poser les mains : genoux fléchis, bassin bas (avant la planche, les pompes, la montée face au mur)
   squat:{pitch:0.85, arch:0.1, arm:[-1.25,-1.25], armZ:[0.12,0.12], elbow:[-0.1,-0.1], hip:[-2.1,-2.1], hipZ:[0.18,0.18], knee:[2.15,2.15], head:-0.25, point:0},
   // appui sur barres ou parallettes, jambes groupées : bras tendus (haut) puis coudes à 90° (bas)
-  sup_up:{pitch:0.08, arm:[0.1,0.1], armZ:[0.25,0.25], elbow:[0,0], hip:[0.05,0.05], hipZ:[0.06,0.06], knee:[1.5,1.5], head:-0.05},
-  sup_dn:{pitch:0.4, arm:[1.05,1.05], armZ:[0.22,0.22], elbow:[-1.6,-1.6], hip:[-0.25,-0.25], hipZ:[0.06,0.06], knee:[1.5,1.5], head:-0.25},
+  sup_up:{pitch:0.12, arch:0.15, arm:[0.12,0.12], armZ:[0.12,0.12], elbow:[0,0], hip:[-2.25,-2.25], hipZ:[0.1,0.1], knee:[2.45,2.45], head:-0.1},   // en appui sur parallettes, genoux groupés devant
+  sup_dn:{pitch:0.5, arch:0.15, arm:[1.0,1.0], armZ:[0.12,0.12], elbow:[-1.55,-1.55], hip:[-2.4,-2.4], hipZ:[0.1,0.1], knee:[2.45,2.45], head:-0.3},   // coudes à 90°, buste penché, genoux groupés
   reach:{pitch:0,    arm:[-2.95,-2.95], armZ:[0.05,0.05], hip:[0,0],      hipZ:[0.03,0.03], knee:[0,0],      head:0.05},
   lunge:{pitch:0.15, arm:[-3.0,-3.0],   armZ:[0.05,0.05], hip:[-1.5,0.8], hipZ:[0.04,0.04], knee:[1.5,0.08], head:0, point:0},   // genou avant à 90°, jambe arrière loin derrière
   tip:  {pitch:0.95, arch:-0.1, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-2.1,0.1], hipZ:[0.03,0.03], knee:[1.3,0], head:-0.15, point:0},
@@ -66,7 +66,7 @@ function route(a, b){
 const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; };      // arrivée avec un léger dépassement          // postures en appui sur les pieds (ou pieds + mains)
 // ---------- Animations propres à chaque jalon ----------
 const P = (base, o) => Object.assign({}, POSES[base], o);
-const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0), one:p.one ? -p.one : p.one}); // un bras : l'appui change de main
+const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0), one:p.one ? -p.one : p.one, twist:p.twist != null ? -p.twist : undefined}); // un bras : l'appui change de main
 Object.assign(POSES, {
   // poitrine face au mur : dos au mur au départ, mains au sol, on remonte les pieds le long du mur en rapprochant les mains
   pu_down:  {point:0, feet:true, pitch:1.37, arm:[-0.55,-0.55], armZ:[0.2,0.2], elbow:[-1.45,-1.45], hip:[-0.1,-0.1], hipZ:[0,0], knee:[0,0], head:-0.6},
@@ -75,7 +75,7 @@ Object.assign(POSES, {
   c2w_2:    {pitch:2.6, arm:[-2.6,-2.6], armZ:[0,0], hip:[-0.45,-0.2], hipZ:[0,0], knee:[0.25,0], head:-0.4},
   hs_cw1:   P("hs", {roll:1.15, hipZ:[0.8,0.8], feet:true}),                                             // sortie en roue : on bascule sur le côté…
   hs_cw2:   {pitch:PI, roll:PI, arm:[0.1,0.1], armZ:[0.3,0.3], elbow:[-0.2,-0.2], hip:[0,0], hipZ:[0.25,0.25], knee:[0,0], head:0, feet:true},   // …et on retombe debout
-  hs_cw3:   {pitch:PI, roll:PI, spin:PI, arm:[0.08,0.08], armZ:[0.13,0.13], elbow:[-0.22,-0.22], hip:[0,0], hipZ:[0.05,0.05], knee:[0,0], head:0, feet:true},
+  hs_cw3:   {pitch:PI, roll:PI, arm:[0.08,0.08], armZ:[0.13,0.13], elbow:[-0.22,-0.22], hip:[0,0], hipZ:[0.05,0.05], knee:[0,0], head:0, feet:true},
   hs_splitM:mirror(POSES.hs_split),
   hs_split2:P("hs_split", {hip:[-0.5,0.95]}),
   hs_tuck90:P("hs", {pitch:PI+0.05, arm:[-PI,-PI], arch:0.1, hip:[-1.62,-1.62], knee:[1.9,1.9], head:-0.45}),
@@ -163,7 +163,7 @@ export const SCRIPTS = {
   fd_plank:  {s:[["squat",0.45,0],["c2w_0",0.5,2.4]], still:"c2w_0"},
   fd_push:   {s:[["squat",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.6]], still:"pu_down"},
   fd_roue:   {cut:true, yaw:-0.15, s:[["stand",0.2,0.2],...UP,["hs_straddle",0.45,0.2],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs_straddle"},
-  fd_dips:   {wall:"bars", s:[["stand",0.3,0.1],["sup_up",0.5,0.4],["sup_dn",0.7,0.1],["sup_up",0.6,0.2],["sup_dn",0.7,0.1],["sup_up",0.6,0.6]], still:"sup_up"},
+  fd_dips:   {wall:"bars", yaw:-0.6, s:[["stand",0.3,0.1],["crouch",0.4,0],["sup_up",0.5,0.4],["sup_dn",0.7,0.1],["sup_up",0.6,0.2],["sup_dn",0.7,0.1],["sup_up",0.6,0.6]], still:"sup_up"},
   fd_c2w:    {wall:-1, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",1.0,0.2],["c2w_2",1.2,0.2],["hs",1.5,1.6],["c2w_2",1.4,0],["c2w_1",1.2,0],["c2w_0",1.0,0.2]], still:"hs"},
   me:        {s:[["stand",0.3,1.2],["cheer",0.5,0.7],["stand",0.5,0.4],["cheer",0.5,0.7],["stand",0.5,0.8]], still:"stand"},
   pl_lean:   {s:[["squat",0.45,0],["pl_lean",0.5,2.2]]},
@@ -189,7 +189,34 @@ Object.assign(POSES, {
   tuckRise:P("hs_tuck", {pitch:2.2, arm:[-2.2,-2.2]}),                   // le bassin monte en groupé
 });
 POSES.hs_tflagM = mirror(POSES.hs_tflag);   // drapeau groupé, autre côté
+// shapes sur un bras, manna, presses planche ⇄ équilibre
+Object.assign(POSES, {
+  hs_oatuck: P("hs_oafull", {pitch:PI + 0.06, hip:[-1.85,-1.85], knee:[2.1,2.1], hipZ:[0.12,0.12], roll:0.32}),   // un bras groupé
+  hs_oastrad:P("hs_oafull", {hipZ:[0.95,0.95], roll:0.36}),                                                       // un bras jambes écartées
+  hs_oaflag: P("hs_oafull", {hipZ:[-0.35,1.75], roll:0.6}),                                                       // un bras en drapeau
+  hs_fingerM:mirror(POSES.hs_finger),
+  vsitC: P("lsit0", {pitch:-0.3, arch:0.4, arm:[0.2,0.2], hip:[-2.45,-2.45], head:-0.2}),                     // V-sit jambes serrées
+  mannaP:{pitch:-0.5, arch:0.35, arm:[0.7,0.7], armZ:[0.18,0.18], hip:[-2.6,-2.6], hipZ:[0.03,0.03], knee:[0,0], head:-0.2},   // les mains passent derrière le bassin, épaules qui s'ouvrent
+  manna: {pitch:-0.8, arch:0.4, arm:[1.0,1.0], armZ:[0.16,0.16], hip:[-2.95,-2.95], hipZ:[0.03,0.03], knee:[0,0], head:-0.3},        // bassin devant les mains, mains derrière, jambes au-dessus du visage — manna : épaules en extension, jambes au-dessus de la tête
+  hs_pl45:P("pl_full", {pitch:2.3, arm:[-1.75,-1.75], head:-0.55}),                                               // entre la full planche et l'équilibre, corps gainé
+  pl_s45: P("pl_straddle", {pitch:2.3, arm:[-1.7,-1.7], head:-0.55}),
+});
+POSES.hs_oatuckM = mirror(POSES.hs_oatuck); POSES.hs_oastradM = mirror(POSES.hs_oastrad); POSES.hs_oaflagM = mirror(POSES.hs_oaflag);
 Object.assign(SCRIPTS, {
+  oa_shTuck: {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,0.5],["hs_oatuck",0.8,1.4],["hs_oafull",0.8,0.4]], still:"hs_oatuck"},
+  oa_shStrad:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,0.5],["hs_oastrad",0.7,1.4],["hs_oafull",0.7,0.3]], still:"hs_oastrad"},
+  oa_shFlag: {yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,0.5],["hs_oastrad",0.7,0.3],["hs_oaflag",0.8,1.4],["hs_oastrad",0.8,0.3]], still:"hs_oaflag"},
+  pr_vsitC:  {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.7,1.4],["lsit0",0.6,0.2],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"vsitC"},
+  pr_mannaP: {cut:true, yaw:-1.2, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.6,0.2],["mannaP",0.8,1.4],["vsitC",0.6,0.1],["lsit0",0.6,0.1],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"mannaP"},
+  pr_manna:  {cut:true, yaw:-1.2, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["vsitC",0.6,0.1],["mannaP",0.7,0.1],["manna",0.8,1.4],["mannaP",0.6,0],["vsitC",0.6,0],["lsit0",0.6,0.1],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"manna"},
+  pl_strHs:  {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.6],["pl_s45",0.9,0],["hs_straddle",0.8,0.3],["hs",0.5,0.6]], still:"pl_s45"},
+  pl_hsDown: {s:[...UP,["hs",0.5,0.6],["hs_pl45",1.2,0],["pl_full",1.0,0.8]], still:"hs_pl45"},
+  pl_press:  {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.1],["pl_straddle",0.5,0.1],["pl_full",0.6,0.8],["hs_pl45",1.1,0],["hs",0.9,0.8]], still:"hs_pl45"},
+  ul_c1:     {cut:true, yaw:-0.5, s:[["crouch",0.4,0],["sit",0.4,0],["lsit0",0.6,0.3],["lsit1",0.7,0.2],["lsit2",0.6,0],["lsit3",0.6,0],["hs",0.6,0.5],["hs_finger",0.5,0],["hs_oafull",0.7,1.0],["hs",0.6,0.3],["hs_fingerM",0.5,0],["hs_oafullM",0.7,1.0],["hs",0.6,0.4],["kick",0.35,0],["plant",0.3,0],["tip",0.3,0],["lunge",0.35,0],["stand",0.45,0.1]], still:"hs_oafull"},
+  ul_c2:     {s:[...UP,["hs",0.5,0.5],["hs_pl45",1.1,0],["pl_full",0.9,1.0],["hs_pl45",1.0,0],["hs",0.9,0.6]], still:"pl_full"},
+  ul_c3:     {cut:true, yaw:-0.9, s:[...UP,["hs",0.5,0.5],["lsit3",0.6,0],["lsit2",0.6,0],["lsit1",0.6,0],["lsit0",0.7,0.5],["vsitC",0.6,0.2],["mannaP",0.6,0],["manna",0.7,1.0],["lsit0",0.8,0.2],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"manna"},
+  // le combo ultime : équerre, montée, un bras de chaque côté, full planche aller-retour, équerre, manna
+  ul_full:   {cut:true, yaw:-0.6, s:[["crouch",0.29,0.0],["sit",0.29,0.0],["lsit0",0.41,0.25],["lsit1",0.45,0.0],["lsit2",0.41,0.0],["lsit3",0.41,0.0],["hs",0.41,0.16],["hs_finger",0.33,0.0],["hs_oafull",0.45,0.41],["hs",0.37,0.0],["hs_fingerM",0.33,0.0],["hs_oafullM",0.45,0.41],["hs",0.37,0.08],["hs_pl45",0.66,0.0],["pl_full",0.57,0.49],["hs_pl45",0.66,0.0],["hs",0.57,0.08],["lsit3",0.41,0.0],["lsit2",0.41,0.0],["lsit1",0.41,0.0],["lsit0",0.45,0.16],["vsitC",0.41,0.0],["mannaP",0.41,0.0],["manna",0.49,0.57],["lsit0",0.49,0.0],["sit",0.29,0.0],["crouch",0.29,0.0],["stand",0.29,0.0]], still:"manna"},
   oa_oahsw:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafullM",0.8,1.8]], still:"hs_oafullM"},
   oa_sidehold:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_shiftL",0.6,2.0]], still:"hs_shiftL"},
   oa_tuckflag:{yaw:-0.15, s:[...UP,["hs_tuck",0.5,0.3],["hs_tflag",0.8,0.8],["hs_tuck",0.6,0.1],["hs_tflagM",0.8,0.8],["hs_tuck",0.6,0.1]], still:"hs_tflag"},
@@ -214,10 +241,10 @@ Object.assign(SCRIPTS, {
   pr_lsitNeg:SCRIPTS.pr_lsitHs,
 });
 
-const KEYS = ["point","hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
+const KEYS = ["point","hands","one","spin","arch","twist","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   // pointes de pied : tendues dès que les pieds quittent le sol (en gym, un pied en l'air est toujours pointé)
-  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
+  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, twist:p.twist != null ? p.twist : Math.max(-0.3, Math.min(0.3, ((p.arm[1] - p.arm[0]) + (p.hip[1] - p.hip[0]) * 0.5) * 0.09)), pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
     armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], hipY0:(p.hipY || [0,0])[0], hipY1:(p.hipY || [0,0])[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
@@ -309,9 +336,9 @@ export function mount(host, opts = {}){
   const wall = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.06), new THREE.MeshStandardMaterial({roughness:1, transparent:true, opacity:0.5})); wall.position.set(0, 1.25, -0.42); wall.visible = false;
   const wallPivot = grp(scene, 0, 0, 0); wallPivot.add(wall);                 // le mur suit la vue, pas les pirouettes du personnage
   // barres parallèles (dips) : deux barres sous les mains, à hauteur de hanches
-  const BAR_H = 0.95, bars = grp(wallPivot, 0, 0, 0), barM = new THREE.MeshStandardMaterial({roughness:0.6, metalness:0.2}); bars.visible = false;
-  const barL = [-1, 1].map(() => { const g = grp(bars, 0, 0, 0), top = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.9, 12), barM); top.rotation.x = PI/2; top.position.y = BAR_H - 0.03; g.add(top);
-    [-0.38, 0.38].forEach(z => { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, BAR_H, 10), barM); post.position.set(0, BAR_H / 2, z); g.add(post); }); return g; });
+  const BAR_H = 0.4, bars = grp(wallPivot, 0, 0, 0), barM = new THREE.MeshStandardMaterial({roughness:0.6, metalness:0.2}); bars.visible = false;
+  const barL = [-1, 1].map(() => { const g = grp(bars, 0, 0, 0), top = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.55, 12), barM); top.rotation.x = PI/2; top.position.y = BAR_H - 0.03; g.add(top);
+    [-0.22, 0.22].forEach(z => { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, BAR_H, 10), barM); post.position.set(0, BAR_H / 2, z); g.add(post); }); return g; });
   const ringM = new THREE.MeshStandardMaterial({roughness:0.5});
   let arc = null;
   const setArc = frac => { if (arc) { scene.remove(arc); arc.geometry.dispose(); }
@@ -349,48 +376,52 @@ export function mount(host, opts = {}){
   const off = {p:0, r:0};
   const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3(); let camD = -1, camY = 1, camX = 0, camZ = 0; let lastC = {};   // appuis au sol de l'image précédente
   // mains posées : chaque main au sol reste à sa place (le bras s'ajuste) ; si le corps s'éloigne trop, elle fait un pas
-  let plant = [null, null], fdt = 1 / 30; const HA = new THREE.Vector3(), HB = new THREE.Vector3(), HT = new THREE.Vector3();
+  // appuis posés (mains, et pieds quand on est en appui sur les mains) : chaque appui garde sa place, le membre s'ajuste ;
+  // si le corps s'éloigne trop, l'appui fait un pas (une main, ou un pied, à la fois)
+  let plant = [null, null, null, null], fdt = 1 / 30; const HA = new THREE.Vector3(), HB = new THREE.Vector3();
   const STEP_D = 0.14, STEP_T = 0.32, LIFT = 0.08, MAXS = 0.25, GROUND = 0.035;
-  function ik(L, T){   // bras à 3 angles (épaule avant/côté, coude) : moindres carrés amortis, quelques itérations
-    const q = [L.sh.rotation.x, L.sh.rotation.z, L.el.rotation.x], q0 = q.slice(), e0 = q[2], lo = Math.min(-2.6, e0), hi = Math.max(0.05, e0);
-    const set = () => { L.sh.rotation.x = q[0]; L.sh.rotation.z = q[1]; L.el.rotation.x = q[2]; L.sh.updateMatrixWorld(true); };
-    for (let it = 0; it < 8; it++) { set(); L.hand.getWorldPosition(HA); const e = [T.x - HA.x, T.y - HA.y, T.z - HA.z]; if (e[0]*e[0] + e[1]*e[1] + e[2]*e[2] < 4e-6) break;
-      const J = []; for (let j = 0; j < 3; j++) { q[j] += 1e-3; set(); L.hand.getWorldPosition(HB); J.push([(HB.x - HA.x) / 1e-3, (HB.y - HA.y) / 1e-3, (HB.z - HA.z) / 1e-3]); q[j] -= 1e-3; }
+  const CH = limbs.map(L => ({a:L.sh, b:L.el, end:L.hand, hand:true})).concat(limbs.map(L => ({a:L.hip, b:L.kn, end:L.foot, hand:false})));
+  function ik(C, T){   // membre à 3 angles (avant, côté, coude ou genou) : moindres carrés amortis, quelques itérations
+    const q = [C.a.rotation.x, C.a.rotation.z, C.b.rotation.x], q0 = q.slice(), e0 = q[2], lo = C.hand ? Math.min(-2.6, e0) : Math.min(-0.05, e0), hi = C.hand ? Math.max(0.05, e0) : Math.max(2.6, e0);
+    const set = () => { C.a.rotation.x = q[0]; C.a.rotation.z = q[1]; C.b.rotation.x = q[2]; C.a.updateMatrixWorld(true); };
+    for (let it = 0; it < 8; it++) { set(); C.end.getWorldPosition(HA); const e = [T.x - HA.x, T.y - HA.y, T.z - HA.z]; if (e[0]*e[0] + e[1]*e[1] + e[2]*e[2] < 4e-6) break;
+      const J = []; for (let j = 0; j < 3; j++) { q[j] += 1e-3; set(); C.end.getWorldPosition(HB); J.push([(HB.x - HA.x) / 1e-3, (HB.y - HA.y) / 1e-3, (HB.z - HA.z) / 1e-3]); q[j] -= 1e-3; }
       const M = [[0,0,0],[0,0,0],[0,0,0]]; for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) { let v = a === b ? 0.0025 : 0; for (let j = 0; j < 3; j++) v += J[j][a] * J[j][b]; M[a][b] = v; }
-      const det = M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1]) - M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0]) + M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]); if (Math.abs(det) < 1e-12) break;
-      const col = (k) => M.map((row, a) => row.map((v, b) => b === k ? e[a] : v)), d3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
-      const x = [d3(col(0)) / det, d3(col(1)) / det, d3(col(2)) / det];
+      const d3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]), det = d3(M); if (Math.abs(det) < 1e-12) break;
+      const col = k => M.map((row, a) => row.map((v, b) => b === k ? e[a] : v)), x = [d3(col(0)) / det, d3(col(1)) / det, d3(col(2)) / det];
       let dq = J.map(c => c[0]*x[0] + c[1]*x[1] + c[2]*x[2]); const n = Math.hypot(...dq); if (n > 0.3) dq = dq.map(v => v * 0.3 / n);
       for (let j = 0; j < 3; j++) q[j] += dq[j]; q[2] = Math.max(lo, Math.min(hi, q[2])); }
-    set(); L.hand.getWorldPosition(HA); if (HA.distanceTo(T) > 0.15 || HA.y < T.y - 0.025) { q.splice(0, 3, ...q0); set(); return false; } return true; }   // hors d'atteinte : on garde le geste d'origine
-  function handIK(){ pivot.updateMatrixWorld(true); const floor = pivot.position.y;
-    const H = limbs.map(L => { const c = new THREE.Vector3(); L.hand.getWorldPosition(c); hb.setFromObject(L.hand); return {c, g:hb.min.y < floor + GROUND, b:hb.min.y - floor}; });
-    const snap = h => { const v = h.c.clone(); v.y -= h.b; return v; };   // la main posée touche le sol
-    const T = [null, null]; let held = false;
-    limbs.forEach((L, i) => { const h = H[i]; let P = plant[i];
-      if (!P) { if (h.g) plant[i] = {p:snap(h)}; P = plant[i]; if (P) { T[i] = P.p.clone(); held = true; } return; }
-      if (!h.g) { P.rel = (P.rel || 0) + fdt / 0.12; if (P.rel >= 1) { plant[i] = null; return; } T[i] = P.p.clone().lerp(h.c, P.rel); return; }   // la main décolle : on la relâche en douceur
+    set(); C.end.getWorldPosition(HA); if (HA.distanceTo(T) > 0.15 || HA.y < T.y - 0.025) { q.splice(0, 3, ...q0); set(); return false; } return true; }   // hors d'atteinte : on garde le geste d'origine
+  function contactIK(feetOn){ pivot.updateMatrixWorld(true); const floor = pivot.position.y;
+    const H = CH.map(C => { const c = new THREE.Vector3(); C.end.getWorldPosition(c); hb.setFromObject(C.end); return {c, g:hb.min.y < floor + GROUND, b:hb.min.y - floor}; });
+    const snap = h => { const v = h.c.clone(); v.y -= h.b; return v; };   // l'appui touche le sol
+    const T = [null, null, null, null]; let held = false; const lvl = (v, h) => { v.y = h.c.y - h.b; return v; };   // hauteur du centre selon l'orientation du moment : jamais dans le sol
+    CH.forEach((C, i) => { const h = H[i]; let P = plant[i], g = h.g && (C.hand || feetOn);
+      const grp = C.hand ? [0, 1] : [2, 3];
+      if (!P) { if (g) { plant[i] = P = {p:snap(h)}; T[i] = lvl(P.p.clone(), h); held = true; } return; }
+      if (!g) { P.rel = (P.rel || 0) + fdt / 0.12; if (P.rel >= 1) { plant[i] = null; return; } T[i] = P.p.clone().lerp(h.c, P.rel); return; }   // l'appui décolle : on le relâche en douceur
       P.rel = 0;
       const d = Math.hypot(h.c.x - P.p.x, h.c.z - P.p.z);
-      if (!P.step && d > STEP_D && !plant.some(Q => Q && Q !== P && Q.step)) P.step = {from:P.p.clone(), t:0};
+      if (!P.step && d > STEP_D && !grp.some(k => plant[k] && plant[k] !== P && plant[k].step)) P.step = {from:P.p.clone(), t:0};
       if (P.step) { P.step.t = Math.min(1, P.step.t + fdt / STEP_T); const t = P.step.t, k = t * t * (3 - 2 * t), to = snap(h), dx = to.x - P.step.from.x, dz = to.z - P.step.from.z, dl = Math.hypot(dx, dz);
-        if (dl > MAXS) { to.x = P.step.from.x + dx * MAXS / dl; to.z = P.step.from.z + dz * MAXS / dl; }   // un pas de main fait 25 cm au plus : la main suit en plusieurs pas
-        T[i] = P.step.from.clone().lerp(to, k); T[i].y += Math.sin(t * PI) * LIFT; if (t >= 1) { P.p.copy(to); P.step = null; } }
-      else { T[i] = P.p.clone(); held = true; } });
-    const pass = () => limbs.forEach((L, i) => { if (T[i] && !ik(L, T[i]) && plant[i]) { plant[i].p = snap(H[i]); plant[i].step = null; } });   // main hors d'atteinte : elle se repose là où le geste la met
+        if (dl > MAXS) { to.x = P.step.from.x + dx * MAXS / dl; to.z = P.step.from.z + dz * MAXS / dl; }   // un pas fait 25 cm au plus : l'appui suit en plusieurs pas
+        T[i] = lvl(P.step.from.clone().lerp(to, k), h); T[i].y += Math.sin(t * PI) * LIFT; if (t >= 1) { P.p.copy(to); P.step = null; } }
+      else { T[i] = lvl(P.p.clone(), h); held = true; } });
+    const pass = () => CH.forEach((C, i) => { if (T[i] && !ik(C, T[i]) && plant[i]) { plant[i].p = snap(H[i]); plant[i].step = null; } });   // hors d'atteinte : l'appui se repose là où le geste le met
     pass();
-    // une main posée qui n'atteint pas le sol (bras déjà tendu) : tout le corps descend jusqu'au contact, puis les bras se réajustent
+    // un appui posé qui n'atteint pas le sol (membre déjà tendu) : le corps descend jusqu'au contact, puis les membres se réajustent
     if (held) { pivot.updateMatrixWorld(true); box.setFromObject(root); const g = box.min.y - floor; if (g > 0.004) { root.position.y -= g / scale; pivot.updateMatrixWorld(true); pass(); } } }
   const reduce = !opts.manual && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function apply(p, breath){
-    root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.x = p.arch;
+    root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.set(p.arch, p.twist, 0);   // le buste tourne sur le bassin
     limbs.forEach((L, i) => {
       L.sh.rotation.set(p["arm" + i], 0, L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i];
       L.hip.rotation.set(p["hip" + i], L.sx * p["hipY" + i], L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; L.ank.rotation.x = p.point * 1.38; });
     torso.scale.set(1 + breath, 1, 1 + breath); chest.scale.set(1, 1 + breath, 1 + breath);
     root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
     box.setFromObject(root); let low = box.min.y;
-    if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx === (p.one < 0 ? -1 : 1) || Math.abs(p.one) < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); low = Math.min(low, hb.setFromObject(L.foot).min.y, hb.setFromObject(L.shin).min.y); }); }
+    if (bars.visible && p.hands > 0.5) { low = Infinity; limbs.forEach(L => { low = Math.min(low, hb.setFromObject(L.hand).min.y); }); }
+    else if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx === (p.one < 0 ? -1 : 1) || Math.abs(p.one) < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); low = Math.min(low, hb.setFromObject(L.foot).min.y, hb.setFromObject(L.shin).min.y); }); }
     // centrage : sur le corps quand on est debout, sur les mains d'appui quand on est en appui (les mains ne glissent plus au sol)
     let cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2; const w = Math.max(0, Math.min(1, p.hands));
     if (w > 0) { let hx = 0, hz = 0, n = 0; limbs.forEach(L => { const k = L.sx === (p.one < 0 ? -1 : 1) ? 1 : 1 - Math.max(0, Math.min(1, Math.abs(p.one))); if (k > 0) { hb.setFromObject(L.hand); hx += k * (hb.min.x + hb.max.x) / 2; hz += k * (hb.min.z + hb.max.z) / 2; n += k; } });
@@ -410,8 +441,8 @@ export function mount(host, opts = {}){
     // exercices au mur : le personnage reste au contact du mur (talons, pieds ou poitrine), au lieu de le traverser
     if (wall.visible) { const ry = pivot.rotation.y; pivot.rotation.y = p.spin; pivot.updateMatrixWorld(true); box.setFromObject(root);
       const side = wall.position.z > 0 ? 1 : -1, surf = side * (Math.abs(wall.position.z) - 0.03), ext = side > 0 ? box.max.z : box.min.z;
-      root.position.z += (surf - ext) / scale; pivot.rotation.y = ry; pivot.updateMatrixWorld(true); }
-    if (opts.bare && !bars.visible) handIK(); else plant = [null, null];
+      const dz = surf - ext; root.position.z += (dz * side < 0 ? dz : dz * Math.max(0, Math.min(1, p.hands))) / scale; pivot.rotation.y = ry; pivot.updateMatrixWorld(true); }   // debout : le mur repousse seulement, il n'attire pas (les pieds ne glissent plus vers lui)
+    if (opts.bare && !bars.visible) contactIK(p.hands > 0.5); else plant = [null, null, null, null];
     // vignettes : la caméra suit le personnage et se rapproche quand la figure est basse ou ramassée
     if (opts.bare) { pivot.updateMatrixWorld(true); box.setFromObject(root); box.getSize(tmp); const r = 0.5 * Math.hypot(tmp.x, tmp.y, tmp.z), cy = (box.min.y + box.max.y) / 2;
       // cadrage : la caméra suit aussi le centre horizontal (mur, barres, figures décalées) et recule assez pour tout voir
@@ -507,7 +538,7 @@ export function mount(host, opts = {}){
     poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|sit|pk1|pk2|sp2|hs_wsplit|hs_oafullM|hs_tflag|pl_halfL|pl_tuckDn|pl_strN|sitP|sitSL|lsitT|tuckRise|lv_|c2w_|pu_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
-    jump(pose){ camD = -1; lastC = {}; plant = [null, null]; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
+    jump(pose){ camD = -1; lastC = {}; plant = [null, null, null, null]; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
     busy(){ return !!(seg || queue.length || wob); },
     moving(){ return !!(seg || queue.length || holdT > 0); },
     // joue un script : [[posture, durée, maintien], …] ; back : revient debout par le mouvement inverse

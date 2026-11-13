@@ -49,6 +49,7 @@ const DRILLS = {
   pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], rest:90, alt:{name:"Pompes lentes (sans gilet)", reps:12, how:"Sans gilet aujourd'hui : descente en 3 secondes, poitrine au sol, épaules devant les mains."}, how:"Gilet lesté, corps gainé, poitrine jusqu'au sol. Pour construire la force qui porte la planche.", eq:"kg"},
   protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepulse:{name:"Pulsations en pike", kind:"reps", sets:[3,15], how:"Assis jambes serrées tendues, mains près des chevilles, dos rond : décolle les talons et fais de petites pulsations sans reposer."},
+  extEp:{name:"Épaules en extension", kind:"hold", sets:[3,30], rest:30, how:"Assis, mains au sol derrière toi doigts vers l'arrière (ou sur un banc) : avance le bassin, ouvre la poitrine, bras tendus. Sans douleur à l'avant de l'épaule."},
   stradlift:{name:"Élévations jambes écartées", kind:"reps", sets:[3,8], rest:45, how:"En écart facial, mains au sol devant le bassin : lève les deux jambes tendues, tiens 2 s, repose sans bruit."},
   elevpress:{name:"Montée pieds surélevés", kind:"reps", sets:[4,2], rest:90, how:"Mains sur parallettes, pieds sur une chaise, jambes écartées : épaules devant, le bassin monte jusqu'à l'équilibre, dos au mur si besoin."},
   stalneg:{name:"Descentes du stalder", kind:"reps", sets:[3,2], rest:120, how:"Sur parallettes : de l'équilibre à l'équerre écartée en 5 secondes, sans poser les pieds.", eq:"para"},
@@ -67,6 +68,8 @@ function drillsFor(m){
   if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
   else if (s === "press") out.push("pikepulse","stradlift","pancake","lean");
   if (id === "pr_straddle") out.unshift("elevpress");
+  if (/^pr_manna/.test(id)) out.unshift("extEp");   // la manna, c'est d'abord des épaules en extension
+  if (s === "ultime") out.push("doigts","extEp","lean");
   if (id === "pr_stalder" || id === "pr_lsitHs") { out.unshift("stalneg"); if ((S.equip || {}).para) out.unshift("lsitpara"); }
   else if (s === "low") out.push("frog","lean");
   if (id === "in_hspu") out.unshift("pikepu");
@@ -149,7 +152,7 @@ function builtinBlocks(){
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
   // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
   // celle travaillée il y a le plus longtemps passe en premier — aucune discipline n'étouffe les autres
-  const disc = id => /^oa_/.test(id) ? "oa" : /^pl_/.test(id) ? "pl" : /^pr_(lsit|stradL|pikeLift|stradLift|vsit)$/.test(id) ? "comp" : /^pr_/.test(id) ? "pr" : "eq";
+  const disc = id => /^oa_/.test(id) ? "oa" : /^pl_/.test(id) ? "pl" : /^pr_(lsit|stradL|pikeLift|stradLift|vsit|vsitC)$/.test(id) ? "comp" : /^pr_/.test(id) ? "pr" : /^ul_/.test(id) ? "ul" : "eq";
   const cand = open.filter(id => !FORCE(id) && (oaOk || !/^oa_/.test(id))), heads = [], seen = new Set();
   cand.forEach(id => { const d = disc(id); if (!seen.has(d)) { seen.add(d); heads.push(id); } });
   let nonF = heads.sort((a, b) => lastWorked(a) - lastWorked(b)).concat(cand.filter(id => !heads.includes(id)));
@@ -167,7 +170,7 @@ function builtinBlocks(){
     const plR = /^pl_/.test(id) && m.type === "reps", sets = plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)), tries = pain || tired || deload ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(24, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
     if (pl.sides) base.note = "Alterne le côté à chaque série (séries paires d'un côté, impaires de l'autre) : les deux doivent tenir la cible.";
