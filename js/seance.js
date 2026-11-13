@@ -36,6 +36,7 @@ const DRILLS = {
   lean:{name:"Planche inclinée", kind:"hold", sets:[3,20], how:"Position de pompe, bras tendus, épaules loin devant les mains, omoplates écartées. Avance un peu plus à chaque série."},
   pseudo:{name:"Pompes mains aux hanches", kind:"reps", sets:[3,8], how:"Pompes avec les mains à hauteur des hanches, doigts vers l'extérieur : les épaules passent loin devant les mains."},
   frog:{name:"Grenouille", kind:"hold", sets:[3,15], how:"Accroupi, mains au sol, genoux posés sur les coudes : bascule vers l'avant jusqu'à décoller les pieds."},
+  protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
 function drillsFor(m){
@@ -46,7 +47,7 @@ function drillsFor(m){
   else if (s === "b2") out.push("c2w","kickup","doigts","hollow");
   else if (s === "inter") out.push(/7|toes/.test(id) ? "pike" : "doigts", /7/.test(id) ? "pancake" : "kickup", "omoplates");
   else if (s === "onearm") out.push("shift","doigts","omoplates");
-  else if (s === "planche") out.push("lean","pseudo","hollow");
+  else if (s === "planche") out.push("lean","protrac","pseudo","hollow");
   else if (s === "press") out.push("pike","pancake","lean");
   else if (s === "low") out.push("frog","lean");
   if (id === "in_hspu") out.unshift("pikepu");
@@ -69,9 +70,11 @@ function builtinBlocks(){
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const sets = Math.max(3, Math.round(pl.sets * scale * (pain ? 0.7 : 1))), tries = pain ? 0 : pl.tries || 0;
-    if (pl.attempts) return Object.assign(base, {kind:"hold", sets:Array.from({length:sets}, ()=>({goal:pl.T, rest:30, max:true}))});
+    if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
+      sets:Array.from({length:pl.sides ? Math.min(16, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand tu le réussis proprement 3 fois sur 5, valide-le depuis sa fiche.", sets:Array.from({length:Math.min(sets, 8)}, ()=>({reps:1, lab:"essai", rest:45}))});
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:sets}, ()=>({goal:pl.work, rest:75, auto:true})).concat(Array.from({length:tries}, ()=>({goal:pl.T, rest:120, max:true})))}); });
+    const pr = /^pl_/.test(id); // planche : bras tendus, on récupère complètement entre deux séries
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:sets}, ()=>({goal:pl.work, rest:pr ? 150 : m.sec === "base" ? 45 : 75, auto:true})).concat(Array.from({length:tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   const conf = (S.confirm || []).filter(id=>MS[id]).map(id=>({name:MS[id].name + " · vérification", how:"Validé à ton bilan : refais-le 3 fois proprement pour le confirmer. C'est ta sécurité pour la suite.", ms:id, confirm:true, kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))}));
   if (!next.length && !conf.length) return blocks;
@@ -118,7 +121,9 @@ const unit = b => b.kind === "hold" ? " s" : " rép.";
 const fixed = s => s.dur != null || s.reps != null;
 const sDur = (s, sc) => Math.max(5, Math.round(s.dur * (sc || 1)));
 const sRun = (s, sc) => s.durMax ? Math.max(5, Math.round(s.durMax * (sc || 1))) : sDur(s, sc);
-const fixTxt = (b, s, sc) => s.lab ? s.lab : (s.dur != null ? sDur(s, sc) + (s.durMax ? " à " + sRun(s, sc) : "") + " s" : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
+const fixTxt = (b, s, sc) => s.lab ? s.lab : (s.dur != null ? (s.durMax ? sDur(s, sc) + " à " + sRun(s, sc) + " s" : durTxt(sDur(s, sc))) : s.reps + (s.repsMax ? " à " + s.repsMax : "") + " rép.") + (s.sides ? " par côté" : "");
+// « 45 s », « 5 min », « 1 min 30 »
+const durTxt = n => n < 60 ? n + " s" : Math.floor(n/60) + " min" + (n % 60 ? " " + (n % 60) : "");
 const restTxt = s => !s.rest ? "libre" : s.rest % 60 ? s.rest + (s.restMax ? " à " + s.restMax : "") + " s" : (s.rest/60) + (s.restMax ? " à " + (s.restMax/60) : "") + " min";
 const pTarget = (b, s) => { if (s.goal) return s.goal; const best = pg().best[b.name]; return best ? Math.max(1, Math.round(best * (s.pct || 100) / 100)) : 0; };
 const extLink = (href, txt) => { const a = el("a","lk",txt); a.href = href; a.target = "_blank"; a.rel = "noopener"; return a; };
@@ -316,7 +321,7 @@ function plStep(){
   const q = el("div","plq");
   if (m.type === "hold") { q.append(el("div","mut","Combien de temps tiens-tu cette figure ?"));
     const row = el("div","chips"); [["Pas du tout",0]].concat(L.slice(0, -1).map(v=>["≈ " + v + " s", v])).forEach(([lab,v])=>{ const b = el("button","chip",lab); b.onclick = () => no(v); row.append(b); });
-    const ok = el("button","chip on", m.target + " s ou plus"); ok.onclick = yes; row.append(ok); q.append(row); }
+    const ok = el("button","chip", m.target + " s ou plus"); ok.onclick = yes; row.append(ok); q.append(row); }
   else { q.append(el("div","mut","Sais-tu le faire proprement ?")); const row = el("div","chips"), y = el("button","chip on","Oui"), n = el("button","chip","Pas encore"); y.onclick = yes; n.onclick = () => no(0); row.append(y, n); q.append(row); }
   box.append(q);
 }
@@ -325,7 +330,7 @@ function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1;
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? f0 * 1.08 : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
-  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal();
+  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); say("Séance terminée. Comment c'était ?", true);
 }
 function feedback(kind){
   const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.08, ok:1, hard:0.9, pain:0.8}[kind];
@@ -336,8 +341,10 @@ function feedback(kind){
   toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on allège un peu la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté : 48 h sans appui sur les mains. La séance passe sur le gainage et la souplesse." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : 48 h sans force (planche, montées, pompes), équilibre allégé." : "Noté : séances allégées pendant deux jours.") + " Si la douleur dure, repose-toi." : "Séance enregistrée. Bravo.");
 }
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
-function startGuided(){ sessRes = {}; selDay = todayIdx();
+function startGuided(){ sessRes = {}; selDay = todayIdx(); voiceUnlock();
   if (P && P.builtin && !(S.bday && S.bday.d === dayKey(Date.now()))) { S.bday = {d:dayKey(Date.now()), blocks:builtinBlocks()}; save(); pickP(); } const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
+// dernière série finie : on ferme et, en séance guidée, on demande le ressenti (il règle la charge suivante)
+function closeEnd(){ const was = AUTO; $("sd").close(); if (was) endSession(); }
 const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd === me && sd.mode === mode && $("sd").open) $("sdGo").click(); }, ms); };
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -374,8 +381,18 @@ function openSet(bi, si){
     if (b.note) $("sdHint").textContent += " " + b.note;
   }
   if (!$("sd").open) $("sd").showModal();
+  say(setSay(b, s, si, fx, tg, day));
   if (AUTO) { const timed = fx ? s.dur != null : b.kind === "hold";
-    if (timed) { if (!fx) $("sdHint").textContent = s.auto ? "Tiens " + tg + unit(b) + " : l'arrêt est automatique. Touche le bouton si tu chutes avant." : "Tentative : tiens le plus longtemps possible, puis touche Stop." + (tg ? " Cible : " + tg + unit(b) + "." : ""); autoGo("idle", 900); } }
+    if (timed) { if (!fx) $("sdHint").textContent = s.auto ? "Tiens " + tg + unit(b) + " : l'arrêt est automatique. Touche le bouton si tu chutes avant." : "Tentative : tiens le plus longtemps possible, puis touche Stop." + (tg ? " Cible : " + tg + unit(b) + "." : ""); autoGo("idle", voiceOn() && !S.countdown ? 2600 : 900); } }
+}
+// ce que la voix annonce à l'ouverture d'une série : le nom, la série, la cible
+function setSay(b, s, si, fx, tg, day){
+  const n = b.sets.length, ser = n > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + " sur " + n + ". " : "";
+  let what = "";
+  if (fx) what = s.dur != null ? secSay(sDur(s, day.scale)) + (s.sides ? " de chaque côté." : ".") : s.reps != null ? s.reps + " répétitions." : "";
+  else if (b.kind === "hold") what = s.auto && tg ? "Tiens " + secSay(tg) + "." : tg ? "Tiens le plus longtemps possible. Cible : " + secSay(tg) + "." : "Tiens le plus longtemps possible.";
+  else what = tg ? tg + " répétitions." : "Ton maximum propre.";
+  return b.name + ". " + ser + what;
 }
 function storeSet(v){
   const k = wkKey(selDay), o = pg().wk[k] || (pg().wk[k] = {}), key = sd.bi + "-" + sd.si, fresh = o[key] == null; o[key] = v;
@@ -392,34 +409,41 @@ function saveFixed(){
   if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? " · " + day.name : ""), k:"check", v:true, pr:false});
   save(); render();
   if (nx && day.circuit && day.circuit.rest && nx[1] !== si) { startRest(day.circuit, nx, "Tour " + (si+1) + "/" + b.sets.length + " terminé"); return; }
-  if (nx) openSet(nx[0], nx[1]); else $("sd").close();
+  if (nx) openSet(nx[0], nx[1]); else closeEnd();
 }
 function startRest(r, nx, title){
   const end = Date.now() + r.rest*1000, ck = $("sdClock"); let done = false;
   sd.mode = "rest"; sd.next = nx;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
   $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
-  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Continuer" : "Terminer la séance";
+  $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance";
   const nb = nx && pDay(selDay).blocks[nx[0]];
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
+  say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C'était la dernière série. Bravo.");
+  let warned = r.rest < 25;
   const tick = () => { const left = (end - Date.now())/1000;
-    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else { AUTO = false; $("sd").close(); endSession(); } } } }
+    if (!warned && left <= 10 && left > 0) { warned = true; say("Prépare-toi. Dix secondes."); }
+    if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else closeEnd(); } } }
     else ck.textContent = mmss(Math.ceil(left)); };
   tick(); sdTimer = setInterval(tick, 250);
 }
 function runFixed(){
   const {s, day} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), prep = sd.side === 1 ? S.countdown : 5;
   let end = Date.now() + prep*1000, last = -1; sd.mode = prep ? "count" : "run";
-  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350); };
+  let said10 = dur < 25, saidHalf = dur < 60;
+  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350); setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); };
+  if (sd.side === 2) say("Change de côté.");
   if (!prep) go(); else ck.className = "clock count";
-  $("sdGo").textContent = "Passer";
+  $("sdGo").textContent = "J'ai fini";
   if (s.sides) $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + " · côté " + sd.side + "/2" + (sd.b.pnf ? " · PNF" : "");
   sdTimer = setInterval(()=>{
     const left = (end - Date.now())/1000;
     if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
     else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; beep(1320, 600);
       if (s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
-    else ck.textContent = mmss(Math.ceil(left));
+    else { ck.textContent = mmss(Math.ceil(left));
+      if (!saidHalf && left <= dur/2) { saidHalf = true; say("La moitié."); }
+      if (!said10 && left <= 10) { said10 = true; say("Encore dix secondes."); } }
   }, 200);
 }
 function saveSet(v){
@@ -430,27 +454,30 @@ function saveSet(v){
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();
-  if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else $("sd").close(); return; }
+  if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else closeEnd(); return; }
   startRest(s, nx, "Fait : " + num(v) + unit(b) + (pr && old > 0 ? ", record" : ""));
 }
-$("sdGo").onclick = async () => {
+$("sdGo").onclick = async e => {
+  if (e && e.isTrusted) voiceUnlock();
   const ck = $("sdClock");
   if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else { const was = AUTO; $("sd").close(); if (was) endSession(); } return; }
   if (sd.fx){
     if (sd.s.dur == null) { saveFixed(); return; }
-    if (sd.mode === "idle") { keepAwake(w => sdWake = w); runFixed(); }
+    if (sd.mode === "idle") { keepAwake(sdKeep); runFixed(); }
     else { clearInterval(sdTimer); sdTimer = null; if (sd.s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
     return;
   }
   if (sd.mode === "idle"){
-    keepAwake(w => sdWake = w);
+    keepAwake(sdKeep);
     const left = S.countdown; let t = performance.now(), last = -1, hit = false;
-    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdGo").textContent = AUTO && sd.s.auto ? "J'ai chuté" : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
+    let said3 = !(sd.tg >= 8);
+    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); $("sdGo").textContent = AUTO && sd.s.auto ? (/^(st_|b1_|b2_|in_|oa_|pr_)/.test(sd.b.ms || "") ? "J'ai chuté" : "J'arrête") : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
     if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; } else run();
     sdTimer = setInterval(()=>{
       const e = (performance.now() - t)/1000;
       if (sd.mode === "count"){ const r = Math.ceil(left - e); if (r <= 0) run(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
-      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!hit && sd.tg && e >= sd.tg) { hit = true; ck.className = "clock hit"; beep(1320, 600); if (AUTO && sd.s.auto) autoGo("run", 120); } }
+      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!said3 && e >= sd.tg - 3) { said3 = true; say("Encore trois."); }
+        if (!hit && sd.tg && e >= sd.tg) { hit = true; if (!(AUTO && sd.s.auto)) say("Cible atteinte."); ck.className = "clock hit"; beep(1320, 600); if (AUTO && sd.s.auto) autoGo("run", 120); } }
     }, 50);
   } else if (sd.mode === "count"){ openSet(sd.bi, sd.si); }
   else if (sd.mode === "run"){
@@ -460,3 +487,7 @@ $("sdGo").onclick = async () => {
 };
 $("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (v > 0) saveSet(v); };
 $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
+$("sdX").addEventListener("click", hush);
+// l'écran reste allumé pendant le chrono : le verrou est repris au retour dans l'app, et rendu s'il arrive trop tard
+function sdKeep(w){ if (sdTimer) { sdWake = w; w.addEventListener && w.addEventListener("release", () => { if (sdWake === w) sdWake = null; }); } else w.release().catch(()=>{}); }
+document.addEventListener("visibilitychange", () => { if (!document.hidden && sdTimer && !sdWake) keepAwake(sdKeep); });

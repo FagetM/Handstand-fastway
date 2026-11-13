@@ -71,6 +71,17 @@
       <label class="mut" for="countdown">Compte à rebours avant le départ, le temps de monter en équilibre</label>
       <select id="countdown"><option value="0">Aucun</option><option value="3">3 secondes</option><option value="5">5 secondes</option><option value="10">10 secondes</option></select>
     </div>
+    <div class="block" id="voiceBlock">
+      <h2>Voix</h2>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="voiceOn"><span>Annoncer la séance à voix haute<span class="mut" style="display:block">L'exercice, la cible, le repos et le temps qui reste. Les bips gardent le décompte.</span></span></label>
+      <label class="mut" for="voiceRate">Débit</label>
+      <select id="voiceRate"><option value="douce">Posé</option><option value="normale">Normal</option><option value="rapide">Rapide</option></select>
+      <label class="mut" for="voiceSel" style="margin-top:10px;display:block">Voix</label>
+      <select id="voiceSel"></select>
+      <div class="mut" id="voiceNone" hidden>Aucune voix française sur cet appareil. Sur iPhone : Réglages › Accessibilité › Contenu énoncé › Voix › Français, télécharge « Audrey (améliorée) ».</div>
+      <div class="mut" style="margin-top:6px">Conseil iPhone : les voix « améliorées » ou « Premium » (Réglages › Accessibilité › Contenu énoncé › Voix) sont bien plus douces.</div>
+      <button class="btn" id="voiceTest" style="margin-top:10px">Écouter</button>
+    </div>
     <div class="block">
       <h2>Animations</h2>
       <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="animOn"><span>Animer les personnages du parcours<span class="mut" style="display:block">Chaque figure est jouée en boucle, avec ta tenue du vestiaire.</span></span></label>
@@ -193,6 +204,7 @@
 <script src="js/parcours.js" defer></script>
 <script src="js/sprites.js" defer></script>
 <script src="js/views.js" defer></script>
+<script src="js/voice.js" defer></script>
 <script src="js/seance.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>

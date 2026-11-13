@@ -19,11 +19,11 @@ export const POSES = {
   oahs:       {pitch:PI,   arm:[-PI,-0.2],    armZ:[0,1.35],    hip:[0,0],        hipZ:[0.55,0.55], knee:[0,0],     head:-0.3, roll:0.1},
   pl_lean:    {pitch:1.17, arm:[-0.85,-0.85], armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.5},
   pl_tuck:    {pitch:1.78, arm:[-1.4,-1.4], armZ:[0,0], arch:-0.4, hip:[-2.65,-2.65], hipZ:[0,0], knee:[2.55,2.55], head:-0.6},
-  pl_adv:     {pitch:1.5,  arm:[-1.25,-1.25], armZ:[0,0],       hip:[-1.55,-1.55],hipZ:[0,0],       knee:[2.0,2.0], head:-0.6},
-  pl_frog:    {pitch:1.5,  arm:[-1.2,-1.2],   armZ:[0,0],       hip:[-0.9,-0.9],  hipZ:[0.55,0.55], knee:[1.7,1.7], head:-0.6},
-  pl_pike:    {pitch:1.5,  arm:[-1.12,-1.12], armZ:[0,0],       hip:[-0.28,-0.28],hipZ:[0.55,0.55], knee:[0,0],     head:-0.6},
-  pl_straddle:{pitch:1.57, arm:[-1.17,-1.17], armZ:[0,0],       hip:[0,0],        hipZ:[0.6,0.6],   knee:[0,0],     head:-0.7},
-  pl_full:    {pitch:1.57, arm:[-1.1,-1.1],   armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.7},
+  pl_adv:     {pitch:1.57, arm:[-1.12,-1.12], armZ:[0,0],       hip:[-1.55,-1.55],hipZ:[0,0],       knee:[2.0,2.0], head:-0.6},
+  pl_frog:    {pitch:1.57, arm:[-1.08,-1.08],   armZ:[0,0],       hip:[-0.9,-0.9],  hipZ:[0.55,0.55], knee:[1.7,1.7], head:-0.6},
+  pl_pike:    {pitch:1.57, arm:[-1.08,-1.08], armZ:[0,0],       hip:[-0.28,-0.28],hipZ:[0.55,0.55], knee:[0,0],     head:-0.6},
+  pl_straddle:{pitch:1.57, arm:[-1.02,-1.02], armZ:[0,0],       hip:[0,0],        hipZ:[0.6,0.6],   knee:[0,0],     head:-0.7},
+  pl_full:    {pitch:1.57, arm:[-0.95,-0.95],   armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.7},
   hs_flag:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0.34,-0.34],hip:[0,0],        hipZ:[1.5,-0.3],  knee:[0,0],     head:-0.3, roll:0.34},   // drapeau : le bassin part d'un côté, la jambe basse passe sous l'horizontale
   crow:       {pitch:1.2,  arm:[-0.75,-0.75], armZ:[0.1,0.1],   elbow:[-0.9,-0.9],   hip:[-2.25,-2.25],hipZ:[0.4,0.4],   knee:[2.5,2.5], head:-0.7},
   lever:      {pitch:1.57, arm:[-0.45,-0.45], armZ:[0,0],       elbow:[-1.75,-1.75], hip:[0,0],        hipZ:[0.08,0.08], knee:[0,0],     head:-0.8},
@@ -77,8 +77,8 @@ Object.assign(POSES, {
   hs_shiftL:P("hs_straddle", {roll:0.14, armZ:[0,0.16]}),
   hs_shiftR:mirror(P("hs_straddle", {roll:0.14, armZ:[0,0.16]})),
   hs_finger:P("oahs", {arm:[-PI,-PI + 0.2], armZ:[0,0.5], roll:0.12}),
-  hs_oastr: P("oahs", {one:1}),
-  hs_oafull:P("oahs", {arm:[-PI,-0.12], armZ:[0,0.28], roll:0.08, one:1}),
+  hs_oastr: P("oahs", {arm:[-PI,-PI+0.6], armZ:[0.15,0.9], roll:0.16}), // main libre au sol, loin sur le côté
+  hs_oafull:P("oahs", {arm:[-PI,-0.2], armZ:[0.18,1.3], roll:0.18, one:1}), // bras libre en balancier, bassin au-dessus de la main
   fold_s:   P("fold", {hipZ:[0.55,0.55]}),
   hs_spress:P("pike", {hip:[-1.5,-1.5], hipZ:[0.85,0.85]}),
   hs_stal0: {pitch:0.05, arch:0.32, arm:[-0.3,-0.3], armZ:[0.12,0.12], hip:[-2.15,-2.15], hipZ:[0.85,0.85], knee:[0,0], head:-0.15},     // équerre écartée, jambes au-dessus de l'horizontale

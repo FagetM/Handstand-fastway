@@ -92,7 +92,7 @@ function render(){
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
     nc.append(el("div","lab", DAYN[today] + " · séance du jour"));
     if (!S.placed && Object.keys(MS).filter(id=>st(id).done).length < 6) { const pb = el("button","place");
-      pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"2 minutes de questions simples : l'app te propose ensuite une séance à ta mesure."));
+      pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"Quelques questions rapides sur ce que tu sais déjà faire : l'app te propose ensuite une séance à ta mesure."));
       pb.onclick = () => startPlacement(); nc.append(pb);
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       return; }
@@ -111,7 +111,7 @@ function render(){
         if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 64); art.append(sp); } else art.append(el("span","num", String(bi + 1)));
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
-        const dose = mx.length && !work.length ? mx.length + " essais · tiens jusqu'à perdre l'équilibre" : mx.length ? work.length + " × " + one(work[0]) + " · puis " + mx.length + " × " + one(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
+        const dose = mx.length && !work.length ? mx.length + " essais · tiens jusqu'à perdre l'équilibre" : mx.length ? work.length + (b.kind === "hold" ? " tenues de " : " séries de ") + one(work[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") + ", puis " + mx.length + " essais à " + one(mx[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose));
         const dots = el("div","dots"); b.sets.forEach((s,si)=>dots.append(el("i", (vals[bi + "-" + si] != null ? "ok" : "") + (s.max ? " t" : "")))); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
@@ -131,7 +131,7 @@ function render(){
   { const pt = $("pathTop"), gms = GOALS[0].ms, dn = gms.filter(id=>st(id).done).length; pt.textContent = "";
     const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
     const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
-    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); g.append(bar, el("div","pn2","Vers l'équilibre sur un bras et la full planche"));
+    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!st(id).done); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? " · " + goalTxt(MS[nxt]) : "") : "Équilibre sur un bras et full planche : tout est validé !"));
     c.append(fins, g);
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
@@ -161,7 +161,7 @@ function logRow(l, withName){
 let cur = null, timer = null, phase = "idle", t0 = 0, beeped = false, ac = null, wake = null;
 function beep(freq, ms){
   try {
-    ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+    ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended" || ac.state === "interrupted") ac.resume().catch(()=>{});
     const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = freq; o.connect(g); g.connect(ac.destination);
     g.gain.setValueAtTime(0.25, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + ms/1000);
     o.start(); o.stop(ac.currentTime + ms/1000);

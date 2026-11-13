@@ -8,21 +8,22 @@ const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-dominatio
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
-const FREE = m => m.type === "hold" && ["b1","b2","inter"].includes(m.sec);
+// habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
+const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec);
 const FORCE = id => /^(pl_|pr_)/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Tu n'as plus rien à prouver ici. Refais la figure une ou deux fois par semaine pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|oa_|lo_)/.test(m.id) || m.id === "in_hspu", days = force ? 4 : 5, sets = force ? 6 : 8, tries = 2;
+  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", days = force ? 4 : 5, sets = /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = 2;
   const freq = days + " séances par semaine" + (force ? ", jamais deux jours de suite sur la même figure." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
-  if (FREE(m)) { const n = 15;
-    out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0};
+  if (FREE(m)) { const one = m.sec === "onearm", n = one ? 10 : 15, rest = one ? 45 : 30;
+    out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0, rest, sides:one};
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + T + " s";
-    out.short = n + " essais, chacun tenu jusqu'à perdre l'équilibre, 30 s de repos. " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + n + " montées. Tiens chacune jusqu'à perdre l'équilibre, sors proprement (roue ou retour sur les pieds), 30 s de repos.",
+    out.short = n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu jusqu'à perdre l'équilibre, " + rest + " s de repos. " + days + " séances par semaine.";
+    out.lines = [freq, "À chaque séance : " + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune jusqu'à perdre l'équilibre, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
       "Le chrono bipe à " + T + " s : le palier est acquis dès qu'un essai l'atteint.", x.best > 0 ? "Ton record : " + fmt(m, x.best) + "." : "Pas encore de record : chaque essai compte.",
       "La qualité avant la quantité : arrête la séance quand les montées deviennent brouillonnes."];
     if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ".");
@@ -41,7 +42,7 @@ function planFor(m){
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
     out.lines = [freq,
-      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", 60 à 90 s de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
+      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
       "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre les deux. Si l'une passe, le niveau est acquis et la cible suivante s'affiche.",
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Il te manque " + (hold ? num(Math.max(0, T - x.best)) + " s" : Math.max(0, T - x.best) + " rép.") + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
