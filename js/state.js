@@ -11,6 +11,10 @@ if (S.ms.b2_free15) { const a = S.ms.b1_free5 || (S.ms.b1_free5 = {best:0, done:
 else if (S.ms.b1_free5 && S.ms.b1_free5.done && (S.ms.b1_free5.best || 0) < 15 && !S.migr15) { S.ms.b1_free5.done = false; }
 S.migr15 = true;
 // Fondations : qui savait déjà sortir en roue au mur maîtrise la roue, le gainage et la tenue au mur
+// nouvelles étapes vers le un bras et la planche : qui avait déjà validé l'étape d'après garde sa place
+if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[id] = {best:MS[id].target || 0, done:true}; };
+  if (dn("oa_flaghoriz") || dn("oa_shift")) set("oa_strad30"); if (dn("oa_shift")) set("oa_wall"); if (dn("oa_oahs")) set("oa_lift");
+  if (dn("pl_tuck")) set("pl_ppp"); if (dn("pl_straddle") || dn("pl_pike")) set("pl_1leg"); S.migrOa = true; }
 if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue","fd_c2w"].forEach(id=>{ S.ms[id] = {best:Math.max(MS[id].target || 0, 0), done:true}; }); S.migrFd = true; }   // le détail de la séance est replié à chaque ouverture
 let saveWarned = false;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; } catch(e){ if (!saveWarned && window.toast) { saveWarned = true; toast("Enregistrement impossible : la mémoire de l'appareil est pleine."); } } };

@@ -36,6 +36,11 @@ const DRILLS = {
   lean:{name:"Planche inclinée", kind:"hold", sets:[3,20], how:"Position de pompe, bras tendus, épaules loin devant les mains, omoplates écartées. Avance un peu plus à chaque série."},
   pseudo:{name:"Pompes mains aux hanches", kind:"reps", sets:[3,8], how:"Pompes avec les mains à hauteur des hanches, doigts vers l'extérieur : les épaules passent loin devant les mains."},
   frog:{name:"Grenouille", kind:"hold", sets:[3,15], how:"Accroupi, mains au sol, genoux posés sur les coudes : bascule vers l'avant jusqu'à décoller les pieds."},
+  oawall:{name:"Tenue un bras dos au mur", kind:"hold", sets:[3,20], how:"Dos au mur, jambes écartées : transfère le poids sur une main, retire l'autre et tiens. Épaule poussée vers l'oreille, bassin au-dessus de la main. Côté faible d'abord."},
+  oashrug:{name:"Haussements d'épaule à un bras", kind:"reps", sets:[3,8], how:"En appui à un bras au mur, bras verrouillé : laisse l'épaule descendre puis repousse-la vers l'oreille. C'est la force qui porte l'équilibre sur un bras."},
+  tuckflag:{name:"Drapeaux groupés pulsés", kind:"reps", sets:[3,6], how:"En équilibre, genoux groupés : incline-les sur le côté en petits rebonds contrôlés, puis tiens 3 s la position la plus basse. Change de côté."},
+  biceps:{name:"Renforcement du biceps bras tendu", kind:"reps", sets:[3,12], how:"Curl bras presque tendu à l'élastique, lent : prépare le tendon du biceps et le coude au travail bras tendus."},
+  tuck2strad:{name:"Extensions tuck vers straddle", kind:"reps", sets:[4,3], how:"Depuis l'advanced tuck, ouvre les jambes en straddle 2 s puis reviens, sans laisser tomber les hanches."},
   protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
@@ -46,8 +51,10 @@ function drillsFor(m){
   else if (s === "b1") out.push("c2w","toepull","hollow");
   else if (s === "b2") out.push("c2w","kickup","doigts","hollow");
   else if (s === "inter") out.push(/7|toes/.test(id) ? "pike" : "doigts", /7/.test(id) ? "pancake" : "kickup", "omoplates");
-  else if (s === "onearm") out.push("shift","doigts","omoplates");
-  else if (s === "planche") out.push("lean","protrac","pseudo","hollow");
+  else if (s === "onearm") out.push("oawall","oashrug","doigts");
+  else if (s === "planche") out.push("lean","protrac","pseudo","biceps");
+  if (["pl_frog","pl_1leg","pl_straddle"].includes(id)) out.unshift("tuck2strad");
+  if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
   else if (s === "press") out.push("pike","pancake","lean");
   else if (s === "low") out.push("frog","lean");
   if (id === "in_hspu") out.unshift("pikepu");
@@ -61,17 +68,20 @@ function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["
 function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate() - 1); if (fd.has(dayKey(d))) return false;
   let n = 0; const w = new Date(); w.setDate(w.getDate() - todayIdx()); for (let i = 0; i < 7; i++) { const x = new Date(w); x.setDate(w.getDate() + i); if (fd.has(dayKey(x))) n++; }
   return n < 3 || fd.has(dayKey(Date.now())); }
+// une semaine légère toutes les cinq : moins de séries, pas de tentative à fond (tendons et poignets récupèrent)
+function deloadWeek(){ const t1 = S.log.length ? S.log[0].t : Date.now(), wk = Math.floor((Date.now() - t1) / (7 * 864e5)); return wk > 0 && wk % 5 === 4; }
 function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
-  const mins = S.mins || 30, pain = painRecent(), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3, scale = Math.max(0.6, Math.min(1.5, mins / 30)) * (tired ? 0.6 : 1);
+  const deload = deloadWeek();
+  const mins = S.mins || 30, pain = painRecent(), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3, scale = Math.max(0.6, Math.min(1.5, mins / 30)) * (tired ? 0.6 : 1) * (deload ? 0.6 : 1);
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && S.painZone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])), fok = forceOk() && !(pain && S.painZone === "epaule");
   const next = open.filter(id=>!FORCE(id)).concat(fok ? open.filter(FORCE) : []).slice(0, nMs);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    const sets = Math.max(3, Math.round(pl.sets * scale * (pain ? 0.7 : 1))), tries = pain || tired ? 0 : pl.tries || 0;
+    const sets = Math.max(3, Math.round(pl.sets * scale * (pain ? 0.7 : 1))), tries = pain || tired || deload ? 0 : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(16, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand tu le réussis proprement 3 fois sur 5, valide-le depuis sa fiche.", sets:Array.from({length:Math.min(sets, 8)}, ()=>({reps:1, lab:"essai", rest:45}))});
@@ -106,7 +116,7 @@ function progLock(id){
   return null;
 }
 // Dans Planche Domination, chaque étape s'ouvre quand la figure de l'étape précédente est validée.
-const PD_STEPS = ["pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle"];
+const PD_STEPS = ["pl_lean","pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle"];   // figure à valider pour ouvrir l'étape suivante du programme
 const stepLock = (pid, i) => pid === "planche-domination" && i > 0 ? needMs([PD_STEPS[i - 1]]) : null;
 const pickP = () => { const all = allP(); P = all[pg().cur]; if (!P) P = all.equilibre; else if (progLock(P.id)) { P = all.equilibre; pg().cur = "equilibre"; }
   const s = pp(); while (s.step > 0 && stepLock(P.id, s.step)) s.step--; };
@@ -333,7 +343,7 @@ function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1;
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? f0 * 1.08 : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
-  if (P && P.zen) { const z = zenDone(); save(); render(); toast("« " + (z ? z.name : "Maîtrise") + " » terminée : la prochaine fois, les tenues seront un peu plus longues."); say("Bien joué. La prochaine fois, on tient un peu plus longtemps.", true); return; }
+  if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
   save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
@@ -457,7 +467,7 @@ function runFixed(){
 function saveSet(v){
   const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
-  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) x.done = true;
+  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) { if (/^pl_/.test(b.ms) && MS[b.ms].type === "hold") { const h = S.hit || (S.hit = {}), d = dayKey(Date.now()), r = h[b.ms] && h[b.ms].d === d ? h[b.ms] : (h[b.ms] = {d, n:0}); r.n++; if (r.n >= 3) x.done = true; else toast("Cible tenue (" + r.n + "/3 aujourd'hui) : la planche se valide sur 3 séries à la cible."); } else x.done = true; }
     if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++; } }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();

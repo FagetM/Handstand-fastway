@@ -103,6 +103,7 @@ function render(){
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Jour léger ?"), el("span",null,"Récup active : 8 min de mobilité. Ça compte aussi.")); z.onclick = () => openZen("recup"); nc.append(z); } }
     if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Temps dispo"));
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
+    if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
     if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "On prend soin de tes poignets : deux jours sans appui sur les mains. Gainage, respiration et souplesse au programme." : "Tu as signalé une gêne : séance tout en douceur, sans tentative à fond ni force."));
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l'avis d'un professionnel de santé avant de reprendre.")); }
     // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
@@ -110,7 +111,7 @@ function render(){
       if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
       c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s'ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
     // Maîtrise : on choisit sa séance de postures tenues (poignets, compression, ligne, contrôle, récup)
-    if (P.zen) { const zw = el("div","zens"); ZEN.forEach((z, i) => { const b = el("button","zen" + (pp().step === i ? " on" : "")); b.append(el("b",null,z.name), el("span",null, z.min + " min · " + z.when));
+    if (P.zen) { const zw = el("div","zens"); ZEN.forEach((z, i) => { const b = el("button","zen" + (pp().step === i ? " on" : "")); b.append(el("b",null,z.name), el("span",null, z.min + " min · " + z.when), el("span","zt", zenTxt(z)));
         b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); }); nc.append(zw); }
 
     if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
@@ -129,7 +130,7 @@ function render(){
       const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : P.zen ? "Commencer" : "Démarrer la séance"); bt.disabled = dn >= tot;
       bt.onclick = () => startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
-      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (zenLvl(ZEN[pp().step].id) ? "tenues +" + Math.round((zenScale(ZEN[pp().step].id) - 1) * 100) + " % depuis tes débuts" : "les tenues s'allongent à chaque séance terminée") : "Environ " + Math.max(5, Math.round(secs / 300) * 5) + " min · l'app enchaîne les séries et les repos toute seule."));
+      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (ZEN[pp().step].free ? "à faire quand tu veux" : "les tenues s'allongent quand la forme est propre ; le palier se valide sur 2 séances propres au plafond") : "Environ " + Math.max(5, Math.round(secs / 300) * 5) + " min · l'app enchaîne les séries et les repos toute seule."));
     }
     if (!Object.keys(PS).length) { const lk = el("button","golink","Charger mes programmes (planche, étirements…)"); lk.onclick = () => { S.sessOpen = true; save(); renderSess(); $("sess").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }; nc.append(lk); }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné

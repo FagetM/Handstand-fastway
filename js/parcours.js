@@ -3,7 +3,7 @@
 // ---------- Accompagnement : un plan concret pour passer au niveau suivant de chaque jalon ----------
 // Ces plans sont des repères généraux d'entraînement (les miens, pas ceux des programmes) : volume modéré, souvent, sans aller à l'échec.
 const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
-  pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
+  pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0]};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
@@ -16,7 +16,7 @@ function planFor(m){
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", days = force ? 4 : 5, sets = /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = 2;
+  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", days = /^pl_/.test(m.id) ? 3 : force ? 4 : 5, sets = /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = /^pl_/.test(m.id) ? 3 : 2;
   const freq = days + " séances par semaine" + (force ? " : laisse un jour de douceur entre deux, ton corps construit pendant le repos." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
   if (FREE(m)) { const one = m.sec === "onearm", n = one ? 10 : 15, rest = one ? 45 : 30;
@@ -43,7 +43,7 @@ function planFor(m){
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
-      "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre les deux. Si l'une passe, le niveau est acquis et la cible suivante s'affiche.",
+      (/^pl_/.test(m.id) ? "Termine par 3 tentatives à " + u(T) + ", 3 min de repos entre chacune. Le niveau est acquis quand les 3 passent dans la même séance : les tendons aussi doivent être prêts." : "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre les deux. Si l'une passe, le niveau est acquis et la cible suivante s'affiche."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Chaque petite tenue te rapproche de " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
       "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",

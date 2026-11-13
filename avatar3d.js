@@ -23,6 +23,8 @@ export const POSES = {
   pl_frog:    {pitch:1.57, arm:[-1.08,-1.08],   armZ:[0,0],       hip:[-0.9,-0.9],  hipZ:[0.55,0.55], knee:[1.7,1.7], head:-0.6},
   pl_pike:    {pitch:1.57, arm:[-1.08,-1.08], armZ:[0,0],       hip:[-0.28,-0.28],hipZ:[0.55,0.55], knee:[0,0],     head:-0.6},
   pl_straddle:{pitch:1.57, arm:[-1.02,-1.02], armZ:[0,0],       hip:[0,0],        hipZ:[0.6,0.6],   knee:[0,0],     head:-0.7},
+  pl_1legP:   {pitch:1.57, arm:[-1.12,-1.12], armZ:[0,0], hip:[-1.55,0], hipZ:[0,0], knee:[2.0,0], head:-0.6},   // advanced tuck, une jambe tendue derrière
+  pl_pdown:   {pitch:1.62, arm:[-0.75,-0.75], armZ:[0.15,0.15], elbow:[-1.3,-1.3], hip:[-0.05,-0.05], hipZ:[0,0], knee:[0,0], head:-0.6, point:0},   // pompe pseudo planche, en bas
   pl_full:    {pitch:1.57, arm:[-0.95,-0.95],   armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.7},
   hs_flag:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0.34,-0.34],hip:[0,0],        hipZ:[1.5,-0.3],  knee:[0,0],     head:-0.3, roll:0.34},   // drapeau : le bassin part d'un côté, la jambe basse passe sous l'horizontale
   crow:       {pitch:1.2,  arm:[-0.75,-0.75], armZ:[0.1,0.1],   elbow:[-0.9,-0.9],   hip:[-2.25,-2.25],hipZ:[0.4,0.4],   knee:[2.5,2.5], head:-0.7},
@@ -125,6 +127,10 @@ export const SCRIPTS = {
   oa_finger: {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.7,1.8]]},
   oa_strarm: {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.3],["hs_oastr",0.7,1.5]]},
   oa_oahs:   {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,1.8]]},
+  oa_oahs10: {s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafull",0.8,2.4]]},
+  oa_lift:   {s:[...UP,["hs_straddle",0.5,0.3],["hs_oastr",0.6,0.6],["hs_oafull",0.5,0.6],["hs_oastr",0.5,0.6],["hs_oafull",0.5,0.6],["hs_oastr",0.5,0.3]], still:"hs_oafull"},
+  oa_wall:   {wall:1, yaw:0.4, s:[...UP,["hs_straddle",0.5,0.4],["hs_finger",0.6,0.3],["hs_oafull",0.7,1.8]], still:"hs_oafull"},
+  oa_strad30:{s:[...UP,["hs_straddle",0.5,2.4]]},
   pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["hs_straddle",0.8,0.4],["hs",0.5,1.0]], still:"hs_spress"},
   pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
   pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["hs_straddle",0.6,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
@@ -140,6 +146,8 @@ export const SCRIPTS = {
   pl_lean:   {s:[["squat",0.45,0],["pl_lean",0.5,2.2]]},
   pl_tuck:   {s:[["squat",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
   pl_adv:    {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_adv",0.6,1.6]]},
+  pl_1leg:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_adv",0.5,0.3],["pl_1legP",0.6,1.6]]},
+  pl_ppp:    {s:[["squat",0.45,0],["pl_lean",0.5,0.3],["pl_pdown",0.6,0.1],["pl_lean",0.6,0.2],["pl_pdown",0.6,0.1],["pl_lean",0.6,0.6]], still:"pl_lean"},
   pl_frog:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_frog",0.6,1.6]]},
   pl_pike:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_pike",0.7,1.6]]},
   pl_straddle:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
