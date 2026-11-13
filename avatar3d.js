@@ -251,6 +251,7 @@ Object.assign(SCRIPTS, {
 });
 
 Object.assign(SCRIPTS, {
+  dr_dipsW: Object.assign({}, SCRIPTS.fd_dips, {vest:true}), dr_pushW: Object.assign({}, SCRIPTS.fd_push, {vest:true}),
   dr_hollow: {yaw:-1.45, s:[["stand",0.3,0.1],["crouch",0.45,0],["dr_sit",0.5,0.1],["dr_lie",0.7,0.3],["dr_hollow",0.6,0.9],["dr_hollow2",0.5,0.5],["dr_hollow",0.5,0.9],["dr_lie",0.6,0.4]], still:"dr_hollow"},
   dr_tirage: {wall:"band", yaw:-1.35, s:[["stand",0.3,0.1],["dr_rowA",0.5,0.3],["dr_rowB",0.6,0.5],["dr_rowA",1.1,0.15],["dr_rowB",0.6,0.5],["dr_rowA",1.1,0.15],["dr_rowB",0.6,0.5],["dr_rowA",1.1,0.3]], still:"dr_rowB"},
   dr_rotext: {wall:"band_side", yaw:-0.35, s:[["stand",0.3,0.1],["dr_erA",0.5,0.3],["dr_erB",0.8,0.4],["dr_erA",1.1,0.15],["dr_erB",0.8,0.4],["dr_erA",1.1,0.15],["dr_erB",0.8,0.4],["dr_erA",1.1,0.3]], still:"dr_erB"},
@@ -414,6 +415,11 @@ export function mount(host, opts = {}){
   const tutu = at(new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.33, 0.1, 28, 1, true), mTutu), root, 0, 0.03, 0);
   const duck = grp(root, 0, 0.03, 0); { const t = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.065, 12, 32), mDuck); t.rotation.x = PI/2; duck.add(t); at(ball(0.065, mDuck), duck, 0, 0.11, 0.24);
     const bk = cone(0.025, 0.06, mRed); bk.rotation.x = PI/2; at(bk, duck, 0, 0.1, 0.31); [-1, 1].forEach(s => at(ball(0.01, mDark), duck, s*0.028, 0.135, 0.29)); }
+  // gilet lesté : un plastron sombre avec ses poches de lest, porté sur les exercices lestés
+  const vest = grp(root, 0, 0.385, 0), mVest = M(0.75); mVest.color.set("#2b2f36"); vest.visible = false;
+  { const body = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.215), mVest); vest.add(body);
+    [-1, 1].forEach(z => [-1, 0, 1].forEach(x => [-1, 1].forEach(y => { const pk = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.1, 0.03), mDark); pk.position.set(x * 0.092, y * 0.065 - 0.01, z * 0.115); vest.add(pk); })));
+    [-1, 1].forEach(x => { const strap = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.1, 0.2), mVest); strap.position.set(x * 0.1, 0.17, 0); vest.add(strap); }); }
   const limbs = [0, 1].map(i => { const sx = i ? -1 : 1;
     const sh = grp(root, sx*0.215, 0.5, 0);
     const shoulder = at(ball(0.066, mSkin), sh, 0, 0, 0);
@@ -438,7 +444,7 @@ export function mount(host, opts = {}){
     return {wr, sx, sh, el, hip, kn, ank, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole, fin}; });
   // articulation de la taille : le haut du corps (torse, cou, épaules) peut se cambrer ou s'arrondir par rapport au bassin
   const spine = grp(root, 0, 0.2, 0);
-  [torso, chest, neck, medal, cape, bow, wings, limbs[0].sh, limbs[1].sh].forEach(o => { o.position.y -= 0.2; spine.add(o); });
+  [torso, chest, neck, medal, cape, bow, wings, vest, limbs[0].sh, limbs[1].sh].forEach(o => { o.position.y -= 0.2; spine.add(o); });
 
   // socle : disque + arc de progression vers le niveau suivant
   const base = at(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.03, 64), soft), scene, 0, -0.016, 0);
@@ -671,6 +677,7 @@ export function mount(host, opts = {}){
     at(){ return seg ? seg.name : here; },
     holding(){ return !seg && holdT > 0; },
     view(y){ yaw = y; dirty = true; },
+    vest(on){ vest.visible = !!on; dirty = true; },
     wall(side){ bandMode = typeof side === "string" && side.startsWith("band") ? (side.slice(5) || "front") : null; bars.visible = side === "bars"; wall.visible = typeof side === "number" && !!side; wall.position.z = side > 0 ? 0.42 : -0.42; },
     canvas,
     png(){ return canvas.toDataURL("image/png"); },

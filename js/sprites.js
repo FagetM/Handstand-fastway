@@ -20,7 +20,8 @@ const ZN_ANIM = {"Bascules à quatre pattes":"z_bascules", "Appui sur le bout de
   "Levées de talons en pike":"pr_pikeLift", "L-sit groupé":"z_lgroup", "L-sit une jambe tendue":"z_lone", "L-sit":"pr_lsit", "Cuillère creuse":"dr_hollow", "Écart facial actif":"z_pancake", "Équerre écartée":"pr_stradL", "Posture du chiot":"z_chiot",
   "Chien tête en bas actif":"z_dog", "Épaules au mur":"z_murEp", "Pompes d'omoplates en pike":"z_omoP", "Gainage creux":"z_creux", "Appui tendu en pike, pieds sur une caisse":"z_dog", "Équilibre dos au mur":"z_dosMur", "Corbeau":"lo_frog", "Corbeau bras tendus":"z_crowT",
   "Planche latérale":"z_side", "Chaturanga tenu":"z_chat", "Pseudo-planche":"pl_lean", "Planche vers chien, au ralenti":"z_transi", "Guerrier III":"z_war", "Étirement des avant-bras":"z_avbras", "Enfant bras longs":"z_enfant", "Pigeon":"z_pigeon", "Chien tête en bas":"z_dogP", "Torsion couchée":"z_twist"};
-const blockAnim = b => b.dk ? DR_ANIM[b.dk] : ZN_ANIM[b.name];
+// exercices lestés : le personnage porte le gilet, sauf en version sans charge
+const blockAnim = b => b.dk ? ((b.dk === "dipsW" || b.dk === "pushW") && b.name === DRILLS[b.dk].name ? "dr_" + b.dk : DR_ANIM[b.dk]) : ZN_ANIM[b.name];
 const drSp = (b, size) => { const an = blockAnim(b), sp = el("span","sp"); sp.dataset.pose = poseId(an) || "stand"; sp.dataset.anim = an; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
 const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
@@ -41,7 +42,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "36-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "37-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
@@ -64,7 +65,7 @@ async function buildSprites(force){
   // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l'écran
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
-  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM)))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
+  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"]))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
   // de préférence dans un Web Worker (hors de la page) ; sinon par petits morceaux dans la page
   if (await sprViaWorker(ids, F, key, job)) return;
   if (job !== sprJob) return;
@@ -77,7 +78,7 @@ async function buildSprites(force){
     const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1, g = 0;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
     const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
-    A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
+    A.vest(sc.vest); A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
     A.play(sc.s, !sc.cut);
     do { snap(); g++; if (g % 4 === 0) { await idle(); if (job !== sprJob) return; } } while (A.moving() && g < MAXF);
     if (!sc.cut) snap(); if (hold < 0) hold = Math.floor(n / 2);

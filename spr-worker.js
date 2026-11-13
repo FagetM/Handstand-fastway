@@ -10,7 +10,7 @@ self.onmessage = async e => {
     const sheet = new OffscreenCanvas(MAXF * SPN, SPN), cx = sheet.getContext("2d"), dt = 1 / SPF; let n = 0, hold = -1, g = 0;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
     const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
-    A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit, level:6}); snap(); snap();
+    A.vest(sc.vest); A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit, level:6}); snap(); snap();
     A.play(sc.s, !sc.cut); do { snap(); g++; } while (A.moving() && g < MAXF);
     if (!sc.cut) snap(); if (hold < 0) hold = Math.floor(n / 2);
     const out = new OffscreenCanvas(n * SPN, SPN); out.getContext("2d").drawImage(sheet, 0, 0);
