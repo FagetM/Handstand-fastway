@@ -116,18 +116,19 @@ function journey(nextId){
   // disciplines difficiles : une seule affichée à la fois (sélecteur), celle de ta prochaine figure par défaut
   const jd = S.jdisc && SEC[S.jdisc] ? S.jdisc : (HARD.find(h => SEC[h[0]].ms.some(m => m.id === nextId)) || HARD.find(h => SEC[h[0]].ms.some(m => !st(m.id).done && !msLocked(m))) || HARD[0])[0];
   ["base","starter","b1","b2","inter",jd].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
-    if (sid === jd) { items.push({k:"d", y}); y += 92; prev = null; }
+    if (sid === jd) { const pv = prev;
+      // les figures au sol, à part, avant les disciplines difficiles : le sommet (le combo) reste tout en bas
+      sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
+      prev = null; SEC.low.ms.forEach(m=>step(m.id));
+      { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
+      prev = pv; items.push({k:"d", y}); y += 92; prev = null; }
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, "");
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
     s.ms.filter(m=>m.alt).forEach((m, i)=>{ const x = X[(k - 1 - i + 99 * X.length) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40 - i * RH, true];   /* plusieurs bonus : un par rangée, jamais superposés */ items.push({k:"n", id:m.id, alt:true}); y += 0; });
     const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
   // le sommet : le combo ultime, qui réunit les trois disciplines
-  { const s = SEC.ultime; sign(s.name, "ultime", "Un bras, planche et montées réunis, sans poser les pieds."); prev = null; s.ms.forEach(m=>step(m.id)); y += 30; }
-  // hors parcours : les figures au sol
-  sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
-  prev = null; SEC.low.ms.forEach(m=>step(m.id));   // chemin sinueux, plus de figures collées
-  { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
+  { const s = SEC.ultime; sign(s.name, "ultime", "Tout enchaîner, sans poser les pieds."); prev = null; s.ms.forEach(m=>step(m.id)); y += 30; }
   const H = y, cv = el("div","jr-c"); cv.style.height = H + "px";
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
@@ -158,7 +159,7 @@ function journey(nextId){
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
       b.append(c, el("span","n", m.name));
       const nx = nextStep(m);
-      b.append(el("span","g", x.done ? "" : lk ? (m.target ? goalTxt(m) : "Verrouillé") : L.length > 1 ? "Étape " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : m.target ? goalTxt(m) : ""));
+      b.append(el("span","g", x.done ? "" : lk ? (m.target ? goalTxt(m) : "") : L.length > 1 ? "Étape " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : m.target ? goalTxt(m) : ""));
       b.onclick = () => quick(id); cv.append(b);
       // toi, sur le chemin : ton personnage se tient à côté de ta figure du moment
       if (cur) { const me = el("div","me" + (it.lane ? " lane" : "")), msp = el("span","sp"); msp.dataset.pose = "stand"; msp.dataset.anim = "me"; msp.dataset.lk = ""; sprPaint(msp, it.lane ? 56 : 76); me.append(msp, el("span","tag","Toi"));
@@ -178,7 +179,7 @@ function quick(id){
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
   const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Verrouillée pour l'instant" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : ""));
+  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l'instant" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : ""));
   // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
   const req = (m.req || []).filter(r=>MS[r]);
   if (req.length) { const tr = el("div","qktree"), par = el("div","qkpar"); par.style.gridTemplateColumns = "repeat(" + req.length + ",1fr)";
@@ -189,7 +190,7 @@ function quick(id){
   const top = el("div","qktop"); top.append(art, g); box.append(top);
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
-    if (x.done) { blk.classList.add("ok"); const nx = GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i])); blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
+    if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
     else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d'abord." : "Valide-la d'abord.") + " Tu peux quand même essayer."));
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? "Semaine plus légère en cours sur cette figure, puis on repart." : "Elle sera allégée une semaine à sa prochaine séance."))); bar(Math.min(1, x.best / (m.target || 1))); }
     else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / valRule(id).n); }
@@ -204,7 +205,7 @@ function quick(id){
         + '<polyline fill="none" stroke="var(--txt)" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map((v,i)=>X(i).toFixed(1) + "," + Y(v).toFixed(1)).join(" ") + '"/>' + pts.map((v,i)=>'<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="3.5" fill="var(--txt)"/>').join("") + '</svg>';
       const h = el("div","hist"); h.append(el("div","lab","Ton historique · " + pts.length + " séances")); const gr = el("div"); gr.innerHTML = svg; h.append(gr, el("div","mut","Pointillés : la cible (" + goalTxt(m) + "). Meilleur : " + fmt(m, Math.max(...pts)) + ".")); box.append(h); }
   }
-  const row = el("div","btns"), go = el("button","btn", lk ? "Essayer quand même" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Je l'ai réussi"), more = el("button","btn line","Chrono et journal");
+  const row = el("div","btns"), go = el("button","btn", lk ? "Essayer" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Je l'ai réussi"), more = el("button","btn line","Chrono et journal");
   go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold") setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); else if (!lk) setTimeout(()=>$("toggle").scrollIntoView({block:"center"}), 250); };
   more.onclick = () => { $("qkDlg").close(); openMs(id); };
   row.append(go, more); box.querySelector(".qkblock").after(row);

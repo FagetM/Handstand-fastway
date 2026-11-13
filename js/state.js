@@ -119,7 +119,8 @@ function stats(){
   if (streak > (c.streak || 0)) c.streak = streak;
   const done = Object.keys(MS).filter(id=>st(id).done).length, tries = S.log.filter(l=>MS[l.id]).length;
   const ctx = Object.assign({tries}, c);
-  const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)); return Object.assign({}, b, {cur, ok:cur >= b.max}); });
+  const got = S.bgot || (S.bgot = (S.seen && S.seen.b || []).slice());   // un badge gagné le reste, même si de nouvelles figures s'ajoutent à sa branche
+  const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)), ok = cur >= b.max || got.includes(b.id); if (ok && !got.includes(b.id)) got.push(b.id); return Object.assign({}, b, {cur:ok ? b.max : cur, ok}); });
   const nodeXp = Object.values(MS).reduce((n,m)=>n + Math.round(100 * lvlOf(m) / lvls(m).length), 0);
   const xp = nodeXp + 2*c.sets + 2*tries + 40*badges.filter(b=>b.ok).length;
   let lvl = 1; while (xp >= xpFor(lvl)) lvl++;

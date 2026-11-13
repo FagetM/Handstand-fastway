@@ -345,7 +345,7 @@ export function mount(host, opts = {}){
   const wall = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.5, 0.06), new THREE.MeshStandardMaterial({roughness:1, transparent:true, opacity:0.5})); wall.position.set(0, 1.25, -0.42); wall.visible = false;
   const wallPivot = grp(scene, 0, 0, 0); wallPivot.add(wall);                 // le mur suit la vue, pas les pirouettes du personnage
   // barres parallèles (dips) : deux barres sous les mains, à hauteur de hanches
-  const BAR_H = 0.4, bars = grp(wallPivot, 0, 0, 0), barM = new THREE.MeshStandardMaterial({roughness:0.6, metalness:0.2}); bars.visible = false;
+  const BAR_H = 0.5, bars = grp(wallPivot, 0, 0, 0), barM = new THREE.MeshStandardMaterial({roughness:0.6, metalness:0.2}); bars.visible = false;
   const barL = [-1, 1].map(() => { const g = grp(bars, 0, 0, 0), top = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.55, 12), barM); top.rotation.x = PI/2; top.position.y = BAR_H - 0.03; g.add(top);
     [-0.22, 0.22].forEach(z => { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, BAR_H, 10), barM); post.position.set(0, BAR_H / 2, z); g.add(post); }); return g; });
   const ringM = new THREE.MeshStandardMaterial({roughness:0.5});
