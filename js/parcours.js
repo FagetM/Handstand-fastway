@@ -112,8 +112,10 @@ function journey(nextId){
   const chestDone = cid => chestOpen(SEC[cid.slice(6)]);
   // le tronc commun : une figure par ligne, dans l'ordre du parcours
   // un seul chemin qui serpente, étage après étage ; les trois disciplines difficiles ont chacune le leur (plus de lignes droites)
-  ["base","starter","b1","b2","inter",...HARD.map(h=>h[0])].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
-    if (HARD.some(h=>h[0] === sid)) prev = null;
+  // disciplines difficiles : une seule affichée à la fois (sélecteur), celle de ta prochaine figure par défaut
+  const jd = S.jdisc && SEC[S.jdisc] ? S.jdisc : (HARD.find(h => SEC[h[0]].ms.some(m => m.id === nextId)) || HARD.find(h => SEC[h[0]].ms.some(m => !st(m.id).done && !msLocked(m))) || HARD[0])[0];
+  ["base","starter","b1","b2","inter",jd].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
+    if (sid === jd) { items.push({k:"d", y}); y += 92; prev = null; }
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, "");
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
@@ -121,8 +123,8 @@ function journey(nextId){
     const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
   // hors parcours : les figures au sol
   sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
-  SEC.low.ms.forEach((m,j)=>{ pos[m.id] = [[20,50,80][j], y + 40, false]; items.push({k:"n", id:m.id}); if (j) seg(pos[SEC.low.ms[j-1].id], pos[m.id], eCls(st(SEC.low.ms[j-1].id).done, m.id, msLocked(m) && !st(m.id).done)); });
-  y += RH; chest("low", 50); seg(pos[SEC.low.ms[2].id], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20;
+  prev = null; SEC.low.ms.forEach(m=>step(m.id));   // chemin sinueux, plus de figures collées
+  { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
   const H = y, cv = el("div","jr-c"); cv.style.height = H + "px";
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
@@ -131,6 +133,11 @@ function journey(nextId){
       const g = el("div","grow"); g.append(el("div","sname", it.title), el("div","mut", it.sub));
       b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); if (SEC[it.sid] && SEC[it.sid].videos.length) { const vc = vidChip(it.sid); vc.firstChild.textContent = "Vidéos"; b.append(vc); } cv.append(b); }
     else if (it.k === "l"){ const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
+    else if (it.k === "d"){ const d = el("div","dsel"); d.style.top = it.y + "px";
+      HARD.forEach(([sid, name]) => { const ms = SEC[sid].ms.filter(m=>!m.alt), dn = ms.filter(m=>reqDone(m.id)).length, here = ms.some(m=>m.id === nextId);
+        const b = el("button","dpill d-" + sid + (sid === jd ? " on" : "")); b.append(el("b",null,name), el("span",null, dn + "/" + ms.length + (here ? " · toi" : "")));
+        b.setAttribute("aria-pressed", sid === jd); b.onclick = () => { S.jdisc = sid; save(); render(); const t = document.querySelector(".dsel"); if (t) t.scrollIntoView({block:"start"}); }; d.append(b); });
+      cv.append(d); }
     else if (it.k === "c"){ const C = CHESTS[it.sid], c = el("button","chest" + (it.done ? " open" : "")); c.style.left = it.x + "%"; c.style.top = it.y + "px";
       c.innerHTML = it.done ? '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 22h32v16H8z"/><path d="M8 22l4-12h24l4 12" fill="currentColor" fill-opacity=".25"/><path d="M24 26v6"/></svg>'
         : '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 20h32v18H8z"/><path d="M8 20c0-6 4-10 16-10s16 4 16 10"/><path d="M8 26h32"/><rect x="21" y="23" width="6" height="7" rx="1"/></svg>';
@@ -138,7 +145,7 @@ function journey(nextId){
       c.onclick = () => { if (it.done) { toast("Coffre ouvert : " + C[2] + ". Enfile-le dans le vestiaire (Profil)."); } else toast("Termine l'étage pour ouvrir ce coffre : " + C[2] + "."); };
       c.append(el("span","cl", it.done ? C[2] : "Coffre")); cv.append(c); }
     else { const id = it.id, m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), kk = lvlOf(m), cur = id === nextId, small = it.alt;
-      const b = el("button","jn" + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
+      const b = el("button","jn d-" + m.sec + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
       b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 48 : cur ? 64 : 58)) + "px";   // centre du rond sur le chemin
       b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + ", niveau " + kk + " sur " + L.length + (lk ? ", verrouillé" : ""));
       const c = el("span","c"), R = 39, Cc = 2*Math.PI*R, sg = Cc / L.length, gap = L.length > 1 ? 5 : 0;

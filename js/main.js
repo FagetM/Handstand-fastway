@@ -2,6 +2,7 @@
 "use strict";
 // ---------- Navigation + réglages ----------
 function goHere(id){ const m = MS[id]; if (!m) return;
+  if (HARD.some(h => h[0] === m.sec) && S.jdisc !== m.sec && !document.querySelector('.jn[data-id="' + id + '"]')) { S.jdisc = m.sec; save(); render(); }   // figure d'une autre discipline : on l'affiche
   requestAnimationFrame(()=>{ const nd = document.querySelector('.jn[data-id="' + id + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }); }
 function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); }
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const was = b.classList.contains("on"); showTab(b.dataset.v); window.scrollTo(0,0);

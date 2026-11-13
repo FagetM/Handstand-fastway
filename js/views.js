@@ -97,25 +97,25 @@ function render(){
       pb.onclick = () => startPlacement(); nc.append(pb); $("sessToggle").hidden = $("sess").hidden = true;   // avant le bilan : rien d'autre à l'écran
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       break today; }
+    // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
+    const chips = el("div","srcs"); Object.keys(all).sort((a,b)=>(progLock(a) ? 1 : 0) - (progLock(b) ? 1 : 0)).forEach(id=>{ const lock = progLock(id), c = el("button","src" + (P.id === id ? " on" : "") + (lock ? " lk" : ""));
+      if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
+      c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s'ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
     // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
-    if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = md[1] + " · changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
+    if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = (S.mins || 30) + " min · " + md[1] + " · changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
     else if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
       MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); b.append(el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => { delete S.moodEdit; setMood(k); }; mw.append(b); });
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd'hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
-    if (P.builtin) { const tm = el("div","mins"); 
+    if (P.builtin && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", String(v)); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d'entraînement de suite. Mobilité et poignets aujourd'hui, la force revient demain."));
     if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
     if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "On prend soin de tes poignets : deux jours sans appui sur les mains. Gainage, respiration et souplesse au programme." : "Tu as signalé une gêne : séance tout en douceur, sans tentative à fond ni force."));
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l'avis d'un professionnel de santé avant de reprendre.")); }
-    // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
-    const chips = el("div","srcs"); Object.keys(all).sort((a,b)=>(progLock(a) ? 1 : 0) - (progLock(b) ? 1 : 0)).forEach(id=>{ const lock = progLock(id), c = el("button","src" + (P.id === id ? " on" : "") + (lock ? " lk" : ""));
-      if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
-      c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s'ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
     // Maîtrise : on choisit sa séance de postures tenues (poignets, compression, ligne, contrôle, récup)
-    if (P.zen) { const zw = el("div","zens"); ZEN.forEach((z, i) => { const b = el("button","zen" + (pp().step === i ? " on" : "")); b.append(el("b",null,z.name), el("span",null, z.min + " min · " + z.when), el("span","zt", zenTxt(z)));
-        b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); }); nc.append(zw); }
+    if (P.zen) { const zw = el("div","srcs zchips"); ZEN.forEach((z, i) => { const b = el("button","src" + (pp().step === i ? " on" : ""), z.name); b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); });
+      const z = ZEN[pp().step] || ZEN[0]; nc.append(zw, el("div","zt2", z.when + " · " + zenTxt(z))); }
 
     if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
     else {
