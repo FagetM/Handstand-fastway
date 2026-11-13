@@ -9,7 +9,7 @@ const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_s
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
 // habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
-const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall";   // un bras au mur : séries de force par côté
+const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
 const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit"].includes(id)) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
@@ -25,12 +25,15 @@ function plateau(id){
 // semaine plus légère sur une figure en plateau (déclenchée une fois toutes les 3 semaines), puis on repart d'une charge neutre
 function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[id]; return !!d && Date.now() - d < 7 * 864e5; }
 function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
+// la règle de validation, en clair (même règle que hitTarget)
+function valTxt(m){ const V = valRule(m.id); return "Validation : la cible tenue sur " + V.n + " séances" + (V.gap > 1 ? ", espacées d'au moins " + V.gap + " jours" : ", jours différents") + (V.span ? ", sur " + V.span + " jours au moins" : "")
+  + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 3 séries à la cible à chaque fois" : "") + "."; }
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), out = {head:"", lines:[], short:"", n:null}; let T = nextStep(m);
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps", oaReps = m.sec === "onearm" && m.type === "reps", days = /^(pl_|pr_)/.test(m.id) ? 3 : force ? 4 : 5,
+  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id),   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", days = /^(pl_|pr_)/.test(m.id) ? 3 : force ? 4 : 5,
     sets = oaReps ? 6 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
   const freq = days + " séances par semaine" + (force ? " : laisse un jour de douceur entre deux, ton corps construit pendant le repos." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
@@ -41,7 +44,7 @@ function planFor(m){
     out.short = n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu tant que c'est calme, " + rest + " s de repos. " + days + " séances par semaine.";
     out.lines = [freq, "À chaque séance : " + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune tant que c'est calme, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
       "Le chrono bipe à " + T + " s : le palier est acquis dès qu'un essai l'atteint.", x.best > 0 ? "Ton record : " + fmt(m, x.best) + "." : "Pas encore de record : chaque essai compte.",
-      "La qualité avant la quantité : arrête la séance quand les montées deviennent brouillonnes."];
+      "La qualité avant la quantité : arrête la séance quand les montées deviennent brouillonnes.", valTxt(m)];
     if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ".");
     return out; }
   if (m.type === "check"){
@@ -59,14 +62,14 @@ function planFor(m){
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (tries2 ? ", puis " + tries2 + (tries2 > 1 ? " tentatives" : " tentative") + " à " + (hold ? T + " s" : T + " rép.") : "") + ". " + days + " séances par semaine.";
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
-      (/^pl_/.test(m.id) ? "Termine par 3 tentatives à " + u(T) + ", 3 min de repos entre chacune. Une tenue à la cible ouvre le palier suivant ; la figure se valide quand les 3 tentatives passent dans une même séance, sur 2 séances : les tendons aussi doivent être prêts." : (tries > 1 ? "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre chacune." : "Termine par une tentative à " + u(T) + ".") + " Réussie, elle fait passer le palier ; au dernier, la figure se valide sur 2 séances à la cible."),
+      (/^pl_/.test(m.id) ? "Termine par 3 tentatives à " + u(T) + ", 3 min de repos entre chacune. Une tenue à la cible ouvre le palier suivant ; la figure se valide quand les 3 tentatives passent dans une même séance, sur 2 séances : les tendons aussi doivent être prêts." : (tries > 1 ? "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre chacune." : "Termine par une tentative à " + u(T) + ".") + " Réussie, elle fait passer le palier ; au dernier palier, la règle de validation s'applique."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Chaque petite tenue te rapproche de " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
       "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",
       "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes trois semaines, l'app allège cette figure une semaine, automatiquement."];
   }
   if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
-  if (m.type !== "check") out.lines.push("Validation : la cible tenue sur 2 séances, deux jours différents" + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 3 séries à la cible à chaque fois." : ". Un bon jour ne suffit pas, on veut de la régularité."));
+  if (m.type !== "check") out.lines.push(valTxt(m));
   if (SOUPLE.has(m.id)) out.lines.push("La souplesse compte pour cette figure : ajoute deux séances d'étirements par semaine (programme Étirements).");
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
   return out;

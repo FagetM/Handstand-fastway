@@ -243,7 +243,7 @@ function fillDlg(){
 function record(v){
   const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false;
   if (v === true) { if (msLocked(m)) { toast("Valide d'abord : " + missing(m) + "."); return; } chkHit(cur); }
-  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée : deux séances à la cible !"); } if (m.type === "hold") cnt().hold += v; }
+  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée !"); } if (m.type === "hold") cnt().hold += v; }
   S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();
   const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + " · niveau " + lv1 + " atteint");

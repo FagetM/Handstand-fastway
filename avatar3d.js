@@ -175,10 +175,42 @@ export const SCRIPTS = {
   pl_pike:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_pike",0.7,1.6]]},
   pl_straddle:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
   pl_full:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
-};// étapes intermédiaires : elles reprennent l'animation de la figure dont elles dérivent
-Object.assign(SCRIPTS, {oa_tuckflag:SCRIPTS.oa_flaghoriz, oa_shrug:SCRIPTS.oa_wall, oa_sidehold:SCRIPTS.oa_shift, oa_finger3:SCRIPTS.oa_finger, oa_finger2:SCRIPTS.oa_finger, oa_finger1:SCRIPTS.oa_finger, oa_oahsw:SCRIPTS.oa_oahs,
-  pl_lean2:SCRIPTS.pl_lean, pl_tuckP:SCRIPTS.pl_tuck, pl_tuckPu:SCRIPTS.pl_ppp, pl_tuckO:SCRIPTS.pl_adv, pl_strBand:SCRIPTS.pl_straddle, pl_strBandL:SCRIPTS.pl_straddle, pl_strNar:SCRIPTS.pl_straddle, pl_half:SCRIPTS.pl_1leg, pl_fullBand:SCRIPTS.pl_full, pl_fullNeg:SCRIPTS.pl_full,
-  pr_pikeLift:SCRIPTS.pr_lsit, pr_stradLift:SCRIPTS.pr_stradL, pr_vsit:SCRIPTS.pr_stradL, pr_wallNeg:SCRIPTS.pr_negS, pr_elevLow:SCRIPTS.pr_elev, pr_negP:SCRIPTS.pr_pike, pr_halfSt:SCRIPTS.pr_stalder, pr_tuckUp:SCRIPTS.pr_lsitHs, pr_stalPart:SCRIPTS.pr_stalder, pr_lsitNeg:SCRIPTS.pr_lsitHs});
+};// étapes intermédiaires : postures dédiées quand le geste diffère, sinon l'animation de la figure dont elles dérivent
+Object.assign(POSES, {
+  hs_oafullM:mirror(POSES.hs_oafull),                                   // un bras, l'autre côté (côté faible)
+  hs_tflag:P("hs_tuck", {roll:0.3}), hs_tflagM:P("hs_tuck", {roll:-0.3}), // drapeaux groupés
+  pl_halfL:P("pl_full", {hip:[-0.15,-0.15], knee:[1.6,1.6]}),            // half-lay : hanches tendues, genoux pliés
+  pl_tuckDn:P("pl_tuck", {elbow:[-1.0,-1.0], pitch:1.45}),               // pompe en tuck : coudes fléchis, pieds en l'air
+  pl_strN:P("pl_straddle", {hipZ:[0.3,0.3]}),                            // straddle serrée
+  sitP:P("sit", {hip:[-1.85,-1.85], arch:0.45, point:1}),                // élévation en pike : talons décollés
+  sitSL:P("sit_s", {hip:[-1.9,-1.9], arch:0.45, point:1}),               // élévation jambes écartées
+  lsitT:P("lsit0", {hip:[-2.3,-2.3], knee:[2.2,2.2]}),                   // équerre groupée
+  tuckRise:P("hs_tuck", {pitch:2.2, arm:[-2.2,-2.2]}),                   // le bassin monte en groupé
+});
+Object.assign(SCRIPTS, {
+  oa_oahsw:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafullM",0.8,1.8]], still:"hs_oafullM"},
+  oa_sidehold:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_shiftL",0.6,2.0]], still:"hs_shiftL"},
+  oa_tuckflag:{yaw:-0.15, s:[...UP,["hs_tuck",0.5,0.3],["hs_tflag",0.8,0.8],["hs_tuck",0.6,0.1],["hs_tflagM",0.8,0.8],["hs_tuck",0.6,0.1]], still:"hs_tflag"},
+  oa_shrug:SCRIPTS.oa_wall, oa_finger3:SCRIPTS.oa_finger, oa_finger2:SCRIPTS.oa_finger,
+  oa_finger1:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.7,0.8],["hs_oafull",0.5,0.4],["hs_finger",0.5,0.6]], still:"hs_finger"},
+  pl_lean2:SCRIPTS.pl_lean, pl_tuckP:SCRIPTS.pl_tuck, pl_tuckO:SCRIPTS.pl_adv,
+  pl_tuckPu:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_tuckDn",0.6,0.1],["pl_tuck",0.6,0.2],["pl_tuckDn",0.6,0.1],["pl_tuck",0.6,0.5]], still:"pl_tuck"},
+  pl_strBand:SCRIPTS.pl_straddle, pl_strBandL:SCRIPTS.pl_straddle,
+  pl_strNar:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_strN",0.7,1.7]], still:"pl_strN"},
+  pl_half:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_halfL",0.7,1.7]], still:"pl_halfL"},
+  pl_fullBand:SCRIPTS.pl_full,
+  pl_fullNeg:{cut:true, s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.2],["pl_full",0.6,0.4],["pl_lean",3.0,0.3],["squat",0.5,0],["stand",0.4,0.1]], still:"pl_full"},
+  pr_pikeLift:{cut:true, s:[["crouch",0.4,0],["sit",0.4,0.2],["sitP",0.5,0.6],["sit",0.4,0.2],["sitP",0.5,0.6],["sit",0.4,0.2],["crouch",0.4,0],["stand",0.4,0.1]], still:"sitP"},
+  pr_stradLift:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0.2],["sitSL",0.5,0.6],["sit_s",0.4,0.2],["sitSL",0.5,0.6],["sit_s",0.4,0.2],["crouch",0.4,0],["stand",0.4,0.1]], still:"sitSL"},
+  pr_vsit:SCRIPTS.pr_stradL,
+  pr_wallNeg:Object.assign({}, SCRIPTS.pr_negS, {wall:-1}),
+  pr_elevLow:SCRIPTS.pr_elev,
+  pr_negP:{cut:true, s:[...UP,["hs",0.5,0.6],["pk2",1.4,0],["pk1",1.2,0],["fold",0.8,0.3],["stand",0.6,0.2]], still:"pk2"},
+  pr_halfSt:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,0.3],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["sp2",0.5,0],["hs_straddle",0.5,0.4],["sp2",1.0,0],["hs_stal2",1.0,0],["hs_stal1",1.0,0],["hs_stal0",1.0,0.3],["sit_s",0.4,0],["crouch",0.4,0],["stand",0.4,0.1]], still:"hs_stal1"},
+  pr_tuckUp:{cut:true, yaw:-0.7, s:[["crouch",0.4,0],["sit",0.4,0],["lsitT",0.6,0.4],["tuckRise",0.8,0],["hs_tuck",0.6,0.3],["hs",0.6,0.6],["hs_tuck",0.6,0],["tuckRise",0.6,0],["lsitT",0.6,0.2],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"tuckRise"},
+  pr_stalPart:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,0.4],["hs_stal1",0.6,0],["hs_stal2",0.6,1.0],["hs_stal1",0.6,0],["hs_stal0",0.6,0.3],["sit_s",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal2"},
+  pr_lsitNeg:SCRIPTS.pr_lsitHs,
+});
 
 const KEYS = ["point","hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
@@ -436,7 +468,7 @@ export function mount(host, opts = {}){
     },
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
-    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|sit|pk1|pk2|sp2|hs_wsplit|lv_|c2w_|pu_)/.test(k)),
+    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|sit|pk1|pk2|sp2|hs_wsplit|hs_oafullM|hs_tflag|pl_halfL|pl_tuckDn|pl_strN|sitP|sitSL|lsitT|tuckRise|lv_|c2w_|pu_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
     jump(pose){ camD = -1; lastC = {}; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },

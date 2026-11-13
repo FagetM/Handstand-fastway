@@ -35,7 +35,7 @@ const NEED_DAYS = 2;
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
 const valRule = id => id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
+const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
@@ -43,7 +43,7 @@ function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days ||
 // figure « réussi / pas réussi » : 3 réussites le même jour = une séance validée (en séance ou depuis la fiche)
 function chkHit(id){ if (!MS[id] || MS[id].type !== "check" || st(id).done) return;
   const c = S.chk || (S.chk = {}), d = dayKey(Date.now()), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}); r.n++;
-  if (r.n === 3) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée : réussie sur deux séances !"); } else if (r.n < 3) toast("Réussi (" + r.n + "/3 aujourd'hui)"); }
+  if (r.n === 3) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée !"); } else if (r.n < 3) toast("Réussi (" + r.n + "/3 aujourd'hui)"); }
 function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }
@@ -71,13 +71,16 @@ const num = v => (Math.round(v*10)/10).toLocaleString("fr-FR");
 const fmt = (m, v) => m.type === "hold" ? num(v) + " s" : v + " rép.";
 const goalTxt = m => m.type === "hold" ? m.target + " s" : m.type === "reps" ? "× " + m.target : "";
 
-const msLocked = m => (m.req||[]).some(r=>!st(r).done);
+// étapes à l'élastique : sans élastique déclaré, elles ne bloquent pas le parcours
+const BAND_STEPS = new Set(["pl_strBand","pl_strBandL","pl_fullBand"]);
+const reqDone = r => st(r).done || (BAND_STEPS.has(r) && !(S.equip || {}).band);
+const msLocked = m => (m.req||[]).some(r=>!reqDone(r));
 const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
 // clé de jour → date locale à minuit (new Date("2026-10-31") serait lue en UTC, et « 2026-11-1 » en heure locale)
 const dk = k => { const [y, m, d] = String(k).split("-").map(Number); return new Date(y, m - 1, d); };
 const dayDiff = (a, b) => Math.round((dk(a) - dk(b)) / 864e5);
-const missing = m => m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + goalTxt(MS[r]) : "")).join(" + ");
+const missing = m => m.req.filter(r=>!reqDone(r)).map(r=>MS[r].name + (MS[r].target ? " " + goalTxt(MS[r]) : "")).join(" + ");
 
 // ---------- Progression : compteurs, expérience, niveau, badges ----------
 const cnt = () => {
@@ -126,7 +129,7 @@ function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add(
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
 // paliers sur mesure quand les tiers de la cible n'ont pas de sens
-const LVLS = {oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
+const LVLS = {pr_negS:[3], pr_negP:[3], pr_halfSt:[3], pr_lsitNeg:[3], pr_wallNeg:[5], oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
 const lvls = m => LVLS[m.id] ? LVLS[m.id] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
 const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
