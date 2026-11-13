@@ -44,7 +44,7 @@ const DRILLS = {
   // avec du matériel (réglages › Mon matériel)
   bandpl:{name:"Planche à l'élastique", kind:"hold", sets:[4,10], how:"Élastique sous les hanches, accroché en hauteur : tiens la position de l'étape suivante, bras verrouillés, omoplates écartées.", eq:"band"},
   lsitpara:{name:"L-sit sur parallettes", kind:"hold", sets:[3,15], how:"Bras verrouillés, épaules abaissées loin des oreilles, jambes tendues à l'horizontale (groupé si besoin).", eq:"para"},
-  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], how:"Gilet ou haltère entre les pieds : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
+  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], how:"Entre deux chaises solides ou aux barres, gilet sur le dos : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
   pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], how:"Gilet lesté, corps gainé, poitrine jusqu'au sol. Pour construire la force qui porte la planche.", eq:"kg"},
   protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},

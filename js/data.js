@@ -16,7 +16,7 @@ const TREE = [
     {id:"fd_c2w", name:"Poitrine face au mur", en:"Chest To Wall Hold", type:"hold", target:60, req:["fd_plank"],
       desc:"Dos au mur, mains au sol, tu montes les pieds le long du mur jusqu'à la verticale, poitrine face au mur. Tenir 60 s, c'est avoir l'endurance des épaules pour le reste."},
     {id:"fd_dips", name:"Dips", en:"Dips", type:"reps", target:10, req:["fd_push"],
-      desc:"10 dips aux barres parallèles, bras jusqu'à 90°. Avec les pompes, c'est le prérequis de la planche."},
+      desc:"10 dips, bras jusqu'à 90° : aux barres parallèles, ou entre deux chaises solides calées contre un mur. Avec les pompes, c'est le prérequis de la planche."},
   ], videos:[]},
   {id:"starter", name:"Départ", en:"Starter", ms:[
     {id:"st_bail30", name:"Sortie en roue, à 30 cm du mur", en:"Cartwheel Bail – 30cm From Wall", type:"check", req:["fd_roue","fd_c2w"],
