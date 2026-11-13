@@ -18,10 +18,10 @@ $("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); }
 $("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
   try { const d = JSON.parse($("io").value); if (!d || typeof d.ms !== "object" || !Array.isArray(d.log)) throw 0;
-    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { S = Object.assign(blank(), d); save(); render(); alert("Sauvegarde importée."); } }
+    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { S = Object.assign(blank(), d); delete S.equip; save(); alert("Sauvegarde importée."); location.reload(); } }
   catch(e){ alert("Sauvegarde illisible : colle le texte exporté tel quel."); }
 };
-$("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est définitif.")) { S = blank(); save(); render(); } };
+$("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C'est définitif.")) { S = blank(); save(); location.reload(); } };   // le rechargement relance les migrations et réglages par défaut
 
 // ---------- Code d'accès ----------
 // Simple rideau : il écarte les curieux, mais le code de la page reste lisible par qui sait chercher.

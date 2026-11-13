@@ -11,9 +11,13 @@ let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Chaque figure est rendue image par image dans une bande d'images, puis animée en boucle. Tant qu'elle n'est pas prête, on montre une image fixe.
 const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
 const animOn = () => S.anim !== false;
+// images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
+const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
+const STILL_NEAR = {sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs"};
+const stillOf = p => STILLS.has(p) ? p : STILL_NEAR[p] || (p.startsWith("hs") ? "hs" : p.startsWith("pl_") ? "pl_lean" : "stand");
 function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
-  if (!R) { sp.style.backgroundImage = 'url("anim/still_' + pose + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
+  if (!R) { sp.style.backgroundImage = 'url("anim/still_' + stillOf(pose) + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
   sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
   // still : on montre la posture tenue de la figure, sans boucle (nœuds du parcours)
   if (!animOn() || sp.dataset.still) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
@@ -26,7 +30,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "16-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "17-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
@@ -42,6 +46,7 @@ async function sprStore(key, id, blob, n, hold){
 async function buildSprites(force){
   if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return;
   const changed = sprKey && sprKey !== key; sprKey = key; const job = ++sprJob;
+  if (changed && sprW) { sprW.terminate(); sprW = null; sprWok = null; }   // un calcul en cours avec l'ancienne tenue est abandonné
   if (changed) Object.keys(SPR).forEach(id=>{ const u = SPR[id].url; delete SPR[id]; setTimeout(()=>URL.revokeObjectURL(u), 2000); });
   if (await sprRestore(key)) sprRepaint();
   if (job !== sprJob) return;

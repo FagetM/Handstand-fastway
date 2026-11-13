@@ -9,14 +9,15 @@ const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_s
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
 // habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
-const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec);
+const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall";   // un bras au mur : séries de force par côté
 const FORCE = id => /^(pl_|pr_)/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", days = /^pl_/.test(m.id) ? 3 : force ? 4 : 5, sets = /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = /^pl_/.test(m.id) ? 3 : 2;
+  const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps", days = /^pl_/.test(m.id) || prReps ? 3 : force ? 4 : 5,
+    sets = prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = prReps ? 1 : /^pl_/.test(m.id) ? ((m.target || 0) <= 20 ? 2 : 3) : 2;   // descentes de montée : 4 × 1, une tentative
   const freq = days + " séances par semaine" + (force ? " : laisse un jour de douceur entre deux, ton corps construit pendant le repos." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
   if (FREE(m)) { const one = m.sec === "onearm", n = one ? 10 : 15, rest = one ? 45 : 30;
@@ -37,7 +38,7 @@ function planFor(m){
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     // charge adaptative : chaque séance règle un coefficient par figure (réussite, chutes, ressenti) ; une douleur récente allège
     const fct = adaptOf(m.id) * (painRecent() ? 0.75 : 1);
-    const work = Math.max(lo, Math.min(T, Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
+    const work = prReps ? 1 : Math.max(lo, Math.min(T, Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct))), u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
@@ -221,7 +222,7 @@ function renderQuest(S0, nextId){
       x.append(m, el("span","bn", b.name), el("span","bc", b.ok ? "Obtenu" : b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max));
       x.onclick = () => { $("bdG").textContent = b.g; $("bdT").textContent = b.name; $("bdD").textContent = b.desc; $("bdBar").style.width = (b.cur / b.max * 100) + "%";
         $("bdC").textContent = b.ok ? "Obtenu" : (b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max);
-        const rw = badgeReward(b.id); $("bdR").textContent = "Récompense : 50 points d'expérience" + (rw.length ? " · tenue : " + rw.join(", ") : ""); $("bdDlg").showModal(); };
+        const rw = badgeReward(b.id); $("bdR").textContent = "Récompense : 40 points d'expérience" + (rw.length ? " · tenue : " + rw.join(", ") : ""); $("bdDlg").showModal(); };
       grid.append(x); });
     box.append(grid); });
 }

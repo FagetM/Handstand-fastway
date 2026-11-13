@@ -1,5 +1,5 @@
 /* Univers doux : police arrondie (Nunito, libre de droits), tons sable et sauge, coins ronds, ombres légères */
-@font-face{font-family:"Nunito";font-weight:300 900;font-display:swap;src:url(fonts/nunito-latin.woff2) format("woff2")}
+@font-face{font-family:"Nunito";font-weight:300 900;font-display:swap;src:url(../fonts/nunito-latin.woff2) format("woff2")}
 :root{
   color-scheme:dark;
   --bg:#1e1f24; --raise:#272930; --line:#363944; --txt:#ece6dc; --mut:#a39d93; --acc:#9cbf9f; --acc2:#e9b4a6; --onacc:#1e1f24;

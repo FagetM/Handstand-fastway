@@ -75,7 +75,7 @@ function zenP(){
 document.querySelectorAll("#zfDlg [data-zk]").forEach(b => b.onclick = () => zenRate(b.dataset.zk));
 const zenIdx = id => Math.max(0, ZEN.findIndex(z => z.id === id));
 function openZen(id){ pg().cur = "detente"; pickP(); pp().step = zenIdx(id); save(); render(); showTab("today"); window.scrollTo(0, 0); }
-const zenTxt = z => z.free ? "toujours accessible" : "Palier " + (zst(z.id).tier + 1) + "/" + z.tiers.length + " · " + zTier(z).name + (zst(z.id).tier >= z.tiers.length ? " · échelle terminée" : "");
+const zenTxt = z => z.free ? "toujours accessible" : "Palier " + (zst(z.id).tier + 1) + "/" + z.tiers.length + " · " + zTier(z).name + (zst(z.id).fin ? " · échelle terminée" : "");
 // fin d'une séance de Maîtrise : la forme décide. Propre avec de la marge : on allonge (au plafond, ça compte pour valider le palier).
 // Juste : on garde. Ça s'affaisse ou ça tire : on revient un cran en arrière. Fatigué·e : la séance compte, sans faire progresser.
 function zenRate(k){
@@ -92,8 +92,9 @@ function zenRate(k){
     if (x.add < cap) { x.add++; msg = "Propre et avec de la marge : les tenues s'allongent la prochaine fois."; }
     else { if (!x.ok.length || now - x.ok[x.ok.length - 1] >= 48 * 3600e3) x.ok.push(now);
       if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s'ouvre."; say("Palier validé. Bravo.", true); }
-      else if (x.ok.length >= 2) msg = "Dernier palier maîtrisé. Garde-le en entretien.";
+      else if (x.ok.length >= 2) { x.fin = true; x.ok = x.ok.slice(-2); msg = "Dernier palier maîtrisé. Garde-le en entretien."; }
       else msg = "Au plafond du palier, propre : encore une séance comme ça, dans 2 jours ou plus, pour le valider."; } }
+  if (!z.free && (z.id === "poignets" || (z.id === "controle" && x.tier >= 2))) { const zf = S.zf || (S.zf = []), d = dayKey(Date.now()); if (!zf.includes(d)) zf.push(d); if (zf.length > 60) zf.shift(); }
   save(); render(); toast(msg);
 }
 // Météo du corps : trois secondes avant la séance pour écouter comment on va. Elle règle la séance du jour.

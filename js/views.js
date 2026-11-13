@@ -61,6 +61,7 @@ function setAvatar(s){
 
 // ---------- Rendu ----------
 function render(){
+  window._bb = null;
   const ids = GOALS[0].ms;
   const Z = stats(), weekAgo = Date.now() - 7*864e5;
   $("stStreak").textContent = Z.streak;
@@ -98,7 +99,7 @@ function render(){
       return; }
     // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
     if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
-      MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); b.append(el("i",null,ico), el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => setMood(k); mw.append(b); });
+      MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); const ic = el("i",null,ico); ic.setAttribute("aria-hidden","true"); b.append(ic, el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => setMood(k); mw.append(b); });
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Jour léger ?"), el("span",null,"Récup active : 8 min de mobilité. Ça compte aussi.")); z.onclick = () => openZen("recup"); nc.append(z); } }
     if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Temps dispo"));
@@ -128,7 +129,7 @@ function render(){
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
       // gilet lesté : s'il n'est pas là aujourd'hui, un toucher et les exercices lestés passent en version lente sans charge
-      if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : ""));
+      if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd'hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l'as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
       const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : P.zen ? "Commencer" : "Démarrer la séance"); bt.disabled = dn >= tot;
@@ -280,5 +281,5 @@ $("go").onclick = async () => {
   }
 };
 $("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (v > 0) { record(v); $("reps").value = ""; } };
-$("toggle").onclick = () => { const x = st(cur); if (x.done) { x.done = false; save(); fillDlg(); render(); } else record(true); };
+$("toggle").onclick = () => { const x = st(cur); if (x.done) { x.done = false; if (S.hit) delete S.hit[cur]; save(); fillDlg(); render(); } else record(true); };
 $("dlg").addEventListener("close", resetClock);
