@@ -78,7 +78,7 @@ function drillsFor(m){
 const noVest = () => S.noVest === dayKey(Date.now());
 function setNoVest(on){ S.noVest = on ? dayKey(Date.now()) : null;
   const bd = S.bday && S.bday.d === dayKey(Date.now()) ? S.bday : null;   // séance du jour déjà composée : on échange les blocs lestés restants
-  if (bd) bd.blocks = bd.blocks.map((b, bi) => b.dk && DRILLS[b.dk].eq === "kg" && !Object.keys(wkGet(todayIdx())).some(x => x.startsWith(bi + "-")) ? drillBlock(b.dk, painRecent()) : b);
+  if (bd) bd.blocks = bd.blocks.map((b, bi) => b.dk && DRILLS[b.dk].eq === "kg" && !Object.keys(wkGet(todayIdx())).some(x => x.startsWith(bi + "-")) ? Object.assign(drillBlock(b.dk, painRecent()), {sets:drillBlock(b.dk, painRecent()).sets.slice(0, b.sets.length)}) : b);
   save(); render(); }
 const drillBlock = (k, pain) => { const d = DRILLS[k];
   // parallettes : les exercices d'appui se font dessus ; lest : on indique la charge
@@ -88,7 +88,16 @@ const drillBlock = (k, pain) => { const d = DRILLS[k];
   const n = Math.max(1, pain ? d2.sets[0] - 1 : d2.sets[0]);
   return {name:d2.name, kind:d.kind, how, dk:k, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d2.sets[1], rest:d.rest || 30} : {reps:d2.sets[1], rest:d.rest || 30})}; };
 // jours où une figure de force a été travaillée (planche, montées, pompes, dips)
-function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; });
+// dernier jour où une figure a été travaillée (0 si jamais)
+function lastWorked(id){ const m = MS[id]; for (let i = S.log.length - 1; i >= 0; i--) { const l = S.log[i]; if (l.id === id || l.id === "pg:" + m.name || l.id === "pg:" + m.name + " · vérification") return l.t; } return 0; }
+// jours où l'on a travaillé sur un bras : 4 par semaine au plus, jamais 3 de suite (épaule et poignet d'appui)
+function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name)), d = new Set(S.log.filter(l => names.has(l.id) || (MS[l.id] && MS[l.id].sec === "onearm")).map(l => dayKey(l.t)));
+  const ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
+  if (d.has(ago(1)) && d.has(ago(2))) return false; let n = 0; for (let k = 1; k <= 6; k++) if (d.has(ago(k))) n++; return n < 4 || d.has(ago(0)); }
+// trois jours d'entraînement de suite : le lendemain, on récupère (mobilité, poignets)
+function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t))), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
+  return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
+function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + " · vérification"] = m.id; });
   const out = new Set(S.log.filter(l=>FORCE(MS[l.id] ? l.id : byName[l.id] || "")).map(l=>dayKey(l.t))); (S.zf || []).forEach(d => out.add(d)); return out; }
 function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate() - 1); if (fd.has(dayKey(d))) return false;
   let n = 0; const w = new Date(); w.setDate(w.getDate() - todayIdx()); for (let i = 0; i < 7; i++) { const x = new Date(w); x.setDate(w.getDate() + i); if (fd.has(dayKey(x))) n++; }
@@ -106,7 +115,7 @@ function fitTime(blocks, mins){
     if (cut(blocks.filter(b => !b.ms && b.name !== DRILLS.poignets.name), 1)) continue;
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > 3).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
       if (fb) { fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
-    const mx = blocks.filter(b => b.ms && b.sets.filter(s => s.max).length > (/^pl_/.test(b.ms) ? 3 : 1))[0]; if (mx) { mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
+    const mx = blocks.filter(b => b.ms && b.sets.filter(s => s.max).length > (/^pl_/.test(b.ms) ? 3 : SIDED.has(b.ms) ? 2 : 1))[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
     break; }
   return blocks;
 }
@@ -115,23 +124,35 @@ function builtinBlocks(){
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
   const mins = S.mins || 30, pain = painRecent(), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3, scale = Math.max(0.6, Math.min(1.5, mins / 30)) * (tired ? 0.6 : 1) * (deload ? 0.6 : 1);
+  // jour de récupération après 3 jours d'entraînement de suite
+  if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return ["poignets","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && S.painZone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])), fok = forceOk() && !(pain && ["epaule","coude"].includes(S.painZone));
-  const next = open.filter(id=>!FORCE(id)).concat(fok ? open.filter(FORCE) : []).slice(0, nMs);
+  // choix du jour : l'équilibre (une habileté) et, les jours de force, une place réservée à la force
+  const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk();
+  let nonF = open.filter(id => !FORCE(id) && (oaOk || MS[id].sec !== "onearm"));
+  // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
+  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (dn % 3 !== 2 && plF[0]) || F[0];
+  let next;
+  if (fok && pickF) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
+  else next = nonF.slice(0, nMs);
+  if (next.length < nMs) next = next.concat((fok ? F : []).filter(id => !next.includes(id)).slice(0, Math.max(0, 2 - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
+  // rien d'ouvert aujourd'hui (un bras au repos, pas de force) : séance de mobilité plutôt qu'une page vide
+  if (!next.length && !(S.confirm || []).length) return ["poignets","epaules","pike","pancake","hollow"].map(k=>drillBlock(k, false));
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const sets = Math.max(3, Math.round(pl.sets * scale * (pain ? 0.7 : 1))), tries = pain || tired || deload ? 0 : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(24, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
-    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand tu le réussis proprement 3 fois sur 5, valide-le depuis sa fiche.", sets:Array.from({length:Math.min(sets, 8)}, ()=>({reps:1, lab:"essai", rest:45}))});
+    if (m.type === "check") return Object.assign(base, {kind:"reps", note:"3 réussites dans la séance comptent pour la validation (2 séances).", sets:Array.from({length:Math.min(sets, 8)}, ()=>({reps:1, lab:"essai", rest:45}))});
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (pl.sides) base.note = "Alterne le côté à chaque série (séries paires d'un côté, impaires de l'autre) : les deux doivent tenir la cible.";
     return Object.assign(base, {kind:m.type, sets:Array.from({length:sets}, ()=>({goal:pl.work, rest:short ? 120 : pr ? 150 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
-  const conf = (S.confirm || []).filter(id=>MS[id]).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
+  const conf = (S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
     return m.type === "check" ? Object.assign(base, {kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))})
       : Object.assign(base, {kind:m.type, sets:Array.from({length:2}, ()=>({goal:m.target, rest:m.type === "hold" ? 120 : 90, max:true}))}); });
   if (!next.length && !conf.length) return blocks;
@@ -256,7 +277,7 @@ function renderSess(){
   { // en-tête repliable : la séance du jour en une ligne
     const tg = $("sessToggle"), open = !!S.sessOpen, d0 = pDay(todayIdx()), tot = d0.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(wkGet(todayIdx())).length;
     tg.textContent = ""; const g = el("span","grow");
-    g.append(el("div","t", "Détail de la séance"), el("div","mut", "Voir chaque série, changer de jour ou d'étape, lexique"));
+    g.append(el("div","t", "Détail de la séance"));
     tg.append(g, icon("chev","chev")); tg.setAttribute("aria-expanded", open); box.hidden = !open;
     tg.onclick = () => { S.sessOpen = !S.sessOpen; save(); renderSess(); };
   }
@@ -371,7 +392,7 @@ const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
   const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x)), box = $("plBody"); box.textContent = "";
   if (!id || plMiss >= 3) { S.placed = true; save(); render();
-    const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tu as tout validé !"));
+    const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? (plN <= 3 ? "Bilan terminé en " + plN + " question" + (plN > 1 ? "s" : "") + " : tu démarres par « " + SEC[MS[nx].sec].name + " ». " : "") + "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tu as tout validé !"));
     const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
   box.append(el("div","lab", "Question " + (++plN) + " · " + SEC[m.sec].name + (plMiss ? " · le bilan s'arrête après 3 « pas encore » (" + plMiss + "/3)" : "")), el("h2",null, m.name), art);
@@ -419,7 +440,7 @@ function nextSet(){
   return null;
 }
 function openSet(bi, si){
-  sdStop(); if (selDay === todayIdx()) freezeDay();
+  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true;
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
@@ -432,7 +453,7 @@ function openSet(bi, si){
     const timed = s.dur != null;
     $("sdS").textContent = (b.sets.length > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + "/" + b.sets.length + " · " : (bi+1) + "/" + day.blocks.length + " · ") + fixTxt(b, s, day.scale) + (b.pnf ? " · PNF" : "");
     ck.style.display = timed ? "" : "none"; if (timed) ck.textContent = mmss(sRun(s, day.scale));
-    $("sdReps").style.display = "none"; $("sdGo").style.display = ""; $("sdGo").textContent = timed ? "Démarrer" : "Fait";
+    $("sdReps").style.display = "none"; $("sdGo").style.display = ""; const essai = s.lab === "essai" && b.ms && MS[b.ms] && MS[b.ms].type === "check"; $("sdGo").textContent = timed ? "Démarrer" : essai ? "Réussi" : "Fait"; $("sdNo").hidden = !essai;
     $("sdHint").textContent = [b.pnf ? "PNF : contracte 10 s, relâche 5 s, puis gagne en amplitude." : "", b.note].filter(Boolean).join(" ");
   } else {
     $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? " · " + s.pct + " %" : "") + (s.rest ? " · repos " + restTxt(s) : "");
@@ -465,10 +486,15 @@ function storeSet(v){
     if (!nextSet()) { c.sess++; if (/^etirements/.test(P.id)) c.stretch++; } }
   const keys = Object.keys(pg().wk); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(x=>delete pg().wk[x]);
 }
+// essai d'une figure « réussi / pas réussi » (roue, montée…) : 3 réussites le même jour = une séance validée
+function chkTry(ok){ const id = sd.b.ms; if (!ok || !id || !MS[id] || MS[id].type !== "check" || st(id).done) return;
+  const c = S.chk || (S.chk = {}), d = dayKey(Date.now()), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}); r.n++;
+  if (r.n === 3) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée : réussie sur deux séances !"); } else toast("Réussi (" + r.n + "/3 aujourd'hui)"); }
+$("sdNo").onclick = () => { if (sd && sd.fx && sd.s.lab === "essai") saveFixed(); };
 function saveFixed(){
   const {b, s, day, si} = sd; sdStop();
   storeSet(s.dur != null ? sDur(s, day.scale) : s.reps);
-  if (b.confirm && b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null)) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); toast("« " + MS[b.ms].name + " » confirmé"); }
+  if (b.confirm && (S.confirm || []).includes(b.ms) && b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null)) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); toast("« " + MS[b.ms].name + " » confirmé"); }
   const nx = nextSet();
   if (nx && AUTO && s.rest && nx[0] === sd.bi) { save(); render(); startRest(s, nx, "Fait"); return; }
   if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? " · " + day.name : ""), k:"check", v:true, pr:false});
@@ -478,7 +504,7 @@ function saveFixed(){
 }
 function startRest(r, nx, title){
   const end = Date.now() + r.rest*1000, ck = $("sdClock"); let done = false;
-  sd.mode = "rest"; sd.next = nx;
+  sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
   $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance";
@@ -517,7 +543,7 @@ function runFixed(){
 function saveSet(v){
   const {b, s} = sd; storeSet(v);
   // vérification d'une figure déclarée au bilan : réussie, elle est confirmée ; ratée sur tous les essais, elle repasse à travailler
-  if (b.confirm && MS[b.ms]) { const ok = v >= MS[b.ms].target, all = b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null);
+  if (b.confirm && MS[b.ms] && (S.confirm || []).includes(b.ms)) { const ok = v >= MS[b.ms].target, all = b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null);
     if (ok || all) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); if (!ok) { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } else toast("« " + MS[b.ms].name + " » confirmée."); } }
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
   if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms), l0 = lvlOf(MS[b.ms]); if (v > x.best) x.best = v; if (lvlOf(MS[b.ms]) > l0 && S.adapt) delete S.adapt[b.ms];   /* nouveau palier : la charge repart d'une base neutre */
@@ -530,14 +556,14 @@ function saveSet(v){
   save(); render();
   const nx = nextSet();
   if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else closeEnd(); return; }
-  startRest(s, nx, "Fait : " + num(v) + unit(b) + (pr && old > 0 ? ", record" : ""));
+  const tgt = s.goal || sd.tg; startRest(s, nx, tgt ? (v >= tgt ? "Cible atteinte ✓ · " + num(v) + unit(b) : num(v) + " sur " + tgt + unit(b) + (v >= tgt * 0.75 ? " : presque" : "")) + (pr && old > 0 ? " · record" : "") : "Fait : " + num(v) + unit(b));
 }
 $("sdGo").onclick = async e => {
   if (e && e.isTrusted) voiceUnlock();
   const ck = $("sdClock");
   if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else { const was = AUTO; $("sd").close(); if (was) endSession(); } return; }
   if (sd.fx){
-    if (sd.s.dur == null) { saveFixed(); return; }
+    if (sd.s.dur == null) { if (sd.s.lab === "essai") chkTry(true); saveFixed(); return; }
     if (sd.mode === "idle") { keepAwake(sdKeep); runFixed(); }
     else { clearInterval(sdTimer); sdTimer = null; if (sd.s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
     return;

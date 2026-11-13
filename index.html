@@ -62,9 +62,8 @@
       </div>
     </div>
     <div id="quest"></div>
-    <h2 class="sect">Journal</h2>
-    <div class="mut" style="margin-bottom:8px">Tes 60 derniers essais</div>
-    <div id="logList"></div>
+    <div id="logWrap"><h2 class="sect">Journal</h2>
+    <div id="logList"></div></div>
     <h2 class="sect">Réglages</h2>
     <div class="block">
       <h2>Chrono</h2>
@@ -73,26 +72,24 @@
     </div>
     <div class="block">
       <h2>Mon matériel</h2>
-      <div class="mut">Les exercices de préparation s'adaptent à ce que tu as.</div>
-      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="eqBand"><span>Élastiques<span class="mut" style="display:block">Planche assistée, pour travailler la position de l'étape suivante.</span></span></label>
-      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="eqPara"><span>Parallettes<span class="mut" style="display:block">L-sit, planche et pompes sur poignées : poignets ménagés, plus d'amplitude.</span></span></label>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="eqBand"><span>Élastiques</span></label>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="eqPara"><span>Parallettes</span></label>
       <label class="mut" for="eqKg">Lest (gilet, haltères)</label>
       <select id="eqKg"><option value="0">Aucun</option><option value="5">Jusqu'à 5 kg</option><option value="10">Jusqu'à 10 kg</option><option value="20">Jusqu'à 20 kg</option></select>
     </div>
     <div class="block" id="voiceBlock">
       <h2>Voix</h2>
-      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="voiceOn"><span>Annoncer la séance à voix haute<span class="mut" style="display:block">L'exercice, la cible, le repos et le temps qui reste. Les bips gardent le décompte.</span></span></label>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="voiceOn"><span>Annoncer la séance à voix haute</span></label>
       <label class="mut" for="voiceRate">Débit</label>
       <select id="voiceRate"><option value="douce">Posé</option><option value="normale">Normal</option><option value="rapide">Rapide</option></select>
       <label class="mut" for="voiceSel" style="margin-top:10px;display:block">Voix</label>
       <select id="voiceSel"></select>
       <div class="mut" id="voiceNone" hidden>Aucune voix française sur cet appareil. Sur iPhone : Réglages › Accessibilité › Contenu énoncé › Voix › Français, télécharge « Audrey (améliorée) ».</div>
-      <div class="mut" style="margin-top:6px">Conseil iPhone : les voix « améliorées » ou « Premium » (Réglages › Accessibilité › Contenu énoncé › Voix) sont bien plus douces.</div>
       <button class="btn" id="voiceTest" style="margin-top:10px">Écouter</button>
     </div>
     <div class="block">
       <h2>Animations</h2>
-      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="animOn"><span>Animer les personnages du parcours<span class="mut" style="display:block">Chaque figure est jouée en boucle, avec ta tenue du vestiaire.</span></span></label>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="animOn"><span>Animer les personnages du parcours</span></label>
     </div>
     <div class="block">
       <h2>Sauvegarde</h2>
@@ -101,7 +98,6 @@
       <div class="btns"><button class="btn line" id="exp">Exporter</button><button class="btn line" id="imp">Importer</button></div>
       <div class="btns"><button class="btn warn" id="reset">Tout effacer</button></div>
     </div>
-    <div class="block mut" style="border:0">Tes programmes (planche, étirements…) se chargent depuis l'accueil avec ta phrase d'accès et restent sur ce téléphone. Les figures suivent le parcours de ton programme d'équilibre ; les vidéos s'ouvrent sur YouTube.</div>
   </section>
 </main>
 
@@ -215,6 +211,7 @@
   <div class="mut" id="sdHint"></div>
   <div class="btns" id="sdReps"><input type="number" id="sdNum" min="0" inputmode="numeric" aria-label="Répétitions réussies"><button class="btn" id="sdSave">Enregistrer</button></div>
   <button class="btn" id="sdGo">Démarrer</button>
+  <button class="btn line" id="sdNo" hidden>Pas encore</button>
 </dialog>
 
 <script src="js/data.js" defer></script>

@@ -36,8 +36,8 @@ function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days ||
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
 function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
-  const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; }
-  if (SIDED.has(id) && side != null) { h.sd = h.d === d && h.sd ? h.sd : []; if (!h.sd.includes(side)) h.sd.push(side); h.n = h.sd.length; } else h.n++;
+  const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; }
+  if (SIDED.has(id) && side != null) { h.sd = h.sd || []; if (!h.sd.includes(side)) h.sd.push(side); h.n = h.sd.length; } else h.n++;
   if (h.n >= need && !h.days.includes(d)) h.days.push(d);
   if (h.days.length >= NEED_DAYS) { st(id).done = true; return ""; }
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d'un côté : à l'autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";
@@ -85,7 +85,7 @@ const BADGES = [
   {id:"h10", g:"10 min", name:"Dix minutes en appui", desc:"Cumuler dix minutes de maintien chronométré.", max:600, cur:c=>c.hold, t:1},
   {id:"h60", g:"1 h", name:"Une heure en appui", desc:"Cumuler une heure de maintien chronométré.", max:3600, cur:c=>c.hold, t:1},
   {id:"e10", g:"Souple", name:"Dix séances d'étirements", desc:"Terminer dix séances d'étirements.", max:10, cur:c=>c.stretch},
-  ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:"Branche " + s.name, desc:"Valider tous les jalons de la branche « " + s.name + " ».", max:s.ms.length, cur:()=>doneIn(s.ms.map(m=>m.id))})),
+  ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:s.name, desc:"Valider tous les jalons de la branche « " + s.name + " ».", max:s.ms.length, cur:()=>doneIn(s.ms.map(m=>m.id))})),
   ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
 ];
 function stats(){

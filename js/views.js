@@ -87,7 +87,7 @@ function render(){
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
-  { // Aujourd'hui : la séance du jour d'un coup d'œil, et un seul bouton pour tout lancer
+  today: { // Aujourd'hui : la séance du jour d'un coup d'œil, et un seul bouton pour tout lancer
     const nc = $("nextCard"); nc.textContent = ""; pickP(); $("sessToggle").hidden = $("sess").hidden = false;
     const today = todayIdx(), day = pDay(today), vals = wkGet(today), all = allP();
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
@@ -96,15 +96,16 @@ function render(){
       pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"Quelques questions rapides sur ce que tu sais déjà faire : l'app te propose ensuite une séance à ta mesure."));
       pb.onclick = () => startPlacement(); nc.append(pb); $("sessToggle").hidden = $("sess").hidden = true;   // avant le bilan : rien d'autre à l'écran
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
-      return; }
+      break today; }
     // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
     if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = md[2] + " " + md[1] + " · changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
     else if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
       MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); const ic = el("i",null,ico); ic.setAttribute("aria-hidden","true"); b.append(ic, el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => { delete S.moodEdit; setMood(k); }; mw.append(b); });
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd'hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
-    if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Minutes"));
+    if (P.builtin) { const tm = el("div","mins"); 
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", String(v)); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
+    if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d'entraînement de suite. Mobilité et poignets aujourd'hui, la force revient demain."));
     if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
     if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "On prend soin de tes poignets : deux jours sans appui sur les mains. Gainage, respiration et souplesse au programme." : "Tu as signalé une gêne : séance tout en douceur, sans tentative à fond ni force."));
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l'avis d'un professionnel de santé avant de reprendre.")); }
@@ -126,7 +127,7 @@ function render(){
         const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
         const dose = mx.length && !work.length ? ess(mx.length) + " · tiens tant que c'est calme" : mx.length ? work.length + " × " + u(work[0]) + " · " + ess(mx.length) + " à " + u(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0)) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose));
-        const dots = el("div","dots"); b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
+        const dots = el("div","dots"); if (dn) b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
@@ -134,10 +135,10 @@ function render(){
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd'hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l'as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
-      const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : P.zen ? "Commencer" : "Démarrer la séance"); bt.disabled = dn >= tot;
+      const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : (P.zen ? "Commencer" : "Démarrer") + " · " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min"); bt.disabled = dn >= tot;
       bt.onclick = () => startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
-      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (ZEN[pp().step].free ? "à faire quand tu veux" : "les tenues s'allongent quand la forme est propre ; le palier se valide sur 2 séances propres au plafond") : "≈ " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min"));
+      if (dn >= tot) nc.append(el("div","tmeta","Merci pour ce moment. Repose-toi bien."));
     }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
@@ -148,7 +149,7 @@ function render(){
   { const pt = $("pathTop"), gms = GOALS[0].ms, dn = gms.filter(id=>st(id).done).length; pt.textContent = "";
     const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
     const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
-    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!st(id).done); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? " · " + goalTxt(MS[nxt]) : "") : "Équilibre sur un bras et full planche : tout est validé !"));
+    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!st(id).done); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? " · " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : "Équilibre sur un bras et full planche : tout est validé !"));
     c.append(fins, g);
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
@@ -160,7 +161,7 @@ function render(){
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
 
-  const ll = $("logList"); ll.textContent = "";
+  const ll = $("logList"); ll.textContent = ""; $("logWrap").hidden = !S.log.length;
   if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Ta première séance apparaîtra ici."));
   S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
   $("countdown").value = String(S.countdown); $("animOn").checked = animOn();
@@ -242,7 +243,7 @@ function fillDlg(){
 function record(v){
   const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false;
   if (v === true) { if (msLocked(m)) { toast("Valide d'abord : " + missing(m) + "."); return; } const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée : réussie sur deux séances !"); }
-  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée : deux séances à la cible !"); } if (m.type === "hold") cnt().hold += v; }
+  else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée : deux séances à la cible !"); } if (m.type === "hold") cnt().hold += v; }
   S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();
   const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + " · niveau " + lv1 + " atteint");

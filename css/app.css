@@ -533,8 +533,8 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .qkd{border-top:1px solid var(--line);padding:10px 0}
 .qkd summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center}
 .qkd summary::-webkit-details-marker{display:none}
-.qkd summary::after{content:"+";color:var(--mut);font-size:20px;font-weight:400}
-.qkd[open] summary::after{content:"–"}
+.qkd summary::after{content:"+" / "";color:var(--mut);font-size:20px;font-weight:400}
+.qkd[open] summary::after{content:"–" / ""}
 .qkd p,.qkd ol{margin:8px 0 0;font-size:14.5px}.qkd ol{padding-left:20px}
 .qkd .drc{margin:8px 0 0;padding-left:18px;font-size:14px;color:var(--mut)}
 /* Aujourd'hui, plus sobre */
@@ -542,3 +542,4 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .mood button{padding:7px 4px;min-width:64px}.mood button i{font-size:18px}.mood button b{font-size:12.5px;font-weight:600}
 .mins{margin:8px 0 2px}.mins span{flex:0 0 auto;font-size:13px}.mins button{min-height:30px;padding:4px 10px;font-size:14px}
 .qkd summary::before{display:none!important;content:none!important}.qkd summary{justify-content:space-between;text-align:left;width:100%}
+.tip .tb>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
