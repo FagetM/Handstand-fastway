@@ -98,6 +98,10 @@ Object.assign(POSES, {
   hs_spress:P("pike", {hip:[-1.5,-1.5], hipZ:[0.85,0.85]}),
   hs_stal0: {pitch:0.05, arch:0.32, arm:[-0.3,-0.3], armZ:[0.12,0.12], hip:[-2.15,-2.15], hipZ:[0.85,0.85], knee:[0,0], head:-0.15},     // équerre écartée, jambes au-dessus de l'horizontale
   hs_stal1: {pitch:1.05, arch:0.4, arm:[-1.35,-1.35], armZ:[0.05,0.05], hip:[-2.6,-2.6], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},      // le bassin monte derrière, jambes le long des bras
+  // de l'équerre (L-sit, jambes serrées) à l'équilibre : le bassin monte derrière, les jambes restent serrées et passent au-dessus
+  lsit0:    {pitch:0.05, arch:0.3, arm:[-0.3,-0.3], armZ:[0.22,0.22], hip:[-1.75,-1.75], hipZ:[0.03,0.03], knee:[0,0], head:-0.1},
+  lsit1:    {pitch:1.0, arch:0.4, arm:[-1.3,-1.3], armZ:[0.26,0.26], hip:[-2.75,-2.75], hipZ:[0.03,0.03], knee:[0,0], head:-0.5},
+  lsit2:    {pitch:1.85, arch:0.2, arm:[-2.0,-2.0], armZ:[0.2,0.2], hip:[-2.45,-2.45], hipZ:[0.03,0.03], knee:[0,0], head:-0.5},
   hs_stal2: {pitch:1.9, arch:0.2, arm:[-2.05,-2.05], armZ:[0,0], hip:[-2.2,-2.2], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},          // bassin au-dessus des épaules, jambes encore basses
   lv_croc:  P("lever", {arm:[-0.45,-1.5], elbow:[-1.75,-0.1], armZ:[0,0.7], one:1}),
   lv_qdr0:  {pitch:1.15, roll:0.45, arm:[-0.85,-1.1], armZ:[0,0.3], elbow:[-0.9,-0.3], hip:[-1.7,-1.4], hipZ:[0.2,0.3], knee:[1.7,1.5], head:-0.5, feet:true},
@@ -139,6 +143,8 @@ export const SCRIPTS = {
   pr_negS:   {cut:true, s:[...UP,["hs_straddle",0.5,0.6],["hs_spress",1.6,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},
   pr_stradL: {cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,2.2],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"hs_stal0"},
   pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
+  pr_lsit:   {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["lsit0",0.6,2.0],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"lsit0"},
+  pr_lsitHs: {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["lsit0",0.6,0.6],["lsit1",0.7,0],["lsit2",0.6,0],["pike",0.6,0],["hs",0.6,0.6],["pike",0.6,0],["lsit2",0.6,0],["lsit1",0.6,0],["lsit0",0.6,0.3],["crouch",0.4,0],["stand",0.4,0.05]], still:"lsit1"},
   pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["hs_straddle",0.6,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
   lo_frog:   {cut:true, yaw:-0.7, s:[["crouch",0.45,0],["lv_crow0",0.5,0.2],["lv_frog",0.6,1.1],["lv_crow",0.7,1.1],["lv_frog",0.5,0.1],["lv_crow0",0.5,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_frog"},
   lo_elbow:  {s:[["squat",0.45,0],["lever",0.7,1.9]]},
@@ -403,7 +409,7 @@ export function mount(host, opts = {}){
     },
     // joue la célébration dès que le personnage est à l'écran
     celebrate(){ const r = host.getBoundingClientRect(); if (visible && r.width && r.bottom > 0 && r.top < innerHeight && !document.hidden) startParty(); else pending = true; },
-    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lv_|c2w_|pu_)/.test(k)),
+    poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|lv_|c2w_|pu_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
     jump(pose){ camD = -1; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
