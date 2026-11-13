@@ -198,10 +198,10 @@ const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
   {id:"both", name:"Équilibre sur un bras, full planche et stalder", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_tuckflag","oa_flaghoriz","pl_ppp","oa_wall","pr_pikeLift","pr_stradLift","pr_lsit","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pl_lean2","pl_tuckP","pl_tuck","oa_shrug","oa_shift","oa_sidehold","oa_flagfloor","pr_straddle","pl_tuckPu","pl_tuckO","pl_adv","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","pr_stradL","pr_vsit","pl_1leg","oa_lift","pr_negP","pr_pike","pl_strBand","pl_strBandL","pl_straddle","oa_oahs","oa_oahsw","pr_halfSt","pr_tuckUp","pr_stalPart","pr_stalder","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full","oa_oahs10","pr_lsitNeg","pr_lsitHs"]},
-  {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_tuckflag","oa_flaghoriz","oa_wall","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs","oa_oahsw","oa_oahs10"]},
-  {id:"planche", name:"Full planche · 10 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_ppp","pl_lean2","pl_tuckP","pl_tuck","pl_tuckPu","pl_tuckO","pl_adv","pl_1leg","pl_strBand","pl_strBandL","pl_straddle","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full"]},
-  {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
-  {id:"press", name:"Montée en force jambes serrées", ms:["fd_push","fd_dips",...P_BASE,...P_B2,"in_7s","in_7d","pr_pikeLift","pr_stradLift","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pr_lsit","pr_stradL","pr_straddle","pr_negP","pr_pike"]},
+  {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_tuckflag","oa_flaghoriz","oa_wall","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs","oa_oahsw","oa_oahs10"]},
+  {id:"planche", name:"Full planche · 10 s", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_ppp","pl_lean2","pl_tuckP","pl_tuck","pl_tuckPu","pl_tuckO","pl_adv","pl_1leg","pl_strBand","pl_strBandL","pl_straddle","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full"]},
+  {id:"min", name:"Équilibre droit · 60 s", ms:[...P_FD,...P_BASE,"in_str40","in_str60"]},
+  {id:"press", name:"Montée en force jambes serrées", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pr_pikeLift","pr_stradLift","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pr_lsit","pr_stradL","pr_straddle","pr_negP","pr_pike"]},
   {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
 ];
 const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));

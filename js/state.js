@@ -13,8 +13,9 @@ S.migr15 = true;
 // Fondations : qui savait déjà sortir en roue au mur maîtrise la roue, le gainage et la tenue au mur
 // nouvelles étapes vers le un bras et la planche : qui avait déjà validé l'étape d'après garde sa place
 // cohérence : une figure validée implique ses prérequis (les nouvelles étapes intermédiaires sont acquises si l'étape d'après l'est)
-if (!S.migrDec) { const mark = id => { (MS[id] && MS[id].req || []).forEach(r => { if (!(S.ms[r] && S.ms[r].done)) { S.ms[r] = {best:MS[r].target || 0, done:true}; mark(r); } }); };
-  Object.keys(S.ms).filter(id => MS[id] && S.ms[id].done).forEach(mark); S.migrDec = true; }
+if (!S.migrDec) { const NEW = new Set(["oa_tuckflag","oa_shrug","oa_sidehold","oa_finger3","oa_finger2","oa_finger1","oa_oahsw","pl_lean2","pl_tuckP","pl_tuckPu","pl_tuckO","pl_strBand","pl_strBandL","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pr_pikeLift","pr_stradLift","pr_wallNeg","pr_elevLow","pr_negP","pr_vsit","pr_halfSt","pr_tuckUp","pr_stalPart","pr_lsitNeg"]);
+  const mark = id => { (MS[id] && MS[id].req || []).forEach(r => { if (NEW.has(r) && MS[r].sec === MS[id].sec && !(S.ms[r] && S.ms[r].done)) { S.ms[r] = {best:MS[r].target || 0, done:true}; mark(r); } }); };
+  Object.keys(S.ms).filter(id => MS[id] && !MS[id].alt && S.ms[id].done).forEach(mark); S.migrDec = true; }
 if (!S.migrPr) { if (S.ms.pr_straddle && S.ms.pr_straddle.done) S.ms.pr_negS = {best:3, done:true}; S.migrPr = true; }
 if (!S.migrPr2) { const dn = id => S.ms[id] && S.ms[id].done; if (dn("pr_straddle")) S.ms.pr_elev = {best:3, done:true}; if (dn("pr_stradL")) S.ms.pr_lsit = {best:15, done:true}; S.migrPr2 = true; }   // les descentes passent avant la montée
 if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[id] = {best:MS[id].target || 0, done:true}; };
@@ -92,7 +93,7 @@ const cnt = () => {
 };
 const RANKS = ["Graine","Pousse","Racine","Tige","Feuille","Fleur","Arbre","Forêt"];   // on grandit comme une plante, à son rythme
 const xpFor = l => 50 * l * (l + 1);            // expérience totale pour atteindre le niveau l + 1
-const doneIn = ids => ids.filter(id=>st(id).done).length;
+const doneIn = ids => ids.filter(id=>reqDone(id)).length;   // les étapes à l'élastique comptent comme faites sans élastique
 const mins = s => Math.floor(s/60);
 const BADGES = [
   {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},

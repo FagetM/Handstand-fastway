@@ -147,9 +147,14 @@ function builtinBlocks(){
   const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band)), fok = forceOk() && !(pain && ["epaule","coude"].includes(S.painZone));
   // choix du jour : l'équilibre (une habileté) et, les jours de force, une place réservée à la force
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
-  let nonF = open.filter(id => !FORCE(id) && (oaOk || MS[id].sec !== "onearm"));
+  // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
+  // celle travaillée il y a le plus longtemps passe en premier — aucune discipline n'étouffe les autres
+  const disc = id => /^oa_/.test(id) ? "oa" : /^pl_/.test(id) ? "pl" : /^pr_(lsit|stradL|pikeLift|stradLift|vsit)$/.test(id) ? "comp" : /^pr_/.test(id) ? "pr" : "eq";
+  const cand = open.filter(id => !FORCE(id) && (oaOk || !/^oa_/.test(id))), heads = [], seen = new Set();
+  cand.forEach(id => { const d = disc(id); if (!seen.has(d)) { seen.add(d); heads.push(id); } });
+  let nonF = heads.sort((a, b) => lastWorked(a) - lastWorked(b)).concat(cand.filter(id => !heads.includes(id)));
   // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
-  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (plancheDays() < 3 && plF[0]) || F.find(id => !/^pl_/.test(id)) || F[0];   // la planche 3 jours sur 7, le reste de la force ensuite
+  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (plancheDays() < 2 && plF[0]) || F.find(id => !/^pl_/.test(id)) || F[0];   /* planche 2 jours sur les 7, les montées le 3e */   // la planche 3 jours sur 7, le reste de la force ensuite
   let next;
   if (fok && pickF && !fConf) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);

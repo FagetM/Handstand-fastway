@@ -146,10 +146,10 @@ function render(){
     nc.append(wk);
   }
 
-  { const pt = $("pathTop"), gms = GOALS[0].ms, dn = gms.filter(id=>st(id).done).length; pt.textContent = "";
+  { const pt = $("pathTop"), gms = GOALS[0].ms, dn = doneIn(gms); pt.textContent = "";
     const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
     const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
-    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!st(id).done); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? " · " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : "Équilibre sur un bras et full planche : tout est validé !"));
+    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!reqDone(id) && !msLocked(MS[id])) || gms.find(id=>!reqDone(id)); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? " · " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : "Un bras, full planche et stalder : tout est validé !"));
     c.append(fins, g);
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }

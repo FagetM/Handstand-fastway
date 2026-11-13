@@ -81,7 +81,7 @@ function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
 const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
 // un coffre s'ouvre quand les figures du chemin de l'étage sont validées (les bonus hors chemin ne comptent pas)
-function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>st(m.id).done); }
+function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>reqDone(m.id)); }
 // Coffres : un par étage, ouvert quand l'étage est terminé ; chacun débloque une tenue.
 const CHESTS = {base:["bottom","short_n","Short marine"], starter:["head","band_b","Bandeau bleu"], b1:["wrists","wraps_b","Bandes de poignets bleues"], b2:["top","tank_b","Débardeur bleu"], inter:["bottom","short_p","Short violet"],
   onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"]};
@@ -91,7 +91,10 @@ function eta(m){
   const logs = S.log.filter(l=>(l.id === m.id || l.id === "pg:" + m.name) && typeof l.v === "number"); let wk = null;
   if (logs.length >= 2) { const days = (Date.now() - logs[0].t) / 864e5, gain = x.best - logs[0].v; if (days >= 3 && gain > 0) wk = (T - x.best) / (gain / (days / 7)); }
   if (wk == null) wk = 1 + 4 * (1 - Math.min(1, x.best / T));
-  return Math.max(1, Math.min(26, Math.round(wk)));
+  const V = valRule(m.id), left = Math.max(0, V.n - hitInfo(m.id).days), since = Date.now() - 28 * 864e5;
+  const perWk = Math.max(1, new Set(S.log.filter(l => l.t >= since && (l.id === m.id || l.id === "pg:" + m.name)).map(l => dayKey(l.t))).size / 4);
+  wk = Math.max(wk, Math.ceil(V.span / 7), left / perWk);   // on ne peut pas valider plus vite que la règle
+  return Math.max(1, Math.min(52, Math.round(wk)));
 }
 const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
 // ---------- Le parcours : un seul chemin qui serpente, figure après figure ; il se divise en trois voies au niveau difficile.
