@@ -10,7 +10,7 @@ const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
 // habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall";   // un bras au mur : séries de force par côté
-const FORCE = id => /^(pl_|pr_)/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
+const FORCE = id => (/^(pl_|pr_)/.test(id) && id !== "pr_lsit" && id !== "pr_stradL") || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check") return null;
@@ -53,7 +53,7 @@ function planFor(m){
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     // charge adaptative : chaque séance règle un coefficient par figure (réussite, chutes, ressenti) ; une douleur récente allège
     const fct = adaptOf(m.id) * Math.min(painRecent() ? 0.75 : 1, lightWeek(m.id) ? 0.7 : 1);
-    const work = oaReps ? (lightWeek(m.id) ? Math.max(1, T - 1) : T) : prReps ? 1 : Math.max(lo, Math.min(T, Math.min(Math.round(T * 0.85), Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct)))),   /* le travail reste sous la cible */ u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
+    const work = oaReps ? (lightWeek(m.id) ? Math.max(1, T - 1) : T) : prReps ? 1 : Math.max(lo, Math.min(Math.round(T * 0.85), x.best > 0 ? Math.round(x.best * 0.6) : 0),   /* jamais sous 60 % du record */ Math.min(T, Math.min(Math.round(T * 0.85), Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct)))),   /* le travail reste sous la cible */ u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold, sides:SIDED.has(m.id)};
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (tries2 ? ", puis " + tries2 + (tries2 > 1 ? " tentatives" : " tentative") + " à " + (hold ? T + " s" : T + " rép.") : "") + ". " + days + " séances par semaine.";

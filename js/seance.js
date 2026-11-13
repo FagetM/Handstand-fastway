@@ -98,7 +98,7 @@ function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name
   const ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   if (d.has(ago(1)) && d.has(ago(2))) return false; let n = 0; for (let k = 1; k <= 6; k++) if (d.has(ago(k))) n++; return n < 4 || d.has(ago(0)); }
 // trois jours d'entraînement de suite : le lendemain, on récupère (mobilité, poignets)
-function plancheDays(){ const names = new Set(SEC.planche.ms.map(m => "pg:" + m.name)), since = Date.now() - 7 * 864e5, today = dayKey(Date.now());
+function plancheDays(){ const names = new Set(SEC.planche.ms.map(m => "pg:" + m.name)), since = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - 6); return x.getTime(); })(), today = dayKey(Date.now());
   return new Set(S.log.filter(l => l.t >= since && dayKey(l.t) !== today && (names.has(l.id) || /^pl_/.test(l.id))).map(l => dayKey(l.t))).size; }
 function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t))), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
@@ -123,7 +123,7 @@ function fitTime(blocks, mins){
     { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 8)[0]; if (att) { att.sets.splice(-1, 1); continue; } }   // équilibre : 8 essais suffisent
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
       if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
-    const mx = blocks.filter(b => b.ms && b.sets.filter(s => s.max).length > (/^pl_/.test(b.ms) ? 3 : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
+    const mx = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.filter(s => s.max).length > (b.ms === "pl_1leg" ? 6 : /^pl_/.test(b.ms) ? 3 : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
     // derniers recours : on retire un exercice d'accompagnement entier (sauf poignets et biceps), puis l'équilibre descend à 6 essais
     { const dI = blocks.map((b, i) => !b.ms && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
     { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 6)[0]; if (att) { att.sets.splice(-1, 1); continue; } }
@@ -139,9 +139,10 @@ function builtinBlocks(){
   const mins = S.mins || 30, pain = painRecent(), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
   const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, pain ? 0.7 : 1), scale = Math.max(0.6, Math.min(1.5, mins / 30)) * red;   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d'entraînement de suite
-  if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return ["poignets","epaules","pike","pancake"].map(k=>drillBlock(k, false));
+
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && S.painZone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
+  if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return ["poignets","epaules","hollow","pancake"].map(k=>drillBlock(k, false));
   const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])), fok = forceOk() && !(pain && ["epaule","coude"].includes(S.painZone));
   // choix du jour : l'équilibre (une habileté) et, les jours de force, une place réservée à la force
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
@@ -149,7 +150,7 @@ function builtinBlocks(){
   // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
   const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (plancheDays() < 3 && plF[0]) || F.find(id => !/^pl_/.test(id)) || F[0];   // la planche 3 jours sur 7, le reste de la force ensuite
   let next;
-  if (fok && pickF) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
+  if (fok && pickF && !fConf) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);
   if (next.length < nMs) next = next.concat((fok ? F : []).filter(id => !next.includes(id)).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d'ouvert aujourd'hui (un bras au repos, pas de force) : séance de mobilité plutôt qu'une page vide
@@ -163,14 +164,14 @@ function builtinBlocks(){
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:"3 réussites dans la séance comptent pour la validation (2 séances).", sets:Array.from({length:/^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (pl.sides) base.note = "Alterne le côté à chaque série (séries paires d'un côté, impaires de l'autre) : les deux doivent tenir la cible.";
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pr ? 180 : 120, max:true})))}); });
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = (S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
     return m.type === "check" ? Object.assign(base, {kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))})
       : Object.assign(base, {kind:m.type, sets:Array.from({length:2}, ()=>({goal:m.target, rest:m.type === "hold" ? 120 : 90, max:true}))}); });
   if (!next.length && !conf.length) return blocks;
-  const lists = next.map(id => drillsFor(MS[id]).filter(k => !(k === "oawall" && next.includes("oa_wall")))), dr = [];
+  const lists = next.slice().sort((a, b) => (FORCE(b) ? 1 : 0) - (FORCE(a) ? 1 : 0)).map(id => drillsFor(MS[id]).filter(k => !(k === "oawall" && next.includes("oa_wall")))), dr = [];
   if (next.some(id => /^pl_/.test(id)) && (fok || !next.some(FORCE))) dr.push("biceps");   // le tendon du biceps se prépare dès qu'on travaille la planche
   for (let r = 0; r < 6; r++) lists.forEach(l => { const k = l[r]; if (k && !dr.includes(k)) dr.push(k); });
   const mob = mood === "raide" ? ["epaules","pike"].filter(k=>!dr.includes(k)).map(k=>drillBlock(k, pain)) : [];
@@ -425,12 +426,12 @@ function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
   const light = deloadWeek() || moodToday() === "fatigue" || painRecent();
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
-    ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? (up ? f0 * 1.08 : f0) : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
+    ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * 1.05 : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
   save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
-  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1, ok:1, hard:0.9, pain:0.8}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner
+  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner
   ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") S.pain = Date.now();
