@@ -386,10 +386,9 @@ ul.plan li{margin:7px 0}
 .jn .rg circle{stroke:var(--line);stroke-width:4;stroke-linecap:round}
 .jn .rg circle.f{stroke:var(--acc)}
 .jn.done .rg circle.f{stroke:var(--txt)}
-.jn.lk .c .sp{filter:grayscale(1);opacity:.5}
+.jn.lk .c .sp{filter:saturate(.55);opacity:.85}   /* verrouillé : en couleur un peu adoucie, et animé, pour donner envie */
 .jn .c{margin-top:10px}
-.jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent);animation:breathe 4s ease-in-out infinite}
-@keyframes breathe{50%{transform:scale(1.04);box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 8%,transparent)}}
+.jn.cur .c{box-shadow:0 0 0 10px color-mix(in srgb,var(--acc) 18%,transparent)}
 @keyframes halo{50%{box-shadow:0 0 0 16px color-mix(in srgb,var(--acc) 6%,transparent)}}
 .jn.pop .c{animation:bloom .7s cubic-bezier(.2,.8,.2,1)}
 @keyframes bloom{0%{transform:scale(.9);opacity:.4}60%{transform:scale(1.05);opacity:1}}
