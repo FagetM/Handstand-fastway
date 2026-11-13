@@ -355,8 +355,8 @@ $("pgFile").onchange = async e => {
 // Étirement à durée imposée : compte à rebours, changement de côté, puis enchaînement sur le suivant.
 let sd = null, sdTimer = null, sdWake = null, AUTO = false, sessRes = {};
 // Bilan de départ : on parcourt les figures dans l'ordre ; tu dis ce que tu sais faire, l'app valide et se place au bon jalon.
-let plSkip = new Set(), plMiss = 0;
-function startPlacement(){ plSkip = new Set(); plMiss = 0; plStep(); $("plDlg").showModal(); }
+let plSkip = new Set(), plMiss = 0, plN = 0;
+function startPlacement(){ plSkip = new Set(); plMiss = 0; plN = 0; plStep(); $("plDlg").showModal(); }
 const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
   const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x)), box = $("plBody"); box.textContent = "";
@@ -364,7 +364,7 @@ function plStep(){
     const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tu as tout validé !"));
     const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
-  box.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name), art);
+  box.append(el("div","lab", "Question " + (++plN) + " · " + SEC[m.sec].name + (plMiss ? " · le bilan s'arrête après 3 « pas encore » (" + plMiss + "/3)" : "")), el("h2",null, m.name), art);
   if (m.desc) box.append(el("p","mut", m.desc));
   const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); if (SAFE.has(id)) (S.confirm || (S.confirm = [])).push(id); save(); plStep(); };
   const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } plSkip.add(id); plMiss++; save(); plStep(); };
@@ -508,7 +508,10 @@ function saveSet(v){
   const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
   if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms, sd.si % 2); /* séries alternées : paires d'un côté, impaires de l'autre */ if (msg) toast(msg); else toast("« " + MS[b.ms].name + " » validée : deux séances à la cible !"); }
-    if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++; } }
+    if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++;
+      // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd'hui, visent un peu plus court
+      if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });
+        toast(num(v) + " s sur " + sd.tg + " : les séries suivantes visent " + ng + " s aujourd'hui. Propre avant long."); } } }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();

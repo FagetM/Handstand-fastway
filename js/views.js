@@ -88,20 +88,20 @@ function render(){
 
   const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
   { // Aujourd'hui : la séance du jour d'un coup d'œil, et un seul bouton pour tout lancer
-    const nc = $("nextCard"); nc.textContent = ""; pickP();
+    const nc = $("nextCard"); nc.textContent = ""; pickP(); $("sessToggle").hidden = $("sess").hidden = false;
     const today = todayIdx(), day = pDay(today), vals = wkGet(today), all = allP();
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
     nc.append(el("div","lab", DAYN[today] + " · séance du jour"));
     if (!S.placed && Object.keys(MS).filter(id=>st(id).done).length < 6) { const pb = el("button","place");
       pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"Quelques questions rapides sur ce que tu sais déjà faire : l'app te propose ensuite une séance à ta mesure."));
-      pb.onclick = () => startPlacement(); nc.append(pb);
+      pb.onclick = () => startPlacement(); nc.append(pb); $("sessToggle").hidden = $("sess").hidden = true;   // avant le bilan : rien d'autre à l'écran
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       return; }
     // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
     if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
       MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); const ic = el("i",null,ico); ic.setAttribute("aria-hidden","true"); b.append(ic, el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => setMood(k); mw.append(b); });
       nc.append(mw);
-      if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Jour léger ?"), el("span",null,"Récup active : 8 min de mobilité. Ça compte aussi.")); z.onclick = () => openZen("recup"); nc.append(z); } }
+      if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd'hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
     if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Temps dispo"));
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
@@ -124,7 +124,7 @@ function render(){
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
         const dose = mx.length && !work.length ? mx.length + " essais · tiens tant que c'est calme" : mx.length ? work.length + (b.kind === "hold" ? " tenues de " : " séries de ") + one(work[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") + ", puis " + mx.length + " essais à " + one(mx[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose));
-        const dots = el("div","dots"); b.sets.forEach((s,si)=>dots.append(el("i", (vals[bi + "-" + si] != null ? "ok" : "") + (s.max ? " t" : "")))); g.append(dots);
+        const dots = el("div","dots"); b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
@@ -135,7 +135,7 @@ function render(){
       const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : P.zen ? "Commencer" : "Démarrer la séance"); bt.disabled = dn >= tot;
       bt.onclick = () => startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
-      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (ZEN[pp().step].free ? "à faire quand tu veux" : "les tenues s'allongent quand la forme est propre ; le palier se valide sur 2 séances propres au plafond") : "Environ " + Math.max(5, Math.round(secs / 300) * 5) + " min · l'app enchaîne les séries et les repos toute seule."));
+      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (ZEN[pp().step].free ? "à faire quand tu veux" : "les tenues s'allongent quand la forme est propre ; le palier se valide sur 2 séances propres au plafond") : "Environ " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min · l'app enchaîne les séries et les repos toute seule."));
     }
     if (!Object.keys(PS).length) { const lk = el("button","golink","Charger mes programmes (planche, étirements…)"); lk.onclick = () => { S.sessOpen = true; save(); renderSess(); $("sess").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }; nc.append(lk); }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné

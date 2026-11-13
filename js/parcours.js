@@ -167,7 +167,7 @@ function quick(id){
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
     if (x.done) { blk.classList.add("ok"); const nx = GOALS[0].ms.find(i=>!st(i).done && !msLocked(MS[i])); blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
-    else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,"Valide-la d'abord. Tu peux quand même essayer."));
+    else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d'abord." : "Valide-la d'abord.") + " Tu peux quand même essayer."));
     else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + NEED_DAYS), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / NEED_DAYS); }
     else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + " · cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép.") + "." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(x.best / m.target); }
     else blk.append(el("b",null,"Rien ne bloque, à toi de jouer"), el("p",null, (m.target ? "Cible : " + goalTxt(m) + ". " : "") + (D0.err ? "Erreur fréquente : " + D0.err : "")));
