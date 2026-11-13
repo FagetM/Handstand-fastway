@@ -269,6 +269,64 @@ Object.assign(POSES, {
   dr_erB:   DR({pitch:0, arm:[0.02,0.08], armZ:[0.04,0.13], elbow:[-1.57,-0.22], armY:[0.95,0], point:0}),                    // la main s'écarte vers l'extérieur
   dr_wrA:   DR({pitch:0.12, arch:0.4, arm:[-0.25,0.1], armZ:[0.02,0.15], elbow:[-1.2,-0.3], hip:[-1.5,0.1], knee:[1.5,1.6], wr:[0.5,0], head:-0.25, point:0}),   // un genou au sol, avant-bras sur la cuisse, main relâchée
   dr_wrB:   DR({pitch:0.12, arch:0.4, arm:[-0.25,0.1], armZ:[0.02,0.15], elbow:[-1.2,-0.3], hip:[-1.5,0.1], knee:[1.5,1.6], wr:[-0.95,0], head:-0.25, point:0}),  // le poing se relève
+  // postures au sol et de mobilité (séances « Postures », échauffement, récupération)
+  z_quad:   DR({pitch:1.5, arm:[-1.5,-1.5], armZ:[0,0], hip:[-1.5,-1.5], knee:[1.5,1.5], head:-0.45, point:1}),                // à quatre pattes
+  z_quadF:  DR({pitch:1.5, arm:[-1.2,-1.2], armZ:[0,0], hip:[-1.25,-1.25], knee:[1.5,1.5], head:-0.45, point:1}),              // épaules devant les mains
+  z_quadB:  DR({pitch:1.55, arm:[-1.85,-1.85], armZ:[0,0], hip:[-1.9,-1.9], knee:[1.95,1.95], head:-0.4, point:1}),            // épaules derrière les mains
+  z_fing:   DR({pitch:1.5, arm:[-1.5,-1.5], armZ:[0,0], hip:[-1.5,-1.5], knee:[1.5,1.5], wr:[-0.7,-0.7], head:-0.45, point:1}), // paumes décollées, sur les doigts
+  z_dos:    DR({pitch:1.5, arm:[-1.5,-1.5], armZ:[0,0], hip:[-1.6,-1.6], knee:[1.6,1.6], wr:[1.3,1.3], head:-0.45, point:1}),   // dos des mains au sol
+  z_chiot:  DR({pitch:2.05, arch:-0.12, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-2.05,-2.05], knee:[1.57,1.57], head:0.25, point:1}),
+  z_enfant: DR({pitch:1.85, arch:0.3, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-2.5,-2.5], knee:[2.6,2.6], head:0.1, point:1}),
+  z_dog:    DR({pitch:2.25, arm:[-3.05,-3.05], armZ:[0,0], hip:[-1.95,-1.95], head:0, point:0}),                               // chien tête en bas
+  z_dogS:   DR({pitch:2.2, arch:0.1, arm:[-2.95,-2.95], armZ:[0,0], hip:[-1.92,-1.92], head:0, point:0}),                      // épaules relâchées
+  z_dogB:   DR({pitch:2.45, arm:[-2.55,-2.55], armZ:[0.15,0.15], elbow:[-1.35,-1.35], hip:[-2.1,-2.1], head:0.1, point:0}),    // pompe en V inversé, en bas
+  z_dogP:   DR({pitch:2.25, arm:[-3.05,-3.05], armZ:[0,0], hip:[-1.95,-1.95], knee:[0.5,0], head:0, point:0}),                 // on pédale
+  z_creux:  DR({pitch:1.31, arch:0.22, arm:[-1.25,-1.25], armZ:[0,0], hip:[-0.22,-0.22], head:-0.5, point:0}),                 // gainage creux en position de pompe
+  z_side:   DR({pitch:0, roll:1.27, arm:[0,0], armZ:[1.27,1.85], hip:[0,0], hipZ:[0,0], head:0, point:0}),                     // planche latérale
+  z_war:    DR({pitch:1.45, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-1.45,0.05], head:0.3, point:0}),                          // guerrier III
+  z_crowT:  DR({pitch:1.25, arch:0.2, arm:[-0.95,-0.95], elbow:[-0.12,-0.12], hip:[-2.3,-2.3], hipZ:[0.4,0.4], knee:[2.5,2.5], head:-0.7, point:1}),
+  z_lgroup: DR({pitch:0.05, arch:0.15, arm:[-0.25,-0.25], armZ:[0.12,0.12], hip:[-2.25,-2.25], hipZ:[0.06,0.06], knee:[2.45,2.45], head:-0.1, point:1}),
+  z_lone:   DR({pitch:0.05, arch:0.2, arm:[-0.27,-0.27], armZ:[0.12,0.12], hip:[-2.25,-1.72], hipZ:[0.06,0.06], knee:[2.45,0], head:-0.1, point:1}),
+  z_pan0:   DR({pitch:0.1, arm:[-0.6,-0.6], hip:[-1.67,-1.67], hipZ:[0.85,0.85], head:0, point:0}),                            // assis jambes écartées
+  z_pan1:   DR({pitch:0.85, arch:0.15, arm:[-2.3,-2.3], hip:[-2.42,-2.42], hipZ:[0.85,0.85], head:0.2, point:0}),              // penché en avant, dos plat
+  z_pigeon: DR({pitch:0.2, arch:-0.1, arm:[-0.3,-0.3], armZ:[0.25,0.25], hip:[-1.75,1.3], hipY:[1.35,0], hipZ:[0.15,0], knee:[1.7,0.05], head:0, point:1}),
+  z_twist:  DR({pitch:-1.57, arm:[-0.05,-0.05], armZ:[1.45,1.45], hip:[-1.5,-1.5], hipZ:[1.05,-1.05], knee:[1.5,1.5], head:0, point:1}),  // sur le dos, genoux d'un côté
+  z_twist0: DR({pitch:-1.57, arm:[-0.05,-0.05], armZ:[1.45,1.45], hip:[-1.5,-1.5], knee:[1.5,1.5], head:0, point:1}),
+  dr_bicA:  DR({pitch:0, arm:[-0.12,-0.12], elbow:[-0.12,-0.12], point:0}),
+  dr_bicB:  DR({pitch:0, arm:[-0.95,-0.95], elbow:[-0.3,-0.3], point:0}),                                                     // bras presque tendus, levés devant
+  dr_sit2:  DR({pitch:-0.45, arch:-0.1, arm:[1.0,1.0], hip:[-1.15,-1.15], knee:[0.9,0.9], point:0}),                           // assis, mains loin derrière : épaules en extension
+  dr_leanR: DR({pitch:1.225, arch:0.25, arm:[-0.85,-0.85], armZ:[0,0], hip:[-0.08,-0.08], head:-0.4, point:0}),                // planche inclinée, dos arrondi
+});
+const LP = (a, b, n, ta, tb) => Array.from({length:n}, () => [[a, ta || 0.6, 0.3], [b, tb || 0.6, 0.5]]).flat();
+Object.assign(SCRIPTS, {
+  z_bascules:{cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.3],...LP("z_quadF","z_quadB",3,0.9,0.9),["z_quad",0.6,0.3]], still:"z_quadF"},
+  z_fing:    {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.4],["z_fing",0.5,3.0],["z_quad",0.5,0.3]], still:"z_fing"},
+  z_dos:     {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.4],["z_dos",0.7,1.2],["z_quadB",0.9,1.0],["z_dos",0.9,0.6]], still:"z_dos"},
+  z_ppoig:   {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.3],...LP("z_fing","z_quad",4,0.5,0.5)], still:"z_fing"},
+  z_avbras:  {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.4],["z_quadB",1.0,2.0],["z_quad",0.9,0.3],["z_dos",0.7,0.5],["z_quadB",1.0,1.5]], still:"z_quadB"},
+  z_chiot:   {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.3],["z_chiot",0.9,3.0],["z_quad",0.8,0.2]], still:"z_chiot"},
+  z_enfant:  {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.3],["z_enfant",0.9,3.0],["z_quad",0.8,0.2]], still:"z_enfant"},
+  z_dog:     {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.3],["z_dog",0.8,3.0],["c2w_0",0.8,0.2]], still:"z_dog"},
+  z_dogP:    {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.2],["z_dog",0.8,0.5],...LP("z_dogP","z_dog",3,0.5,0.5)], still:"z_dog"},
+  z_omoP:    {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.2],["z_dog",0.8,0.4],...LP("z_dogS","z_dog",4,0.5,0.5)], still:"z_dog"},
+  z_pikepu:  {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.2],["z_dog",0.8,0.4],...LP("z_dogB","z_dog",3,0.8,0.6)], still:"z_dogB"},
+  z_transi:  {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.6],...LP("z_dog","c2w_0",2,1.6,1.6)], still:"z_dog"},
+  z_creux:   {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.3],["z_creux",0.5,3.0]], still:"z_creux"},
+  z_chat:    {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.9,3.0],["c2w_0",0.6,0.2]], still:"pu_down"},
+  z_side:    {cut:true, yaw:0, s:[["squat",0.45,0],["c2w_0",0.5,0.4],["z_side",0.9,3.0],["c2w_0",0.8,0.2]], still:"z_side"},
+  z_war:     {cut:true, s:[["stand",0.3,0.2],["reach",0.5,0.2],["z_war",1.0,3.0],["reach",0.8,0.2]], still:"z_war"},
+  z_crowT:   {cut:true, yaw:-0.7, s:[["crouch",0.45,0],["lv_crow0",0.5,0.2],["z_crowT",0.7,3.0],["lv_crow0",0.5,0],["crouch",0.45,0]], still:"z_crowT"},
+  z_lgroup:  {cut:true, s:[["crouch",0.4,0],["sit",0.4,0.3],["z_lgroup",0.6,3.0],["sit",0.5,0.2]], still:"z_lgroup"},
+  z_lone:    {cut:true, s:[["crouch",0.4,0],["sit",0.4,0.3],["z_lgroup",0.6,0.6],["z_lone",0.6,2.5],["z_lgroup",0.5,0.2],["sit",0.5,0.2]], still:"z_lone"},
+  z_murEp:   {cut:true, wall:-1, s:[["stand",0.3,0.4],["reach",0.9,3.0],["stand",0.8,0.2]], still:"reach"},
+  z_dosMur:  {cut:true, wall:1, s:[...UP,["hs",0.5,3.2]], still:"hs"},
+  z_pancake: {cut:true, yaw:-0.55, s:[["crouch",0.4,0],["z_pan0",0.5,0.5],["z_pan1",1.0,2.5],["z_pan0",0.9,0.4]], still:"z_pan1"},
+  z_pigeon:  {cut:true, yaw:-1.0, s:[["crouch",0.4,0],["z_quad",0.5,0.2],["z_pigeon",0.9,3.0]], still:"z_pigeon"},
+  z_twist:   {cut:true, yaw:-0.5, s:[["crouch",0.45,0],["dr_sit",0.5,0.1],["z_twist0",0.8,0.4],["z_twist",0.9,2.8],["z_twist0",0.8,0.3]], still:"z_twist"},
+  dr_biceps: {wall:"band_foot", yaw:-1.0, s:[["stand",0.3,0.1],...LP("dr_bicB","dr_bicA",3,0.7,1.1)], still:"dr_bicB"},
+  dr_extEp:  {cut:true, s:[["crouch",0.45,0],["dr_sit",0.5,0.4],...LP("dr_sit2","dr_sit",2,1.0,0.9)], still:"dr_sit2"},
+  dr_protrac:{cut:true, s:[["squat",0.45,0],["pl_lean",0.5,0.3],...LP("dr_leanR","pl_lean",4,0.5,0.5)], still:"dr_leanR"},
+  dr_t2s:    {cut:true, s:[["squat",0.45,0],["pl_adv",0.6,0.5],...LP("pl_straddle","pl_adv",2,0.8,0.8)], still:"pl_straddle"},
 });
 const KEYS = ["point","hands","one","spin","arch","twist","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1","armY0","armY1","wr0","wr1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];

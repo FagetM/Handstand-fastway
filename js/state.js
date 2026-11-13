@@ -38,6 +38,8 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // Validation exigeante : une figure se valide quand la cible est tenue sur DEUX séances, deux jours différents
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
+// premier essai d'une figure : sa date sert à mesurer ton rythme réel (dates estimées)
+function stamp(id){ if (MS[id]) { const x = st(id); if (!x.t0 && !x.done) x.t0 = Date.now(); } }
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
 const valRule = id => /^pl_(straddle|strNar|half|full)$/.test(id) ? {n:3, gap:2, span:21} /* grands leviers sans aide : trois semaines, le temps que les tendons suivent */ : /^ul_/.test(id) || id === "pl_press" || (/^pl_/.test(id) && MS[id] && MS[id].type === "hold" && !/^pl_(lean|ppp)/.test(id)) ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
@@ -58,7 +60,7 @@ function hitTarget(id, side){
   const V = valRule(id), last = h.days.length ? h.days[h.days.length - 1] : null, gapOk = !last || dayDiff(d, last) >= V.gap;
   const fresh = h.n >= need && !h.days.includes(d) && gapOk; if (fresh) h.days.push(d);
   const span = h.days.length ? dayDiff(h.days[h.days.length - 1], h.days[0]) : 0;
-  if (h.days.length >= V.n && span >= V.span) { st(id).done = true; return ""; }
+  if (h.days.length >= V.n && span >= V.span) { st(id).done = true; st(id).dt = Date.now(); return ""; }
   if (h.days.includes(d) && !fresh) return "Séance déjà validée aujourd'hui (" + h.days.length + "/" + V.n + ").";
   if (h.n >= need && !gapOk) return "Belle tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d'un côté : à l'autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";

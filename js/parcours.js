@@ -113,14 +113,17 @@ const laneOf = m => /^pl_/.test(m.id) ? "pl" : m.sec === "press" || m.sec === "l
 function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t : now; if (now - first < 14 * 864e5) return null; return new Set(S.log.filter(l => l.t >= now - 28 * 864e5).map(l => dayKey(l.t))).size; }
 // calendrier : chaque famille (équilibre, planche, montées) avance une figure à la fois, les familles avancent en parallèle
 // o.mins : durée de séance supposée · o.days : jours d'entraînement sur 28 supposés
+// ton rythme réel : temps mis sur les figures que tu as validées, comparé aux repères (il en faut au moins trois pour juger)
+function pace(){ let a = 0, d = 0, n = 0; Object.values(MS).forEach(m => { const x = st(m.id); if (x.done && x.dt && x.t0 && DEFW[m.id]) { a += Math.max(1, (x.dt - x.t0) / (7 * 864e5)); d += DEFW[m.id]; n++; } });
+  return {n, k:n >= 3 ? Math.max(0.6, Math.min(1.4, 1 + (a / d - 1) * Math.min(1, n / 8))) : 1}; }   /* peu de figures : on ne s'emballe pas, l'effet grandit avec les preuves */
 function plan(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.days != null ? o.days : trainDays();
   const fq = td == null ? 1 : Math.max(0.9, Math.min(2.5, 20 / Math.max(4, td)));
   // 30 min : une seule figure de force par séance, planche et montées se partagent la place ; 45 min et plus : les deux avancent
   const kf = {ba:mins <= 15 ? 1.5 : mins <= 30 ? 1 : mins <= 45 ? 0.9 : 0.85, pl:mins <= 15 ? 2.5 : mins <= 30 ? 1.6 : mins <= 45 ? 1 : 0.9}; kf.pr = kf.pl; kf.ul = kf.pl / (mins <= 30 ? 1.6 : 1);
-  const fin = {}, start = {}, by = {}, free = {ba:0, pl:0, pr:0, ul:0}, last = {}, todo = [];
+  const pk = pace().k, fin = {}, start = {}, by = {}, free = {ba:0, pl:0, pr:0, ul:0}, last = {}, todo = [];
   Object.values(MS).forEach(m => { if (st(m.id).done) fin[m.id] = 0; else if (m.alt) fin[m.id] = null; else todo.push(m); });
   const W = m => { const x = st(m.id), has = S.log.filter(l => l.id === m.id && typeof l.v === "number").length >= 2, e = has && !msLocked(m) ? eta(m) : null;
-    if (e != null) return e; const d = DEFW[m.id] || 2, part = m.target && x.best ? Math.min(0.7, 0.7 * x.best / m.target) : 0; return Math.max(1, d * (1 - part) * kf[laneOf(m)] * fq); };
+    if (e != null) return e; const d = DEFW[m.id] || 2, part = m.target && x.best ? Math.min(0.7, 0.7 * x.best / m.target) : 0; return Math.max(1, d * (1 - part) * kf[laneOf(m)] * fq * pk); };
   while (todo.length) { let bi = -1, br = 0, bt = Infinity, bw = null;
     todo.forEach((m, i) => { let r = 0, w = null; for (const q of m.req || []) { if (!(q in fin)) return; if ((fin[q] || 0) > r) { r = fin[q]; w = q; } } const t = Math.max(r, free[laneOf(m)]); if (t < bt) { bt = t; br = r; bi = i; bw = w; } });   /* à départ égal, l'ordre du parcours */
     if (bi < 0) break; const m = todo.splice(bi, 1)[0], L = laneOf(m), t0 = Math.max(br, free[L]); by[m.id] = free[L] > br ? last[L] : bw; start[m.id] = t0; fin[m.id] = t0 + W(m); free[L] = fin[m.id]; last[L] = m.id; }
@@ -138,6 +141,7 @@ function openEta(){ const box = $("etaBody"), P = plan(), goal = "ul_full", w0 =
   const tl = el("div","etl"); STEPS.filter(([id]) => MS[id]).sort((a, b) => (P.fin[a[0]] || 0) - (P.fin[b[0]] || 0)).forEach(([id, name]) => { const r = el("div","etr" + (st(id).done ? " ok" : id === goal ? " goal" : ""));
     r.append(el("span","etn", name), el("span","etd", st(id).done ? "Validé" : dateTxt(P.fin[id]))); tl.append(r); }); box.append(tl);
   if (!w0) return;
+  { const pc = pace(); if (pc.n >= 3 && Math.abs(pc.k - 1) >= 0.05) box.append(el("p","mut etnote","Ton rythme mesuré sur " + pc.n + " figures validées : " + Math.round(Math.abs(1 - pc.k) * 100) + " % " + (pc.k < 1 ? "plus rapide" : "plus lent") + " que les repères. Toutes les dates en tiennent compte.")); }
   box.append(el("div","lab","Pour arriver plus vite")); const lv = el("div","etl");
   const lever = (t, d, fn) => { const r = el(fn ? "button" : "div","etr lev"); r.append(el("span","etn", t), el("span","etd", d)); if (fn) r.onclick = fn; lv.append(r); };
   const k = keyFig(P, [goal]); if (k) lever("Ta figure clé : " + MS[k].name, "c'est elle qui fixe la date", () => { $("etaDlg").close(); goHere(k); });

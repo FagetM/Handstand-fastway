@@ -13,8 +13,15 @@ let A3 = null, a3want = null, a3tried = false, lastZ = null;
 const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
 const animOn = () => true;
 // exercices d'accompagnement qui ont leur animation (dr_<clé>)
-const DR_ANIM = {hollow:"dr_hollow", tirage:"dr_tirage", rotext:"dr_rotext", extpoig:"dr_extpoig", c2w:"fd_c2w", lean:"pl_lean", pseudo:"pl_ppp", frog:"lo_frog", oawall:"oa_wall", oashrug:"oa_shrug", tuckflag:"oa_tuckflag", bandpl:"pl_strBand", lsitpara:"pr_lsit", dipsW:"fd_dips", pushW:"fd_push", appuiArr:"pr_extSup", stradlift:"pr_stradLift", elevpress:"pr_elev", shift:"oa_shift", pikepulse:"pr_pikeLift"};
-const drSp = (dk, size) => { const sp = el("span","sp"); sp.dataset.pose = poseId(DR_ANIM[dk]) || "stand"; sp.dataset.anim = DR_ANIM[dk]; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
+const DR_ANIM = {hollow:"dr_hollow", tirage:"dr_tirage", rotext:"dr_rotext", extpoig:"dr_extpoig", c2w:"fd_c2w", lean:"pl_lean", pseudo:"pl_ppp", frog:"lo_frog", oawall:"oa_wall", oashrug:"oa_shrug", tuckflag:"oa_tuckflag", bandpl:"pl_strBand", lsitpara:"pr_lsit", dipsW:"fd_dips", pushW:"fd_push", appuiArr:"pr_extSup", stradlift:"pr_stradLift", elevpress:"pr_elev", shift:"oa_shift", pikepulse:"pr_pikeLift",
+  poignets:"z_bascules", epaules:"z_chiot", omoplates:"fd_c2w", toepull:"st_split", kickup:"b2_str15", doigts:"in_str40", pike:"pr_pikeLift", pancake:"z_pancake", biceps:"dr_biceps", tuck2strad:"dr_t2s", protrac:"dr_protrac", mannaLift:"pr_mannaP", extEp:"dr_extEp", stalneg:"pr_halfSt", pikepu:"z_pikepu"};
+// postures (séances « Postures ») : l'animation se retrouve par le nom de la posture
+const ZN_ANIM = {"Bascules à quatre pattes":"z_bascules", "Appui sur le bout des doigts":"z_fing", "Planche inclinée":"pl_lean", "Planche inclinée sur les doigts":"pl_lean", "Appui sur le dos des mains":"z_dos", "Pompes de poignets":"z_ppoig",
+  "Levées de talons en pike":"pr_pikeLift", "L-sit groupé":"z_lgroup", "L-sit une jambe tendue":"z_lone", "L-sit":"pr_lsit", "Cuillère creuse":"dr_hollow", "Écart facial actif":"z_pancake", "Équerre écartée":"pr_stradL", "Posture du chiot":"z_chiot",
+  "Chien tête en bas actif":"z_dog", "Épaules au mur":"z_murEp", "Pompes d'omoplates en pike":"z_omoP", "Gainage creux":"z_creux", "Appui tendu en pike, pieds sur une caisse":"z_dog", "Équilibre dos au mur":"z_dosMur", "Corbeau":"lo_frog", "Corbeau bras tendus":"z_crowT",
+  "Planche latérale":"z_side", "Chaturanga tenu":"z_chat", "Pseudo-planche":"pl_lean", "Planche vers chien, au ralenti":"z_transi", "Guerrier III":"z_war", "Étirement des avant-bras":"z_avbras", "Enfant bras longs":"z_enfant", "Pigeon":"z_pigeon", "Chien tête en bas":"z_dogP", "Torsion couchée":"z_twist"};
+const blockAnim = b => b.dk ? DR_ANIM[b.dk] : ZN_ANIM[b.name];
+const drSp = (b, size) => { const an = blockAnim(b), sp = el("span","sp"); sp.dataset.pose = poseId(an) || "stand"; sp.dataset.anim = an; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
 const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
 const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs", hs_oatuck:"oahs", hs_oastrad:"oahs", hs_oaflag:"oahs", vsitC:"crow", mannaP:"crow", manna:"crow", vsitH:"crow", revSup:"stand", pl_halfL:"pl_full", hs_pl45:"pl_full", pl_s45:"pl_straddle"};
@@ -34,7 +41,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "35-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "36-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
@@ -57,7 +64,7 @@ async function buildSprites(force){
   // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l'écran
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
-  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM)))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
+  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM)))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
   // de préférence dans un Web Worker (hors de la page) ; sinon par petits morceaux dans la page
   if (await sprViaWorker(ids, F, key, job)) return;
   if (job !== sprJob) return;
