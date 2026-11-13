@@ -333,7 +333,7 @@ function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1;
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? f0 * 1.08 : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
-  if (P && P.zen) { save(); render(); toast("C'était doux. Reviens tranquillement, à ton rythme."); say("C'était doux. Ouvre les yeux quand tu veux.", true); return; }
+  if (P && P.zen) { const z = zenDone(); save(); render(); toast("« " + (z ? z.name : "Maîtrise") + " » terminée : la prochaine fois, les tenues seront un peu plus longues."); say("Bien joué. La prochaine fois, on tient un peu plus longtemps.", true); return; }
   save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
@@ -391,7 +391,7 @@ function openSet(bi, si){
 }
 // ce que la voix annonce à l'ouverture d'une série : le nom, la série, la cible
 function setSay(b, s, si, fx, tg, day){
-  if (b.zen) return ""; // en Détente, la consigne est lue au départ de la posture
+  if (b.zen) return s.dur != null ? "" : b.name + ". " + s.reps + " répétitions. " + b.how; // tenue : la consigne est lue au départ de la posture
   const n = b.sets.length, ser = n > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + " sur " + n + ". " : "";
   let what = "";
   if (fx) what = s.dur != null ? secSay(sDur(s, day.scale)) + (s.sides ? " de chaque côté." : ".") : s.reps != null ? s.reps + " répétitions." : "";
@@ -433,27 +433,23 @@ function startRest(r, nx, title){
   tick(); sdTimer = setInterval(tick, 250);
 }
 function runFixed(){
-  const {s, day, b} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), zen = !!b.zen, br = b.breath;
-  const prep = zen ? (sd.side === 1 ? 8 : 3) : sd.side === 1 ? S.countdown : 5;
-  let end = Date.now() + prep*1000, last = -1, ph = -1, t0 = 0; sd.mode = prep ? "count" : "run";
-  let said10 = zen || dur < 25, saidHalf = zen || dur < 60;
-  // en Détente : un son de bol tibétain au lieu des bips, et la voix guide le souffle
-  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; t0 = Date.now(); ck.className = "clock" + (br ? " breath" : ""); if (zen) chime(); else beep(880, 350);
-    if (!br) setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); };
-  if (sd.side === 2) say(zen ? "Et maintenant, l'autre côté." : "Change de côté.");
+  const {s, day, b} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), zen = !!b.zen;
+  const prep = zen ? (sd.side === 1 ? 6 : 4) : sd.side === 1 ? S.countdown : 5;
+  let end = Date.now() + prep*1000, last = -1; sd.mode = prep ? "count" : "run";
+  let said10 = dur < 25, saidHalf = zen || dur < 60;
+  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350);
+    setTimeout(() => { if (sd && sd.mode === "run") say(zen ? "Tiens. Contrôle." : cueFor(sd.b)); }, 450); };
+  if (sd.side === 2) say(zen ? "L'autre côté." : "Change de côté.");
   else if (zen) say(b.name + ". " + b.how);
   if (!prep) go(); else ck.className = "clock count";
-  $("sdGo").textContent = zen ? "Passer" : "J'ai fini";
+  $("sdGo").textContent = "J'ai fini";
   if (s.sides) $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + " · côté " + sd.side + "/2" + (sd.b.pnf ? " · PNF" : "");
   sdTimer = setInterval(()=>{
     const left = (end - Date.now())/1000;
-    if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = zen ? "" : String(r); if (r !== last) { last = r; if (r <= 3 && !zen) beep(440, 120); } } }
-    else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; if (zen) chime(); else beep(1320, 600);
+    if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
+    else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; beep(1320, 600);
       if (s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
     else { ck.textContent = mmss(Math.ceil(left));
-      if (br) { const [i, nm, rem] = breathPhase(br, (Date.now() - t0) / 1000); ck.dataset.ph = nm;
-        if (i !== ph) { ph = i; ck.classList.toggle("in", nm === "Inspire"); ck.classList.toggle("out", nm === "Expire"); ck.style.setProperty("--bt", br[i] + "s");
-          $("sdHint").textContent = nm; if (left > 3) say(nm); } }
       if (!saidHalf && left <= dur/2) { saidHalf = true; say("La moitié."); }
       if (!said10 && left <= 10) { said10 = true; say("Encore dix secondes."); } }
   }, 200);

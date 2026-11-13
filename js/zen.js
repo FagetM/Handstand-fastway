@@ -1,49 +1,55 @@
-// Douceur : séances Détente (respiration, étirements doux, relâchement), météo du corps avant la séance, petites histoires.
+// Maîtrise du corps : postures tenues de plus en plus longtemps (esprit gymnaste-yogi), météo du corps, petites histoires.
 "use strict";
 // Chaque séance est une suite de postures tenues, enchaînées toute seule par la séance guidée.
-// breath : rythme de respiration guidé à la voix et par le cercle qui respire [inspire, expire] ou [inspire, retiens, expire, attends].
 const zh = (name, dur, how, x) => Object.assign({name, how, kind:"hold", sets:[{dur}]}, x || {});
+const zr = (name, n, reps, how) => ({name, how, kind:"reps", sets:Array.from({length:n}, () => ({reps}))});
+const zn = (n, name, dur, how, x) => Object.assign(zh(name, dur, how, x), {sets:Array.from({length:n}, () => ({dur}))});
+// Maîtrise : l'esprit gymnaste-yogi. Des postures tenues, contrôlées, de plus en plus longtemps, au service de la planche et du un bras.
+// Chaque séance terminée allonge ses tenues de 6 % (jusqu'à +60 %) : on maîtrise la pose, puis on l'étire dans le temps.
 const ZEN = [
-  {id:"souffle", name:"Juste respirer", min:3, when:"Quand tu veux, même au bureau",
-   blocks:[zh("Cohérence cardiaque", 120, "Inspire 5 secondes par le nez, expire 5 secondes. Le cœur ralentit, tout se pose.", {breath:[5,5]}),
-           zh("Relâchement", 60, "Ferme les yeux. Laisse les épaules descendre, la mâchoire se desserrer.")]},
-  {id:"calme", name:"Retour au calme", min:8, when:"Juste après ta séance",
-   blocks:[zh("Cohérence cardiaque", 120, "Inspire 5 secondes par le nez, expire 5 secondes. Le cœur ralentit, tout se pose.", {breath:[5,5]}),
-           zh("Avant-bras doux", 60, "À genoux, dos des mains au sol, recule très légèrement. Aucune douleur, juste de la chaleur."),
-           zh("Enfant bras longs", 60, "Fesses vers les talons, front posé, bras allongés. Laisse les épaules s'ouvrir sans forcer."),
-           zh("Torsion couchée", 30, "Genoux d'un côté, regard de l'autre. Respire dans le flanc qui s'ouvre.", {sides:1}),
-           zh("Papillon couché", 60, "Plantes de pieds jointes, genoux ouverts, mains sur le ventre."),
-           zh("Relâchement total", 120, "Allongé, paumes vers le ciel. Lâche le sol, lâche l'effort.", {breath:[4,6]})]},
-  {id:"doux", name:"Jour doux", min:12, when:"Un jour de repos",
-   blocks:[zh("Respiration ventrale", 120, "Main sur le ventre : il gonfle à l'inspiration et se vide à l'expiration.", {breath:[4,6]}),
-           zh("Chat-vache lent", 60, "Arrondis le dos en expirant, creuse-le en inspirant, au rythme du souffle.", {breath:[4,4]}),
-           zh("Fente basse", 45, "Genou arrière posé, hanches qui descendent doucement vers l'avant.", {sides:1}),
-           zh("Pigeon tout doux", 75, "Penche-toi sur la jambe avant, appuie-toi sur un coussin si besoin.", {sides:1}),
-           zh("Chenille", 120, "Assis, jambes allongées, le dos s'arrondit tranquillement. Genoux fléchis si besoin."),
-           zh("Repos final", 180, "Allongé, une couverture si tu veux. Rien à faire.", {breath:[4,6]})]},
-  {id:"soir", name:"Cocon du soir", min:14, when:"Le soir, avant de dormir",
-   blocks:[zh("Cohérence cardiaque", 180, "Inspire en 5, expire en 5. Pense à une chose agréable de ta journée.", {breath:[5,5]}),
-           zh("Papillon assis", 120, "Dos rond, front vers les pieds, épaules lourdes."),
-           zh("Bébé heureux", 60, "Attrape tes pieds, berce-toi de gauche à droite. Souris."),
-           zh("Torsion couchée", 45, "Genoux d'un côté, bras en croix.", {sides:1}),
-           zh("Jambes au mur", 180, "Fesses contre le mur, jambes en appui dessus. Les jambes se reposent."),
-           zh("Expiration longue", 210, "Allongé : inspire en 4, expire en 6. Le sommeil approche.", {breath:[4,6]})]},
-  {id:"mains", name:"Mains libres", min:9, when:"Poignets fatigués : rien ne pèse sur les mains",
-   blocks:[zh("Respiration carrée", 120, "Inspire 4, retiens 4, expire 4, attends 4.", {breath:[4,4,4,4]}),
-           zh("Cercles de poignets", 60, "Mains dans le vide, cercles lents dans les deux sens, puis secoue-les."),
-           zh("Prière et prière inversée", 60, "Paumes jointes devant la poitrine, puis dos des mains joints. Pousse à peine."),
-           zh("Bras d'aigle", 30, "Croise les bras, coudes levés, le haut du dos s'étire.", {sides:1}),
-           zh("Enfant, paumes vers le ciel", 90, "Bras le long du corps, mains posées à côté des pieds. Les poignets ne portent rien."),
-           zh("Relâchement", 150, "Mains sur le ventre, sens-les monter et descendre.", {breath:[4,6]})]},
+  {id:"poignets", name:"Poignets solides", min:9, when:"Avant l'équilibre ou la planche : des poignets qui encaissent",
+   blocks:[zh("Bascules à quatre pattes", 60, "Mains à plat, doigts écartés : avance et recule les épaules au-dessus des mains, lentement."),
+           zn(3, "Appui sur le bout des doigts", 15, "Genoux au sol, mains en griffe, paumes décollées. Pousse dans les doigts."),
+           zn(3, "Planche inclinée", 20, "Bras verrouillés, épaules devant les mains, omoplates écartées. Le poids sur les poignets."),
+           zh("Appui sur le dos des mains", 30, "À genoux, dos des mains au sol, doigts vers toi : bascule doucement le poids."),
+           zr("Pompes de poignets", 2, 10, "À genoux, paumes au sol : monte sur les doigts puis redescends, bras tendus.")]},
+  {id:"compression", name:"Compression", min:12, when:"Pour la montée en force et la planche : des abdos qui ramènent",
+   blocks:[zr("Levées de talons en pike", 3, 10, "Assis jambes tendues, mains près des genoux : décolle les talons sans te pencher en arrière."),
+           zn(4, "L-sit groupé", 10, "Mains au sol ou sur parallettes, bras tendus : décolle les fesses, genoux à la poitrine."),
+           zn(3, "Cuillère creuse", 20, "Sur le dos, bas du dos plaqué, bras et jambes tendus décollés. La ligne de l'équilibre."),
+           zn(2, "Écart facial actif", 30, "Assis jambes écartées, dos plat : penche-toi en avant et soulève les talons par moments.")]},
+  {id:"ligne", name:"Ligne et épaules", min:10, when:"Pour un équilibre droit : épaules ouvertes, corps gainé",
+   blocks:[zh("Posture du chiot", 60, "À genoux, bras tendus loin devant, poitrine vers le sol : ouvre les épaules."),
+           zn(3, "Chien tête en bas actif", 30, "Pousse le sol, épaules aux oreilles, talons vers le sol. Les bras dans la ligne du dos."),
+           zn(3, "Épaules au mur", 30, "Dos au sol, ou face au mur : bras tendus au-dessus de la tête, côtes rentrées, sans cambrer."),
+           zr("Pompes d'omoplates en pike", 2, 10, "En V inversé, bras tendus : laisse descendre puis repousse avec les épaules seulement."),
+           zn(2, "Gainage creux au sol", 30, "Position de pompe, dos légèrement arrondi, fesses serrées. Pousse le sol.")]},
+  {id:"controle", name:"Contrôle lent", min:12, when:"Poses tenues et transitions lentes : le corps sous contrôle",
+   blocks:[zn(4, "Corbeau", 15, "Genoux sur l'arrière des bras, regard devant : bascule jusqu'à décoller les pieds. Tiens, sans à-coup."),
+           zh("Planche latérale", 30, "Sur une main, corps aligné, hanche haute. Le bras libre tendu vers le ciel.", {sides:1}),
+           zn(3, "Chaturanga tenu", 10, "Descends à mi-pompe, coudes contre le corps, épaules devant les mains. Tiens."),
+           zr("Planche vers chien, au ralenti", 2, 6, "De la planche au chien tête en bas en 4 secondes, puis retour en 4 secondes."),
+           zh("Guerrier III", 30, "Sur une jambe, corps et jambe arrière à l'horizontale, bras devant. Immobile.", {sides:1})]},
+  {id:"recup", name:"Récup active", min:8, when:"Après la séance ou un jour léger : on récupère en bougeant",
+   blocks:[zh("Étirement des avant-bras", 60, "À genoux, doigts vers toi, recule doucement les épaules. Puis dos des mains."),
+           zh("Enfant bras longs", 60, "Fesses vers les talons, bras allongés loin devant : les épaules s'étirent."),
+           zh("Pigeon", 45, "Jambe avant pliée devant toi, jambe arrière allongée : laisse descendre les hanches.", {sides:1}),
+           zh("Chien tête en bas", 45, "Pédale doucement avec les talons, pousse le sol."),
+           zh("Torsion couchée", 30, "Genoux d'un côté, épaules au sol.", {sides:1})]},
 ];
-// La Détente est un programme comme les autres : une étape par séance, la même chaque jour de la semaine.
+const zenLvl = id => Math.min(10, ((S.zenDone || {})[id] || 0));
+const zenScale = id => 1 + 0.06 * zenLvl(id);
+// La Maîtrise est un programme comme les autres : une étape par séance, la même chaque jour de la semaine.
 function zenP(){
-  const day = z => { const d = {type:"train", blocks:z.blocks.map(b => ({name:b.name, how:b.how, kind:"hold", breath:b.breath, zen:true,
-      sets:b.sets.map(s => ({dur:s.dur, sides:b.sides ? true : undefined}))}))}; const o = {}; DAYK.forEach(k => o[k] = d); return o; };
-  return {id:"detente", name:"Détente", zen:true, steps:ZEN.map(z => ({name:z.name, info:z.when, days:day(z)}))};
+  const day = z => { const k = zenScale(z.id), d = {type:"train", blocks:z.blocks.map(b => ({name:b.name, how:b.how, kind:b.kind, zen:true,
+      sets:b.sets.map(s => s.dur ? {dur:Math.round(s.dur * k / 5) * 5, sides:b.sides ? true : undefined, rest:b.sets.length > 1 ? 20 : undefined} : {reps:s.reps, rest:20})}))};
+    const o = {}; DAYK.forEach(x => o[x] = d); return o; };
+  return {id:"detente", name:"Maîtrise", zen:true, steps:ZEN.map(z => ({name:z.name, info:z.when, days:day(z)}))};
 }
 const zenIdx = id => Math.max(0, ZEN.findIndex(z => z.id === id));
 function openZen(id){ pg().cur = "detente"; pickP(); pp().step = zenIdx(id); save(); render(); showTab("today"); window.scrollTo(0, 0); }
+// séance de Maîtrise terminée : les tenues de cette séance s'allongent la prochaine fois
+function zenDone(){ const z = ZEN[pp().step]; if (!z) return; const d = S.zenDone || (S.zenDone = {}); d[z.id] = (d[z.id] || 0) + 1; return z; }
 
 // Météo du corps : trois secondes avant la séance pour écouter comment on va. Elle règle la séance du jour.
 const MOODS = [["top","En forme","☀️"],["calme","Tranquille","🌤️"],["fatigue","Fatigué·e","🌧️"],["raide","Raide","🌬️"]];
@@ -61,13 +67,7 @@ const STORIES = [
   "Mes poignets m'ont appris la patience. Cinq minutes d'échauffement, c'est le prix d'un équilibre sans douleur.",
   "Le jour où j'ai arrêté de vouloir réussir, j'ai commencé à sentir. Et c'est en sentant que j'ai réussi.",
   "Une chute, c'est juste le sol qui te dit bonjour. Roue, sourire, et on remonte.",
-  "Les jours de fatigue, je fais Jour doux. Le lendemain, mon équilibre est toujours meilleur. Toujours.",
+  "Les jours de fatigue, je fais juste de la récup active. Le lendemain, mon équilibre est toujours meilleur. Toujours.",
   "Avant chaque montée, je prends une respiration. Pas pour me concentrer : pour me rappeler que j'aime ça.",
 ];
 const storyOfDay = () => STORIES[Math.floor(Date.now() / 864e5) % STORIES.length];
-
-// Cercle qui respire : pendant un exercice guidé par le souffle, l'horloge grossit à l'inspiration et rétrécit à l'expiration.
-function breathPhase(br, t){ // renvoie [phase, nom, secondes restantes dans la phase]
-  const names = br.length === 4 ? ["Inspire","Retiens","Expire","Attends"] : ["Inspire","Expire"], cyc = br.reduce((a,b)=>a+b,0);
-  let x = t % cyc, i = 0; while (x >= br[i]) { x -= br[i]; i++; } return [i, names[i], br[i] - x];
-}

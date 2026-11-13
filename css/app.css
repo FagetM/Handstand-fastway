@@ -490,18 +490,13 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .me{animation:float 3s ease-in-out infinite alternate}
 @keyframes float{to{transform:translate(-50%,-4px)}}
 .block,.tip,.qcard{box-shadow:var(--shadow)}
-/* cercle qui respire : grossit à l'inspiration, rétrécit à l'expiration, au rythme du souffle */
-.clock.breath{width:210px;height:210px;margin:18px auto 6px;border-radius:50%;display:grid;place-items:center;font-size:56px;
-  background:radial-gradient(circle,color-mix(in srgb,var(--acc) 34%,transparent) 0%,color-mix(in srgb,var(--acc) 10%,transparent) 70%,transparent 72%);
-  transition:transform var(--bt,5s) ease-in-out;transform:scale(.82)}
-.clock.breath.in{transform:scale(1.12)}.clock.breath.out{transform:scale(.82)}
 /* météo du corps */
 .mood{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 4px}
 .mood>span{flex:1 0 100%;font-size:14px;color:var(--mut)}
 .mood button{flex:1;min-width:72px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 6px;border-radius:18px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line);font-size:13px}
 .mood button i{font-style:normal;font-size:22px;line-height:1}
 .mood button.on{background:color-mix(in srgb,var(--acc) 22%,var(--raise));box-shadow:inset 0 0 0 2px var(--acc)}
-/* Détente */
+/* Maîtrise */
 .zens{display:grid;gap:8px;margin:12px 0}
 .zen{display:flex;flex-direction:column;gap:2px;text-align:left;padding:14px 16px;border-radius:20px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line)}
 .zen span{font-size:13.5px;color:var(--mut)}
