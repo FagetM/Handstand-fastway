@@ -427,7 +427,7 @@ function endSession(){
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? (up ? f0 * 1.08 : f0) : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
-  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); say("Séance terminée. Comment tu te sens ?", true);
+  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
   const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1, ok:1, hard:0.9, pain:0.8}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner

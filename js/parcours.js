@@ -228,7 +228,8 @@ function renderQuest(S0, nextId){
   const head = el("h2","sect","Badges"); head.id = "sect-badges"; box.append(head);
   const got = S0.badges.filter(b=>b.ok).length;
   box.append(el("p","intro-t", got + " / " + S0.badges.length));
-  BFAM.forEach(([name, ids, pre])=>{ const list = S0.badges.filter(b=>ids ? ids.includes(b.id) : b.id.startsWith(pre)); if (!list.length) return;
+  const next3 = new Set(S0.badges.filter(b=>!b.ok).sort((a,b)=>b.cur / b.max - a.cur / a.max).slice(0, 3).map(b=>b.id)), shown = b => S.allB || b.ok || next3.has(b.id);
+  BFAM.forEach(([name, ids, pre])=>{ const list = S0.badges.filter(b=>(ids ? ids.includes(b.id) : b.id.startsWith(pre)) && shown(b)); if (!list.length) return;
     box.append(el("div","lab bfam",name)); const grid = el("div","badges");
     list.forEach(b=>{ const x = el("button","bdg" + (b.ok ? "" : " off")); x.setAttribute("aria-label", b.name + ", " + (b.ok ? "obtenu" : b.cur + " sur " + b.max));
       const m = el("span","m"); m.innerHTML = ringSvg(b.ok ? 0 : b.cur / b.max, 76, 35, 4, "rg"); m.append(el("span","gl", b.g)); if (b.ok) m.append(icon("check","ck"));
@@ -238,4 +239,5 @@ function renderQuest(S0, nextId){
         const rw = badgeReward(b.id); $("bdR").textContent = "Récompense : 40 points d'expérience" + (rw.length ? " · tenue : " + rw.join(", ") : ""); $("bdDlg").showModal(); };
       grid.append(x); });
     box.append(grid); });
+  { const more = el("button","golink", S.allB ? "Moins de badges" : "Tous les badges (" + S0.badges.length + ")"); more.onclick = () => { S.allB = !S.allB; save(); render(); }; box.append(more); }
 }
