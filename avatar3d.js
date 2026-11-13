@@ -91,7 +91,7 @@ Object.assign(POSES, {
   hs_hspu:  P("hs", {pitch:PI + 0.15, arm:[-PI + 0.75,-PI + 0.75], elbow:[-1.9,-1.9], armZ:[0.15,0.15], head:-0.7}),
   hs_shiftL:P("hs_straddle", {roll:0.14, armZ:[0,0.16]}),
   hs_shiftR:mirror(P("hs_straddle", {roll:0.14, armZ:[0,0.16]})),
-  hs_finger:P("oahs", {arm:[-PI,-PI], armZ:[0.14,0.3], roll:0.06}),   // main libre posée sur le bout des doigts
+  hs_finger:P("oahs", {arm:[-PI,-PI], armZ:[0.14,0.34], roll:-0.04}),   // main libre posée sur le bout des doigts
   hs_oastr: P("oahs", {arm:[-PI,-PI], armZ:[0.2,0.4], roll:0.06}),     // main libre au sol, bras tendu, loin sur le côté // main libre au sol, loin sur le côté
   hs_oafull:P("oahs", {arm:[-PI,-0.2], armZ:[0.32,1.3], roll:0.4, one:1}), // bras libre en balancier, bassin au-dessus de la main
   fold_s:   P("fold", {hipZ:[0.55,0.55]}),
@@ -178,15 +178,17 @@ export const SCRIPTS = {
 };// étapes intermédiaires : postures dédiées quand le geste diffère, sinon l'animation de la figure dont elles dérivent
 Object.assign(POSES, {
   hs_oafullM:mirror(POSES.hs_oafull),                                   // un bras, l'autre côté (côté faible)
-  hs_tflag:P("hs_tuck", {roll:0.3}), hs_tflagM:P("hs_tuck", {roll:-0.3}), // drapeaux groupés
+  hs_tflag:P("hs_tuck", {roll:-0.1, armZ:[0,0.5], hipZ:[1.2,-0.4]}), // drapeau groupé : deux mains au sol, genoux sur le côté
   pl_halfL:P("pl_full", {hip:[-0.15,-0.15], knee:[1.6,1.6]}),            // half-lay : hanches tendues, genoux pliés
-  pl_tuckDn:P("pl_tuck", {elbow:[-1.0,-1.0], pitch:1.45}),               // pompe en tuck : coudes fléchis, pieds en l'air
+  pl_tuckDn:P("pl_tuck", {elbow:[-1.2,-1.2], arm:[-0.5,-0.5], pitch:1.5}),   /* les épaules descendent en restant devant les mains */               // pompe en tuck : coudes fléchis, pieds en l'air
   pl_strN:P("pl_straddle", {hipZ:[0.3,0.3]}),                            // straddle serrée
   sitP:P("sit", {hip:[-1.85,-1.85], arch:0.45, point:1}),                // élévation en pike : talons décollés
   sitSL:P("sit_s", {hip:[-1.9,-1.9], arch:0.45, point:1}),               // élévation jambes écartées
-  lsitT:P("lsit0", {hip:[-2.3,-2.3], knee:[2.2,2.2]}),                   // équerre groupée
+  pkC:P("pk2", {pitch:2.5, hip:[-2.6,-2.6], arch:0.35}), pk1L:P("pk1", {pitch:2.1}),   // descente pike : bassin qui recule, pieds posés près des mains
+  lsitT:P("lsit0", {pitch:0.55, arch:0.5, arm:[-0.55,-0.55], armZ:[0.1,0.1], hip:[-2.9,-2.9], knee:[2.9,2.9], head:-0.35}),                   // équerre groupée
   tuckRise:P("hs_tuck", {pitch:2.2, arm:[-2.2,-2.2]}),                   // le bassin monte en groupé
 });
+POSES.hs_tflagM = mirror(POSES.hs_tflag);   // drapeau groupé, autre côté
 Object.assign(SCRIPTS, {
   oa_oahsw:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_finger",0.6,0.2],["hs_oafullM",0.8,1.8]], still:"hs_oafullM"},
   oa_sidehold:{yaw:-0.15, s:[...UP,["hs_straddle",0.5,0.3],["hs_shiftL",0.6,2.0]], still:"hs_shiftL"},
@@ -203,9 +205,9 @@ Object.assign(SCRIPTS, {
   pr_pikeLift:{cut:true, s:[["crouch",0.4,0],["sit",0.4,0.2],["sitP",0.5,0.6],["sit",0.4,0.2],["sitP",0.5,0.6],["sit",0.4,0.2],["crouch",0.4,0],["stand",0.4,0.1]], still:"sitP"},
   pr_stradLift:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0.2],["sitSL",0.5,0.6],["sit_s",0.4,0.2],["sitSL",0.5,0.6],["sit_s",0.4,0.2],["crouch",0.4,0],["stand",0.4,0.1]], still:"sitSL"},
   pr_vsit:SCRIPTS.pr_stradL,
-  pr_wallNeg:Object.assign({}, SCRIPTS.pr_negS, {wall:-1}),
+  pr_wallNeg:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,0.4],["hs_straddle",0.5,0.3],["sp2",0.8,0],["hs_spress",1.2,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},   // monte en marchant au mur, ventre face au mur
   pr_elevLow:SCRIPTS.pr_elev,
-  pr_negP:{cut:true, s:[...UP,["hs",0.5,0.6],["pk2",1.4,0],["pk1",1.2,0],["fold",0.8,0.3],["stand",0.6,0.2]], still:"pk2"},
+  pr_negP:{cut:true, s:[...UP,["hs",0.5,0.6],["pk2",1.2,0],["pkC",1.0,0],["pk1L",0.6,0.1],["fold",0.8,0.3],["stand",0.6,0.2]], still:"pk2"},
   pr_halfSt:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,0.3],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["sp2",0.5,0],["hs_straddle",0.5,0.4],["sp2",1.0,0],["hs_stal2",1.0,0],["hs_stal1",1.0,0],["hs_stal0",1.0,0.3],["sit_s",0.4,0],["crouch",0.4,0],["stand",0.4,0.1]], still:"hs_stal1"},
   pr_tuckUp:{cut:true, yaw:-0.7, s:[["crouch",0.4,0],["sit",0.4,0],["lsitT",0.6,0.4],["tuckRise",0.8,0],["hs_tuck",0.6,0.3],["hs",0.6,0.6],["hs_tuck",0.6,0],["tuckRise",0.6,0],["lsitT",0.6,0.2],["sit",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"tuckRise"},
   pr_stalPart:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,0.4],["hs_stal1",0.6,0],["hs_stal2",0.6,1.0],["hs_stal1",0.6,0],["hs_stal0",0.6,0.3],["sit_s",0.4,0],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal2"},
