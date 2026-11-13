@@ -583,3 +583,6 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 
 #sdRedo{margin-top:10px}
 #sdNote{margin-top:16px;text-align:center}#sdNote .srcs{justify-content:center;margin-top:8px}
+
+.clock.paused{opacity:.45;animation:pz 1.2s ease-in-out infinite}@keyframes pz{50%{opacity:.75}}
+#sdMic{text-align:center;font-size:12.5px;margin-top:14px}

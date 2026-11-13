@@ -506,6 +506,9 @@ function startGuided(){ sessVal = null; sessPR = null; sessRes = {}; sessT = 0; 
 // dernière série finie : on ferme et, en séance guidée, on demande le ressenti (il règle la charge suivante)
 function closeEnd(){ const was = AUTO; $("sd").close(); if (was) endSession(); }
 const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd === me && sd.mode === mode && $("sd").open) $("sdGo").click(); }, ms); };
+// pause : les chronos se figent (le temps écoulé en pause est rendu à chaque battement)
+let pzT = 0; const pzShift = () => { const n = Date.now(), d = sd && sd.paused ? n - pzT : 0; pzT = n; return d; };
+function setPause(on){ if (!sd || !sdTimer || !!sd.paused === !!on) return; sd.paused = !!on; pzT = Date.now(); $("sdClock").classList.toggle("paused", !!on); if (on) { hush(); toast("En pause. Dis « top » ou touche le bouton pour reprendre."); } else beep(880, 150); }
 const cdSec = () => Math.max(3, S.countdown || 0);   // toujours au moins 3 secondes pour se placer
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -583,7 +586,7 @@ function saveFixed(v){
   if (nx) openSet(nx[0], nx[1]); else closeEnd();
 }
 function startRest(r, nx, title){
-  const end = Date.now() + r.rest*1000, ck = $("sdClock"); let done = false;
+  let end = Date.now() + r.rest*1000, done = false; const ck = $("sdClock");
   sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true;
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
   $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
@@ -592,7 +595,7 @@ function startRest(r, nx, title){
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C'était la dernière série. Bravo.");
   let warned = r.rest < 25;
-  const tick = () => { const left = (end - Date.now())/1000;
+  const tick = () => { end += pzShift(); const left = (end - Date.now())/1000;
     if (!warned && left <= 10 && left > 0) { warned = true; say("Dix secondes. Secoue les poignets, respire."); }
     if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else closeEnd(); } } }
     else ck.textContent = mmss(Math.ceil(left)); };
@@ -612,7 +615,7 @@ function runFixed(){
   $("sdGo").textContent = "J'ai fini";
   if (s.sides) $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + " · côté " + sd.side + "/2" + (sd.b.pnf ? " · PNF" : "");
   sdTimer = setInterval(()=>{
-    const left = (end - Date.now())/1000;
+    end += pzShift(); const left = (end - Date.now())/1000;
     if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
     else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; beep(1320, 600);
       if (s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
@@ -641,6 +644,7 @@ function saveSet(v){
 }
 $("sdGo").onclick = async e => {
   if (e && e.isTrusted) voiceUnlock();
+  if (sd && sd.paused) { setPause(false); return; }   /* en pause : le bouton reprend, sans rien valider */
   const ck = $("sdClock");
   if (sd.mode === "rest") { sdStop(); if (sd.next) openSet(sd.next[0], sd.next[1]); else { const was = AUTO; $("sd").close(); if (was) endSession(); } return; }
   if (sd.fx){
@@ -656,7 +660,7 @@ $("sdGo").onclick = async e => {
     const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdHint").textContent = hint0; setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); $("sdGo").textContent = AUTO && sd.s.auto ? (/^(st_|b1_|b2_|in_|oa_|pr_)/.test(sd.b.ms || "") ? "J'ai chuté" : "J'arrête") : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
     if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; $("sdHint").textContent = "Mets-toi en position : le chrono démarre dans " + left + " secondes."; say("Départ dans " + left + " secondes.", true); } else run();
     sdTimer = setInterval(()=>{
-      const e = (performance.now() - t)/1000;
+      { const d = pzShift(); if (d) { t += d; if (sd.mode === "run") sd.t0 = t; } } const e = (performance.now() - t)/1000;
       if (sd.mode === "count"){ const r = Math.ceil(left - e); if (r <= 0) run(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
       else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!said3 && e >= sd.tg - 3) { said3 = true; say("Encore trois, en respirant."); }
         if (!hit && sd.tg && e >= sd.tg) { hit = true; if (!(AUTO && sd.s.auto)) say("Cible atteinte."); ck.className = "clock hit"; beep(1320, 600); if (AUTO && sd.s.auto) autoGo("run", 120); } }

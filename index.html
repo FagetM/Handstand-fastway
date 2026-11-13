@@ -75,6 +75,11 @@
       <label class="mut" for="eqKg">Lest (gilet, haltères)</label>
       <select id="eqKg"><option value="0">Aucun</option><option value="5">Jusqu'à 5 kg</option><option value="10">Jusqu'à 10 kg</option><option value="20">Jusqu'à 20 kg</option></select>
     </div>
+    <div class="block" id="vcBlock">
+      <h2>Commandes à la voix</h2>
+      <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="vcOn"><span>Piloter le chrono à la voix pendant la séance</span></label>
+      <div class="mut" id="vcHelp" style="margin-top:8px">« Top » démarre ou reprend, « stop » arrête, « pause » fige le chrono, « recommence » efface un faux départ. Le micro n'écoute que pendant la séance.</div>
+    </div>
     <div class="block" id="voiceBlock">
       <h2>Voix</h2>
       <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="voiceOn"><span>Annoncer la séance à voix haute</span></label>
@@ -214,6 +219,7 @@
   <button class="btn line" id="sdRedo" hidden>Faux départ : recommencer</button>
   <div id="sdNote" hidden><div class="mut">Ou note ta tenue toi-même, sans le chrono :</div><div class="srcs" id="sdNoteQ"></div></div>
   <button class="btn line" id="sdNo" hidden>Pas encore</button>
+  <div class="mut" id="sdMic" hidden></div>
   <button class="lnk" id="sdPain">Ça fait mal : arrêter</button>
 </dialog>
 

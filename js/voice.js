@@ -76,3 +76,32 @@ else {
   $("voiceSel").onchange = e => { S.voiceName = e.target.value || null; save(); };
   $("voiceTest").onclick = () => { voiceUnlock(); say("Gainage bras tendus. Série 1 sur 3. Tiens 20 secondes."); };
 }
+
+// ---------- Commandes à la voix : top, stop, pause, recommence (seulement pendant la séance) ----------
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let vcRec = null, vcWant = false, vcLastCmd = "", vcLastT = 0, vcSeen = "";
+const VC = [["redo", /(recommenc|faux d[ée]part)/], ["pause", /\b(pause|pose)\b/], ["stop", /\b(stop|stoppe|fini|termin[ée]|arr[êe]te)\b/], ["top", /\b(top|go|reprends?|c'est parti|continue)\b/]];
+const vcOn = () => !!SR && !!S.vcmd;
+function vcDo(cmd){ if (typeof sd === "undefined" || !sd || !$("sd").open) return;
+  const now = Date.now(); if (cmd === vcLastCmd && now - vcLastT < 1800) return; vcLastCmd = cmd; vcLastT = now;
+  const go = $("sdGo"), shown = e => e && !e.hidden && e.style.display !== "none" && !e.disabled;
+  if (cmd === "pause") { if (sdTimer) setPause(true); return; }
+  if (cmd === "top") { if (sd.paused) setPause(false); else if ((sd.mode === "idle" || sd.mode === "rest") && shown(go)) go.click(); return; }
+  if (cmd === "stop") { if (sd.paused) sd.paused = false; if ((sd.mode === "run" || sd.mode === "count" || (sd.mode === "idle" && sd.fx && sd.s.dur == null)) && shown(go)) go.click(); return; }
+  if (cmd === "redo") { if (shown($("sdRedo"))) $("sdRedo").click(); } }
+// une phrase entendue : on ne regarde que ses derniers mots, pour réagir à l'ordre le plus récent
+function vcHear(tx){ const last = String(tx || "").toLowerCase().trim().split(/\s+/).slice(-3).join(" "), hit = VC.find(([, re]) => re.test(last)); if (hit) vcDo(hit[0]); return hit ? hit[0] : null; }
+function vcStart(){ if (!vcOn() || vcRec) return; vcWant = true;
+  try { const r = new SR(); r.lang = "fr-FR"; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+    r.onresult = e => { if (synth && synth.speaking) return;   // on n'écoute pas la voix de l'app
+      for (let i = e.resultIndex; i < e.results.length; i++) { const tx = e.results[i][0].transcript || "", key = i + ":" + tx; if (!tx || key === vcSeen) continue; vcSeen = key; if (vcHear(tx)) break; } };
+    r.onerror = e => { if (e.error === "not-allowed" || e.error === "service-not-allowed") { vcWant = false; S.vcmd = false; save(); if ($("vcOn")) $("vcOn").checked = false; toast("Micro refusé : les commandes à la voix sont coupées."); } };
+    r.onend = () => { vcRec = null; vcMic(); if (vcWant && $("sd").open && !document.hidden) setTimeout(vcStart, 250); };
+    r.start(); vcRec = r; vcMic(); } catch(e){ vcRec = null; } }
+function vcStop(){ vcWant = false; if (vcRec) { try { vcRec.abort(); } catch(e){} vcRec = null; } vcMic(); }
+function vcMic(){ const m = $("sdMic"); if (!m) return; m.hidden = !vcOn(); m.textContent = vcRec ? "Micro à l'écoute : top · stop · pause · recommence" : "Micro en attente…"; }
+if (!SR) { $("vcOn").disabled = true; $("vcHelp").textContent = "Ce navigateur ne sait pas écouter les commandes à la voix (elles fonctionnent dans Chrome sur Android)."; }
+else { $("vcOn").checked = !!S.vcmd; $("vcOn").onchange = e => { S.vcmd = e.target.checked; save(); if (S.vcmd) toast("Au prochain chrono, autorise le micro. Dis « top », « stop », « pause » ou « recommence »."); else vcStop(); }; }
+// le micro suit la fenêtre de séance : ouvert avec elle, coupé à la fermeture ou quand l'app passe en arrière-plan
+{ const d = $("sd"); new MutationObserver(() => { if (d.open) vcStart(); else vcStop(); }).observe(d, {attributes:true, attributeFilter:["open"]});
+  document.addEventListener("visibilitychange", () => { if (document.hidden) vcStop(); else if (d.open) vcStart(); }); }
