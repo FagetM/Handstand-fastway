@@ -122,8 +122,8 @@ POSES.lsit3 = P("pk2", {hip:[-2.2,-2.2]});   // passage jambes serrées au-dessu
 const UP = [["reach",0.3,0.1],["lunge",0.4,0.25],["tip",0.3,0],["plant",0.2,0],["kick",0.25,0]];
 export const SCRIPTS = {
   st_bail30: {wall:1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
-  st_bailc2w:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
-  st_split:  {wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,0.4],["hs_wsplit",0.6,0.8],["hs_wsplitM",0.7,0.8],["hs",0.6,0.3],["c2w_2",0.6,0],["c2w_1",0.6,0],["c2w_0",0.6,0.2],["squat",0.5,0],["stand",0.4,0.1]], still:"hs_wsplit"},   // on redescend en marchant le long du mur
+  st_bailc2w:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",1.0,0.2],["c2w_2",1.2,0.2],["hs",1.5,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
+  st_split:  {wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",1.0,0.2],["c2w_2",1.2,0.2],["hs",1.5,0.4],["hs_wsplit",0.6,0.8],["hs_wsplitM",0.7,0.8],["hs",0.6,0.3],["c2w_2",1.4,0],["c2w_1",1.2,0],["c2w_0",1.0,0.2],["squat",0.5,0],["stand",0.4,0.1]], still:"hs_wsplit"},   // on redescend en marchant le long du mur
   b1_free5:  {s:[...UP,["hs_split",0.5,1.0],["hs_split2",0.5,0.4],["hs_split",0.5,0.8]]},
   b2_free15: {s:[...UP,["hs_straddle",0.5,0.8],["hs_split",0.6,0.9],["hs_straddle",0.6,0.6]], still:"hs_straddle"},
   b2_str15:  {s:[...UP,["hs_straddle",0.5,0.3],["hs",0.5,1.6]]},
@@ -164,7 +164,7 @@ export const SCRIPTS = {
   fd_push:   {s:[["squat",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.6]], still:"pu_down"},
   fd_roue:   {cut:true, yaw:-0.15, s:[["stand",0.2,0.2],...UP,["hs_straddle",0.45,0.2],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs_straddle"},
   fd_dips:   {wall:"bars", s:[["stand",0.3,0.1],["sup_up",0.5,0.4],["sup_dn",0.7,0.1],["sup_up",0.6,0.2],["sup_dn",0.7,0.1],["sup_up",0.6,0.6]], still:"sup_up"},
-  fd_c2w:    {wall:-1, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.6],["c2w_2",0.6,0],["c2w_1",0.6,0],["c2w_0",0.6,0.2]], still:"hs"},
+  fd_c2w:    {wall:-1, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",1.0,0.2],["c2w_2",1.2,0.2],["hs",1.5,1.6],["c2w_2",1.4,0],["c2w_1",1.2,0],["c2w_0",1.0,0.2]], still:"hs"},
   me:        {s:[["stand",0.3,1.2],["cheer",0.5,0.7],["stand",0.5,0.4],["cheer",0.5,0.7],["stand",0.5,0.8]], still:"stand"},
   pl_lean:   {s:[["squat",0.45,0],["pl_lean",0.5,2.2]]},
   pl_tuck:   {s:[["squat",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
@@ -205,7 +205,7 @@ Object.assign(SCRIPTS, {
   pr_pikeLift:{cut:true, s:[["crouch",0.4,0],["sit",0.4,0.2],["sitP",0.5,0.6],["sit",0.4,0.2],["sitP",0.5,0.6],["sit",0.4,0.2],["crouch",0.4,0],["stand",0.4,0.1]], still:"sitP"},
   pr_stradLift:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0.2],["sitSL",0.5,0.6],["sit_s",0.4,0.2],["sitSL",0.5,0.6],["sit_s",0.4,0.2],["crouch",0.4,0],["stand",0.4,0.1]], still:"sitSL"},
   pr_vsit:SCRIPTS.pr_stradL,
-  pr_wallNeg:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,0.4],["hs_straddle",0.5,0.3],["sp2",0.8,0],["hs_spress",1.2,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},   // monte en marchant au mur, ventre face au mur
+  pr_wallNeg:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",1.0,0.2],["c2w_2",1.2,0.2],["hs",1.5,0.4],["hs_straddle",0.5,0.3],["sp2",0.8,0],["hs_spress",1.2,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},   // monte en marchant au mur, ventre face au mur
   pr_elevLow:SCRIPTS.pr_elev,
   pr_negP:{cut:true, s:[...UP,["hs",0.5,0.6],["pk2",1.2,0],["pkC",1.0,0],["pk1L",0.6,0.1],["fold",0.8,0.3],["stand",0.6,0.2]], still:"pk2"},
   pr_halfSt:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["sit_s",0.4,0],["hs_stal0",0.6,0.3],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["sp2",0.5,0],["hs_straddle",0.5,0.4],["sp2",1.0,0],["hs_stal2",1.0,0],["hs_stal1",1.0,0],["hs_stal0",1.0,0.3],["sit_s",0.4,0],["crouch",0.4,0],["stand",0.4,0.1]], still:"hs_stal1"},
@@ -348,6 +348,39 @@ export function mount(host, opts = {}){
   let queue = [], seg = null, here = "stand", wob = null, pulse = null, holdT = 0, scripted = false;      // transition en cours, posture atteinte, oscillation d'arrivée
   const off = {p:0, r:0};
   const box = new THREE.Box3(), hb = new THREE.Box3(), tmp = new THREE.Vector3(); let camD = -1, camY = 1, camX = 0, camZ = 0; let lastC = {};   // appuis au sol de l'image précédente
+  // mains posées : chaque main au sol reste à sa place (le bras s'ajuste) ; si le corps s'éloigne trop, elle fait un pas
+  let plant = [null, null], fdt = 1 / 30; const HA = new THREE.Vector3(), HB = new THREE.Vector3(), HT = new THREE.Vector3();
+  const STEP_D = 0.14, STEP_T = 0.32, LIFT = 0.08, MAXS = 0.25, GROUND = 0.035;
+  function ik(L, T){   // bras à 3 angles (épaule avant/côté, coude) : moindres carrés amortis, quelques itérations
+    const q = [L.sh.rotation.x, L.sh.rotation.z, L.el.rotation.x], q0 = q.slice(), e0 = q[2], lo = Math.min(-2.6, e0), hi = Math.max(0.05, e0);
+    const set = () => { L.sh.rotation.x = q[0]; L.sh.rotation.z = q[1]; L.el.rotation.x = q[2]; L.sh.updateMatrixWorld(true); };
+    for (let it = 0; it < 8; it++) { set(); L.hand.getWorldPosition(HA); const e = [T.x - HA.x, T.y - HA.y, T.z - HA.z]; if (e[0]*e[0] + e[1]*e[1] + e[2]*e[2] < 4e-6) break;
+      const J = []; for (let j = 0; j < 3; j++) { q[j] += 1e-3; set(); L.hand.getWorldPosition(HB); J.push([(HB.x - HA.x) / 1e-3, (HB.y - HA.y) / 1e-3, (HB.z - HA.z) / 1e-3]); q[j] -= 1e-3; }
+      const M = [[0,0,0],[0,0,0],[0,0,0]]; for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) { let v = a === b ? 0.0025 : 0; for (let j = 0; j < 3; j++) v += J[j][a] * J[j][b]; M[a][b] = v; }
+      const det = M[0][0]*(M[1][1]*M[2][2]-M[1][2]*M[2][1]) - M[0][1]*(M[1][0]*M[2][2]-M[1][2]*M[2][0]) + M[0][2]*(M[1][0]*M[2][1]-M[1][1]*M[2][0]); if (Math.abs(det) < 1e-12) break;
+      const col = (k) => M.map((row, a) => row.map((v, b) => b === k ? e[a] : v)), d3 = m => m[0][0]*(m[1][1]*m[2][2]-m[1][2]*m[2][1]) - m[0][1]*(m[1][0]*m[2][2]-m[1][2]*m[2][0]) + m[0][2]*(m[1][0]*m[2][1]-m[1][1]*m[2][0]);
+      const x = [d3(col(0)) / det, d3(col(1)) / det, d3(col(2)) / det];
+      let dq = J.map(c => c[0]*x[0] + c[1]*x[1] + c[2]*x[2]); const n = Math.hypot(...dq); if (n > 0.3) dq = dq.map(v => v * 0.3 / n);
+      for (let j = 0; j < 3; j++) q[j] += dq[j]; q[2] = Math.max(lo, Math.min(hi, q[2])); }
+    set(); L.hand.getWorldPosition(HA); if (HA.distanceTo(T) > 0.15 || HA.y < T.y - 0.025) { q.splice(0, 3, ...q0); set(); return false; } return true; }   // hors d'atteinte : on garde le geste d'origine
+  function handIK(){ pivot.updateMatrixWorld(true); const floor = pivot.position.y;
+    const H = limbs.map(L => { const c = new THREE.Vector3(); L.hand.getWorldPosition(c); hb.setFromObject(L.hand); return {c, g:hb.min.y < floor + GROUND, b:hb.min.y - floor}; });
+    const snap = h => { const v = h.c.clone(); v.y -= h.b; return v; };   // la main posée touche le sol
+    const T = [null, null]; let held = false;
+    limbs.forEach((L, i) => { const h = H[i]; let P = plant[i];
+      if (!P) { if (h.g) plant[i] = {p:snap(h)}; P = plant[i]; if (P) { T[i] = P.p.clone(); held = true; } return; }
+      if (!h.g) { P.rel = (P.rel || 0) + fdt / 0.12; if (P.rel >= 1) { plant[i] = null; return; } T[i] = P.p.clone().lerp(h.c, P.rel); return; }   // la main décolle : on la relâche en douceur
+      P.rel = 0;
+      const d = Math.hypot(h.c.x - P.p.x, h.c.z - P.p.z);
+      if (!P.step && d > STEP_D && !plant.some(Q => Q && Q !== P && Q.step)) P.step = {from:P.p.clone(), t:0};
+      if (P.step) { P.step.t = Math.min(1, P.step.t + fdt / STEP_T); const t = P.step.t, k = t * t * (3 - 2 * t), to = snap(h), dx = to.x - P.step.from.x, dz = to.z - P.step.from.z, dl = Math.hypot(dx, dz);
+        if (dl > MAXS) { to.x = P.step.from.x + dx * MAXS / dl; to.z = P.step.from.z + dz * MAXS / dl; }   // un pas de main fait 25 cm au plus : la main suit en plusieurs pas
+        T[i] = P.step.from.clone().lerp(to, k); T[i].y += Math.sin(t * PI) * LIFT; if (t >= 1) { P.p.copy(to); P.step = null; } }
+      else { T[i] = P.p.clone(); held = true; } });
+    const pass = () => limbs.forEach((L, i) => { if (T[i] && !ik(L, T[i]) && plant[i]) { plant[i].p = snap(H[i]); plant[i].step = null; } });   // main hors d'atteinte : elle se repose là où le geste la met
+    pass();
+    // une main posée qui n'atteint pas le sol (bras déjà tendu) : tout le corps descend jusqu'au contact, puis les bras se réajustent
+    if (held) { pivot.updateMatrixWorld(true); box.setFromObject(root); const g = box.min.y - floor; if (g > 0.004) { root.position.y -= g / scale; pivot.updateMatrixWorld(true); pass(); } } }
   const reduce = !opts.manual && window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
   function apply(p, breath){
     root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.x = p.arch;
@@ -378,6 +411,7 @@ export function mount(host, opts = {}){
     if (wall.visible) { const ry = pivot.rotation.y; pivot.rotation.y = p.spin; pivot.updateMatrixWorld(true); box.setFromObject(root);
       const side = wall.position.z > 0 ? 1 : -1, surf = side * (Math.abs(wall.position.z) - 0.03), ext = side > 0 ? box.max.z : box.min.z;
       root.position.z += (surf - ext) / scale; pivot.rotation.y = ry; pivot.updateMatrixWorld(true); }
+    if (opts.bare && !bars.visible) handIK(); else plant = [null, null];
     // vignettes : la caméra suit le personnage et se rapproche quand la figure est basse ou ramassée
     if (opts.bare) { pivot.updateMatrixWorld(true); box.setFromObject(root); box.getSize(tmp); const r = 0.5 * Math.hypot(tmp.x, tmp.y, tmp.z), cy = (box.min.y + box.max.y) / 2;
       // cadrage : la caméra suit aussi le centre horizontal (mur, barres, figures décalées) et recule assez pour tout voir
@@ -420,7 +454,7 @@ export function mount(host, opts = {}){
     if (!party && !seg && !queue.length && !drag && now - last < 30) { if (visible) raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(0.05, (now - last) / 1000); last = now; core(dt, now);
     if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame); }
-  function core(dt, now){
+  function core(dt, now){ fdt = dt || 1 / 30;
     if (party) { partyStep(dt); dirty = true; }
     else if (seg || queue.length || holdT > 0) {
       if (holdT > 0) { holdT -= dt; dirty = true; }
@@ -473,7 +507,7 @@ export function mount(host, opts = {}){
     poses: Object.keys(POSES).filter(k => !VIA[k] && !/^(hs_cw|hs_splitM|hs_split2|hs_tuck90|hs_headin|hs_7headin|hs_flagM|hs_flagLo|hs_mex|hs_hspu|hs_shift|hs_finger|hs_oa|hs_spress|hs_stal|lsit|sit|pk1|pk2|sp2|hs_wsplit|hs_oafullM|hs_tflag|pl_halfL|pl_tuckDn|pl_strN|sitP|sitSL|lsitT|tuckRise|lv_|c2w_|pu_)/.test(k)),
     // capture image par image (génération des animations des nœuds de l'arbre)
     step(dt){ clock += dt; dirty = true; core(dt, clock * 1000); },
-    jump(pose){ camD = -1; lastC = {}; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
+    jump(pose){ camD = -1; lastC = {}; plant = [null, null]; queue = []; seg = null; holdT = 0; wob = null; pulse = null; here = restPose = POSES[pose] ? pose : "stand"; cur = flat(here); clock = 0; dirty = true; },
     busy(){ return !!(seg || queue.length || wob); },
     moving(){ return !!(seg || queue.length || holdT > 0); },
     // joue un script : [[posture, durée, maintien], …] ; back : revient debout par le mouvement inverse
