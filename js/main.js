@@ -10,6 +10,11 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const wa
 document.querySelectorAll(".jump button").forEach(b=>b.onclick=()=>{ const t = document.getElementById(b.dataset.to); if (b.dataset.to === "sect-sess" && !S.sessOpen) { S.sessOpen = true; save(); renderSess(); } if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 $("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); };
+// matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n'est pas commencée
+{ const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); };
+  $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);
+  $("eqBand").onchange = e => { E().band = e.target.checked; redo(); }; $("eqPara").onchange = e => { E().para = e.target.checked; redo(); };
+  $("eqKg").onchange = e => { E().kg = +e.target.value; redo(); }; }
 $("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
   try { const d = JSON.parse($("io").value); if (!d || typeof d.ms !== "object" || !Array.isArray(d.log)) throw 0;

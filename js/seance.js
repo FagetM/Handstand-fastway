@@ -41,6 +41,11 @@ const DRILLS = {
   tuckflag:{name:"Drapeaux groupés pulsés", kind:"reps", sets:[3,6], how:"En équilibre, genoux groupés : incline-les sur le côté en petits rebonds contrôlés, puis tiens 3 s la position la plus basse. Change de côté."},
   biceps:{name:"Renforcement du biceps bras tendu", kind:"reps", sets:[3,12], how:"Curl bras presque tendu à l'élastique, lent : prépare le tendon du biceps et le coude au travail bras tendus."},
   tuck2strad:{name:"Extensions tuck vers straddle", kind:"reps", sets:[4,3], how:"Depuis l'advanced tuck, ouvre les jambes en straddle 2 s puis reviens, sans laisser tomber les hanches."},
+  // avec du matériel (réglages › Mon matériel)
+  bandpl:{name:"Planche à l'élastique", kind:"hold", sets:[4,10], how:"Élastique sous les hanches, accroché en hauteur : tiens la position de l'étape suivante, bras verrouillés, omoplates écartées.", eq:"band"},
+  lsitpara:{name:"L-sit sur parallettes", kind:"hold", sets:[3,15], how:"Bras verrouillés, épaules abaissées loin des oreilles, jambes tendues à l'horizontale (groupé si besoin).", eq:"para"},
+  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], how:"Gilet ou haltère entre les pieds : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
+  pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], how:"Gilet lesté, corps gainé, poitrine jusqu'au sol. Pour construire la force qui porte la planche.", eq:"kg"},
   protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l'air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
@@ -58,10 +63,17 @@ function drillsFor(m){
   else if (s === "press") out.push("pike","pancake","lean");
   else if (s === "low") out.push("frog","lean");
   if (id === "in_hspu") out.unshift("pikepu");
+  const E = S.equip || {};
+  if (E.band && ["pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle","pl_full"].includes(id)) out.unshift("bandpl");
+  if (E.para && (s === "planche" || s === "press")) out.push("lsitpara");
+  if (E.kg && (id === "fd_dips" || s === "planche") && st("fd_dips").done) out.push("dipsW");
+  if (E.kg && id === "fd_push" && st("fd_push").done) out.push("pushW");
   return [...new Set(out)];
 }
 const drillBlock = (k, pain) => { const d = DRILLS[k], n = Math.max(1, pain ? d.sets[0] - 1 : d.sets[0]);
-  return {name:d.name, kind:d.kind, how:d.how, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d.sets[1], rest:30} : {reps:d.sets[1], rest:30})}; };
+  // parallettes : les exercices d'appui se font dessus ; lest : on indique la charge
+  const E = S.equip || {}, how = d.how + (E.para && ["lean","pseudo","protrac","bandpl"].includes(k) ? " Sur parallettes si tu veux : poignets ménagés." : "") + (d.eq === "kg" ? " Charge : jusqu'à " + E.kg + " kg, en gardant la forme." : "");
+  return {name:d.name, kind:d.kind, how, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d.sets[1], rest:30} : {reps:d.sets[1], rest:30})}; };
 // jours où une figure de force a été travaillée (planche, montées, pompes, dips)
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; });
   return new Set(S.log.filter(l=>FORCE(MS[l.id] ? l.id : byName[l.id] || "")).map(l=>dayKey(l.t))); }
@@ -467,7 +479,7 @@ function runFixed(){
 function saveSet(v){
   const {b, s} = sd; storeSet(v);
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
-  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target) { if (/^pl_/.test(b.ms) && MS[b.ms].type === "hold") { const h = S.hit || (S.hit = {}), d = dayKey(Date.now()), r = h[b.ms] && h[b.ms].d === d ? h[b.ms] : (h[b.ms] = {d, n:0}); r.n++; if (r.n >= 3) x.done = true; else toast("Cible tenue (" + r.n + "/3 aujourd'hui) : la planche se valide sur 3 séries à la cible."); } else x.done = true; }
+  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms); if (v > x.best) x.best = v; if (v >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms); if (msg) toast(msg); else toast("« " + MS[b.ms].name + " » validée : deux séances à la cible !"); }
     if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++; } }
   S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();

@@ -50,6 +50,7 @@ function planFor(m){
       "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes deux semaines, allège une semaine puis reprends."];
   }
   if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
+  if (m.type !== "check") out.lines.push("Validation : la cible tenue sur 2 séances, deux jours différents" + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 3 séries à la cible à chaque fois." : ". Un bon jour ne suffit pas, on veut de la régularité."));
   if (SOUPLE.has(m.id)) out.lines.push("La souplesse compte pour cette figure : ajoute deux séances d'étirements par semaine (programme Étirements).");
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
   return out;
@@ -151,8 +152,23 @@ function quick(id){
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
   const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Après : " + missing(m) : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : "Bientôt"));
+  const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Verrouillée pour l'instant" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : "Bientôt"));
+  // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
+  const req = (m.req || []).filter(r=>MS[r]);
+  if (req.length) { const tr = el("div","qktree"), par = el("div","qkpar"); par.style.gridTemplateColumns = "repeat(" + req.length + ",1fr)";
+    let paths = ""; req.forEach((r,i)=>{ const on = st(r).done, b = el("button","qkn" + (on ? " on" : "")), ps = el("span","sp"); ps.dataset.pose = poseId(r); ps.dataset.anim = r; ps.dataset.lk = on ? "" : 1; sprPaint(ps, 56);
+      b.append(ps, el("i",null, MS[r].name)); b.setAttribute("aria-label", MS[r].name + (on ? ", validée" : ", à valider")); b.onclick = () => quick(r); par.append(b);
+      const x = (i + 0.5) / req.length * 100; paths += '<path class="' + (on ? "on" : "") + '" d="M' + x.toFixed(1) + ' 0 C' + x.toFixed(1) + ' 16 50 12 50 28"/>'; });
+    const ln = el("div","qklink"); ln.innerHTML = '<svg viewBox="0 0 100 28" preserveAspectRatio="none" aria-hidden="true">' + paths + '</svg>'; tr.append(par, ln); box.append(tr); }
   const top = el("div","qktop"); top.append(art, g); box.append(top);
+  // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
+  { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
+    if (x.done) { blk.classList.add("ok"); const nx = GOALS[0].ms.find(i=>!st(i).done && !msLocked(MS[i])); blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
+    else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,"Valide-la d'abord. Tu peux quand même essayer."));
+    else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + NEED_DAYS), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / NEED_DAYS); }
+    else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + " · cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép.") + "." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(x.best / m.target); }
+    else blk.append(el("b",null,"Rien ne bloque, à toi de jouer"), el("p",null, (m.target ? "Cible : " + goalTxt(m) + ". " : "") + (D0.err ? "Erreur fréquente : " + D0.err : "")));
+    top.after(blk); }
   { // historique : meilleur temps de chaque jour d'entraînement sur cette figure
     const byDay = {}; S.log.filter(l=>(l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l=>{ const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
     const pts = Object.values(byDay).slice(-20);
@@ -164,7 +180,7 @@ function quick(id){
   const row = el("div","btns"), go = el("button","btn", lk ? "Essayer quand même" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Je l'ai réussi"), more = el("button","btn line","Chrono et journal");
   go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold") setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); else if (!lk) setTimeout(()=>$("toggle").scrollIntoView({block:"center"}), 250); };
   more.onclick = () => { $("qkDlg").close(); openMs(id); };
-  row.append(go, more); top.after(row);
+  row.append(go, more); box.querySelector(".qkblock").after(row);
   // toute l'info, directement : ce que c'est, comment faire, les repères, l'erreur à éviter, le plan, et les exercices qui y préparent
   const D = DETAILS[id] || {}, info = el("div","qkinfo"), part = (title, node) => { const s = el("section"); s.append(el("h3",null,title), node); info.append(s); };
   if (m.desc) part("La figure", el("p",null,m.desc));

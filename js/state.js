@@ -15,6 +15,8 @@ S.migr15 = true;
 if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[id] = {best:MS[id].target || 0, done:true}; };
   if (dn("oa_flaghoriz") || dn("oa_shift")) set("oa_strad30"); if (dn("oa_shift")) set("oa_wall"); if (dn("oa_oahs")) set("oa_lift");
   if (dn("pl_tuck")) set("pl_ppp"); if (dn("pl_straddle") || dn("pl_pike")) set("pl_1leg"); S.migrOa = true; }
+// matériel déclaré au départ : élastiques, parallettes, gilet jusqu'à 10 kg (modifiable dans les réglages)
+if (!S.equip) S.equip = {band:true, para:true, kg:10};
 if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue","fd_c2w"].forEach(id=>{ S.ms[id] = {best:Math.max(MS[id].target || 0, 0), done:true}; }); S.migrFd = true; }   // le détail de la séance est replié à chaque ouverture
 let saveWarned = false;
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; } catch(e){ if (!saveWarned && window.toast) { saveWarned = true; toast("Enregistrement impossible : la mémoire de l'appareil est pleine."); } } };
@@ -22,6 +24,20 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); saveWar
 window.addEventListener("storage", e => { if (e.key === KEY && !document.querySelector("dialog[open]")) location.reload(); });
 // l'écran reste allumé pendant le chrono ; on n'attend pas la réponse, pour qu'un double appui ne lance pas deux chronos
 function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(set).catch(()=>{}); } catch(e){} }
+// Validation exigeante : une figure se valide quand la cible est tenue sur DEUX séances, deux jours différents
+// (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
+const NEED_DAYS = 2;
+const hitNeed = id => /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
+function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
+// à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
+function hitTarget(id){
+  const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
+  const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; }
+  h.n++; if (h.n >= need && !h.days.includes(d)) h.days.push(d);
+  if (h.days.length >= NEED_DAYS) { st(id).done = true; return ""; }
+  if (h.n < need) return "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";
+  return "Séance validée (" + h.days.length + "/" + NEED_DAYS + ") : refais-le un autre jour pour valider la figure.";
+}
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
