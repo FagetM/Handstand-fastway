@@ -31,21 +31,30 @@ export const POSES = {
 // postures de passage, utilisées seulement pendant les transitions
 Object.assign(POSES, {
   fold: {pitch:1.9,  arm:[-1.9,-1.9],   armZ:[0,0], hip:[-1.9,-1.9],   hipZ:[0,0],       knee:[0.15,0.15], head:-0.4},
-  kick: {pitch:2.55, arm:[-2.6,-2.6],   armZ:[0,0], hip:[-1.5,0.25],   hipZ:[0,0],       knee:[0.3,0],     head:-0.4},
+  // montée en fente : bras tendus au-dessus de la tête, grand pas en avant genou fléchi (le bassin descend), puis bascule d'un bloc
+  // accroupi pour poser les mains : genoux fléchis, bassin bas (avant la planche, les pompes, la montée face au mur)
+  squat:{pitch:0.85, arch:0.1, arm:[-1.25,-1.25], armZ:[0.12,0.12], elbow:[-0.1,-0.1], hip:[-2.1,-2.1], hipZ:[0.18,0.18], knee:[2.15,2.15], head:-0.25, point:0},
+  reach:{pitch:0,    arm:[-2.95,-2.95], armZ:[0.05,0.05], hip:[0,0],      hipZ:[0.03,0.03], knee:[0,0],      head:0.05},
+  lunge:{pitch:0.12, arm:[-3.0,-3.0],   armZ:[0.05,0.05], hip:[-1.05,0.42], hipZ:[0.03,0.03], knee:[1.15,0.05], head:0, point:0},
+  tip:  {pitch:0.95, arch:-0.1, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-1.75,0.05], hipZ:[0.03,0.03], knee:[0.95,0], head:-0.15, point:0},
+  plant:{pitch:1.62, arch:-0.15, arm:[-1.62,-1.62], armZ:[0.05,0.05], hip:[-2.5,-0.2], hipZ:[0,0], knee:[1.7,0], head:-0.45, point:0.4},
+  kick: {pitch:2.45, arm:[-2.5,-2.5],   armZ:[0,0], hip:[-1.75,0.3],   hipZ:[0,0],       knee:[0.75,0],    head:-0.4},
   pike: {pitch:2.3,  arm:[-2.45,-2.45], armZ:[0,0], hip:[-1.15,-1.15], hipZ:[0.35,0.35], knee:[0,0],       head:-0.45},
 });
 const VIA = {fold:1, kick:1, pike:1, fold_s:1};
-const FEET = {stand:1, cheer:1, crouch:1, pl_lean:1, fold:1};
+const FEET = {stand:1, cheer:1, crouch:1, pl_lean:1, fold:1, reach:1, lunge:1, tip:1, squat:1};
 const cat = n => n.startsWith("pl_") || n.startsWith("lv_") || n === "crow" || n === "lever" ? "pl" : n.startsWith("hs") || n === "oahs" || n === "kick" || n === "pike" ? "hs" : "up";
 // Chemin d'une posture à l'autre : [posture, durée en secondes]. On passe par un vrai mouvement
 // (flexion puis lancer de jambe pour monter en équilibre, descente carpée pour aller en planche…).
 function route(a, b){
   const A = cat(a), B = cat(b);
-  if (A === "up" && B === "hs") return [["fold",0.45],["kick",0.3],[b,0.55]];
-  if (A === "hs" && B === "up") return [["kick",0.35],["fold",0.35],[b,0.5]];
-  if (A === "up" && B === "pl") return b === "pl_lean" ? [["fold",0.45],[b,0.5]] : [["fold",0.45],["pl_lean",0.45],[b,0.55]];
-  if (A === "pl" && B === "up") return a === "pl_lean" ? [["fold",0.45],[b,0.5]] : [["pl_lean",0.4],["fold",0.4],[b,0.5]];
+  if (A === "up" && B === "hs") return [["reach",0.3],["lunge",0.35],["tip",0.3],["plant",0.2],["kick",0.25],[b,0.55]];
+  if (A === "hs" && B === "up") return [["kick",0.35],["plant",0.3],["tip",0.3],["lunge",0.35],[b,0.45]];   // on redescend une jambe après l'autre, en fente
+  if (A === "up" && B === "pl") return b === "pl_lean" ? [["squat",0.45],[b,0.5]] : [["squat",0.45],["pl_lean",0.45],[b,0.55]];
+  if (A === "pl" && B === "up") return a === "pl_lean" ? [["squat",0.45],[b,0.5]] : [["pl_lean",0.4],["squat",0.4],[b,0.5]];
   if (A !== B) return [["pike",0.5],[b,0.65]];
+  // en appui sur les mains au sol (gainage, pompes) : on ramène les pieds, accroupi, avant de se relever
+  if (/^(c2w_0|pu_down)$/.test(a) && b === "stand") return [["squat",0.45],[b,0.5]];
   return [[b,0.75]];
 }
 const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; };      // arrivée avec un léger dépassement          // postures en appui sur les pieds (ou pieds + mains)
@@ -91,10 +100,10 @@ Object.assign(POSES, {
 });
 Object.assign(FEET, {fold_s:1});
 // Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
-const UP = [["fold",0.45,0],["kick",0.3,0]];
+const UP = [["reach",0.3,0.1],["lunge",0.35,0.05],["tip",0.3,0],["plant",0.2,0],["kick",0.25,0]];
 export const SCRIPTS = {
   st_bail30: {wall:1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
-  st_bailc2w:{wall:-1, cut:true, s:[["fold",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
+  st_bailc2w:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
   st_split:  {wall:1, s:[...UP,["hs_split",0.5,0.8],["hs_splitM",0.7,0.8],["hs_split",0.7,0.5]]},
   b1_free5:  {s:[...UP,["hs_split",0.5,1.0],["hs_split2",0.5,0.4],["hs_split",0.5,0.8]]},
   b2_free15: {s:[...UP,["hs_straddle",0.5,0.8],["hs_split",0.6,0.9],["hs_straddle",0.6,0.6]], still:"hs_straddle"},
@@ -120,21 +129,21 @@ export const SCRIPTS = {
   pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
   pr_stalder:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,0.5],["hs_stal1",0.6,0],["hs_stal2",0.55,0],["hs_straddle",0.6,0.15],["hs",0.45,0.4],["hs_straddle",0.45,0],["hs_stal2",0.55,0],["hs_stal1",0.55,0],["hs_stal0",0.6,0.35],["crouch",0.4,0],["stand",0.4,0.05]], still:"hs_stal0"},
   lo_frog:   {cut:true, yaw:-0.7, s:[["crouch",0.45,0],["lv_crow0",0.5,0.2],["lv_frog",0.6,1.1],["lv_crow",0.7,1.1],["lv_frog",0.5,0.1],["lv_crow0",0.5,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_frog"},
-  lo_elbow:  {s:[["fold",0.45,0],["lever",0.7,1.9]]},
-  lo_croc:   {s:[["fold",0.45,0],["lever",0.6,0.4],["lv_croc",0.7,1.6]]},
+  lo_elbow:  {s:[["squat",0.45,0],["lever",0.7,1.9]]},
+  lo_croc:   {s:[["squat",0.45,0],["lever",0.6,0.4],["lv_croc",0.7,1.6]]},
   lo_qdr:    {cut:true, yaw:-0.5, s:[["crouch",0.45,0],["lv_qdr0",0.5,0.1],["lv_qdr",0.8,1.0],["lv_qdr2",0.7,0.9],["lv_qdr",0.6,0.3],["lv_qdr0",0.6,0],["crouch",0.45,0],["stand",0.4,0.1]], still:"lv_qdr2"},
-  fd_plank:  {s:[["fold",0.45,0],["c2w_0",0.5,2.4]], still:"c2w_0"},
-  fd_push:   {s:[["fold",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.6]], still:"pu_down"},
+  fd_plank:  {s:[["squat",0.45,0],["c2w_0",0.5,2.4]], still:"c2w_0"},
+  fd_push:   {s:[["squat",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.6]], still:"pu_down"},
   fd_roue:   {cut:true, s:[["stand",0.2,0.2],...UP,["hs_straddle",0.45,0.2],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs_straddle"},
-  fd_c2w:    {wall:-1, s:[["fold",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.6],["c2w_2",0.6,0],["c2w_1",0.6,0],["c2w_0",0.6,0.2]], still:"hs"},
+  fd_c2w:    {wall:-1, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.6],["c2w_2",0.6,0],["c2w_1",0.6,0],["c2w_0",0.6,0.2]], still:"hs"},
   me:        {s:[["stand",0.3,1.2],["cheer",0.5,0.7],["stand",0.5,0.4],["cheer",0.5,0.7],["stand",0.5,0.8]], still:"stand"},
-  pl_lean:   {s:[["fold",0.45,0],["pl_lean",0.5,2.2]]},
-  pl_tuck:   {s:[["fold",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
-  pl_adv:    {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_adv",0.6,1.6]]},
-  pl_frog:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_frog",0.6,1.6]]},
-  pl_pike:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_pike",0.7,1.6]]},
-  pl_straddle:{s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
-  pl_full:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
+  pl_lean:   {s:[["squat",0.45,0],["pl_lean",0.5,2.2]]},
+  pl_tuck:   {s:[["squat",0.45,0],["pl_lean",0.45,0.2],["pl_tuck",0.6,1.8]]},
+  pl_adv:    {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.3],["pl_adv",0.6,1.6]]},
+  pl_frog:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_frog",0.6,1.6]]},
+  pl_pike:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_pike",0.7,1.6]]},
+  pl_straddle:{s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
+  pl_full:   {s:[["squat",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
 };
 const KEYS = ["point","hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
