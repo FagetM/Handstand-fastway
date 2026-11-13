@@ -122,8 +122,20 @@ function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate(
   return n < 3 || fd.has(dayKey(Date.now())); }
 // une semaine légère toutes les cinq : moins de séries, pas de tentative à fond (tendons et poignets récupèrent)
 // la semaine qui suit une décharge : pas de détection de plateau (les tentatives à fond viennent de reprendre)
-function afterDeload(){ const t1 = S.t0 || Date.now(), wk = Math.floor((Date.now() - t1) / (7 * 864e5)); return wk > 0 && wk % 5 === 0; }
-function deloadWeek(){ if (!S.t0) { S.t0 = S.log.length ? S.log[0].t : Date.now(); save(); } const t1 = S.t0, wk = Math.floor((Date.now() - t1) / (7 * 864e5)); return wk > 0 && wk % 5 === 4; }
+// Semaine légère : après 16 séances et 4 semaines au moins depuis la précédente (plus selon le calendrier). Un arrêt de 7 jours remet le compteur à zéro.
+let dlMemo = null;
+function dlState(){ const now = Date.now(), key = dayKey(now) + "|" + S.log.length; if (dlMemo && dlMemo[0] === key) return dlMemo[1];
+  if (!S.t0) S.t0 = S.log.length ? S.log[0].t : now;
+  const D = S.dlw || (S.dlw = {end:S.t0}); let r = "";
+  if (D.start && now - D.start < 7 * 864e5) r = "on";
+  else { if (D.start) { D.end = D.start + 7 * 864e5; delete D.start; }
+    const days = []; let lastK = ""; S.log.forEach(l => { if (l.t > D.end) { const k = dayKey(l.t); if (k !== lastK) { lastK = k; days.push(l.t); } } });
+    let n = 0; days.forEach((t, q) => { n = q && t - days[q - 1] >= 7 * 864e5 ? 1 : n + 1; }); if (days.length && now - days[days.length - 1] >= 7 * 864e5) n = 0;
+    if (n >= 16 && now - D.end >= 28 * 864e5) { D.start = now; r = "on"; } else if (D.end > S.t0 && now - D.end < 7 * 864e5) r = "after"; }
+  dlMemo = [key, r]; return r; }
+const afterDeload = () => dlState() === "after", deloadWeek = () => dlState() === "on";
+// retour après 7 jours sans séance : une séance de reprise à 70 %
+function comeback(){ const today = dayKey(Date.now()); for (let q = S.log.length - 1; q >= 0; q--) if (dayKey(S.log[q].t) !== today) return Date.now() - S.log[q].t >= 7 * 864e5; return false; }
 // durée estimée d'une séance (s) : travail + repos de chaque série
 const estSecs = blocks => blocks.reduce((t, b) => t + b.sets.reduce((u, s) => u + (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? s.dur * (s.sides ? 2 : 1) : 25), 0), 0);
 // le temps choisi est respecté : on retire des séries (d'abord aux exercices d'accompagnement, puis aux figures) jusqu'à tenir dedans
@@ -150,7 +162,7 @@ function builtinBlocks(){
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
   const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && ["epaule","coude"].includes(PS.zone), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
-  const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease), scale = Math.max(0.6, Math.min(1.5, mins / 30)) * red;   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
+  const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease, comeback() ? 0.7 : 1), scale = Math.max(0.6, Math.min(1.5, mins / 30)) * red;   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d'entraînement de suite
 
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
@@ -164,12 +176,19 @@ function builtinBlocks(){
   const disc = id => /^oa_/.test(id) ? "oa" : /^pl_/.test(id) ? "pl" : /^pr_(lsit|stradL|pikeLift|stradLift|vsit|vsitC|extSup)$/.test(id) ? "comp" : /^pr_/.test(id) ? "pr" : /^ul_/.test(id) ? "ul" : "eq";
   const cand = open.filter(id => !FORCE(id) && (oaOk || !/^oa_/.test(id))), heads = [], seen = new Set();
   cand.forEach(id => { const d = disc(id); if (!seen.has(d)) { seen.add(d); heads.push(id); } });
-  let nonF = heads.sort((a, b) => lastWorked(a) - lastWorked(b)).concat(cand.filter(id => !heads.includes(id)));
+  // retard d'une figure = jours depuis son dernier travail, rapportés à son rythme cible (équilibre et un bras 3 j, compression et force 4 j)
+  const late = id => (Date.now() - (lastWorked(id) || Date.now() - 30 * 864e5)) / 864e5 / (/^(eq|oa)$/.test(disc(id)) ? 3 : 4);
+  // les plus en retard d'abord, une figure par discipline ; une figure laissée plus de 10 jours passe d'office, même si sa discipline est déjà servie
+  const byLate = cand.slice().sort((a, b) => late(b) - late(a)); let nonF = []; { const got = new Set();
+    byLate.forEach(id => { const d = disc(id), over = (Date.now() - lastWorked(id)) / 864e5 > 10 && lastWorked(id) > 0; if (!got.has(d) || over) { got.add(d); nonF.push(id); } });
+    nonF = nonF.concat(byLate.filter(id => !nonF.includes(id))); }
   // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
-  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (plancheDays() < 2 && plF[0]) || F.find(id => !/^pl_/.test(id)) || F[0];   /* planche 2 jours sur les 7, les montées le 3e */   // la planche 3 jours sur 7, le reste de la force ensuite
+  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), npF = F.filter(id => !/^pl_/.test(id)), plOk = plancheDays() < 2 && plF[0], pickF = (plOk && (!npF.length || late(plF[0]) >= late(npF[0]) * 0.6) && plF[0]) || npF[0] || (plOk ? plF[0] : null) || F[0];   /* la planche garde la priorité, sauf quand une autre figure de force a pris trop de retard */   /* planche 2 jours sur les 7, les montées le 3e */   // la planche 3 jours sur 7, le reste de la force ensuite
   let next;
   if (fok && pickF && !fConf && !tired) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);
+  // séance longue : une deuxième figure de force d'une autre famille, si elle attend depuis plus de 4 jours (2 par jour au plus)
+  if (fok && pickF && !fConf && !tired && nMs >= 3 && next.includes(pickF)) { const f2 = F.find(id => id !== pickF && !/^pl_/.test(id) && disc(id) !== disc(pickF) && late(id) > 1); if (f2) next = [next[0], f2, pickF]; }
   if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (plancheDays() >= 2 || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d'ouvert aujourd'hui (un bras au repos, pas de force) : séance de mobilité plutôt qu'une page vide
   if (!next.length && !(S.confirm || []).some(id => MS[id] && (fok || !FORCE(id)))) return ["poignets","epaules","pike","pancake","hollow"].map(k=>drillBlock(k, false));
@@ -207,8 +226,13 @@ function builtinBlocks(){
   if (next.some(id => /^pl_/.test(id))) prep.push(prepB("lean", 2, 15), prepB("biceps", 1));
   // antagonistes, les jours de force : tirage et, en alternance, rotateurs externes ou extenseurs du poignet (à l'élastique)
   const anta = (S.equip || {}).band && next.some(FORCE) && !pain ? ["tirage", dn % 2 ? "rotext" : "extpoig"].map(k => { const b = drillBlock(k, mins <= 30); b.keep = true; return b; }) : [];
+  // entretien : une figure validée laissée plus de 10 jours revient pour 2 essais à 70 % (l'équilibre droit, puis la plus récente de chaque discipline)
+  const keepUp = []; if (!pain && !tired && !deload && PS.phase !== 2) { const pool = ["in_str60"].concat(["onearm","planche","press"].map(sid => SEC[sid].ms.filter(m => st(m.id).done && m.type === "hold" && !SIDED.has(m.id) && !m.alt).map(m => m.id).pop())).filter(id => id && st(id).done && !next.includes(id));
+    const lastK = id => { const n = "pg:" + MS[id].name; for (let q = S.log.length - 1; q >= 0; q--) { const l = S.log[q]; if (l.id === id || l.id === n || l.id === n + " · entretien") return l.t; } return 0; };
+    const id = pool.filter(id => Date.now() - lastK(id) > 10 * 864e5).sort((a, b) => lastK(a) - lastK(b))[0];
+    if (id) { const m = MS[id]; keepUp.push({name:m.name + " · entretien", kind:"hold", how:"Figure acquise : deux essais tranquilles pour la garder. " + m.desc, keep:true, sets:Array.from({length:2}, () => ({dur:Math.max(3, Math.round(m.target * 0.7)), rest:60}))}); } }
   const BAD = armPain ? new Set(["lean","pseudo","dipsW","pushW","bandpl","oawall","oashrug","appuiArr","extEp","protrac","biceps"]) : new Set();
-  return fitTime([drillBlock("poignets", pain || wristDone)].concat(prep, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
+  return fitTime([drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],

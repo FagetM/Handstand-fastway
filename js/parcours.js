@@ -20,11 +20,11 @@ const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLi
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check" || (m.target && st(id).best >= m.target)) return null;   // cible déjà tenue : il reste à valider, pas un plateau
-  const since = Date.now() - 21 * 864e5, byDay = {};
+  const since = Date.now() - 60 * 864e5, byDay = {};   /* les 6 dernières séances de la figure (3 contre 3), sur 2 mois au plus */
   S.log.filter(l => l.t >= since && (l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l => { const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
-  const days = Object.keys(byDay).sort((a, b) => dk(a) - dk(b)); if (days.length < 4 || hitInfo(id).days) return null;
+  const days = Object.keys(byDay).sort((a, b) => dk(a) - dk(b)).slice(-6); if (days.length < 6 || hitInfo(id).days) return null;
   const half = Math.floor(days.length / 2), a = Math.max(...days.slice(0, half).map(d => byDay[d])), b = Math.max(...days.slice(half).map(d => byDay[d]));
-  if (b > a * 1.05) return null;
+  if (m.type === "reps" ? b > a : b > a * 1.05) return null;   /* en répétitions, une répétition gagnée suffit */
   const fbs = (S.fb || []).filter(f => f.t >= since), hard = fbs.filter(f => f.k === "hard" || f.k === "pain").length;
   return adaptOf(id) <= 0.7 ? "beaucoup de séries ratées : la charge était trop haute" : hard >= 2 ? "des séances ressenties dures ou douloureuses" : days.length < 6 && new Set(S.log.filter(l => l.t >= since).map(l => dayKey(l.t))).size < 8 ? "des séances un peu espacées" : "le corps consolide : c'est normal, ça se débloque souvent après une semaine plus légère";
 }
