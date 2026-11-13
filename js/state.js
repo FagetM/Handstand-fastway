@@ -34,6 +34,10 @@ const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_shift","oa_finger","oa_strar
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
+// figure « réussi / pas réussi » : 3 réussites le même jour = une séance validée (en séance ou depuis la fiche)
+function chkHit(id){ if (!MS[id] || MS[id].type !== "check" || st(id).done) return;
+  const c = S.chk || (S.chk = {}), d = dayKey(Date.now()), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}); r.n++;
+  if (r.n === 3) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée : réussie sur deux séances !"); } else if (r.n < 3) toast("Réussi (" + r.n + "/3 aujourd'hui)"); }
 function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; }

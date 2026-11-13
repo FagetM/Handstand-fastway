@@ -23,8 +23,8 @@ function plateau(id){
   return adaptOf(id) <= 0.7 ? "beaucoup de séries ratées : la charge était trop haute" : hard >= 2 ? "des séances ressenties dures ou douloureuses" : days.length < 6 ? "des séances un peu espacées" : "le corps consolide : c'est normal, ça se débloque souvent après une semaine plus légère";
 }
 // semaine plus légère sur une figure en plateau (déclenchée une fois toutes les 3 semaines), puis on repart d'une charge neutre
-function lightWeek(id){ const d = (S.dl || {})[id]; return !!d && Date.now() - d < 7 * 864e5; }
-function checkPlateau(id){ const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
+function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[id]; return !!d && Date.now() - d < 7 * 864e5; }
+function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
   if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
@@ -46,23 +46,23 @@ function planFor(m){
   if (m.type === "check"){
     out.n = {sets, check:true};
     out.head = "Plan pour réussir ce jalon"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + sets + " essais, en prenant le temps de récupérer entre chacun.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Quand le geste fatigue, c'est le signal pour souffler, pas un échec.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
+    out.lines = [freq, "À chaque séance : " + sets + " essais ; 3 réussites dans une même séance comptent, il en faut sur 2 séances.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Quand le geste fatigue, c'est le signal pour souffler, pas un échec.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
   } else {
     const hold = m.type === "hold", lo = hold ? 2 : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     // charge adaptative : chaque séance règle un coefficient par figure (réussite, chutes, ressenti) ; une douleur récente allège
-    const fct = adaptOf(m.id) * (painRecent() ? 0.75 : 1) * (lightWeek(m.id) ? 0.7 : 1);
+    const fct = adaptOf(m.id) * Math.min(painRecent() ? 0.75 : 1, lightWeek(m.id) ? 0.7 : 1);
     const work = oaReps ? T : prReps ? 1 : Math.max(lo, Math.min(T, Math.min(Math.round(T * 0.85), Math.round(Math.min(Math.round(T * 0.8), x.best > 0 ? Math.round(x.best * 0.75) : Math.round(T * 0.5)) * fct)))),   /* le travail reste sous la cible */ u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold, sides:SIDED.has(m.id)};
-    out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + ", puis " + tries + " tentatives à " + (hold ? T + " s" : T + " rép.") + ". " + days + " séances par semaine.";
+    out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (tries2 ? ", puis " + tries2 + (tries2 > 1 ? " tentatives" : " tentative") + " à " + (hold ? T + " s" : T + " rép.") : "") + ". " + days + " séances par semaine.";
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
       (/^pl_/.test(m.id) ? "Termine par 3 tentatives à " + u(T) + ", 3 min de repos entre chacune. Le niveau est acquis quand les 3 passent dans la même séance : les tendons aussi doivent être prêts." : (tries > 1 ? "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre chacune." : "Termine par une tentative à " + u(T) + ".") + " Réussie, elle fait passer le palier ; au dernier, la figure se valide sur 2 séances à la cible."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Chaque petite tenue te rapproche de " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
       "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",
-      "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes deux semaines, allège une semaine puis reprends."];
+      "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes trois semaines, l'app allège cette figure une semaine, automatiquement."];
   }
   if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push("Validation : la cible tenue sur 2 séances, deux jours différents" + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 3 séries à la cible à chaque fois." : ". Un bon jour ne suffit pas, on veut de la régularité."));
