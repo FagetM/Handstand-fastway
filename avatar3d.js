@@ -38,8 +38,8 @@ Object.assign(POSES, {
   // accroupi pour poser les mains : genoux fléchis, bassin bas (avant la planche, les pompes, la montée face au mur)
   squat:{pitch:0.85, arch:0.1, arm:[-1.25,-1.25], armZ:[0.12,0.12], elbow:[-0.1,-0.1], hip:[-2.1,-2.1], hipZ:[0.18,0.18], knee:[2.15,2.15], head:-0.25, point:0},
   // appui sur barres ou parallettes, jambes groupées : bras tendus (haut) puis coudes à 90° (bas)
-  sup_up:{pitch:0.12, arch:0.15, arm:[0.12,0.12], armZ:[0.12,0.12], elbow:[0,0], hip:[-2.25,-2.25], hipZ:[0.1,0.1], knee:[2.45,2.45], head:-0.1},   // en appui sur parallettes, genoux groupés devant
-  sup_dn:{pitch:0.5, arch:0.15, arm:[1.0,1.0], armZ:[0.12,0.12], elbow:[-1.55,-1.55], hip:[-2.4,-2.4], hipZ:[0.1,0.1], knee:[2.45,2.45], head:-0.3},   // coudes à 90°, buste penché, genoux groupés
+  sup_up:{pitch:0.05, arch:0.15, arm:[-0.25,-0.25], armZ:[0.12,0.12], elbow:[0,0], hip:[-2.25,-2.25], hipZ:[0.1,0.1], knee:[2.45,2.45], head:-0.1},   // en appui sur parallettes, genoux groupés devant
+  sup_dn:{pitch:0.2, arch:0.15, arm:[0.65,0.65], armZ:[0.12,0.12], elbow:[-1.55,-1.55], hip:[-2.55,-2.55], hipZ:[0.1,0.1], knee:[2.5,2.5], head:-0.3},   // coudes à 90°, buste penché, genoux groupés
   reach:{pitch:0,    arm:[-2.95,-2.95], armZ:[0.05,0.05], hip:[0,0],      hipZ:[0.03,0.03], knee:[0,0],      head:0.05},
   lunge:{pitch:0.15, arm:[-3.0,-3.0],   armZ:[0.05,0.05], hip:[-1.5,0.8], hipZ:[0.04,0.04], knee:[1.5,0.08], head:0, point:0},   // genou avant à 90°, jambe arrière loin derrière
   tip:  {pitch:0.95, arch:-0.1, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-2.1,0.1], hipZ:[0.03,0.03], knee:[1.3,0], head:-0.15, point:0},
@@ -191,13 +191,13 @@ Object.assign(POSES, {
 POSES.hs_tflagM = mirror(POSES.hs_tflag);   // drapeau groupé, autre côté
 // shapes sur un bras, manna, presses planche ⇄ équilibre
 Object.assign(POSES, {
-  hs_oatuck: P("hs_oafull", {pitch:PI + 0.06, hip:[-1.85,-1.85], knee:[2.1,2.1], hipZ:[0.12,0.12], roll:0.32}),   // un bras groupé
+  hs_oatuck: P("hs_oafull", {pitch:PI + 0.06, hip:[-1.85,-1.85], knee:[2.1,2.1], hipZ:[0.12,0.12], roll:0.45}),   // un bras groupé
   hs_oastrad:P("hs_oafull", {hipZ:[0.95,0.95], roll:0.36}),                                                       // un bras jambes écartées
-  hs_oaflag: P("hs_oafull", {hipZ:[-0.35,1.75], roll:0.6}),                                                       // un bras en drapeau
+  hs_oaflag: P("hs_oafull", {hipZ:[-0.5,2.2], roll:0.5}),                                                       // un bras en drapeau
   hs_fingerM:mirror(POSES.hs_finger),
-  vsitC: P("lsit0", {pitch:-0.3, arch:0.4, arm:[0.2,0.2], hip:[-2.45,-2.45], head:-0.2}),                     // V-sit jambes serrées
-  mannaP:{pitch:-0.5, arch:0.35, arm:[0.7,0.7], armZ:[0.18,0.18], hip:[-2.6,-2.6], hipZ:[0.03,0.03], knee:[0,0], head:-0.2},   // les mains passent derrière le bassin, épaules qui s'ouvrent
-  manna: {pitch:-0.8, arch:0.4, arm:[1.0,1.0], armZ:[0.16,0.16], hip:[-2.95,-2.95], hipZ:[0.03,0.03], knee:[0,0], head:-0.3},        // bassin devant les mains, mains derrière, jambes au-dessus du visage — manna : épaules en extension, jambes au-dessus de la tête
+  vsitC: P("lsit0", {pitch:-0.45, arch:0.4, arm:[0,0], hip:[-2.45,-2.45], head:-0.2}),                     // V-sit jambes serrées
+  mannaP:{pitch:-0.6, arch:0.25, arm:[0.25,0.25], armZ:[0.18,0.18], hip:[-2.7,-2.7], hipZ:[0.03,0.03], knee:[0,0], head:-0.2},   // les mains passent derrière le bassin, épaules qui s'ouvrent
+  manna: {pitch:-0.7, arch:0.1, arm:[0.5,0.5], armZ:[0.16,0.16], hip:[-2.95,-2.95], hipZ:[0.03,0.03], knee:[0,0], head:-0.25},        // équilibré sur les mains : bassin devant les mains, mains derrière, jambes au-dessus du visage — manna : épaules en extension, jambes au-dessus de la tête
   hs_pl45:P("pl_full", {pitch:2.3, arm:[-1.75,-1.75], head:-0.55}),                                               // entre la full planche et l'équilibre, corps gainé
   pl_s45: P("pl_straddle", {pitch:2.3, arm:[-1.7,-1.7], head:-0.55}),
 });
@@ -253,7 +253,7 @@ Object.assign(SCRIPTS, {
 const KEYS = ["point","hands","one","spin","arch","twist","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   // pointes de pied : tendues dès que les pieds quittent le sol (en gym, un pied en l'air est toujours pointé)
-  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, twist:p.twist != null ? p.twist : Math.max(-0.3, Math.min(0.3, ((p.arm[1] - p.arm[0]) + (p.hip[1] - p.hip[0]) * 0.5) * 0.09)), pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
+  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, twist:p.twist != null ? p.twist : Math.max(-0.3, Math.min(0.3, ((p.arm[0] - p.arm[1]) * 0.45 + (p.hip[1] - p.hip[0]) * 0.5) * 0.09)), pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
     armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], hipY0:(p.hipY || [0,0])[0], hipY1:(p.hipY || [0,0])[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
@@ -414,7 +414,7 @@ export function mount(host, opts = {}){
       if (!P.step && d > STEP_D && !grp.some(k => plant[k] && plant[k] !== P && plant[k].step)) P.step = {from:P.p.clone(), t:0};
       if (P.step) { P.step.t = Math.min(1, P.step.t + fdt / STEP_T); const t = P.step.t, k = t * t * (3 - 2 * t), to = snap(h), dx = to.x - P.step.from.x, dz = to.z - P.step.from.z, dl = Math.hypot(dx, dz);
         if (dl > MAXS) { to.x = P.step.from.x + dx * MAXS / dl; to.z = P.step.from.z + dz * MAXS / dl; }   // un pas fait 25 cm au plus : l'appui suit en plusieurs pas
-        T[i] = lvl(P.step.from.clone().lerp(to, k), h); T[i].y += Math.sin(t * PI) * LIFT; if (t >= 1) { P.p.copy(to); P.step = null; } }
+        T[i] = lvl(P.step.from.clone().lerp(to, k), h); T[i].y += Math.sin(t * PI) * LIFT; if (C.hand) C.b.rotation.x = Math.min(C.b.rotation.x, -0.5);   /* pour lever la main, le coude se plie un peu */ if (t >= 1) { P.p.copy(to); P.step = null; } }
       else { T[i] = lvl(P.p.clone(), h); held = true; } });
     const pass = () => CH.forEach((C, i) => { if (T[i] && !ik(C, T[i]) && plant[i]) { plant[i].p = snap(H[i]); plant[i].step = null; } });   // hors d'atteinte : l'appui se repose là où le geste le met
     pass();
