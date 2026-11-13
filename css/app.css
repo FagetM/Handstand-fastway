@@ -529,3 +529,16 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .vest{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left;margin:10px 0 4px;padding:12px 14px;border-radius:16px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
 .vest span{font-size:13.5px;color:var(--mut)}.vest.off{box-shadow:inset 0 0 0 2px var(--acc2)}
 .trow .dots i.half{background:linear-gradient(90deg,currentColor 50%,transparent 50%);opacity:1}
+/* carte figure : détails repliés */
+.qkd{border-top:1px solid var(--line);padding:10px 0}
+.qkd summary{cursor:pointer;font-weight:700;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.qkd summary::-webkit-details-marker{display:none}
+.qkd summary::after{content:"+";color:var(--mut);font-size:20px;font-weight:400}
+.qkd[open] summary::after{content:"–"}
+.qkd p,.qkd ol{margin:8px 0 0;font-size:14.5px}.qkd ol{padding-left:20px}
+.qkd .drc{margin:8px 0 0;padding-left:18px;font-size:14px;color:var(--mut)}
+/* Aujourd'hui, plus sobre */
+.moodset{display:inline-block;margin:10px 0 2px;padding:6px 12px;border-radius:999px;background:var(--bg);font-size:13.5px;color:var(--mut)}
+.mood button{padding:7px 4px;min-width:64px}.mood button i{font-size:18px}.mood button b{font-size:12.5px;font-weight:600}
+.mins{margin:8px 0 2px}.mins span{flex:0 0 auto;font-size:13px}.mins button{min-height:30px;padding:4px 10px;font-size:14px}
+.qkd summary::before{display:none!important;content:none!important}.qkd summary{justify-content:space-between;text-align:left;width:100%}

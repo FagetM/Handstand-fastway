@@ -185,7 +185,7 @@ function quick(id){
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? "Semaine plus légère en cours sur cette figure, puis on repart." : "L'app allège cette figure une semaine, puis on repart."))); bar(Math.min(1, x.best / (m.target || 1))); }
     else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + NEED_DAYS), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / NEED_DAYS); }
     else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + " · cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép.") + "." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(x.best / m.target); }
-    else blk.append(el("b",null,"Rien ne bloque, à toi de jouer"), el("p",null, (m.target ? "Cible : " + goalTxt(m) + ". " : "") + (D0.err ? "Erreur fréquente : " + D0.err : "")));
+    else blk.append(el("b",null,"À toi de jouer"), el("p",null, (D0.ok ? "Validé quand : " + D0.ok : m.target ? "Cible : " + goalTxt(m) + "." : "") + (D0.err ? " À éviter : " + D0.err : "")));
     top.after(blk); }
   { // historique : meilleur temps de chaque jour d'entraînement sur cette figure
     const byDay = {}; S.log.filter(l=>(l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l=>{ const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
@@ -199,17 +199,14 @@ function quick(id){
   go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold") setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); else if (!lk) setTimeout(()=>$("toggle").scrollIntoView({block:"center"}), 250); };
   more.onclick = () => { $("qkDlg").close(); openMs(id); };
   row.append(go, more); box.querySelector(".qkblock").after(row);
-  // toute l'info, directement : ce que c'est, comment faire, les repères, l'erreur à éviter, le plan, et les exercices qui y préparent
-  const D = DETAILS[id] || {}, info = el("div","qkinfo"), part = (title, node) => { const s = el("section"); s.append(el("h3",null,title), node); info.append(s); };
-  if (m.desc) part("La figure", el("p",null,m.desc));
-  if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(t=>ol.append(el("li",null,t))); part("Comment faire", ol); }
-  if (D.cue && D.cue.length) { const ul = el("ul"); D.cue.forEach(t=>ul.append(el("li",null,t))); part("Repères", ul); }
-  if (D.err) part("Erreur fréquente", el("p",null,D.err));
-  if (!x.done) { const pl = planFor(m); part(pl.head, el("p",null,pl.short)); }
-  { const dl = el("div","drl"); drillsFor(m).forEach(k=>{ const d = DRILLS[k], r = el("div","dr"); r.append(el("b",null,d.name), el("span","dd", d.sets[0] + " × " + (d.kind === "hold" ? d.sets[1] + " s" : d.sets[1])), el("p",null,d.how)); dl.append(r); });
-    if (dl.childElementCount) part("Pour y arriver · inclus dans ta séance", dl); }
-  if (D.ok) part("Validé quand", el("p",null,D.ok));
-  if (m.yt && m.yt.length) { const v = el("div"); m.yt.forEach(([vid,t])=>v.append(ytLink(vid, "Vidéo : " + t))); part("Vidéo", v); }
+  // le détail reste replié : la carte montre d'abord l'essentiel (prérequis, ce qui bloque, les deux boutons)
+  const D = DETAILS[id] || {}, info = el("div","qkinfo"), fold = (title, node) => { const d = el("details","qkd"), sm = el("summary"); sm.textContent = title; d.append(sm, node); info.append(d); };
+  { const t = el("div"); if (m.desc) t.append(el("p",null,m.desc)); if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); t.append(ol); }
+    if (D.cue && D.cue.length) t.append(el("p","mut", D.cue.join(" · "))); if (t.childElementCount) fold("Technique", t); }
+  { const t = el("div"); if (!x.done) t.append(el("p",null, planFor(m).short));
+    const dl = el("ul","drc"); drillsFor(m).forEach(k=>{ const d = DRILLS[k]; dl.append(el("li",null, d.name + " · " + d.sets[0] + " × " + (d.kind === "hold" ? d.sets[1] + " s" : d.sets[1]))); });
+    if (dl.childElementCount) t.append(dl); if (t.childElementCount) fold(x.done ? "Préparation" : "Plan et préparation", t); }
+  if (m.yt && m.yt.length) { const v = el("div"); m.yt.forEach(([vid,t])=>v.append(ytLink(vid, "Vidéo : " + t))); fold("Vidéo", v); }
   box.append(info);
   $("qkDlg").showModal(); $("qkDlg").scrollTop = 0;
 }

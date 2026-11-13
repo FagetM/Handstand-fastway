@@ -98,12 +98,13 @@ function render(){
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       return; }
     // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
-    if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
-      MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); const ic = el("i",null,ico); ic.setAttribute("aria-hidden","true"); b.append(ic, el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => setMood(k); mw.append(b); });
+    if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = md[2] + " " + md[1] + " · changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
+    else if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
+      MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); const ic = el("i",null,ico); ic.setAttribute("aria-hidden","true"); b.append(ic, el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => { delete S.moodEdit; setMood(k); }; mw.append(b); });
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd'hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
-    if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Temps dispo"));
-      [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
+    if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Minutes"));
+      [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", String(v)); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
     if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "On prend soin de tes poignets : deux jours sans appui sur les mains. Gainage, respiration et souplesse au programme." : "Tu as signalé une gêne : séance tout en douceur, sans tentative à fond ni force."));
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l'avis d'un professionnel de santé avant de reprendre.")); }
@@ -122,7 +123,8 @@ function render(){
         if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 64); art.append(sp); } else art.append(el("span","num", String(bi + 1)));
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
-        const dose = mx.length && !work.length ? mx.length + " essais · tiens tant que c'est calme" : mx.length ? work.length + (b.kind === "hold" ? " tenues de " : " séries de ") + one(work[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") + ", puis " + mx.length + " essais à " + one(mx[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
+        const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
+        const dose = mx.length && !work.length ? ess(mx.length) + " · tiens tant que c'est calme" : mx.length ? work.length + " × " + u(work[0]) + " · " + ess(mx.length) + " à " + u(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0)) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose));
         const dots = el("div","dots"); b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
@@ -135,9 +137,8 @@ function render(){
       const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : P.zen ? "Commencer" : "Démarrer la séance"); bt.disabled = dn >= tot;
       bt.onclick = () => startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
-      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (ZEN[pp().step].free ? "à faire quand tu veux" : "les tenues s'allongent quand la forme est propre ; le palier se valide sur 2 séances propres au plafond") : "Environ " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min · l'app enchaîne les séries et les repos toute seule."));
+      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · " + (ZEN[pp().step].free ? "à faire quand tu veux" : "les tenues s'allongent quand la forme est propre ; le palier se valide sur 2 séances propres au plafond") : "≈ " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min"));
     }
-    if (!Object.keys(PS).length) { const lk = el("button","golink","Charger mes programmes (planche, étirements…)"); lk.onclick = () => { S.sessOpen = true; save(); renderSess(); $("sess").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }; nc.append(lk); }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
     DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); wk.append(c); });
