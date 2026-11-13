@@ -32,6 +32,7 @@ Organisation du code (scripts classiques chargés dans l'ordre, sans étape de b
 | `js/sprites.js` | personnage 3D et animations des figures |
 | `js/views.js` | vestiaire, rendu des onglets, fiche d'une figure avec chrono |
 | `js/voice.js` | voix de la séance : choix de la voix française la plus naturelle, annonces |
+| `js/zen.js` | douceur : séances Détente guidées par le souffle, météo du corps, petites histoires |
 | `js/seance.js` | programmes, séance du jour, exercices, bilan, séance guidée |
 | `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
 

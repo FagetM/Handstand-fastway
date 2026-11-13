@@ -62,14 +62,16 @@ function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate(
   let n = 0; const w = new Date(); w.setDate(w.getDate() - todayIdx()); for (let i = 0; i < 7; i++) { const x = new Date(w); x.setDate(w.getDate() + i); if (fd.has(dayKey(x))) n++; }
   return n < 3 || fd.has(dayKey(Date.now())); }
 function builtinBlocks(){
-  const mins = S.mins || 30, pain = painRecent(), nMs = mins <= 15 ? 1 : mins <= 30 ? 2 : 3, scale = Math.max(0.6, Math.min(1.5, mins / 30));
+  // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
+  const mood = moodToday(), tired = mood === "fatigue";
+  const mins = S.mins || 30, pain = painRecent(), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3, scale = Math.max(0.6, Math.min(1.5, mins / 30)) * (tired ? 0.6 : 1);
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && S.painZone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id])), fok = forceOk() && !(pain && S.painZone === "epaule");
   const next = open.filter(id=>!FORCE(id)).concat(fok ? open.filter(FORCE) : []).slice(0, nMs);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    const sets = Math.max(3, Math.round(pl.sets * scale * (pain ? 0.7 : 1))), tries = pain ? 0 : pl.tries || 0;
+    const sets = Math.max(3, Math.round(pl.sets * scale * (pain ? 0.7 : 1))), tries = pain || tired ? 0 : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(16, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:"Quand tu le réussis proprement 3 fois sur 5, valide-le depuis sa fiche.", sets:Array.from({length:Math.min(sets, 8)}, ()=>({reps:1, lab:"essai", rest:45}))});
@@ -79,7 +81,8 @@ function builtinBlocks(){
   const conf = (S.confirm || []).filter(id=>MS[id]).map(id=>({name:MS[id].name + " · vérification", how:"Validé à ton bilan : refais-le 3 fois proprement pour le confirmer. C'est ta sécurité pour la suite.", ms:id, confirm:true, kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))}));
   if (!next.length && !conf.length) return blocks;
   const dr = []; next.forEach(id=>drillsFor(MS[id]).forEach(k=>{ if (!dr.includes(k)) dr.push(k); }));
-  return [drillBlock("poignets", pain)].concat(conf, blocks, dr.slice(0, nDr).map(k=>drillBlock(k, pain)));
+  const mob = mood === "raide" ? ["epaules","pike"].filter(k=>!dr.includes(k)).map(k=>drillBlock(k, pain)) : [];
+  return [drillBlock("poignets", pain)].concat(mob, conf, blocks, dr.slice(0, tired ? 1 : nDr).map(k=>drillBlock(k, pain)));
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -89,12 +92,12 @@ const PGROUPS = [
   ["Secondaire · Montées en force", id => id === "quest-for-the-press"],
   ["Autres", id => true],
 ];
-const allP = () => Object.assign({equilibre:builtin()}, PS);
+const allP = () => Object.assign({equilibre:builtin(), detente:zenP()}, PS);
 // Un programme s'ouvre quand le parcours y mène : on ne propose pas la planche à quelqu'un qui apprend à monter au mur.
 // Renvoie null si le programme est accessible, sinon ce qu'il faut valider d'abord.
 const needMs = ids => { const miss = ids.filter(id=>!st(id).done); return miss.length ? miss.map(id=>MS[id].name + (MS[id].target ? " " + goalTxt(MS[id]) : "")).join(" + ") : null; };
 function progLock(id){
-  if (id === "equilibre" || id === "etirements-debutant") return null;
+  if (id === "equilibre" || id === "detente" || id === "etirements-debutant") return null;
   if (id === "etirements-avance") return cnt().stretch >= 10 ? null : "10 séances d'étirements (" + cnt().stretch + " faites)";
   if (id === "planche-domination" || id === "planche-master-n1") return needMs(MS.pl_lean.req);
   if (id === "quest-for-the-press") return needMs(MS.pr_straddle.req);
@@ -330,7 +333,8 @@ function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1;
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss === 0 ? f0 * 1.08 : r.miss / tot > 0.34 ? f0 * 0.9 : f0)) * 100) / 100; });
-  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); say("Séance terminée. Comment c'était ?", true);
+  if (P && P.zen) { save(); render(); toast("C'était doux. Reviens tranquillement, à ton rythme."); say("C'était doux. Ouvre les yeux quand tu veux.", true); return; }
+  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
   const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.08, ok:1, hard:0.9, pain:0.8}[kind];
@@ -338,7 +342,7 @@ function feedback(kind){
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") S.pain = Date.now();
   sessRes = {}; save(); $("fbDlg").close(); render();
-  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on allège un peu la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté : 48 h sans appui sur les mains. La séance passe sur le gainage et la souplesse." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : 48 h sans force (planche, montées, pompes), équilibre allégé." : "Noté : séances allégées pendant deux jours.") + " Si la douleur dure, repose-toi." : "Séance enregistrée. Bravo.");
+  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Merci d'avoir écouté ton corps. On prend soin des poignets pendant 2 jours : gainage, respiration, souplesse." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : 48 h sans force (planche, montées, pompes), équilibre allégé." : "Noté : séances allégées pendant deux jours.") + " Si ça dure, offre-toi une vraie pause." : "Merci pour ce moment. À bientôt.");
 }
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
 function startGuided(){ sessRes = {}; selDay = todayIdx(); voiceUnlock();
@@ -387,6 +391,7 @@ function openSet(bi, si){
 }
 // ce que la voix annonce à l'ouverture d'une série : le nom, la série, la cible
 function setSay(b, s, si, fx, tg, day){
+  if (b.zen) return ""; // en Détente, la consigne est lue au départ de la posture
   const n = b.sets.length, ser = n > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + " sur " + n + ". " : "";
   let what = "";
   if (fx) what = s.dur != null ? secSay(sDur(s, day.scale)) + (s.sides ? " de chaque côté." : ".") : s.reps != null ? s.reps + " répétitions." : "";
@@ -422,26 +427,33 @@ function startRest(r, nx, title){
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C'était la dernière série. Bravo.");
   let warned = r.rest < 25;
   const tick = () => { const left = (end - Date.now())/1000;
-    if (!warned && left <= 10 && left > 0) { warned = true; say("Prépare-toi. Dix secondes."); }
+    if (!warned && left <= 10 && left > 0) { warned = true; say("Dix secondes. Secoue les poignets, respire."); }
     if (left <= 0) { ck.textContent = "0:00"; ck.className = "clock hit"; if (!done) { done = true; beep(1320, 600); clearInterval(sdTimer); sdTimer = null; if (AUTO) { if (nx) autoGo("rest", 500); else closeEnd(); } } }
     else ck.textContent = mmss(Math.ceil(left)); };
   tick(); sdTimer = setInterval(tick, 250);
 }
 function runFixed(){
-  const {s, day} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), prep = sd.side === 1 ? S.countdown : 5;
-  let end = Date.now() + prep*1000, last = -1; sd.mode = prep ? "count" : "run";
-  let said10 = dur < 25, saidHalf = dur < 60;
-  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; ck.className = "clock"; beep(880, 350); setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); };
-  if (sd.side === 2) say("Change de côté.");
+  const {s, day, b} = sd, ck = $("sdClock"), dur = sRun(s, day.scale), zen = !!b.zen, br = b.breath;
+  const prep = zen ? (sd.side === 1 ? 8 : 3) : sd.side === 1 ? S.countdown : 5;
+  let end = Date.now() + prep*1000, last = -1, ph = -1, t0 = 0; sd.mode = prep ? "count" : "run";
+  let said10 = zen || dur < 25, saidHalf = zen || dur < 60;
+  // en Détente : un son de bol tibétain au lieu des bips, et la voix guide le souffle
+  const go = () => { sd.mode = "run"; end = Date.now() + dur*1000; t0 = Date.now(); ck.className = "clock" + (br ? " breath" : ""); if (zen) chime(); else beep(880, 350);
+    if (!br) setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); };
+  if (sd.side === 2) say(zen ? "Et maintenant, l'autre côté." : "Change de côté.");
+  else if (zen) say(b.name + ". " + b.how);
   if (!prep) go(); else ck.className = "clock count";
-  $("sdGo").textContent = "J'ai fini";
+  $("sdGo").textContent = zen ? "Passer" : "J'ai fini";
   if (s.sides) $("sdS").textContent = (sd.bi+1) + "/" + day.blocks.length + " · côté " + sd.side + "/2" + (sd.b.pnf ? " · PNF" : "");
   sdTimer = setInterval(()=>{
     const left = (end - Date.now())/1000;
-    if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
-    else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; beep(1320, 600);
+    if (sd.mode === "count"){ const r = Math.ceil(left); if (r <= 0) go(); else { ck.textContent = zen ? "" : String(r); if (r !== last) { last = r; if (r <= 3 && !zen) beep(440, 120); } } }
+    else if (left <= 0){ clearInterval(sdTimer); sdTimer = null; if (zen) chime(); else beep(1320, 600);
       if (s.sides && sd.side === 1) { sd.side = 2; runFixed(); } else saveFixed(); }
     else { ck.textContent = mmss(Math.ceil(left));
+      if (br) { const [i, nm, rem] = breathPhase(br, (Date.now() - t0) / 1000); ck.dataset.ph = nm;
+        if (i !== ph) { ph = i; ck.classList.toggle("in", nm === "Inspire"); ck.classList.toggle("out", nm === "Expire"); ck.style.setProperty("--bt", br[i] + "s");
+          $("sdHint").textContent = nm; if (left > 3) say(nm); } }
       if (!saidHalf && left <= dur/2) { saidHalf = true; say("La moitié."); }
       if (!said10 && left <= 10) { said10 = true; say("Encore dix secondes."); } }
   }, 200);
@@ -476,7 +488,7 @@ $("sdGo").onclick = async e => {
     sdTimer = setInterval(()=>{
       const e = (performance.now() - t)/1000;
       if (sd.mode === "count"){ const r = Math.ceil(left - e); if (r <= 0) run(); else { ck.textContent = String(r); if (r !== last) { last = r; if (r <= 3) beep(440, 120); } } }
-      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!said3 && e >= sd.tg - 3) { said3 = true; say("Encore trois."); }
+      else if (sd.mode === "run"){ ck.textContent = e.toFixed(1).replace(".", ","); if (!said3 && e >= sd.tg - 3) { said3 = true; say("Encore trois, en respirant."); }
         if (!hit && sd.tg && e >= sd.tg) { hit = true; if (!(AUTO && sd.s.auto)) say("Cible atteinte."); ck.className = "clock hit"; beep(1320, 600); if (AUTO && sd.s.auto) autoGo("run", 120); } }
     }, 50);
   } else if (sd.mode === "count"){ openSet(sd.bi, sd.si); }

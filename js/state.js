@@ -44,15 +44,15 @@ const cnt = () => {
       sess:S.log.filter(l=>l.k === "check").length, stretch:S.log.filter(l=>l.k === "check" && /tirements/.test(l.id)).length, streak:0 }; }
   return S.cnt;
 };
-const RANKS = ["Débutant","Apprenti","Initié","Pratiquant","Confirmé","Avancé","Expert","Maître"];
+const RANKS = ["Graine","Pousse","Racine","Tige","Feuille","Fleur","Arbre","Forêt"];   // on grandit comme une plante, à son rythme
 const xpFor = l => 50 * l * (l + 1);            // expérience totale pour atteindre le niveau l + 1
 const doneIn = ids => ids.filter(id=>st(id).done).length;
 const mins = s => Math.floor(s/60);
 const BADGES = [
   {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},
-  {id:"st3", g:"3 j", name:"Trois jours d'affilée", desc:"S'entraîner trois jours de suite.", max:3, cur:c=>c.streak},
-  {id:"st7", g:"7 j", name:"Sept jours d'affilée", desc:"S'entraîner sept jours de suite.", max:7, cur:c=>c.streak},
-  {id:"st30", g:"30 j", name:"Trente jours d'affilée", desc:"S'entraîner trente jours de suite.", max:30, cur:c=>c.streak},
+  {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou détente. Un jour de repos entre deux ne casse rien.", max:3, cur:c=>c.streak},
+  {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou détente, avec des jours de repos au milieu si tu veux.", max:7, cur:c=>c.streak},
+  {id:"st30", g:"30 j", name:"Trente jours fidèles", desc:"Un mois à prendre soin de toi, repos compris.", max:30, cur:c=>c.streak},
   {id:"se10", g:"10", name:"Dix séances", desc:"Terminer dix séances complètes d'un programme.", max:10, cur:c=>c.sess},
   {id:"se50", g:"50", name:"Cinquante séances", desc:"Terminer cinquante séances complètes.", max:50, cur:c=>c.sess},
   {id:"s100", g:"100", name:"Cent séries", desc:"Faire cent séries en séance.", max:100, cur:c=>c.sets},
@@ -66,8 +66,9 @@ const BADGES = [
 function stats(){
   const c = cnt(), days = new Set(S.log.map(l=>dayKey(l.t)));
   let streak = 0; const d = new Date();
+  // régularité douce : un jour de repos entre deux séances ne casse pas la série (deux jours de suite sans rien, si)
   if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
-  while (days.has(dayKey(d))) { streak++; d.setDate(d.getDate()-1); }
+  let gap = 0; while (gap < 2) { if (days.has(dayKey(d))) { streak++; gap = 0; } else gap++; d.setDate(d.getDate()-1); }
   if (streak > (c.streak || 0)) c.streak = streak;
   const done = Object.keys(MS).filter(id=>st(id).done).length, tries = S.log.filter(l=>MS[l.id]).length;
   const ctx = Object.assign({tries}, c);

@@ -45,6 +45,10 @@ function say(text, keep){
     synth.speak(u);
   } catch(e){}
 }
+// bol tibétain : une note douce qui s'éteint lentement, pour la Détente
+function chime(){ try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state !== "running") ac.resume().catch(()=>{});
+  const t = ac.currentTime; [[396, 0.14], [594, 0.05], [792, 0.03]].forEach(([f, v]) => { const o = ac.createOscillator(), g = ac.createGain(); o.type = "sine"; o.frequency.value = f;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.04); g.gain.exponentialRampToValueAtTime(0.0001, t + 3.2); o.connect(g); g.connect(ac.destination); o.start(t); o.stop(t + 3.3); }); } catch(e){} }
 const hush = () => { try { if (synth) synth.cancel(); } catch(e){} };
 document.addEventListener("visibilitychange", () => { if (document.hidden) hush(); });
 // durées dites comme on les dit : « 45 secondes », « 1 minute 30 », « 2 minutes »
@@ -57,7 +61,7 @@ function cueFor(b){
   if (/^pl_/.test(id)) return "Omoplates écartées. Bras verrouillés.";
   if (/^pr_|^in_hspu/.test(id)) return "Épaules devant. Monte lentement.";
   if (/^fd_plank|^fd_c2w/.test(id)) return "Corps aligné. Serre les fesses.";
-  if (/^(st_|b1_|b2_|in_)/.test(id)) return "Pousse le sol. Grandis-toi.";
+  if (/^(st_|b1_|b2_|in_)/.test(id)) return ["Pousse le sol. Grandis-toi.", "Respire. Laisse le poids descendre.", "Doigts vivants, épaules longues."][Math.floor(Math.random() * 3)];
   return "";
 }
 

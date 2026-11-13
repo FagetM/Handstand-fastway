@@ -13,17 +13,17 @@ const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.s
 const FORCE = id => /^(pl_|pr_)/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), T = nextStep(m), out = {head:"", lines:[], short:"", n:null};
-  if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Tu n'as plus rien à prouver ici. Refais la figure une ou deux fois par semaine pour l'entretenir, en échauffement des jalons suivants."]; return out; }
+  if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
   const force = /^(pl_|pr_|lo_)/.test(m.id) || m.id === "in_hspu", days = force ? 4 : 5, sets = /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = 2;
-  const freq = days + " séances par semaine" + (force ? ", jamais deux jours de suite sur la même figure." : " : c'est une habileté, la fréquence compte plus que la durée.");
+  const freq = days + " séances par semaine" + (force ? " : laisse un jour de douceur entre deux, ton corps construit pendant le repos." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
   if (FREE(m)) { const one = m.sec === "onearm", n = one ? 10 : 15, rest = one ? 45 : 30;
     out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0, rest, sides:one};
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + T + " s";
-    out.short = n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu jusqu'à perdre l'équilibre, " + rest + " s de repos. " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune jusqu'à perdre l'équilibre, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
+    out.short = n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu tant que c'est calme, " + rest + " s de repos. " + days + " séances par semaine.";
+    out.lines = [freq, "À chaque séance : " + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune tant que c'est calme, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
       "Le chrono bipe à " + T + " s : le palier est acquis dès qu'un essai l'atteint.", x.best > 0 ? "Ton record : " + fmt(m, x.best) + "." : "Pas encore de record : chaque essai compte.",
       "La qualité avant la quantité : arrête la séance quand les montées deviennent brouillonnes."];
     if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ".");
@@ -31,7 +31,7 @@ function planFor(m){
   if (m.type === "check"){
     out.n = {sets, check:true};
     out.head = "Plan pour réussir ce jalon"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + sets + " essais, en prenant le temps de récupérer entre chacun.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Arrête la série si la forme se dégrade : un essai propre vaut mieux que trois brouillons.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
+    out.lines = [freq, "À chaque séance : " + sets + " essais, en prenant le temps de récupérer entre chacun.", "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste.", "Quand le geste fatigue, c'est le signal pour souffler, pas un échec.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
   } else {
     const hold = m.type === "hold", lo = hold ? 2 : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
@@ -45,7 +45,7 @@ function planFor(m){
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
       "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre les deux. Si l'une passe, le niveau est acquis et la cible suivante s'affiche.",
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
-      x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Il te manque " + (hold ? num(Math.max(0, T - x.best)) + " s" : Math.max(0, T - x.best) + " rép.") + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
+      x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Chaque petite tenue te rapproche de " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
       "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",
       "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes deux semaines, allège une semaine puis reprends."];
   }
@@ -76,7 +76,7 @@ function eta(m){
 const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
 // ---------- Le parcours : un seul chemin qui serpente, figure après figure ; il se divise en trois voies au niveau difficile.
 function journey(nextId){
-  const RH = 156, SH = 84, X = [50, 70, 78, 70, 50, 30, 22, 30], pos = {}, items = [], wrap = el("div","jr jr2");
+  const RH = 196, SH = 84, X = [50, 70, 78, 70, 50, 30, 22, 30], pos = {}, items = [], wrap = el("div","jr jr2");
   let y = 10, k = 0, prev = null, edges = "", n = 0;
   const seg = (a, b, cls) => { const my = (a[1] + b[1]) / 2; edges += '<path class="' + cls + '" d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"/>'; };
   const eCls = (doneA, idB, lkB) => doneA && (idB ? st(idB).done : false) ? "on" : doneA && !lkB ? "go" : "";
@@ -124,16 +124,16 @@ function journey(nextId){
       c.append(el("span","cl", it.done ? C[2] : "Coffre")); cv.append(c); }
     else { const id = it.id, m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), kk = lvlOf(m), cur = id === nextId, small = it.alt;
       const b = el("button","jn" + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
-      b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 30 : 36)) + "px";
+      b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 48 : cur ? 64 : 58)) + "px";   // centre du rond sur le chemin
       b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + ", niveau " + kk + " sur " + L.length + (lk ? ", verrouillé" : ""));
       const c = el("span","c"), R = 39, Cc = 2*Math.PI*R, sg = Cc / L.length, gap = L.length > 1 ? 5 : 0;
       let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
       L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < kk ? "f" : "") + '" stroke-dasharray="' + (sg - gap).toFixed(1) + ' ' + (Cc - sg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*sg + gap/2)).toFixed(1) + '"/>'; });
-      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 72 : 90); c.append(sp);
+      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 96 : cur ? 140 : 124); c.append(sp);
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
       b.append(c, el("span","n", m.name));
       const nx = nextStep(m);
-      b.append(el("span","g", x.done ? "Maîtrisé" : lk ? (m.target ? goalTxt(m) : "Verrouillé") : L.length > 1 ? "Niv. " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : "À réussir"));
+      b.append(el("span","g", x.done ? "Maîtrisé" : lk ? (m.target ? goalTxt(m) : "Verrouillé") : L.length > 1 ? "Étape " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : "Bientôt"));
       b.onclick = () => quick(id); cv.append(b);
       // toi, sur le chemin : ton personnage se tient à côté de ta figure du moment
       if (cur) { const me = el("div","me" + (it.lane ? " lane" : "")), msp = el("span","sp"); msp.dataset.pose = "stand"; msp.dataset.anim = "me"; msp.dataset.lk = ""; sprPaint(msp, it.lane ? 56 : 76); me.append(msp, el("span","tag","Toi"));
@@ -151,7 +151,7 @@ function quick(id){
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
   const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Après : " + missing(m) : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : "À réussir"));
+  const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Après : " + missing(m) : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : "Bientôt"));
   const top = el("div","qktop"); top.append(art, g); box.append(top);
   { // historique : meilleur temps de chaque jour d'entraînement sur cette figure
     const byDay = {}; S.log.filter(l=>(l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l=>{ const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });

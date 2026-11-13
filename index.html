@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#111110" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f4f2ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1e1f24" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f3ec" media="(prefers-color-scheme: light)">
 <meta name="robots" content="noindex">
 <title>Handstand Fastway</title>
 <link rel="manifest" href="manifest.webmanifest">
@@ -14,7 +14,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Handstand">
-<link rel="preload" href="fonts/barlow-condensed-600.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/nunito-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body class="locked">
@@ -56,7 +56,7 @@
         </div>
       </div>
       <div class="tiles">
-        <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b class="disp" id="stStreak">0</b><span>jours d'affilée</span></div>
+        <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3c1 4 5 5 5 10a5 5 0 01-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg><b class="disp" id="stStreak">0</b><span>jours fidèles</span></div>
         <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><b class="disp" id="stWeek">0</b><span>séances cette semaine</span></div>
         <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.5l3 3 5-6"/></svg><b class="disp" id="stDone">0</b><span>jalons validés</span></div>
       </div>
@@ -148,15 +148,15 @@
 </dialog>
 
 <dialog id="fbDlg">
-  <div class="lab">Séance terminée</div>
-  <h2 style="margin:6px 0 4px">Comment c'était ?</h2>
-  <p class="mut" style="margin:0 0 14px">Ta réponse règle la prochaine séance.</p>
+  <div class="lab">Séance terminée · merci d'être venu·e</div>
+  <h2 style="margin:6px 0 4px">Comment tu te sens ?</h2>
+  <p class="mut" style="margin:0 0 14px">Pas de bonne réponse : ton ressenti règle la prochaine séance.</p>
   <input type="hidden" id="fbIds">
   <div class="fbg">
-    <button data-k="easy"><b>Facile</b><span>On augmente</span></button>
-    <button data-k="ok"><b>Bien</b><span>On garde</span></button>
-    <button data-k="hard"><b>Dur</b><span>On allège un peu</span></button>
-    <button data-k="pain" class="pain"><b>Douleur</b><span>On lève le pied</span></button>
+    <button data-k="easy"><b>Léger</b><span>On ajoute un peu</span></button>
+    <button data-k="ok"><b>Juste bien</b><span>On garde ce rythme</span></button>
+    <button data-k="hard"><b>Intense</b><span>On adoucit</span></button>
+    <button data-k="pain" class="pain"><b>Ça tire</b><span>On prend soin</span></button>
   </div>
   <div id="fbZone" hidden>
     <p style="margin:14px 0 8px"><b>Où as-tu mal ?</b></p>
@@ -206,6 +206,7 @@
 <script src="js/views.js" defer></script>
 <script src="js/voice.js" defer></script>
 <script src="js/seance.js" defer></script>
+<script src="js/zen.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>
 </html>

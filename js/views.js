@@ -96,14 +96,23 @@ function render(){
       pb.onclick = () => startPlacement(); nc.append(pb);
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       return; }
+    // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
+    if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Comment tu te sens ?"));
+      MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); b.append(el("i",null,ico), el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => setMood(k); mw.append(b); });
+      nc.append(mw);
+      if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Besoin de douceur plutôt ?"), el("span",null,"Jour doux : 12 min d'étirements et de respiration. Ça compte aussi.")); z.onclick = () => openZen("doux"); nc.append(z); } }
     if (P.builtin) { const tm = el("div","mins"); tm.append(el("span",null,"Temps dispo"));
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
-    if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "Douleur au poignet signalée : 48 h sans appui sur les mains, la séance passe sur le gainage et la souplesse." : "Douleur signalée récemment : séance allégée, sans tentative maximale, sans force."));
+    if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "On prend soin de tes poignets : deux jours sans appui sur les mains. Gainage, respiration et souplesse au programme." : "Tu as signalé une gêne : séance tout en douceur, sans tentative à fond ni force."));
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l'avis d'un professionnel de santé avant de reprendre.")); }
     // quel programme aujourd'hui : une pastille par programme, un seul toucher pour changer
     const chips = el("div","srcs"); Object.keys(all).sort((a,b)=>(progLock(a) ? 1 : 0) - (progLock(b) ? 1 : 0)).forEach(id=>{ const lock = progLock(id), c = el("button","src" + (P.id === id ? " on" : "") + (lock ? " lk" : ""));
       if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
       c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s'ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
+    // Détente : on choisit son moment (après la séance, jour de repos, le soir, poignets fatigués)
+    if (P.zen) { const zw = el("div","zens"); ZEN.forEach((z, i) => { const b = el("button","zen" + (pp().step === i ? " on" : "")); b.append(el("b",null,z.name), el("span",null, z.min + " min · " + z.when));
+        b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); }); nc.append(zw); }
+
     if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
     else {
       let secs = 0; const list = el("div","tlist");
@@ -111,15 +120,16 @@ function render(){
         if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 64); art.append(sp); } else art.append(el("span","num", String(bi + 1)));
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
-        const dose = mx.length && !work.length ? mx.length + " essais · tiens jusqu'à perdre l'équilibre" : mx.length ? work.length + (b.kind === "hold" ? " tenues de " : " séries de ") + one(work[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") + ", puis " + mx.length + " essais à " + one(mx[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
+        const dose = mx.length && !work.length ? mx.length + " essais · tiens tant que c'est calme" : mx.length ? work.length + (b.kind === "hold" ? " tenues de " : " séries de ") + one(work[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") + ", puis " + mx.length + " essais à " + one(mx[0]).replace("× ", "") + (b.kind === "hold" ? "" : " rép.") : b.sets.length > 1 ? b.sets.length + " × " + one(s0) : one(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose));
         const dots = el("div","dots"); b.sets.forEach((s,si)=>dots.append(el("i", (vals[bi + "-" + si] != null ? "ok" : "") + (s.max ? " t" : "")))); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
-      const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : "Démarrer la séance"); bt.disabled = dn >= tot;
+      const bt = el("button","btn big", dn >= tot ? "Séance terminée" : dn ? "Reprendre · " + dn + " / " + tot : P.zen ? "Commencer en douceur" : "Démarrer la séance"); bt.disabled = dn >= tot;
       bt.onclick = () => startGuided(); nc.append(bt);
-      nc.append(el("div","tmeta", dn >= tot ? "Bravo. Reviens demain, ou choisis un autre programme ci-dessus." : "Environ " + Math.max(5, Math.round(secs / 300) * 5) + " min · l'app enchaîne les séries et les repos toute seule."));
+      if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Retour au calme · 8 min"), el("span",null,"Respiration et étirements doux : le corps construit pendant le repos.")); z.onclick = () => openZen("calme"); nc.append(z); }
+      nc.append(el("div","tmeta", dn >= tot ? "Merci pour ce moment. Repose-toi bien, ou choisis un autre programme ci-dessus." : P.zen ? "Environ " + ZEN[pp().step].min + " min · laisse-toi guider par la voix, les yeux fermés si tu veux." : "Environ " + Math.max(5, Math.round(secs / 300) * 5) + " min · l'app enchaîne les séries et les repos toute seule."));
     }
     if (!Object.keys(PS).length) { const lk = el("button","golink","Charger mes programmes (planche, étirements…)"); lk.onclick = () => { S.sessOpen = true; save(); renderSess(); $("sess").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); }; nc.append(lk); }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
@@ -137,7 +147,8 @@ function render(){
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
     pt.append(c);
     const tip = el("button","tip"), ts = el("span","sp"); ts.dataset.pose = "stand"; ts.dataset.anim = "me"; ts.dataset.lk = ""; sprPaint(ts, 52);
-    const tb = el("span","tb"); tb.append(el("b",null,"Conseil du jour"), el("span",null, tipOfDay())); tip.append(ts, tb); tip.onclick = () => { const cm = curMs(); if (cm) quick(cm.id); }; pt.append(tip); }
+    const story = !painRecent() && (Math.floor(Date.now() / 864e5) % 2 === 0 || S.log.some(l => dayKey(l.t) === dayKey(Date.now())));
+    const tb = el("span","tb"); tb.append(el("b",null, story ? "Petite histoire" : "Conseil du jour"), el("span",null, story ? storyOfDay() : tipOfDay())); tip.append(ts, tb); tip.onclick = () => { const cm = curMs(); if (cm) quick(cm.id); }; pt.append(tip); }
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
