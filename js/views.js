@@ -140,6 +140,8 @@ function render(){
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
+      // effacer le dernier enregistrement du jour (une erreur de saisie, une série notée deux fois)
+      { const u = undoList().pop(); if (u) { const ub = el("button","lnk undo", "Effacer le dernier enregistrement : " + u.label); ub.onclick = () => { if (!confirm("Effacer « " + u.label + " » ?")) return; const r = undoLast(); if (r) { render(); toast("Effacé : " + r.label); } }; nc.append(ub); } }
       // gilet lesté : s'il n'est pas là aujourd'hui, un toucher et les exercices lestés passent en version lente sans charge
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd'hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l'as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
@@ -258,7 +260,7 @@ function fillDlg(){
   S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
 }
 function record(v){
-  const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false;
+  const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false; pushUndo(m.name + " · " + (v === true ? "réussi" : num(v) + (m.type === "hold" ? " s" : " rép.")));
   if (v === true) { if (msLocked(m)) { toast("Valide d'abord : " + missing(m) + "."); return; } chkHit(cur); }
   else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée !"); } if (m.type === "hold") cnt().hold += v; }
   stamp(cur); S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);

@@ -586,3 +586,5 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 
 .clock.paused{opacity:.45;animation:pz 1.2s ease-in-out infinite}@keyframes pz{50%{opacity:.75}}
 #sdMic{text-align:center;font-size:12.5px;margin-top:14px}
+
+.lnk.undo{margin:6px 0 0;padding:8px 0;text-align:left}

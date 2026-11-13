@@ -26,6 +26,16 @@ if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[
 // matériel déclaré au départ : élastiques, parallettes, gilet jusqu'à 10 kg (modifiable dans les réglages)
 if (!S.equip) S.equip = {band:true, para:true, kg:10};
 if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue","fd_c2w"].forEach(id=>{ S.ms[id] = {best:Math.max(MS[id].target || 0, 0), done:true}; }); S.migrFd = true; }   // le détail de la séance est replié à chaque ouverture
+// Effacer ce qu'on vient de faire : avant chaque enregistrement, une photo de l'état est gardée (les 4 dernières du jour).
+// Effacer = revenir à la photo, comme un « Ctrl+Z » : la série, le record, le compteur et une éventuelle validation repartent ensemble.
+const UKEY = KEY + ".undo"; let undoT = 0;
+function undoList(){ try { return (JSON.parse(localStorage.getItem(UKEY)) || []).filter(u => u.d === dayKey(Date.now())); } catch(e){ return []; } }
+function pushUndo(label, at){ if (Date.now() - undoT < 400) return; undoT = Date.now();   // un même geste ne fait qu'une photo
+  const a = undoList(); a.push(Object.assign({d:dayKey(Date.now()), label, s:JSON.stringify(S)}, at || {})); while (a.length > 4) a.shift();
+  try { localStorage.setItem(UKEY, JSON.stringify(a)); } catch(e){ try { localStorage.setItem(UKEY, JSON.stringify(a.slice(-1))); } catch(_){ localStorage.removeItem(UKEY); } } }
+function undoLast(){ const a = undoList(), u = a.pop(); if (!u) return null;
+  try { S = Object.assign(blank(), JSON.parse(u.s)); S.sessOpen = false; } catch(e){ return null; }
+  try { localStorage.setItem(UKEY, JSON.stringify(a)); } catch(e){} lastZ = null; save(); return u; }
 let saveWarned = false;
 const save = () => { window._bb = null; try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l'appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
 // bandeau qui reste affiché tant que le problème dure (un toast disparaît trop vite)
