@@ -1,4 +1,4 @@
-# Handstand Fastway
+# Gymnastic Yoga
 
 App perso pour suivre ma progression en équilibre sur les mains, jalon par jalon, jusqu'au but final.
 
