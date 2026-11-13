@@ -128,7 +128,7 @@ function render(){
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
         const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
         const dose = mx.length && !work.length ? ess(mx.length) + " calmes" : mx.length ? work.length + " × " + u(work[0]) + " + " + ess(mx.length) + " à " + u(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0)) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
-        g.append(el("div","tn2", b.name), el("div","td", dose));
+        g.append(el("div","tn2", b.name), el("div","td", dose + (b.ms && !b.confirm && canValToday(b.ms) ? " · validation possible aujourd'hui" : "")));
         const dots = el("div","dots"); if (dn) b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
@@ -140,7 +140,7 @@ function render(){
       const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Bravo, séance faite ! Voir mon parcours" : dn ? "Reprendre · " + dn + " / " + tot : (P.zen ? "Commencer" : "Démarrer") + " · " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min"); 
       bt.onclick = () => dn >= tot ? showTab("path") : startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
-      if (dn >= tot) nc.append(el("div","tmeta","Merci pour ce moment. Repose-toi bien."));
+      if (dn >= tot) nc.append(el("div","tmeta", daySummary()));
     }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
@@ -178,6 +178,18 @@ function logRow(l, withName){
   return r;
 }
 
+// ce que la séance du jour a apporté, en une ligne qui reste sur la carte
+function daySummary(){ const d = dayKey(Date.now()), H = S.hit || {}, tl = S.log.filter(l => dayKey(l.t) === d);
+  const val = Object.keys(H).find(id => MS[id] && st(id).done && (H[id].days || []).slice(-1)[0] === d);
+  if (val) return "« " + MS[val].name + " » validée · " + doneIn(GOALS[0].ms) + "/" + GOALS[0].ms.length;
+  const part = Object.keys(H).find(id => MS[id] && !st(id).done && (H[id].days || []).slice(-1)[0] === d);
+  if (part) return MS[part].name + " : séance validée " + H[part].days.length + "/" + valRule(part).n;
+  const pr = tl.filter(l => l.pr).pop(); if (pr) return "Record : " + num(pr.v) + (pr.k === "hold" ? " s" : " rép.") + " · " + pr.id.replace(/^pg:/, "");
+  const hold = Math.round(tl.filter(l => l.k === "hold" && typeof l.v === "number").reduce((n, l) => n + l.v, 0));
+  return tl.filter(l => typeof l.v === "number").length + " séries" + (hold ? " · " + (hold >= 60 ? Math.floor(hold / 60) + " min " + (hold % 60) + " s" : hold + " s") + " en appui" : "") + " · séance n° " + (cnt().sess || 1); }
+// la figure peut-elle être validée dès aujourd'hui ? (dernière séance manquante, écart et étendue respectés)
+function canValToday(id){ const h = (S.hit || {})[id], V = valRule(id), d = dayKey(Date.now()); if (!h || !h.days || h.days.length !== V.n - 1 || st(id).done || h.days.includes(d)) return false;
+  return dayDiff(d, h.days[h.days.length - 1]) >= V.gap && dayDiff(d, h.days[0]) >= V.span; }
 // ---------- Fiche jalon + chrono ----------
 let cur = null, timer = null, phase = "idle", t0 = 0, beeped = false, ac = null, wake = null;
 function beep(freq, ms){

@@ -26,7 +26,7 @@ function plateau(id){
   const half = Math.floor(days.length / 2), a = Math.max(...days.slice(0, half).map(d => byDay[d])), b = Math.max(...days.slice(half).map(d => byDay[d]));
   if (b > a * 1.05) return null;
   const fbs = (S.fb || []).filter(f => f.t >= since), hard = fbs.filter(f => f.k === "hard" || f.k === "pain").length;
-  return adaptOf(id) <= 0.7 ? "beaucoup de séries ratées : la charge était trop haute" : hard >= 2 ? "des séances ressenties dures ou douloureuses" : days.length < 6 ? "des séances un peu espacées" : "le corps consolide : c'est normal, ça se débloque souvent après une semaine plus légère";
+  return adaptOf(id) <= 0.7 ? "beaucoup de séries ratées : la charge était trop haute" : hard >= 2 ? "des séances ressenties dures ou douloureuses" : days.length < 6 && new Set(S.log.filter(l => l.t >= since).map(l => dayKey(l.t))).size < 8 ? "des séances un peu espacées" : "le corps consolide : c'est normal, ça se débloque souvent après une semaine plus légère";
 }
 // semaine plus légère sur une figure en plateau (déclenchée une fois toutes les 3 semaines), puis on repart d'une charge neutre
 function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[id]; return !!d && Date.now() - d < 7 * 864e5; }
@@ -183,7 +183,7 @@ function quick(id){
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
   const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l'instant" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : ""));
+  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l'instant" : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : ""));   /* loin du but : on montre l'écart au prochain niveau, pas une date qui recule */
   // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
   const req = (m.req || []).filter(r=>MS[r]);
   if (req.length) { const tr = el("div","qktree"), par = el("div","qkpar"); par.style.gridTemplateColumns = "repeat(" + req.length + ",1fr)";

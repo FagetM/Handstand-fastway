@@ -469,13 +469,15 @@ function feedback(kind){
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
   sessRes = {}; save(); $("fbDlg").close(); render();
+  if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (window.A3 || typeof A3 !== "undefined") { try { A3.celebrate(); } catch(e){} } setTimeout(() => { toast("« " + MS[id].name + " » validée !"); quick(id); }, 900); return; }
   toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Merci d'avoir écouté ton corps. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().again ? "7 jours" : "3 jours") + " sans un bras, planche ni montées. La reprise se fera par paliers." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : montre-le à un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Merci pour ce moment. À bientôt."));
 }
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas
 function freezeDay(){ if (P && P.builtin && !(S.bday && S.bday.d === dayKey(nowS()))) { S.bday = {d:dayKey(nowS()), blocks:builtinBlocks()}; save(); pickP(); } }
+let sessVal = null;   // figure validée pendant la séance : fêtée à la fin, sur le parcours
 let sessPR = null;   // record battu pendant la séance, annoncé à la fin
-function startGuided(){ sessPR = null; sessRes = {}; sessT = 0; selDay = todayIdx(); sessT = Date.now(); voiceUnlock();
+function startGuided(){ sessVal = null; sessPR = null; sessRes = {}; sessT = 0; selDay = todayIdx(); sessT = Date.now(); voiceUnlock();
   freezeDay(); const nx = nextSet(); if (!nx) return; AUTO = true; openSet(nx[0], nx[1]); }
 // dernière série finie : on ferme et, en séance guidée, on demande le ressenti (il règle la charge suivante)
 function closeEnd(){ const was = AUTO; $("sd").close(); if (was) endSession(); }
@@ -533,7 +535,7 @@ function setSay(b, s, si, fx, tg, day){
 }
 function storeSet(v){
   const k = wkKey(selDay), o = pg().wk[k] || (pg().wk[k] = {}), key = sd.bi + "-" + sd.si, fresh = o[key] == null; o[key] = v;
-  if (fresh){ const c = cnt(); c.sets++; if (sd.b.kind === "hold") c.hold += v * (sd.fx && sd.s.sides ? 2 : 1);
+  if (fresh){ const c = cnt(); c.sets++; if (sd.b.kind === "hold" && sd.b.ms) c.hold += v * (sd.fx && sd.s.sides ? 2 : 1);
     if (!nextSet()) { c.sess++; if (/^etirements/.test(P.id)) c.stretch++; } }
   const keys = Object.keys(pg().wk); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(x=>delete pg().wk[x]);
 }
@@ -598,7 +600,7 @@ function saveSet(v){
     if (ok || all) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); if (!ok) { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } else toast("« " + MS[b.ms].name + " » confirmée."); } }
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
   if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms), l0 = lvlOf(MS[b.ms]); if (v > x.best) x.best = v; if (lvlOf(MS[b.ms]) > l0 && S.adapt) delete S.adapt[b.ms];   /* nouveau palier : la charge repart d'une base neutre */
-    if (v >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms, sd.si % 2); /* séries alternées : paires d'un côté, impaires de l'autre */ if (msg) toast(msg); else toast("« " + MS[b.ms].name + " » validée !"); }
+    if (v >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms, sd.si % 2); /* séries alternées : paires d'un côté, impaires de l'autre */ if (msg) toast(msg); else { sessVal = b.ms; toast("« " + MS[b.ms].name + " » validée !"); const dy = S.bday && S.bday.blocks[sd.bi]; if (dy) dy.sets = dy.sets.filter((q, i) => i <= sd.si || wkGet(selDay)[sd.bi + "-" + i] != null); } }   /* validée : le reste de la figure est offert */
     if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++;
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd'hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });

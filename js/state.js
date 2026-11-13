@@ -102,15 +102,20 @@ const doneIn = ids => ids.filter(id=>reqDone(id)).length;   // les étapes à l'
 const mins = s => Math.floor(s/60);
 const BADGES = [
   {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},
-  {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou détente. Un jour de repos entre deux ne casse rien.", max:3, cur:c=>c.streak},
+  {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou détente. Deux jours de repos de suite ne cassent rien.", max:3, cur:c=>c.streak},
   {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou détente, avec des jours de repos au milieu si tu veux.", max:7, cur:c=>c.streak},
   {id:"st30", g:"30 j", name:"Trente jours fidèles", desc:"Un mois à prendre soin de toi, repos compris.", max:30, cur:c=>c.streak},
   {id:"se10", g:"10", name:"Dix séances", desc:"Terminer dix séances complètes d'un programme.", max:10, cur:c=>c.sess},
   {id:"se50", g:"50", name:"Cinquante séances", desc:"Terminer cinquante séances complètes.", max:50, cur:c=>c.sess},
+  {id:"se100", g:"100", name:"Cent séances", desc:"Terminer cent séances complètes.", max:100, cur:c=>c.sess},
+  {id:"se200", g:"200", name:"Deux cents séances", desc:"Terminer deux cents séances complètes.", max:200, cur:c=>c.sess},
+  {id:"se400", g:"400", name:"Quatre cents séances", desc:"Terminer quatre cents séances complètes.", max:400, cur:c=>c.sess},
   {id:"s100", g:"100", name:"Cent séries", desc:"Faire cent séries en séance.", max:100, cur:c=>c.sets},
   {id:"s1000", g:"1000", name:"Mille séries", desc:"Faire mille séries en séance.", max:1000, cur:c=>c.sets},
   {id:"h10", g:"10 min", name:"Dix minutes en appui", desc:"Cumuler dix minutes de maintien chronométré.", max:600, cur:c=>c.hold, t:1},
   {id:"h60", g:"1 h", name:"Une heure en appui", desc:"Cumuler une heure de maintien chronométré.", max:3600, cur:c=>c.hold, t:1},
+  {id:"h180", g:"3 h", name:"Trois heures en appui", desc:"Cumuler trois heures de maintien chronométré.", max:10800, cur:c=>c.hold, t:1},
+  {id:"h600", g:"10 h", name:"Dix heures en appui", desc:"Cumuler dix heures de maintien chronométré.", max:36000, cur:c=>c.hold, t:1},
   {id:"e10", g:"Souple", name:"Dix séances d'étirements", desc:"Terminer dix séances d'étirements.", max:10, cur:c=>c.stretch},
   ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:s.name, desc:"Valider toutes les figures de la branche « " + s.name + " ».", max:s.ms.filter(m=>!m.alt).length, cur:()=>doneIn(s.ms.filter(m=>!m.alt).map(m=>m.id))})),
   ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
@@ -120,7 +125,7 @@ function stats(){
   let streak = 0; const d = new Date();
   // régularité douce : un jour de repos entre deux séances ne casse pas la série (deux jours de suite sans rien, si)
   if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
-  let gap = 0; while (gap < 2) { if (days.has(dayKey(d))) { streak++; gap = 0; } else gap++; d.setDate(d.getDate()-1); }
+  let gap = 0; while (gap < 3) {   /* deux jours de repos de suite (le week-end) ne cassent rien */ if (days.has(dayKey(d))) { streak++; gap = 0; } else gap++; d.setDate(d.getDate()-1); }
   if (streak > (c.streak || 0)) c.streak = streak;
   const done = Object.keys(MS).filter(id=>st(id).done && !MS[id].alt).length, tries = S.log.filter(l=>MS[l.id]).length;
   const ctx = Object.assign({tries}, c);
