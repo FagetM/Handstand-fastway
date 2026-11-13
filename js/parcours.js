@@ -101,6 +101,50 @@ function eta(m){
   wk = Math.max(wk, spanLeft / 7, left / perWk);   // on ne peut pas valider plus vite que la règle
   return Math.max(1, Math.min(52, Math.round(wk)));
 }
+// ---------- Dates estimées : un calendrier prudent de tout le chemin, recalculé à chaque séance ----------
+// semaines habituelles par figure, pour quelqu'un de régulier (5 jours par semaine) ; tes propres mesures remplacent ces repères dès qu'elles existent
+const DEFW = {b1_free5:4, b2_str15:6, in_holds:4, in_changes:4, in_tuck:3, in_str40:6, in_str60:8, in_7s:4, in_7d:4, in_toes:4, in_toes7:4,
+  oa_strad30:4, oa_tuckflag:4, oa_flaghoriz:5, oa_flagfloor:5, oa_wall:6, oa_shrug:4, oa_shift:6, oa_sidehold:6, oa_finger:8, oa_finger3:8, oa_finger2:8, oa_finger1:10, oa_strarm:6, oa_lift:8, oa_oahs:20, oa_oahsw:12, oa_oahs10:16, oa_shTuck:8, oa_shStrad:8, oa_switch:10,
+  pr_pikeLift:3, pr_stradLift:3, pr_wallNeg:3, pr_negS:4, pr_elev:4, pr_elevLow:4, pr_straddle:8, pr_negP:5, pr_pike:10, pr_lsit:3, pr_stradL:4, pr_vsit:8, pr_halfSt:6, pr_tuckUp:6, pr_stalPart:8, pr_stalder:14, pr_lsitNeg:6, pr_lsitHs:10, pr_vsitC:6, pr_extSup:4, pr_mannaP:12, pr_vsitH:20, pr_manna:40,
+  lo_elbow:3, lo_croc:6, lo_qdr:6, pl_lean:3, pl_ppp:4, pl_lean2:4, pl_tuckP:5, pl_tuck:6, pl_tuckPu:6, pl_tuckO:8, pl_adv:12, pl_1leg:10, pl_strBand:8, pl_strBandL:8, pl_straddle:20, pl_strNar:12, pl_half:16, pl_fullBand:10, pl_fullNeg:10, pl_full:26, pl_strHs:10, pl_hsDown:10, pl_halfPress:10, pl_press:16,
+  ul_c1:8, ul_c2:10, ul_c3:8, ul_c12:10, ul_full:12};
+const laneOf = m => /^pl_/.test(m.id) ? "pl" : m.sec === "press" || m.sec === "low" ? "pr" : m.sec === "ultime" ? "ul" : "ba";
+// jours d'entraînement sur les 28 derniers jours (null tant que l'historique est trop court pour juger)
+function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t : now; if (now - first < 14 * 864e5) return null; return new Set(S.log.filter(l => l.t >= now - 28 * 864e5).map(l => dayKey(l.t))).size; }
+// calendrier : chaque famille (équilibre, planche, montées) avance une figure à la fois, les familles avancent en parallèle
+// o.mins : durée de séance supposée · o.days : jours d'entraînement sur 28 supposés
+function plan(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.days != null ? o.days : trainDays();
+  const fq = td == null ? 1 : Math.max(0.9, Math.min(2.5, 20 / Math.max(4, td)));
+  // 30 min : une seule figure de force par séance, planche et montées se partagent la place ; 45 min et plus : les deux avancent
+  const kf = {ba:mins <= 15 ? 1.5 : mins <= 30 ? 1 : mins <= 45 ? 0.9 : 0.85, pl:mins <= 15 ? 2.5 : mins <= 30 ? 1.6 : mins <= 45 ? 1 : 0.9}; kf.pr = kf.pl; kf.ul = kf.pl / (mins <= 30 ? 1.6 : 1);
+  const fin = {}, start = {}, by = {}, free = {ba:0, pl:0, pr:0, ul:0}, last = {}, todo = [];
+  Object.values(MS).forEach(m => { if (st(m.id).done) fin[m.id] = 0; else if (m.alt) fin[m.id] = null; else todo.push(m); });
+  const W = m => { const x = st(m.id), has = S.log.filter(l => l.id === m.id && typeof l.v === "number").length >= 2, e = has && !msLocked(m) ? eta(m) : null;
+    if (e != null) return e; const d = DEFW[m.id] || 2, part = m.target && x.best ? Math.min(0.7, 0.7 * x.best / m.target) : 0; return Math.max(1, d * (1 - part) * kf[laneOf(m)] * fq); };
+  while (todo.length) { let bi = -1, br = 0, bt = Infinity, bw = null;
+    todo.forEach((m, i) => { let r = 0, w = null; for (const q of m.req || []) { if (!(q in fin)) return; if ((fin[q] || 0) > r) { r = fin[q]; w = q; } } const t = Math.max(r, free[laneOf(m)]); if (t < bt) { bt = t; br = r; bi = i; bw = w; } });   /* à départ égal, l'ordre du parcours */
+    if (bi < 0) break; const m = todo.splice(bi, 1)[0], L = laneOf(m), t0 = Math.max(br, free[L]); by[m.id] = free[L] > br ? last[L] : bw; start[m.id] = t0; fin[m.id] = t0 + W(m); free[L] = fin[m.id]; last[L] = m.id; }
+  return {fin, start, by}; }
+const planWk = (P, ids) => ids.reduce((n, id) => Math.max(n, P.fin[id] || 0), 0);
+const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+// une date lisible : le jour quand c'est proche, le mois quand c'est loin (une estimation à un an n'a pas de jour)
+function dateTxt(wk){ const d = new Date(Date.now() + wk * 7 * 864e5); return wk <= 10 ? "vers le " + d.getDate() + (d.getDate() === 1 ? "er " : " ") + MOIS[d.getMonth()] : MOIS[d.getMonth()] + " " + d.getFullYear(); }
+const gainTxt = wk => wk < 9 ? Math.max(1, Math.round(wk)) + " semaine" + (Math.round(wk) > 1 ? "s" : "") : wk < 100 ? Math.round(wk / 4.35) + " mois" : (Math.round(wk / 52 * 2) / 2 + " ans").replace(".", ",");
+// la figure qui fixe la date du but : on remonte le chemin le plus long jusqu'à une figure ouverte aujourd'hui
+function keyFig(P, ids){ let id = ids.reduce((a, b) => (P.fin[b] || 0) > (P.fin[a] || 0) ? b : a, ids[0]), n = 0; while (id && P.start[id] > 0 && P.by[id] && n++ < 200) id = P.by[id]; return id && !st(id).done ? id : null; }
+// fenêtre « Mes dates » : les grandes étapes, puis ce qui ferait gagner du temps
+const STEPS = [["in_str60","Équilibre droit 60 s"],["pr_straddle","Montée en force écart"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
+function openEta(){ const box = $("etaBody"), P = plan(), goal = "ul_full", w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";
+  const tl = el("div","etl"); STEPS.filter(([id]) => MS[id]).sort((a, b) => (P.fin[a[0]] || 0) - (P.fin[b[0]] || 0)).forEach(([id, name]) => { const r = el("div","etr" + (st(id).done ? " ok" : id === goal ? " goal" : ""));
+    r.append(el("span","etn", name), el("span","etd", st(id).done ? "Validé" : dateTxt(P.fin[id]))); tl.append(r); }); box.append(tl);
+  if (!w0) return;
+  box.append(el("div","lab","Pour arriver plus vite")); const lv = el("div","etl");
+  const lever = (t, d, fn) => { const r = el(fn ? "button" : "div","etr lev"); r.append(el("span","etn", t), el("span","etd", d)); if (fn) r.onclick = fn; lv.append(r); };
+  const k = keyFig(P, [goal]); if (k) lever("Ta figure clé : " + MS[k].name, "c'est elle qui fixe la date", () => { $("etaDlg").close(); goHere(k); });
+  [45, 60].filter(v => v > mins).forEach(v => { const w = plan({mins:v}).fin[goal]; if (w0 - w >= 4) lever("Séances de " + v + " min", gainTxt(w0 - w) + " de gagné · " + dateTxt(w), () => { S.mins = v; if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); openEta(); toast("Séances réglées sur " + v + " min."); }); });
+  if (mins > 30) lever("Tu es à " + mins + " min", "planche et montées avancent ensemble");
+  if (td != null && td < 18) { const w = plan({days:20}).fin[goal]; if (w0 - w >= 4) lever("5 jours par semaine (tu es à " + td + " jours sur 28)", durTxt(w0 - w) + " de gagné · " + dateTxt(w)); }
+  box.append(lv, el("p","mut etnote","Estimation prudente : elle part de repères habituels, puis de tes propres mesures dès que tu en as. Elle se recalcule à chaque séance. Les tendons, eux, ne se pressent pas : la planche reste à 2 jours par semaine.")); }
 const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
 // ---------- Le parcours : un seul chemin qui serpente, figure après figure ; il se divise en trois voies au niveau difficile.
 function journey(nextId){
@@ -182,7 +226,7 @@ function quick(id){
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
   const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l'instant" : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : ""));   /* loin du but : on montre l'écart au prochain niveau, pas une date qui recule */
+  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l'instant" + ((pw => pw > 0 ? " · ouverture estimée : " + dateTxt(pw) : "")(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + " · " + dateTxt(w) : ""));   /* loin du but : on montre l'écart au prochain niveau, pas une date qui recule */
   // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
   const req = (m.req || []).filter(r=>MS[r]);
   if (req.length) { const tr = el("div","qktree"), par = el("div","qkpar"); par.style.gridTemplateColumns = "repeat(" + req.length + ",1fr)";

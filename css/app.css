@@ -561,3 +561,13 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .lnk{display:block;margin:14px auto 0;background:none;border:0;color:var(--mut);font:inherit;font-size:13.5px;text-decoration:underline;padding:8px}
 #warnBar{position:fixed;left:0;right:0;top:0;z-index:30;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:#b4532a;color:#fff;font-size:14px;font-weight:700;text-align:center}
 #dPlan,#dMore,#dEn,#dBest{display:none}
+
+/* dates estimées */
+.etab{display:block;margin-top:6px;padding:4px 0;font-size:12.5px;color:var(--mut);text-align:left}
+.etab b{color:var(--ink,inherit);font-weight:700}.etab .etm{text-decoration:underline;text-underline-offset:3px}
+.etl{margin:14px 0 18px;border-top:1px solid var(--line)}
+.etr{display:flex;gap:12px;justify-content:space-between;align-items:baseline;width:100%;padding:11px 0;border-bottom:1px solid var(--line);text-align:left;font-size:15px}
+.etr .etd{flex:none;color:var(--mut);font-size:13.5px;text-align:right;max-width:55%}
+.etr.ok .etn,.etr.ok .etd{color:var(--mut)}.etr.goal .etn,.etr.goal .etd{font-weight:700;color:var(--acc)}
+.etr.lev{align-items:center}.etr.lev .etd{color:var(--acc);font-weight:600}
+.etnote{font-size:12.5px;line-height:1.5}
