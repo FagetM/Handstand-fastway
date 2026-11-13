@@ -54,9 +54,9 @@ const P = (base, o) => Object.assign({}, POSES[base], o);
 const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0)});
 Object.assign(POSES, {
   // poitrine face au mur : dos au mur au départ, mains au sol, on remonte les pieds le long du mur en rapprochant les mains
-  pu_down:  {pitch:1.55, arm:[-0.55,-0.55], armZ:[0.2,0.2], elbow:[-1.45,-1.45], hip:[-0.1,-0.1], hipZ:[0,0], knee:[0,0], head:-0.6},
-  c2w_0:    {pitch:1.45, arm:[-1.45,-1.45], armZ:[0,0], hip:[-0.15,-0.15], hipZ:[0,0], knee:[0,0], head:-0.6},
-  c2w_1:    {pitch:2.0, arm:[-2.0,-2.0], armZ:[0,0], hip:[-0.75,-0.55], hipZ:[0,0], knee:[0.5,0.2], head:-0.5},
+  pu_down:  {point:0, pitch:1.55, arm:[-0.55,-0.55], armZ:[0.2,0.2], elbow:[-1.45,-1.45], hip:[-0.1,-0.1], hipZ:[0,0], knee:[0,0], head:-0.6},
+  c2w_0:    {point:0, pitch:1.45, arm:[-1.45,-1.45], armZ:[0,0], hip:[-0.15,-0.15], hipZ:[0,0], knee:[0,0], head:-0.6},
+  c2w_1:    {point:0, pitch:2.0, arm:[-2.0,-2.0], armZ:[0,0], hip:[-0.75,-0.55], hipZ:[0,0], knee:[0.5,0.2], head:-0.5},
   c2w_2:    {pitch:2.6, arm:[-2.6,-2.6], armZ:[0,0], hip:[-0.45,-0.2], hipZ:[0,0], knee:[0.25,0], head:-0.4},
   hs_cw1:   P("hs", {roll:1.15, hipZ:[0.8,0.8], feet:true}),                                             // sortie en roue : on bascule sur le côté…
   hs_cw2:   {pitch:PI, roll:PI, arm:[0.1,0.1], armZ:[0.3,0.3], elbow:[-0.2,-0.2], hip:[0,0], hipZ:[0.25,0.25], knee:[0,0], head:0, feet:true},   // …et on retombe debout
@@ -136,9 +136,10 @@ export const SCRIPTS = {
   pl_straddle:{s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.7,1.7]]},
   pl_full:   {s:[["fold",0.45,0],["pl_lean",0.45,0.1],["pl_tuck",0.5,0.2],["pl_straddle",0.6,0.3],["pl_full",0.6,1.7]]},
 };
-const KEYS = ["hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
+const KEYS = ["point","hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
-  return {hands:FEET[n] || p.feet ? 0 : 1, one:n === "oahs" || p.one ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
+  // pointes de pied : tendues dès que les pieds quittent le sol (en gym, un pied en l'air est toujours pointé)
+  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:n === "oahs" || p.one ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
     armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], hipY0:(p.hipY || [0,0])[0], hipY1:(p.hipY || [0,0])[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
@@ -213,10 +214,11 @@ export function mount(host, opts = {}){
     const short = at(cap(0.084, 0.13, mBot), hip, 0, -0.12, 0);
     const kn = grp(hip, 0, -0.45, 0);
     const shin = at(cap(0.056, 0.3, mSkin), kn, 0, -0.21, 0);
-    const foot = cap(0.043, 0.1, mSkin); foot.rotation.x = PI/2; at(foot, kn, 0, -0.44, 0.06);
+    const ank = grp(kn, 0, -0.44, 0);   // cheville : le pied se tend dans le prolongement du tibia
+    const foot = cap(0.043, 0.1, mSkin); foot.rotation.x = PI/2; at(foot, ank, 0, 0, 0.06);
     const sock = at(cyl(0.058, 0.09, mShoe), kn, 0, -0.36, 0);
-    const sole = cap(0.05, 0.13, mShoe); sole.rotation.x = PI/2; sole.scale.set(1.1, 1, 0.62); at(sole, kn, 0, -0.465, 0.07);
-    return {sx, sh, el, hip, kn, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole}; });
+    const sole = cap(0.05, 0.13, mShoe); sole.rotation.x = PI/2; sole.scale.set(1.1, 1, 0.62); at(sole, ank, 0, -0.025, 0.07);
+    return {sx, sh, el, hip, kn, ank, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole}; });
   // articulation de la taille : le haut du corps (torse, cou, épaules) peut se cambrer ou s'arrondir par rapport au bassin
   const spine = grp(root, 0, 0.2, 0);
   [torso, chest, neck, medal, limbs[0].sh, limbs[1].sh].forEach(o => { o.position.y -= 0.2; spine.add(o); });
@@ -269,7 +271,7 @@ export function mount(host, opts = {}){
     root.rotation.set(p.pitch + off.p, 0, p.roll + off.r); neck.rotation.x = p.head; spine.rotation.x = p.arch;
     limbs.forEach((L, i) => {
       L.sh.rotation.set(p["arm" + i], 0, L.sx * p["armZ" + i]); L.el.rotation.x = p["elbow" + i];
-      L.hip.rotation.set(p["hip" + i], L.sx * p["hipY" + i], L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; });
+      L.hip.rotation.set(p["hip" + i], L.sx * p["hipY" + i], L.sx * p["hipZ" + i]); L.kn.rotation.x = p["knee" + i]; L.ank.rotation.x = p.point * 1.38; });
     torso.scale.set(1 + breath, 1, 1 + breath); chest.scale.set(1, 1 + breath, 1 + breath);
     root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
     box.setFromObject(root); let low = box.min.y;
