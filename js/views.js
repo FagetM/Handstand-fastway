@@ -86,7 +86,7 @@ function render(){
     if (!had || had.length !== op.length) { S.chests = op; save(); } }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
-  const nextId = ids.find(id=>!st(id).done && !msLocked(MS[id])) || ids.find(id=>!st(id).done);
+  const nextId = ids.find(id=>!reqDone(id) && !msLocked(MS[id])) || ids.find(id=>!reqDone(id));
   today: { // Aujourd'hui : la séance du jour d'un coup d'œil, et un seul bouton pour tout lancer
     const nc = $("nextCard"); nc.textContent = ""; pickP(); $("sessToggle").hidden = $("sess").hidden = false;
     const today = todayIdx(), day = pDay(today), vals = wkGet(today), all = allP();
@@ -108,14 +108,16 @@ function render(){
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd'hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
     if (P.builtin && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
-      [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", String(v)); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
+      [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d'entraînement de suite. Mobilité et poignets aujourd'hui, la force revient demain."));
     if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
     if (painRecent()) nc.append(el("div","painnote", S.painZone === "poignet" ? "On prend soin de tes poignets : deux jours sans appui sur les mains. Gainage, respiration et souplesse au programme." : "Tu as signalé une gêne : séance tout en douceur, sans tentative à fond ni force."));
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l'avis d'un professionnel de santé avant de reprendre.")); }
     // Maîtrise : on choisit sa séance de postures tenues (poignets, compression, ligne, contrôle, récup)
     if (P.zen) { const zw = el("div","srcs zchips"); ZEN.forEach((z, i) => { const b = el("button","src" + (pp().step === i ? " on" : ""), z.name); b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); });
-      const z = ZEN[pp().step] || ZEN[0]; nc.append(zw, el("div","zt2", z.when + " · " + zenTxt(z))); }
+      const z = ZEN[pp().step] || ZEN[0]; nc.append(zw, el("div","zt2", z.when + " · " + zenTxt(z)));
+      if (forceDays().has((() => { const x = new Date(); x.setDate(x.getDate() - 1); return dayKey(x); })()) && ["poignets","controle"].includes((ZEN[pp().step] || {}).id)) nc.append(el("p","zt2","Hier : force. Ligne ou Compression ménagent mieux les poignets aujourd'hui."));
+    }
 
     if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
     else {
@@ -196,7 +198,7 @@ function openMs(id){
   const fg = $("dFig"); fg.textContent = "";
   { const pz = poseId(id);
     if (SPR[id]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
-    else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() ? "demo_" : "still_") + pz + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
+    else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() && STILLS.has(pz) ? "demo_" : "still_") + stillOf(pz) + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
     else { const f2 = figure(id); if (f2) fg.append(f2); } }
   const dd = $("dMore"); dd.textContent = ""; const D = DETAILS[id];
   if (D){

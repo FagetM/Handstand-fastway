@@ -66,7 +66,7 @@ function route(a, b){
 const back = t => { const c = 1.6, u = t - 1; return 1 + (c + 1)*u*u*u + c*u*u; };      // arrivée avec un léger dépassement          // postures en appui sur les pieds (ou pieds + mains)
 // ---------- Animations propres à chaque jalon ----------
 const P = (base, o) => Object.assign({}, POSES[base], o);
-const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0)});
+const mirror = p => Object.assign({}, p, {hipY:p.hipY ? [p.hipY[1],p.hipY[0]] : undefined, arm:[p.arm[1],p.arm[0]], armZ:[p.armZ[1],p.armZ[0]], elbow:p.elbow ? [p.elbow[1],p.elbow[0]] : undefined, hip:[p.hip[1],p.hip[0]], hipZ:[p.hipZ[1],p.hipZ[0]], knee:[p.knee[1],p.knee[0]], roll:-(p.roll || 0), one:p.one ? -p.one : p.one}); // un bras : l'appui change de main
 Object.assign(POSES, {
   // poitrine face au mur : dos au mur au départ, mains au sol, on remonte les pieds le long du mur en rapprochant les mains
   pu_down:  {point:0, feet:true, pitch:1.37, arm:[-0.55,-0.55], armZ:[0.2,0.2], elbow:[-1.45,-1.45], hip:[-0.1,-0.1], hipZ:[0,0], knee:[0,0], head:-0.6},
@@ -215,7 +215,7 @@ Object.assign(SCRIPTS, {
 const KEYS = ["point","hands","one","spin","arch","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
   // pointes de pied : tendues dès que les pieds quittent le sol (en gym, un pied en l'air est toujours pointé)
-  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:n === "oahs" || p.one ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
+  return {point:p.point != null ? p.point : FEET[n] || p.feet ? 0 : 1, hands:FEET[n] || p.feet ? 0 : 1, one:p.one ? p.one : n === "oahs" ? 1 : 0, spin:p.spin || 0, arch:p.arch || 0, pitch:p.pitch, roll:p.roll || 0, head:p.head, arm0:p.arm[0], arm1:p.arm[1],
     armZ0:p.armZ[0], armZ1:p.armZ[1], elbow0:e[0], elbow1:e[1], hip0:p.hip[0], hip1:p.hip[1], hipZ0:p.hipZ[0], hipZ1:p.hipZ[1], hipY0:(p.hipY || [0,0])[0], hipY1:(p.hipY || [0,0])[1], knee0:p.knee[0], knee1:p.knee[1]}; };
 const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (b[key] - a[key]) * k); return o; };
 const ease = t => t*t*(3 - 2*t);
@@ -355,10 +355,10 @@ export function mount(host, opts = {}){
     torso.scale.set(1 + breath, 1, 1 + breath); chest.scale.set(1, 1 + breath, 1 + breath);
     root.position.set(0, 0, 0); pivot.position.y = 0; pivot.scale.setScalar(scale); pivot.rotation.y = yaw + extraYaw + p.spin; wallPivot.rotation.y = yaw + extraYaw; pivot.updateMatrixWorld(true);
     box.setFromObject(root); let low = box.min.y;
-    if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx > 0 || p.one < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); low = Math.min(low, hb.setFromObject(L.foot).min.y, hb.setFromObject(L.shin).min.y); }); }
+    if (p.hands > 0.5) { low = Infinity; limbs.forEach(L => { if (L.sx === (p.one < 0 ? -1 : 1) || Math.abs(p.one) < 0.5) low = Math.min(low, hb.setFromObject(L.hand).min.y); low = Math.min(low, hb.setFromObject(L.foot).min.y, hb.setFromObject(L.shin).min.y); }); }
     // centrage : sur le corps quand on est debout, sur les mains d'appui quand on est en appui (les mains ne glissent plus au sol)
     let cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2; const w = Math.max(0, Math.min(1, p.hands));
-    if (w > 0) { let hx = 0, hz = 0, n = 0; limbs.forEach(L => { const k = L.sx > 0 ? 1 : 1 - Math.max(0, Math.min(1, p.one)); if (k > 0) { hb.setFromObject(L.hand); hx += k * (hb.min.x + hb.max.x) / 2; hz += k * (hb.min.z + hb.max.z) / 2; n += k; } });
+    if (w > 0) { let hx = 0, hz = 0, n = 0; limbs.forEach(L => { const k = L.sx === (p.one < 0 ? -1 : 1) ? 1 : 1 - Math.max(0, Math.min(1, Math.abs(p.one))); if (k > 0) { hb.setFromObject(L.hand); hx += k * (hb.min.x + hb.max.x) / 2; hz += k * (hb.min.z + hb.max.z) / 2; n += k; } });
       if (n) { cx += (hx / n - cx) * w; cz += (hz / n - cz) * w; } }
     tmp.set(cx, 0, cz); pivot.worldToLocal(tmp);
     root.position.set(-tmp.x, -low / scale, -tmp.z);                         // l'appui touche le socle, le corps est centré dessus

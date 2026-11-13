@@ -38,7 +38,7 @@ const valRule = id => id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
 const SIDED = new Set(["oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
-const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
+const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 2 : 1;   // planche : 2 tentatives sur 3 à la cible
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
 // figure « réussi / pas réussi » : 3 réussites le même jour = une séance validée (en séance ou depuis la fiche)
@@ -51,13 +51,13 @@ function hitTarget(id, side){
   if (SIDED.has(id) && side != null) { h.sc = h.d === d && h.sc ? h.sc : {}; h.sc[side] = (h.sc[side] || 0) + 1; h.n = [0, 1].filter(k => (h.sc[k] || 0) >= perSide(id)).length; } else h.n++;
   // un bras : les séances validées doivent être espacées d'au moins 2 jours (le système nerveux consolide entre deux)
   const V = valRule(id), last = h.days.length ? h.days[h.days.length - 1] : null, gapOk = !last || dayDiff(d, last) >= V.gap;
-  if (h.n >= need && !h.days.includes(d) && gapOk) h.days.push(d);
+  const fresh = h.n >= need && !h.days.includes(d) && gapOk; if (fresh) h.days.push(d);
   const span = h.days.length ? dayDiff(h.days[h.days.length - 1], h.days[0]) : 0;
   if (h.days.length >= V.n && span >= V.span) { st(id).done = true; return ""; }
-  if (h.days.includes(d)) return "Séance déjà validée aujourd'hui (" + h.days.length + "/" + V.n + ").";
+  if (h.days.includes(d) && !fresh) return "Séance déjà validée aujourd'hui (" + h.days.length + "/" + V.n + ").";
   if (h.n >= need && !gapOk) return "Belle tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d'un côté : à l'autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd'hui).";
-  return "Séance validée (" + h.days.length + "/" + V.n + ") : refais-le un autre jour pour valider la figure.";
+  if (fresh) return "Séance validée (" + h.days.length + "/" + V.n + ") : refais-le un autre jour pour valider la figure.";
 }
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
@@ -126,7 +126,8 @@ function stats(){
   return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[Math.min(RANKS.length-1, Math.floor((lvl-1)/2))]};
 }
 let toastT = null;
-function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
+function toast(msg){ const t = $("toast"), dl = [...document.querySelectorAll("dialog[open]")].pop(); (dl || document.body).append(t);   // au-dessus de la fenêtre ouverte (séance, fiche)
+  t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
 // paliers sur mesure quand les tiers de la cible n'ont pas de sens

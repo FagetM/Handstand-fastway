@@ -95,6 +95,7 @@ function zenRate(k){
       if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s'ouvre."; say("Palier validé. Bravo.", true); }
       else if (x.ok.length >= 2) { x.fin = true; x.ok = x.ok.slice(-2); msg = "Dernier palier maîtrisé. Garde-le en entretien."; }
       else msg = "Au plafond du palier, propre : encore une séance comme ça, dans 2 jours ou plus, pour le valider."; } }
+  if (!z.free && (z.id === "poignets" || z.id === "controle")) { const zw = S.zw || (S.zw = []), d = dayKey(Date.now()); if (!zw.includes(d)) zw.push(d); if (zw.length > 60) zw.shift(); }   // jour d'appui sur les mains : compte dans la charge des poignets
   if (!z.free && ((z.id === "poignets" && x.tier >= 2) || (z.id === "controle" && x.tier >= 2) || (z.id === "compression" && x.tier >= 3))) { const zf = S.zf || (S.zf = []), d = dayKey(Date.now()); if (!zf.includes(d)) zf.push(d); if (zf.length > 60) zf.shift(); }
   save(); render(); toast(msg);
 }

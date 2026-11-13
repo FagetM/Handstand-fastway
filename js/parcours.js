@@ -13,7 +13,7 @@ const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.s
 const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit"].includes(id)) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
-  const m = MS[id]; if (!m || st(id).done || m.type === "check") return null;
+  const m = MS[id]; if (!m || st(id).done || m.type === "check" || (m.target && st(id).best >= m.target)) return null;   // cible déjà tenue : il reste à valider, pas un plateau
   const since = Date.now() - 21 * 864e5, byDay = {};
   S.log.filter(l => l.t >= since && (l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l => { const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
   const days = Object.keys(byDay).sort((a, b) => dk(a) - dk(b)); if (days.length < 4 || hitInfo(id).days) return null;
@@ -93,7 +93,8 @@ function eta(m){
   if (wk == null) wk = 1 + 4 * (1 - Math.min(1, x.best / T));
   const V = valRule(m.id), left = Math.max(0, V.n - hitInfo(m.id).days), since = Date.now() - 28 * 864e5;
   const perWk = Math.max(1, new Set(S.log.filter(l => l.t >= since && (l.id === m.id || l.id === "pg:" + m.name)).map(l => dayKey(l.t))).size / 4);
-  wk = Math.max(wk, Math.ceil(V.span / 7), left / perWk);   // on ne peut pas valider plus vite que la règle
+  const hd = (S.hit && S.hit[m.id] && S.hit[m.id].days) || [], spanLeft = Math.max(0, V.span - (hd.length ? dayDiff(dayKey(Date.now()), hd[0]) : 0));
+  wk = Math.max(wk, spanLeft / 7, left / perWk);   // on ne peut pas valider plus vite que la règle
   return Math.max(1, Math.min(52, Math.round(wk)));
 }
 const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
@@ -103,8 +104,8 @@ function journey(nextId){
   let y = 10, k = 0, prev = null, edges = "", n = 0;
   const seg = (a, b, cls) => { const my = (a[1] + b[1]) / 2; edges += '<path class="' + cls + '" d="M' + a[0] + ' ' + a[1] + 'C' + a[0] + ' ' + my + ',' + b[0] + ' ' + my + ',' + b[0] + ' ' + b[1] + '"/>'; };
   const eCls = (doneA, idB, lkB) => doneA && (idB ? st(idB).done : false) ? "on" : doneA && !lkB ? "go" : "";
-  const sign = (title, sid, sub) => { const ms = sid === "hard" ? HARD.flatMap(h=>SEC[h[0]].ms) : SEC[sid].ms, dn = ms.filter(m=>st(m.id).done).length,
-      state = ms.filter(m=>!m.alt).every(m=>st(m.id).done) ? "done" : ms.some(m=>!st(m.id).done && !msLocked(m)) ? "cur" : "lk";
+  const sign = (title, sid, sub) => { const ms = (sid === "hard" ? HARD.flatMap(h=>SEC[h[0]].ms) : SEC[sid].ms).filter(m=>!m.alt), dn = ms.filter(m=>reqDone(m.id)).length,
+      state = ms.filter(m=>!m.alt).every(m=>reqDone(m.id)) ? "done" : ms.some(m=>!reqDone(m.id) && !msLocked(m)) ? "cur" : "lk";
     items.push({k:"b", y, title, sid, sub, dn, tot:ms.length, state, n:++n}); y += SH; };
   const node = (id, x, small) => { pos[id] = [x, y + 40, small]; items.push({k:"n", id}); };
   const chest = (sid, x, lane) => { const done = sid === "hard" ? false : chestOpen(SEC[sid]); pos["chest_" + sid] = [x, y + 34]; items.push({k:"c", sid, x, y, done, lane}); };
@@ -119,7 +120,7 @@ function journey(nextId){
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, "");
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
-    s.ms.filter(m=>m.alt).forEach(m=>{ const x = X[(k - 1) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40, true]; items.push({k:"n", id:m.id, alt:true}); y += 0; });
+    s.ms.filter(m=>m.alt).forEach((m, i)=>{ const x = X[(k - 1 - i + 99 * X.length) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40 - i * RH, true];   /* plusieurs bonus : un par rangée, jamais superposés */ items.push({k:"n", id:m.id, alt:true}); y += 0; });
     const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
   // hors parcours : les figures au sol
   sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
@@ -186,7 +187,7 @@ function quick(id){
   const top = el("div","qktop"); top.append(art, g); box.append(top);
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
-    if (x.done) { blk.classList.add("ok"); const nx = GOALS[0].ms.find(i=>!st(i).done && !msLocked(MS[i])); blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
+    if (x.done) { blk.classList.add("ok"); const nx = GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i])); blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
     else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d'abord." : "Valide-la d'abord.") + " Tu peux quand même essayer."));
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? "Semaine plus légère en cours sur cette figure, puis on repart." : "Elle sera allégée une semaine à sa prochaine séance."))); bar(Math.min(1, x.best / (m.target || 1))); }
     else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / valRule(id).n); }

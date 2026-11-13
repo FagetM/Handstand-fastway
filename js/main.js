@@ -43,7 +43,7 @@ $("gateForm").onsubmit = async e => {
 
 render();
 // ---------- Conseil du jour (affiché en haut du parcours) ----------
-function curMs(){ return MS[GOALS[0].ms.find(id=>!st(id).done && !msLocked(MS[id]))]; }
+function curMs(){ return MS[GOALS[0].ms.find(id=>!reqDone(id) && !msLocked(MS[id]))]; }
 function tipOfDay(){
   const m = curMs(), days = [...new Set(S.log.map(l=>dayKey(l.t)))], today = dayKey(Date.now()), trained = days.includes(today);
   const lastT = S.log.length ? S.log[S.log.length - 1].t : 0, gap = lastT ? Math.floor((Date.now() - lastT) / 864e5) : null;

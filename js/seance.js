@@ -101,7 +101,7 @@ function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name
 // trois jours d'entraînement de suite : le lendemain, on récupère (mobilité, poignets)
 function plancheDays(){ const names = new Set(SEC.planche.ms.map(m => "pg:" + m.name)), since = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - 6); return x.getTime(); })(), today = dayKey(Date.now());
   return new Set(S.log.filter(l => l.t >= since && dayKey(l.t) !== today && (names.has(l.id) || /^pl_/.test(l.id) || /^pg:Planche/i.test(l.id))).map(l => dayKey(l.t))).size; }
-function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t))), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
+function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t)).concat(S.zw || [])), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + " · vérification"] = m.id; });
   const out = new Set(S.log.filter(l=>FORCE(MS[l.id] ? l.id : byName[l.id] || "") || /^pg:Planche/i.test(l.id)).map(l=>dayKey(l.t))); (S.zf || []).forEach(d => out.add(d)); return out; }
@@ -122,17 +122,17 @@ function fitTime(blocks, mins){
       if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
     { const pool = blocks.filter(b => !b.ms && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
     { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 8)[0]; if (att) { att.sets.splice(-1, 1); continue; } }   // équilibre : 8 essais suffisent
-    { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
+    { const dI = blocks.map((b, i) => !b.ms && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
+    { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) || SIDED.has(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
       if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
     const mx = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.filter(s => s.max).length > (b.ms === "pl_1leg" ? 6 : /^pl_/.test(b.ms) ? 3 : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
-    // derniers recours : on retire un exercice d'accompagnement entier (sauf poignets et biceps), puis l'équilibre descend à 6 essais
-    { const dI = blocks.map((b, i) => !b.ms && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
+    // dernier recours : l'équilibre descend à 6 essais
     { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 6)[0]; if (att) { att.sets.splice(-1, 1); continue; } }
     break; }
   return blocks;
 }
 // repos entre séries de planche : il augmente avec la difficulté
-const PL_REST = {pl_fullNeg:240, pl_lean2:90, pl_tuckP:120, pl_tuckPu:120, pl_tuckO:120, pl_strBand:150, pl_strBandL:150, pl_strNar:180, pl_half:180, pl_fullBand:180, pl_fullNeg:180, pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:150, pl_frog:150, pl_1leg:150, pl_straddle:180, pl_full:180, pl_pike:150};
+const PL_REST = {pl_fullNeg:240, pl_lean2:90, pl_tuckP:120, pl_tuckPu:120, pl_tuckO:120, pl_strBand:150, pl_strBandL:150, pl_strNar:180, pl_half:180, pl_fullBand:180, pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:150, pl_frog:150, pl_1leg:150, pl_straddle:180, pl_full:180, pl_pike:150};
 function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
@@ -156,9 +156,9 @@ function builtinBlocks(){
   // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
   const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), pickF = (plancheDays() < 2 && plF[0]) || F.find(id => !/^pl_/.test(id)) || F[0];   /* planche 2 jours sur les 7, les montées le 3e */   // la planche 3 jours sur 7, le reste de la force ensuite
   let next;
-  if (fok && pickF && !fConf) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
+  if (fok && pickF && !fConf && !tired) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);
-  if (next.length < nMs) next = next.concat((fok ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && next.some(x => /^pl_/.test(x)))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
+  if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && next.some(x => /^pl_/.test(x)))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d'ouvert aujourd'hui (un bras au repos, pas de force) : séance de mobilité plutôt qu'une page vide
   if (!next.length && !(S.confirm || []).some(id => MS[id] && (fok || !FORCE(id)))) return ["poignets","epaules","pike","pancake","hollow"].map(k=>drillBlock(k, false));
   next.forEach(checkPlateau);
@@ -174,7 +174,7 @@ function builtinBlocks(){
     return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id) ? (/Neg|negS|halfSt/.test(m.id) ? 120 : 150) : /Lift$/.test(m.id) ? 45 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
-  const conf = (S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
+  const conf = (tired || deload || pain ? [] : S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
     return m.type === "check" ? Object.assign(base, {kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))})
       : Object.assign(base, {kind:m.type, sets:Array.from({length:2}, ()=>({goal:m.target, rest:m.type === "hold" ? 120 : 90, max:true}))}); });
   if (!next.length && !conf.length) return blocks;
@@ -182,7 +182,11 @@ function builtinBlocks(){
   if (next.some(id => /^pl_/.test(id)) && (fok || !next.some(FORCE))) dr.push("biceps");   // le tendon du biceps se prépare dès qu'on travaille la planche
   for (let r = 0; r < 6; r++) lists.forEach(l => { const k = l[r]; if (k && !dr.includes(k)) dr.push(k); });
   const mob = mood === "raide" ? ["epaules","pike"].filter(k=>!dr.includes(k)).map(k=>drillBlock(k, pain)) : [];
-  return fitTime([drillBlock("poignets", pain)].concat(mob, conf, blocks, dr.slice(0, tired ? 1 : nDr).map(k=>drillBlock(k, pain || deload))), mins);
+  // Postures « Poignets » ou « Contrôle » aujourd'hui ou hier : les poignets ont déjà travaillé, préparation raccourcie
+  const zw = S.zw || [], wristDone = [0, 1].some(k => { const x = new Date(); x.setDate(x.getDate() - k); return zw.includes(dayKey(x)); });
+  // semaine légère : vraiment plus courte, un exercice d'accompagnement de moins, rien de lesté
+  const drs = dr.filter(k => !(deload && DRILLS[k].eq === "kg")).slice(0, tired ? 1 : deload ? Math.max(1, nDr - 1) : nDr);
+  return fitTime([drillBlock("poignets", pain || wristDone)].concat(mob, conf, blocks, drs.map(k=>drillBlock(k, pain || deload))), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -484,6 +488,7 @@ function openSet(bi, si){
     const hold = b.kind === "hold";
     ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
+    { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","src", String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); }); }
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
     $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
       : "Premier passage : fais ton maximum propre, il servira de référence.";
