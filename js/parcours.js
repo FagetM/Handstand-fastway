@@ -36,7 +36,7 @@ function valTxt(m){ const V = valRule(m.id); return "Validation : la cible tenue
   + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 3 séries à la cible à chaque fois" : "") + "."; }
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), out = {head:"", lines:[], short:"", n:null}; let T = nextStep(m);
-  if (x.done) { out.head = "Jalon maîtrisé"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
+  if (x.done) { out.head = "Figure maîtrisée"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
   const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id),   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", days = /^(pl_|pr_)/.test(m.id) ? 3 : force ? 4 : 5,
@@ -55,7 +55,7 @@ function planFor(m){
     return out; }
   if (m.type === "check"){
     out.n = {sets, check:true};
-    out.head = "Plan pour réussir ce jalon"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
+    out.head = "Plan pour réussir cette figure"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
     out.lines = [freq, "À chaque séance : " + sets + " essais ; " + (/^ul_/.test(m.id) ? "une réussite par séance compte, il en faut sur 3 séances espacées de 2 jours." : "3 réussites dans une même séance comptent, il en faut sur 2 séances."), (FORCE(m.id) ? "Les autres jours : repos des épaules et des coudes, pas d'essai à froid." : "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste."), "Quand le geste fatigue, c'est le signal pour souffler, pas un échec.", "C'est toi qui valides, honnêtement : quand tu le réussis proprement 3 fois sur 5, touche « Je l'ai réussi »."];
   } else {
     const hold = m.type === "hold", lo = hold ? Math.min(2, T) : 1;
@@ -68,7 +68,7 @@ function planFor(m){
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (tries2 ? ", puis " + tries2 + (tries2 > 1 ? " tentatives" : " tentative") + " à " + (hold ? T + " s" : T + " rép.") : "") + ". " + days + " séances par semaine.";
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
-      (/^pl_/.test(m.id) ? "Termine par 3 tentatives à " + u(T) + ", 3 min de repos entre chacune. Une tenue à la cible ouvre le palier suivant ; la figure se valide quand les 3 tentatives passent dans une même séance, sur 2 séances : les tendons aussi doivent être prêts." : (tries > 1 ? "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre chacune." : "Termine par une tentative à " + u(T) + ".") + " Réussie, elle fait passer le palier ; au dernier palier, la règle de validation s'applique."),
+      (/^pl_/.test(m.id) ? "Termine par 3 tentatives à " + u(T) + ", 3 min de repos entre chacune. Une tenue à la cible ouvre le niveau suivant ; la figure se valide quand les 3 tentatives passent dans une même séance, sur 2 séances : les tendons aussi doivent être prêts." : (tries > 1 ? "Termine par " + tries + " tentatives à " + u(T) + ", avec 2 minutes de repos entre chacune." : "Termine par une tentative à " + u(T) + ".") + " Réussie, elle fait passer le palier ; au dernier palier, la règle de validation s'applique."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Chaque petite tenue te rapproche de " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
       "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",
@@ -80,8 +80,6 @@ function planFor(m){
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
   return out;
 }
-const TIER_TXT = {base:"Les bases avant de monter : gainage, force, roue, et 60 s au mur.", starter:"Apprendre à monter contre le mur et à sortir sans danger.", b1:"Tenir seul, quelques secondes, loin du mur.", b2:"Tenir longtemps, et commencer à changer de forme.",
-  inter:"Contrôler le bassin et le regard : les « 7 », la tête rentrée, les drapeaux."};
 function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } save(); render(); showTab("today"); window.scrollTo(0, 0); }
 
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
@@ -165,7 +163,7 @@ function journey(nextId){
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
       b.append(c, el("span","n", m.name));
       const nx = nextStep(m);
-      b.append(el("span","g", x.done ? "" : lk ? (m.target ? goalTxt(m) : "") : L.length > 1 ? "Étape " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : m.target ? goalTxt(m) : ""));
+      b.append(el("span","g", x.done ? "" : lk ? (m.target ? goalTxt(m) : "") : L.length > 1 ? "Niveau " + kk + "/" + L.length + " · " + unitTxt(m, nx) : small ? "Bonus" : m.target ? goalTxt(m) : ""));
       b.onclick = () => quick(id); cv.append(b);
       // toi, sur le chemin : ton personnage se tient à côté de ta figure du moment
       if (cur) { const me = el("div","me" + (it.lane ? " lane" : "")), msp = el("span","sp"); msp.dataset.pose = "stand"; msp.dataset.anim = "me"; msp.dataset.lk = ""; sprPaint(msp, it.lane ? 56 : 76); me.append(msp, el("span","tag","Toi"));

@@ -107,7 +107,7 @@ const BADGES = [
   {id:"h10", g:"10 min", name:"Dix minutes en appui", desc:"Cumuler dix minutes de maintien chronométré.", max:600, cur:c=>c.hold, t:1},
   {id:"h60", g:"1 h", name:"Une heure en appui", desc:"Cumuler une heure de maintien chronométré.", max:3600, cur:c=>c.hold, t:1},
   {id:"e10", g:"Souple", name:"Dix séances d'étirements", desc:"Terminer dix séances d'étirements.", max:10, cur:c=>c.stretch},
-  ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:s.name, desc:"Valider tous les jalons de la branche « " + s.name + " ».", max:s.ms.length, cur:()=>doneIn(s.ms.map(m=>m.id))})),
+  ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:s.name, desc:"Valider toutes les figures de la branche « " + s.name + " ».", max:s.ms.filter(m=>!m.alt).length, cur:()=>doneIn(s.ms.filter(m=>!m.alt).map(m=>m.id))})),
   ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
 ];
 function stats(){
@@ -117,7 +117,7 @@ function stats(){
   if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
   let gap = 0; while (gap < 2) { if (days.has(dayKey(d))) { streak++; gap = 0; } else gap++; d.setDate(d.getDate()-1); }
   if (streak > (c.streak || 0)) c.streak = streak;
-  const done = Object.keys(MS).filter(id=>st(id).done).length, tries = S.log.filter(l=>MS[l.id]).length;
+  const done = Object.keys(MS).filter(id=>st(id).done && !MS[id].alt).length, tries = S.log.filter(l=>MS[l.id]).length;
   const ctx = Object.assign({tries}, c);
   const got = S.bgot || (S.bgot = (S.seen && S.seen.b || []).slice());   // un badge gagné le reste, même si de nouvelles figures s'ajoutent à sa branche
   const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)), ok = cur >= b.max || got.includes(b.id); if (ok && !got.includes(b.id)) got.push(b.id); return Object.assign({}, b, {cur:ok ? b.max : cur, ok}); });

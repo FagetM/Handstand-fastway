@@ -8,7 +8,6 @@ function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.c
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const was = b.classList.contains("on"); showTab(b.dataset.v); window.scrollTo(0,0);
   // en arrivant sur le parcours, on t'amène à ta position
   if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
-document.querySelectorAll(".jump button").forEach(b=>b.onclick=()=>{ const t = document.getElementById(b.dataset.to); if (b.dataset.to === "sect-sess" && !S.sessOpen) { S.sessOpen = true; save(); renderSess(); } if (t) t.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"}); });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 $("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); };
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n'est pas commencée

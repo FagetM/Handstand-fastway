@@ -30,10 +30,10 @@ function renderFit(){
   const all = WARD.flatMap(w=>w.items), okN = all.filter(([id,name,need])=>wardOk(need, Z)).length;
   const cnt0 = el("div","mut", okN + " éléments débloqués sur " + all.length); cnt0.style.marginTop = "10px"; box.append(cnt0);
   { const s = el("div","slot"), row = el("div","chips"), cur = F.pose || "auto"; s.append(el("div","lab","Posture"));
-    [["auto","Automatique (dernier jalon)"]].concat(unlockedPoses()).forEach(([id, name])=>{
+    [["auto","Automatique (dernière figure)"]].concat(unlockedPoses()).forEach(([id, name])=>{
       const b = el("button","chip" + (cur === id ? " on" : ""), name); b.setAttribute("aria-pressed", cur === id);
       b.onclick = () => { S.fit = Object.assign(fit(), {pose:id}); save(); render(); renderFit(); }; row.append(b); });
-    s.append(row, el("div","mut","Chaque jalon validé débloque sa posture.")); s.lastChild.style.marginTop = "8px"; box.append(s); }
+    s.append(row, el("div","mut","Chaque figure validée débloque sa posture.")); s.lastChild.style.marginTop = "8px"; box.append(s); }
   WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const row = el("div","chips");
     w.items.forEach(([id, name, need])=>{
       const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null, ch = typeof need === "string" && need.startsWith("c:") ? SEC[need.slice(2)] : null;
@@ -119,7 +119,7 @@ function render(){
       if (forceDays().has((() => { const x = new Date(); x.setDate(x.getDate() - 1); return dayKey(x); })()) && ["poignets","controle"].includes((ZEN[pp().step] || {}).id)) nc.append(el("p","zt2","Hier : force. Ligne ou Compression ménagent mieux les poignets aujourd'hui."));
     }
 
-    if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucun jalon accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
+    if (!tot){ nc.append(el("h2",null,"Repos aujourd'hui"), el("p",null, P.builtin ? "Aucune figure accessible pour l'instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
     else {
       let secs = 0; const list = el("div","tlist");
       day.blocks.forEach((b,bi)=>{ const r = el("div","trow"), art = el("span","art"), g = el("div","grow"), done = b.sets.filter((_,si)=>vals[bi + "-" + si] != null).length;
@@ -137,7 +137,7 @@ function render(){
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd'hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l'as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
-      const bt = el("button","btn big" + (dn >= tot ? " fin" : ""), dn >= tot ? "Bravo, séance faite ! Voir mon parcours" : dn ? "Reprendre · " + dn + " / " + tot : (P.zen ? "Commencer" : "Démarrer") + " · " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min"); 
+      const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Bravo, séance faite ! Voir mon parcours" : dn ? "Reprendre · " + dn + " / " + tot : (P.zen ? "Commencer" : "Démarrer") + " · " + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min"); 
       bt.onclick = () => dn >= tot ? showTab("path") : startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
       if (dn >= tot) nc.append(el("div","tmeta","Merci pour ce moment. Repose-toi bien."));
@@ -228,7 +228,7 @@ function fillDlg(){
   $("toggle").className = "btn" + (!x.done && m.type === "check" ? "" : " line");
   const parts = [];
   if (m.type !== "check") parts.push(x.best ? "Record : " + fmt(m,x.best) : "Aucun essai enregistré");
-  { const L = lvls(m), k = lvlOf(m), nx = nextStep(m); if (L.length > 1) parts.push("Niveau " + k + " sur " + L.length + (nx ? " · palier suivant : " + unitTxt(m, nx) : "")); }
+  { const L = lvls(m), k = lvlOf(m), nx = nextStep(m); if (L.length > 1) parts.push("Niveau " + k + " sur " + L.length + (nx ? " · niveau suivant : " + unitTxt(m, nx) : "")); }
   if (x.done) parts.push("Jalon validé");
   if (lk) parts.push("Recommandé après : " + missing(m));
   $("dBest").textContent = parts.join(" · ");
