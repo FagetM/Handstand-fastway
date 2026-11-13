@@ -259,7 +259,7 @@ const mix = (a, b, k) => { const o = {}; KEYS.forEach(key => o[key] = a[key] + (
 const ease = t => t*t*(3 - 2*t);
 
 const SKIN = {s1:"#f0c8a4", s2:"#d9a074", s3:"#a86e45", s4:"#6b452b"};
-const CLOTH = {w:"#f2f0ea", k:"#1d1d1b", g:"#8a8880", o:"#ff5b2e", b:"#3d5f94", v:"#4f7a5b", y:"#dba622", r:"#b3362b", p:"#6a4c93", n:"#22324f"};
+const CLOTH = {w:"#f2f0ea", k:"#1d1d1b", g:"#8a8880", o:"#ff5b2e", b:"#3d5f94", v:"#4f7a5b", y:"#dba622", r:"#b3362b", p:"#6a4c93", n:"#22324f", x:"#e58aa8"};
 const HAIR = {brown:"#3a2a20", black:"#141312", blond:"#c9a45c", red:"#9a4a22", grey:"#9a9892"};
 const OLD = {wraps:"wraps_o", band:"band_o", cap:"cap_o", shoes:"shoes_k", socks:"socks_w", belt:"belt_o"};   // anciens identifiants de tenue
 
@@ -313,6 +313,29 @@ export function mount(host, opts = {}){
   const capG = grp(neck, 0, 0.19, 0);
   const dome = new THREE.Mesh(new THREE.SphereGeometry(0.134, 28, 14, 0, 2*PI, 0, PI/2), mHead); dome.scale.set(1, 0.85, 1.03); capG.add(dome);
   const brim = cyl(0.1, 0.012, mHead); brim.scale.set(1, 1, 0.8); at(brim, capG, 0, 0.004, 0.13);
+  // accessoires pour rire : chapeaux, visage, cape, tutu, bouée
+  const mRed = M(0.5), mDuck = M(0.5), mCape = M(0.85), mTutu = M(0.9); mRed.color.set("#d2362b"); mDuck.color.set("#f2c230"); mTutu.color.set("#e58aa8"); mCape.side = mTutu.side = THREE.DoubleSide;
+  const cone = (r, h, mat) => new THREE.Mesh(new THREE.ConeGeometry(r, h, 20), mat);
+  const partyHat = grp(neck, 0, 0.33, -0.01); partyHat.rotation.x = -0.14; at(cone(0.062, 0.17, mHead), partyHat, 0, 0.05, 0); at(ball(0.02, mChalk), partyHat, 0, 0.14, 0);
+  const chef = grp(neck, 0, 0.27, -0.005); chef.rotation.x = -0.12; at(cyl(0.1, 0.1, mChalk), chef, 0, 0.04, 0); { const puff = at(ball(0.135, mChalk), chef, 0, 0.12, 0); puff.scale.set(1, 0.55, 1); }
+  const prop = grp(neck, 0, 0.305, 0); at(cyl(0.008, 0.05, mGold), prop, 0, 0.02, 0); const blades = grp(prop, 0, 0.045, 0);
+  [0, 1].forEach(i => { const bl = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.006, 0.034), i ? mRed : mDuck); bl.position.x = i ? -0.055 : 0.055; bl.rotation.x = i ? -0.35 : 0.35; blades.add(bl); });
+  const horn = grp(neck, 0, 0.3, 0.06); horn.rotation.x = 0.35; at(cone(0.026, 0.15, mGold), horn, 0, 0.06, 0);
+  const catEars = grp(neck, 0, 0.17, 0); [-1, 1].forEach(s => { const e = cone(0.04, 0.075, mHead); e.position.set(s*0.075, 0.125, -0.005); e.rotation.z = -s*0.35; catEars.add(e); });
+  const viking = grp(neck, 0, 0.19, 0); { const d = new THREE.Mesh(new THREE.SphereGeometry(0.136, 28, 14, 0, 2*PI, 0, PI/2), mHead); d.scale.set(1, 0.9, 1.03); viking.add(d);
+    [-1, 1].forEach(s => { const h = cone(0.03, 0.13, mChalk); h.position.set(s*0.15, 0.085, 0); h.rotation.z = -s*0.75; viking.add(h); }); }
+  const halo = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.011, 8, 32), mGold); halo.rotation.x = PI/2 - 0.12; at(halo, neck, 0, 0.365, -0.01);
+  const stache = grp(neck, 0, 0.135, 0.118); [-1, 1].forEach(s => { const m = cap(0.012, 0.04, mHair); m.position.set(s*0.028, -s*0 - 0.004, 0); m.rotation.z = PI/2 - s*0.35; stache.add(m); });
+  const shades = grp(neck, 0, 0.187, 0.112); [-1, 1].forEach(s => { const g = ball(0.033, mDark); g.scale.set(1, 0.8, 0.3); g.position.x = s*0.046; shades.add(g); }); { const br = cyl(0.006, 0.05, mDark); br.rotation.z = PI/2; shades.add(br); }
+  const nose = at(ball(0.03, mRed), neck, 0, 0.158, 0.125);
+  const beard = at(ball(0.085, mChalk), neck, 0, 0.085, 0.062); beard.scale.set(1.05, 1.15, 0.7);
+  const mono = new THREE.Mesh(new THREE.TorusGeometry(0.03, 0.006, 8, 24), mGold); at(mono, neck, -0.045, 0.186, 0.118);
+  const cape = grp(root, 0, 0.56, -0.13); { const c = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.62), mCape); c.position.y = -0.31; cape.add(c); cape.rotation.x = 0.16; }
+  const bow = grp(root, 0, 0.575, 0.085); [-1, 1].forEach(s => { const c = cone(0.03, 0.055, mBelt); c.position.x = s*0.035; c.rotation.z = s*PI/2; bow.add(c); }); bow.add(ball(0.014, mBelt));
+  const wings = grp(root, 0, 0.44, -0.15); [-1, 1].forEach(s => { const w = ball(0.13, mChalk); w.scale.set(0.75, 1.5, 0.14); w.position.set(s*0.17, 0.04, 0); w.rotation.z = -s*0.55; wings.add(w); });
+  const tutu = at(new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.33, 0.1, 28, 1, true), mTutu), root, 0, 0.03, 0);
+  const duck = grp(root, 0, 0.03, 0); { const t = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.065, 12, 32), mDuck); t.rotation.x = PI/2; duck.add(t); at(ball(0.065, mDuck), duck, 0, 0.11, 0.24);
+    const bk = cone(0.025, 0.06, mRed); bk.rotation.x = PI/2; at(bk, duck, 0, 0.1, 0.31); [-1, 1].forEach(s => at(ball(0.01, mDark), duck, s*0.028, 0.135, 0.29)); }
   const limbs = [0, 1].map(i => { const sx = i ? -1 : 1;
     const sh = grp(root, sx*0.215, 0.5, 0);
     const shoulder = at(ball(0.066, mSkin), sh, 0, 0, 0);
@@ -332,10 +355,11 @@ export function mount(host, opts = {}){
     const foot = cap(0.043, 0.1, mSkin); foot.rotation.x = PI/2; at(foot, ank, 0, 0, 0.06);
     const sock = at(cyl(0.058, 0.09, mShoe), kn, 0, -0.36, 0);
     const sole = cap(0.05, 0.13, mShoe); sole.rotation.x = PI/2; sole.scale.set(1.1, 1, 0.62); at(sole, ank, 0, -0.025, 0.07);
-    return {sx, sh, el, hip, kn, ank, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole}; });
+    const fin = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.014, 0.3), mShoe); at(fin, ank, 0, -0.03, 0.22);
+    return {sx, sh, el, hip, kn, ank, hand, thumb, fore, upper:sh.children[1], shoulder, sleeve, wrist, thigh, short, shin, foot, sock, sole, fin}; });
   // articulation de la taille : le haut du corps (torse, cou, épaules) peut se cambrer ou s'arrondir par rapport au bassin
   const spine = grp(root, 0, 0.2, 0);
-  [torso, chest, neck, medal, limbs[0].sh, limbs[1].sh].forEach(o => { o.position.y -= 0.2; spine.add(o); });
+  [torso, chest, neck, medal, cape, bow, wings, limbs[0].sh, limbs[1].sh].forEach(o => { o.position.y -= 0.2; spine.add(o); });
 
   // socle : disque + arc de progression vers le niveau suivant
   const base = at(new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.03, 64), soft), scene, 0, -0.016, 0);
@@ -364,18 +388,22 @@ export function mount(host, opts = {}){
     f = Object.assign({}, f || {}); Object.keys(f).forEach(k => { if (OLD[f[k]]) f[k] = OLD[f[k]]; });
     const part = v => String(v || "none").split("_"), col = (c, d) => CLOTH[c] || CLOTH[d];
     mSkin.color.set(SKIN[f.skin] || SKIN.s2); mHair.color.set(HAIR[f.hairc] || HAIR.brown);
-    const [tk, tc] = part(f.top), [bk, bc] = part(f.bottom || "short_k"), [fk, fc] = part(f.feet), [wk, wc] = part(f.wrists), [hk, hc] = part(f.head), [xk, xc] = part(f.extra);
+    const [tk, tc] = part(f.top), [bk, bc] = part(f.bottom || "short_k"), [fk, fc] = part(f.feet), [wk, wc] = part(f.wrists), [hk, hc] = part(f.head), [xk, xc] = part(f.extra), ck = part(f.face)[0];
     const topM = tk === "none" ? mSkin : mTop; mTop.color.set(col(tc, "w")); mBot.color.set(col(bc, "k"));
     [waist, torso, chest].forEach(m => m.material = topM);
-    const pants = bk === "pants", sleeves = tk === "tee" || tk === "ls", long = tk === "ls", shoes = fk === "shoes", socks = fk === "socks";
-    mShoe.color.set(col(fc, shoes ? "k" : "w")); mWrist.color.set(col(wc, "o")); mHead.color.set(col(hc, "o")); mBelt.color.set(col(xc, "o"));
+    const pants = bk === "pants", sleeves = tk === "tee" || tk === "ls", long = tk === "ls", clown = fk === "clown", shoes = fk === "shoes" || clown, socks = fk === "socks";
+    mShoe.color.set(col(fc, shoes ? "k" : "w")); mWrist.color.set(col(wc, "o")); mHead.color.set(col(hc, "o")); mBelt.color.set(col(xc, "o")); mCape.color.set(col(xc, "r"));
     limbs.forEach(L => { L.sleeve.visible = sleeves && !long; L.shoulder.material = sleeves ? mTop : mSkin; L.upper.material = long ? mTop : mSkin; L.fore.material = long ? mTop : mSkin;
       L.thigh.material = pants ? mBot : mSkin; L.shin.material = pants ? mBot : mSkin; L.short.visible = !pants;
-      L.wrist.visible = wk === "wraps"; L.hand.material = L.thumb.material = wk === "chalk" ? mChalk : mSkin;
+      L.wrist.visible = wk === "wraps"; L.hand.material = L.thumb.material = wk === "chalk" ? mChalk : wk === "box" ? mWrist : mSkin;
+      if (wk === "box") L.hand.scale.set(1.3, 1.35, 1.45); else L.hand.scale.set(0.8, 1.05, 1.15);
+      if (clown) { L.sole.scale.set(1.75, 1.75, 1.05); L.sole.position.z = 0.12; } else { L.sole.scale.set(1.1, 1, 0.62); L.sole.position.z = 0.07; } L.fin.visible = fk === "flip";
       L.sock.visible = shoes || socks; L.sole.visible = shoes; L.foot.visible = !shoes; L.foot.material = socks ? mShoe : mSkin; });
-    const covered = hk === "cap" || hk === "beanie";
+    const covered = hk === "cap" || hk === "beanie" || hk === "prop" || hk === "viking" || hk === "chef";
     hairShort.visible = f.hair !== "none" && f.hair != null && hk !== "beanie"; bun.visible = f.hair === "bun" && !covered; tail.visible = f.hair === "tail";
-    headband.visible = hk === "band"; capG.visible = hk === "cap"; beanie.visible = hk === "beanie"; crown.visible = hk === "crown";
+    headband.visible = hk === "band"; capG.visible = hk === "cap" || hk === "prop"; prop.visible = hk === "prop"; partyHat.visible = hk === "party"; chef.visible = hk === "chef"; horn.visible = hk === "horn"; catEars.visible = hk === "cat"; viking.visible = hk === "viking"; halo.visible = hk === "halo";
+    stache.visible = ck === "stache"; shades.visible = ck === "shades"; nose.visible = ck === "nose"; beard.visible = ck === "beard"; mono.visible = ck === "mono";
+    cape.visible = xk === "cape"; bow.visible = xk === "bow"; wings.visible = xk === "wings"; tutu.visible = xk === "tutu"; duck.visible = xk === "duck"; beanie.visible = hk === "beanie"; crown.visible = hk === "crown";
     belt.visible = knot.visible = xk === "belt"; medal.visible = xk === "medal" || xk === "medal2"; coin2.visible = xk === "medal2";
   }
   function colors(){ wall.material.color.set(cssv("--mut") || "#918e86"); barM.color.set(cssv("--mut") || "#918e86"); const a = cssv("--acc") || "#ff5b2e"; mAcc.color.set(a); ringM.color.set(a); soft.color.set(cssv("--line") || "#2c2c29"); }
@@ -494,7 +522,7 @@ export function mount(host, opts = {}){
     if (!party && !seg && !queue.length && !drag && now - last < 30) { if (visible) raf = requestAnimationFrame(frame); return; }
     const dt = Math.min(0.05, (now - last) / 1000); last = now; core(dt, now);
     if (visible && (!reduce || seg || queue.length || party)) raf = requestAnimationFrame(frame); }
-  function core(dt, now){ fdt = dt || 1 / 30;
+  function core(dt, now){ fdt = dt || 1 / 30; if (prop.visible) blades.rotation.y += fdt * 9;
     if (party) { partyStep(dt); dirty = true; }
     else if (seg || queue.length || holdT > 0) {
       if (holdT > 0) { holdT -= dt; dirty = true; }

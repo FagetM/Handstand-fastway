@@ -88,7 +88,7 @@ const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en f
 function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>reqDone(m.id)); }
 // Coffres : un par étage, ouvert quand l'étage est terminé ; chacun débloque une tenue.
 const CHESTS = {base:["bottom","short_n","Short marine"], starter:["head","band_b","Bandeau bleu"], b1:["wrists","wraps_b","Bandes de poignets bleues"], b2:["top","tank_b","Débardeur bleu"], inter:["bottom","short_p","Short violet"],
-  onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"]};
+  onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"], ultime:["extra","wings","Ailes d'ange"]};
 // Estimation, à ton rythme : semaines pour atteindre la cible d'une figure (d'après tes progrès enregistrés, sinon une estimation prudente)
 function eta(m){
   const x = st(m.id); if (x.done || !m.target || m.type === "check") return null; const T = m.target;

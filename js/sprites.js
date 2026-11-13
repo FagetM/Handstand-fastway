@@ -31,7 +31,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "33-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "34-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
@@ -45,7 +45,7 @@ async function sprStore(key, id, blob, n, hold){
     const meta = sprMeta(); if (meta.key !== key || meta.v !== SPV) { meta.key = key; meta.v = SPV; meta.items = {}; } meta.items[id] = {n, hold}; localStorage.setItem(SPM, JSON.stringify(meta)); } catch(e){}
 }
 async function buildSprites(force){
-  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra]); if (key === sprKey && !force) return;
+  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra,F.face]); if (key === sprKey && !force) return;
   const changed = sprKey && sprKey !== key; sprKey = key; const job = ++sprJob;
   if (changed && sprW) { sprW.terminate(); sprW = null; sprWok = null; }   // un calcul en cours avec l'ancienne tenue est abandonné
   if (changed) Object.keys(SPR).forEach(id=>{ const u = SPR[id].url; delete SPR[id]; setTimeout(()=>URL.revokeObjectURL(u), 2000); });

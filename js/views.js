@@ -7,13 +7,19 @@ const WARD = [
   {slot:"hairc", name:"Couleur des cheveux", items:[["brown","Bruns"],["black","Noirs"],["blond","Blonds"],["red","Roux"],["grey","Gris"]]},
   {slot:"top", name:"Haut", items:[["none","Torse nu"],["tank_k","Débardeur noir"],["tee_w","T-shirt blanc"],["tank_w","Débardeur blanc",2],["tee_g","T-shirt gris",2],["tee_k","T-shirt noir",3],
     ["tee_o","T-shirt orange",5],["tank_o","Débardeur orange",6],["tee_b","T-shirt bleu",7],["ls_k","Manches longues noir",9],["tee_v","T-shirt vert",10],["ls_w","Manches longues blanc",11],
-    ["tee_y","T-shirt jaune","b:st7"],["tee_r","T-shirt rouge","b:s100"],["tee_p","T-shirt violet","b:e10"],["ls_n","Manches longues marine","b:se10"]]},
+    ["tee_y","T-shirt jaune","b:st7"],["tee_r","T-shirt rouge","b:s100"],["tee_p","T-shirt violet","b:e10"],["ls_n","Manches longues marine","b:se10"],
+    ["tee_x","T-shirt rose","m:in_holds"],["tank_v","Débardeur vert","m:pl_lean"],["ls_v","Manches longues vert","m:pl_half"],["tank_r","Débardeur rouge","b:h180"],["ls_r","Manches longues rouge","m:oa_switch"],["tank_p","Débardeur violet","b:se200"],["ls_p","Manches longues violet","b:se400"],["tank_y","Débardeur jaune","m:pl_press"]]},
   {slot:"bottom", name:"Bas", items:[["short_k","Short noir"],["short_g","Short gris",2],["short_o","Short orange",4],["short_b","Short bleu",5],["pants_k","Pantalon noir",6],["pants_g","Pantalon gris",8],
-    ["pants_n","Pantalon marine",10],["short_v","Short vert","b:st3"],["short_r","Short rouge","b:h10"],["pants_w","Pantalon blanc","b:st30"]]},
-  {slot:"feet", name:"Pieds", items:[["bare","Pieds nus"],["socks_w","Chaussettes blanches",2],["socks_k","Chaussettes noires",3],["shoes_k","Chaussures noires",4],["shoes_w","Chaussures blanches",6],["shoes_o","Chaussures orange",9],["shoes_y","Chaussures jaunes","b:se50"]]},
-  {slot:"wrists", name:"Poignets et mains", items:[["none","Rien"],["wraps_w","Bandes blanches",3],["wraps_o","Bandes orange",4],["wraps_k","Bandes noires",7],["chalk","Magnésie","b:h10"]]},
-  {slot:"head", name:"Tête", items:[["none","Rien"],["band_o","Bandeau orange",5],["band_w","Bandeau blanc",5],["beanie_k","Bonnet noir",7],["cap_o","Casquette orange",8],["cap_k","Casquette noire",9],["beanie_r","Bonnet rouge","b:s1000"],["crown","Couronne","b:goal_oahs"]]},
-  {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt_w","Ceinture blanche",3],["belt_o","Ceinture orange",6],["belt_k","Ceinture noire",12],["medal","Médaille","quest"],["medal2","Deux médailles","b:goal_planche"]]},
+    ["pants_n","Pantalon marine",10],["short_v","Short vert","b:st3"],["short_r","Short rouge","b:h10"],["pants_w","Pantalon blanc","b:st30"],
+    ["short_x","Short rose","m:in_7s"],["short_y","Short jaune","m:pr_lsit"],["pants_o","Pantalon orange","m:oa_wall"],["pants_r","Pantalon rouge","b:se100"],["pants_p","Pantalon violet","m:pr_manna"],["pants_x","Pantalon rose","b:h600"]]},
+  {slot:"feet", name:"Pieds", items:[["bare","Pieds nus"],["socks_w","Chaussettes blanches",2],["socks_k","Chaussettes noires",3],["shoes_k","Chaussures noires",4],["shoes_w","Chaussures blanches",6],["shoes_o","Chaussures orange",9],["shoes_y","Chaussures jaunes","b:se50"],
+    ["socks_r","Chaussettes rouges","m:b2_str15"],["socks_x","Chaussettes roses","m:in_str40"],["shoes_x","Chaussures roses","m:oa_flaghoriz"],["flip_b","Palmes de plongée","m:st_split"],["clown_r","Chaussures de clown","b:se100"]]},
+  {slot:"wrists", name:"Poignets et mains", items:[["none","Rien"],["wraps_w","Bandes blanches",3],["wraps_o","Bandes orange",4],["wraps_k","Bandes noires",7],["chalk","Magnésie","b:h10"],["wraps_r","Bandes rouges","m:in_str60"],["wraps_p","Bandes violettes","m:pl_tuck"],["wraps_y","Bandes jaunes","m:pr_lsitHs"],["box_r","Gants de boxe","m:oa_wall"]]},
+  {slot:"head", name:"Tête", items:[["none","Rien"],["band_o","Bandeau orange",5],["band_w","Bandeau blanc",5],["beanie_k","Bonnet noir",7],["cap_o","Casquette orange",8],["cap_k","Casquette noire",9],["beanie_r","Bonnet rouge","b:s1000"],["crown","Couronne","b:goal_oahs"],
+    ["prop_b","Casquette à hélice",2],["party_r","Chapeau de fête","b:se10"],["cat_k","Oreilles de chat","m:b2_str15"],["chef_w","Toque de chef","m:in_str60"],["viking_g","Casque de viking","m:pl_straddle"],["horn","Corne de licorne","m:oa_oahs"],["halo","Auréole","m:pr_manna"]]},
+  {slot:"face", name:"Visage", items:[["none","Rien"],["stache","Moustache",3],["nose","Nez de clown","b:st3"],["shades","Lunettes de soleil","m:b1_free5"],["mono","Monocle","m:pr_straddle"],["beard","Barbe de sage","b:h60"]]},
+  {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt_w","Ceinture blanche",3],["belt_o","Ceinture orange",6],["belt_k","Ceinture noire",12],["medal","Médaille","quest"],["medal2","Deux médailles","b:goal_planche"],
+    ["bow_r","Nœud papillon","m:in_holds"],["duck","Bouée canard","m:pr_lsit"],["tutu","Tutu rose","m:in_7s"],["cape_r","Cape de super-héros","m:pr_straddle"],["cape_k","Cape noire","m:pl_press"]]},
 ];
 // Postures que le personnage peut prendre : debout, plus celle de chaque jalon validé.
 const poseOf = id => POSE3D[id] || (id.startsWith("pl_") ? id : null);
@@ -22,8 +28,8 @@ function unlockedPoses(){ const out = [["stand","Debout"]], seen = new Set(["sta
   return out; }
 // les coffres du parcours ajoutent chacun une tenue au vestiaire
 Object.entries(CHESTS).forEach(([sid, [slot, id, name]])=>{ const w = WARD.find(x=>x.slot === slot); if (w && !w.items.some(it=>it[0] === id)) w.items.push([id, name, "c:" + sid]); });
-const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (need.startsWith("c:") ? (chestOpen(SEC[need.slice(2)]) || (S.chests || []).includes(need.slice(2))) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
-const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
+const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? need.startsWith("m:") ? st(need.slice(2)).done : (need.startsWith("c:") ? (chestOpen(SEC[need.slice(2)]) || (S.chests || []).includes(need.slice(2))) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
+const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", face:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
 function renderFit(){
   const box = $("fitBody"), F = fit(), Z = lastZ || stats(); box.textContent = "";
@@ -39,7 +45,7 @@ function renderFit(){
       const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null, ch = typeof need === "string" && need.startsWith("c:") ? SEC[need.slice(2)] : null;
       const ok = wardOk(need, Z);
       const b = el("button","chip" + (F[w.slot] === id ? " on" : ""), name); b.disabled = !ok; b.setAttribute("aria-pressed", F[w.slot] === id);
-      if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : ch ? "coffre « " + ch.name + " »" : bd ? "badge « " + bd.name + " »" : "niveau " + need));
+      if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : ch ? "coffre « " + ch.name + " »" : bd ? "badge « " + bd.name + " »" : typeof need === "string" && need.startsWith("m:") ? "figure « " + MS[need.slice(2)].name + " »" : "niveau " + need));
       b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); renderFit(); };
       row.append(b); });
     s.append(row); box.append(s); });
