@@ -299,6 +299,33 @@ ul.plan li{margin:7px 0}
 .fold-h .chev{margin-left:auto;transition:transform .2s}
 .fold-h[aria-expanded=true] .chev{transform:rotate(90deg)}
 #sess[hidden]{display:none}
+/* mascotte */
+#mascot{position:fixed;right:14px;bottom:calc(68px + env(safe-area-inset-bottom));z-index:6;width:64px;height:64px;border-radius:50%;background:var(--raise);box-shadow:0 4px 16px rgba(0,0,0,.35),inset 0 0 0 2px var(--acc);overflow:hidden;display:grid;place-items:center}
+#mascot .sp{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+#mascot i{position:absolute;right:8px;top:8px;width:11px;height:11px;border-radius:50%;background:var(--acc);box-shadow:0 0 0 2px var(--raise)}
+body.locked #mascot{display:none}
+#chatDlg{height:80dvh;display:none;flex-direction:column}
+#chatDlg[open]{display:flex}
+.chhead{display:flex;gap:12px;align-items:center;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.chav{position:relative;flex:none;width:44px;height:44px;border-radius:50%;background:var(--raise);overflow:hidden}
+.chav .sp{position:absolute;left:0;top:0}
+#chatLog{flex:1;overflow-y:auto;padding:12px 0;display:flex;flex-direction:column;gap:10px}
+.msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:15px;line-height:1.4}
+.msg p{margin:0}
+.msg.bot{background:var(--raise);border-bottom-left-radius:4px;align-self:flex-start}
+.msg.you{background:var(--acc);color:#fff;border-bottom-right-radius:4px;align-self:flex-end}
+.msg .chip{margin-top:8px}
+.chsug{display:flex;gap:6px;overflow-x:auto;padding:6px 0;scrollbar-width:none}
+.chsug .chip{flex:none;white-space:nowrap}
+.chform{display:flex;gap:8px;padding-top:6px}
+.chform input{flex:1;min-height:46px;padding:8px 14px;border-radius:23px;border:1px solid var(--line);background:var(--raise);font-size:16px}
+.chform .btn{width:52px;min-height:46px;border-radius:23px;font-size:20px}
+.tip{display:flex;gap:10px;align-items:center;width:100%;margin:0 0 14px;padding:8px 12px 8px 6px;border-radius:14px;background:var(--raise);text-align:left}
+.tip .sp{position:relative;flex:none}
+.tip .tb{display:flex;flex-direction:column;gap:2px;font-size:14px;line-height:1.35}
+.tip .tb b{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.hist{margin:14px 0 4px}
+.hist .mut{font-size:12.5px}
 /* le chemin */
 .jr2 .jr-e path{stroke-width:7;stroke-opacity:.18;stroke-dasharray:none}
 .jr2 .jr-e path.on{stroke:var(--txt);stroke-opacity:.9}
@@ -555,6 +582,14 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
   </section>
 </main>
 
+<button id="mascot" aria-label="Pose une question à ton coach"><span class="sp" data-anim="me" data-pose="stand" data-lk=""></span><i id="mascotDot"></i></button>
+<dialog id="chatDlg">
+  <div class="chhead"><span class="chav"><span class="sp" data-anim="me" data-pose="stand" data-lk=""></span></span><div class="grow"><div class="lab">Ton coach</div><b>Pose-moi une question</b></div>
+    <button class="x" id="chatX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button></div>
+  <div id="chatLog" aria-live="polite"></div>
+  <div class="chsug" id="chatSug"></div>
+  <form id="chatForm" class="chform"><input id="chatIn" type="text" autocomplete="off" placeholder="Ex. : c'est quoi un straddle ?" aria-label="Ta question"><button class="btn" type="submit" aria-label="Envoyer">→</button></form>
+</dialog>
 <nav class="tabs">
   <button data-v="today" class="on">Aujourd'hui</button>
   <button data-v="path">Parcours</button>
@@ -1003,6 +1038,8 @@ function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().
 const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
 let jrScrolled = false;
 const tierOpen = {};
+// un coffre s'ouvre quand les figures du chemin de l'étage sont validées (les bonus hors chemin ne comptent pas)
+function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>st(m.id).done); }
 // Coffres : un par étage, ouvert quand l'étage est terminé ; chacun débloque une tenue.
 const CHESTS = {starter:["head","band_b","Bandeau bleu"], b1:["wrists","wraps_b","Bandes de poignets bleues"], b2:["top","tank_b","Débardeur bleu"], inter:["bottom","short_p","Short violet"],
   onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"]};
@@ -1025,16 +1062,16 @@ function journey(nextId){
       state = ms.filter(m=>!m.alt).every(m=>st(m.id).done) ? "done" : ms.some(m=>!st(m.id).done && !msLocked(m)) ? "cur" : "lk";
     items.push({k:"b", y, title, sid, sub, dn, tot:ms.length, state, n:++n}); y += SH; };
   const node = (id, x, small) => { pos[id] = [x, y + 40, small]; items.push({k:"n", id}); };
-  const chest = (sid, x, lane) => { const done = sid === "hard" ? false : secDone(SEC[sid]); pos["chest_" + sid] = [x, y + 34]; items.push({k:"c", sid, x, y, done, lane}); };
+  const chest = (sid, x, lane) => { const done = sid === "hard" ? false : chestOpen(SEC[sid]); pos["chest_" + sid] = [x, y + 34]; items.push({k:"c", sid, x, y, done, lane}); };
   const step = (id, small) => { const x = X[k++ % X.length]; node(id, x, small); if (prev) seg(pos[prev], pos[id], eCls(prev.startsWith("chest_") ? chestDone(prev) : st(prev).done, id, msLocked(MS[id]) && !st(id).done)); prev = id; y += RH; };
-  const chestDone = cid => secDone(SEC[cid.slice(6)]);
+  const chestDone = cid => chestOpen(SEC[cid.slice(6)]);
   // le tronc commun : une figure par ligne, dans l'ordre du parcours
   ["starter","b1","b2","inter"].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, TIER_TXT[sid]);
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
     s.ms.filter(m=>m.alt).forEach(m=>{ const x = X[(k - 1) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40, true]; items.push({k:"n", id:m.id, alt:true}); y += 0; });
-    const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (secDone(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
+    const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
   // le niveau difficile : trois voies
   sign("Niveau difficile", "hard", "Trois voies : choisis la tienne, ou mène-les de front.");
   const laneY = y, LX = [17, 50, 83]; y += 104;
@@ -1043,7 +1080,7 @@ function journey(nextId){
   const y0 = y; let ymax = y;
   HARD.forEach(([sid], i)=>{ let py = y0, last = "chest_inter"; SEC[sid].ms.forEach(m=>{ pos[m.id] = [LX[i], py + 40, false]; items.push({k:"n", id:m.id, lane:true});
       seg(pos[last], pos[m.id], eCls(last.startsWith("chest_") ? chestDone(last) : st(last).done, m.id, msLocked(m) && !st(m.id).done)); last = m.id; py += RH; });
-    items.push({k:"c", sid, x:LX[i], y:py, done:secDone(SEC[sid]), lane:true}); pos["chest_" + sid] = [LX[i], py + 34]; seg(pos[last], pos["chest_" + sid], st(last).done ? (secDone(SEC[sid]) ? "on" : "go") : ""); ymax = Math.max(ymax, py + RH); });
+    items.push({k:"c", sid, x:LX[i], y:py, done:chestOpen(SEC[sid]), lane:true}); pos["chest_" + sid] = [LX[i], py + 34]; seg(pos[last], pos["chest_" + sid], st(last).done ? (chestOpen(SEC[sid]) ? "on" : "go") : ""); ymax = Math.max(ymax, py + RH); });
   y = ymax + 10;
   // hors parcours : les figures au sol
   sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
@@ -1094,6 +1131,14 @@ function quick(id){
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
   const w = eta(m); g.append(el("div","mut", x.done ? "Maîtrisé" : lk ? "Après : " + missing(m) : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) : "À réussir"));
   const top = el("div","qktop"); top.append(art, g); box.append(top);
+  { // historique : meilleur temps de chaque jour d'entraînement sur cette figure
+    const byDay = {}; S.log.filter(l=>(l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l=>{ const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
+    const pts = Object.values(byDay).slice(-20);
+    if (pts.length >= 2 && m.target) { const W = 300, H = 70, mx = Math.max(m.target, ...pts), X = i => 6 + i * (W - 12) / (pts.length - 1), Y = v => H - 8 - v / mx * (H - 16);
+      const svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" aria-hidden="true"><line x1="0" x2="' + W + '" y1="' + Y(m.target) + '" y2="' + Y(m.target) + '" stroke="var(--acc)" stroke-dasharray="4 4" stroke-width="1.5"/>'
+        + '<polyline fill="none" stroke="var(--txt)" stroke-width="2.5" stroke-linejoin="round" points="' + pts.map((v,i)=>X(i).toFixed(1) + "," + Y(v).toFixed(1)).join(" ") + '"/>' + pts.map((v,i)=>'<circle cx="' + X(i).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="3.5" fill="var(--txt)"/>').join("") + '</svg>';
+      const h = el("div","hist"); h.append(el("div","lab","Ton historique · " + pts.length + " séances")); const gr = el("div"); gr.innerHTML = svg; h.append(gr, el("div","mut","Pointillés : la cible (" + goalTxt(m) + "). Meilleur : " + fmt(m, Math.max(...pts)) + ".")); box.append(h); }
+  }
   const row = el("div","btns"), go = el("button","btn", lk ? "Voir quand même" : x.done ? "Refaire" : m.type === "hold" ? "S'entraîner" : "Ouvrir"), more = el("button","btn line","Détails");
   go.onclick = () => { $("qkDlg").close(); openMs(id); if (m.type === "hold" && !lk) setTimeout(()=>{ const gb = $("go"); if (gb && $("dlg").open) { $("clock").scrollIntoView({block:"center"}); gb.click(); } }, 250); };
   more.onclick = () => { $("qkDlg").close(); openMs(id); };
@@ -1246,7 +1291,7 @@ function unlockedPoses(){ const out = [["stand","Debout"]], seen = new Set(["sta
   return out; }
 // les coffres du parcours ajoutent chacun une tenue au vestiaire
 Object.entries(CHESTS).forEach(([sid, [slot, id, name]])=>{ const w = WARD.find(x=>x.slot === slot); if (w && !w.items.some(it=>it[0] === id)) w.items.push([id, name, "c:" + sid]); });
-const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (need.startsWith("c:") ? secDone(SEC[need.slice(2)]) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
+const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? (need.startsWith("c:") ? chestOpen(SEC[need.slice(2)]) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
 const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
 function renderFit(){
@@ -1311,7 +1356,7 @@ function render(){
   if (seen){ const nb = Z.badges.find(b=>b.ok && !seen.b.includes(b.id));
     if (nb) toast("Badge débloqué : " + nb.name); else if (Z.lvl > seen.lvl) toast("Niveau " + Z.lvl + " · " + Z.rank);
     if ((nb || Z.lvl > seen.lvl) && A3) A3.celebrate(); }
-  { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && secDone(SEC[sid])), had = S.chests;
+  { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { toast("Coffre ouvert : " + CHESTS[nw][2] + " ! Va l'enfiler dans le vestiaire."); if (A3) A3.celebrate(); } }
     if (!had || had.length !== op.length) { S.chests = op; save(); } }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
@@ -1363,7 +1408,9 @@ function render(){
     c.append(fins, g);
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
-    pt.append(c); }
+    pt.append(c);
+    const tip = el("button","tip"), ts = el("span","sp"); ts.dataset.pose = "stand"; ts.dataset.anim = "me"; ts.dataset.lk = ""; sprPaint(ts, 52);
+    const tb = el("span","tb"); tb.append(el("b",null,"Conseil du jour"), el("span",null, tipOfDay())); tip.append(ts, tb); tip.onclick = openChat; pt.append(tip); }
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
@@ -1946,6 +1993,70 @@ $("gateForm").onsubmit = async e => {
 };
 
 render();
+// ---------- Mascotte : ton bonhomme répond à tes questions, hors ligne, à partir de ce que l'app sait ----------
+function nrm(s){ return String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9 ]+/g, " ").replace(/\s+/g, " ").trim(); }
+const STOP = new Set("les des une un le la du de et en au aux a sur avec pour par est ce c que qui quoi comment je tu il on mon ma mes ton ta tes faire fait quel quelle quels quelles combien".split(" "));
+const words = s => nrm(s).split(" ").filter(w=>w.length > 2 && !STOP.has(w));
+const ALIAS = {"un bras":"oa_oahs", "une main":"oa_oahs", "corbeau":"lo_frog", "grenouille":"lo_frog", "drapeau":"oa_flaghoriz", "mexicain":"in_mexican", "stalder":"pr_stalder", "crocodile":"lo_croc", "queda":"lo_qdr", "full planche":"pl_full", "planche complete":"pl_full", "tuck planche":"pl_tuck", "straddle planche":"pl_straddle", "ciseaux":"b1_free5", "pompes en equilibre":"in_hspu", "hspu":"in_hspu", "le 7":"in_7d"};
+function findMs(q){ const n = " " + nrm(q) + " "; for (const k of Object.keys(ALIAS).sort((a,b)=>b.length - a.length)) if (n.includes(" " + k + " ") || n.includes(" " + k)) return MS[ALIAS[k]];
+  const qw = new Set(words(q)); let best = null, sc = 0;
+  Object.values(MS).forEach(m=>{ const w = words(m.name + " " + (m.en || "")); const s = w.filter(x=>qw.has(x)).length / Math.max(2, Math.min(4, w.length)); if (s > sc) { sc = s; best = m; } });
+  return sc >= 0.5 ? best : null; }
+function findLex(q){ const n = nrm(q); let best = null, sc = 0; LEX.forEach(([k,v])=>{ nrm(k).split(/[ ,()]+/).filter(t=>t.length > 2).forEach(t=>{ if (n.includes(t) && t.length > sc) { sc = t.length; best = [k,v]; } }); }); return best; }
+function findEx(q){ const n = nrm(q); let best = null, sc = 0; Object.values(PS).forEach(p=>{ const all = [].concat(...Object.values(p.routines || {}).map(r=>r.blocks || []), ...p.steps.flatMap(s=>Object.values(s.days || {}).flatMap(d=>d.blocks || [])));
+  all.forEach(b=>{ if (!b.how) return; const w = words(b.name); const s = w.filter(x=>n.includes(x)).length; if (s >= 2 && s > sc) { sc = s; best = b; } }); }); return best; }
+function curMs(){ return MS[GOALS[0].ms.find(id=>!st(id).done && !msLocked(MS[id]))]; }
+function tipOfDay(){
+  const m = curMs(), days = [...new Set(S.log.map(l=>dayKey(l.t)))], today = dayKey(Date.now()), trained = days.includes(today);
+  const lastT = S.log.length ? S.log[S.log.length - 1].t : 0, gap = lastT ? Math.floor((Date.now() - lastT) / 864e5) : null;
+  if (painRecent()) return "Tu as signalé une douleur : aujourd'hui, séance légère. Échauffe bien les poignets, et arrête si ça tire.";
+  if (trained) return "Séance faite aujourd'hui, bravo. La progression se construit pendant la récupération : dors bien.";
+  if (gap != null && gap >= 3) return gap + " jours sans séance : on reprend doucement aujourd'hui, une seule figure, 15 minutes.";
+  if (!m) return "Tu as tout validé. Entretiens tes figures, tu es au sommet !";
+  const x = st(m.id), nx = nextStep(m);
+  if (m.type === "hold" && x.best > 0 && nx && nx - x.best <= 2) return "Tu es à " + num(nx - x.best) + " s de ton palier sur « " + m.name + " ». Tente-le aujourd'hui, en fin de séance.";
+  if (!S.log.length) return "Premier jour ? Commence par ton bilan de départ, puis lance la séance : je m'occupe du chrono et des repos.";
+  const pl = planFor(m).n; return "Ta figure du moment : « " + m.name + " »." + (pl && pl.work ? " Objectif du jour : " + pl.sets + " tenues de " + pl.work + " s." : "");
+}
+function answer(q){
+  const n = nrm(q), has = (...k) => k.some(w=>n.includes(w)), Z = lastZ || stats(), m0 = curMs();
+  const out = (text, acts) => ({text, acts:acts || []});
+  if (!n) return out("Pose-moi une question sur ta séance, une figure ou un mot que tu ne connais pas.");
+  if (has("bonjour","salut","hello","coucou")) return out("Salut ! " + tipOfDay());
+  if (has("douleur","mal ","mal au","bless","poignet","epaule","coude")) return out("Si ça fait mal : arrête la série, pas la séance d'un coup. Échauffe longuement les poignets (rotations, appuis doigts, paumes), travaille sur parallettes, et retire deux séries. Si la douleur dure plus de quelques jours, repose-toi et consulte.", [["Signaler une douleur", () => { S.pain = Date.now(); save(); render(); say("C'est noté : séances allégées pendant deux jours, sans tentative maximale."); }]]);
+  if (has("echauff")) return out("Échauffement en 5 minutes : cercles de poignets dans les deux sens, appuis sur le dos des mains, pompes d'omoplates, quelques montées au mur faciles. Les poignets portent tout ton poids : ne les saute jamais.");
+  if (has("fatig","repos","recup","dormi","courbature")) return out("Fatigué ? Fais 15 minutes ou repose-toi : l'équilibre progresse avec la fréquence, pas avec l'épuisement. Choisis « 15 min » sur l'accueil.", [["Ouvrir l'accueil", () => { $("chatDlg").close(); showTab("today"); }]]);
+  if (has("abandon","decourag","n y arrive","narrive","pas de progres","stagn","nul")) { const dn = Object.keys(MS).filter(id=>st(id).done).length;
+    return out("Tu as déjà validé " + dn + " figure" + (dn > 1 ? "s" : "") + ", niveau " + Z.lvl + ". L'équilibre progresse par paliers : on stagne, puis ça débloque d'un coup. Si ça bloque deux semaines, allège une semaine et reprends."); }
+  if (has("niveau","xp","experience","rang")) return out("Tu es niveau " + Z.lvl + " (" + Z.rank + "), " + Z.xp + " points. Encore " + (Z.hi - Z.xp) + " points pour le niveau suivant : chaque série en rapporte 5, chaque figure validée 100.");
+  if (has("badge")) { const b = Z.badges.filter(b=>!b.ok).sort((a,b)=>b.cur/b.max - a.cur/a.max)[0]; return out(b ? "Le badge le plus proche : « " + b.name + " » (" + (b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max) + "). " + b.desc : "Tu as tous les badges !"); }
+  if (has("tenue","vestiaire","coffre","habill")) { const c = Object.keys(CHESTS).find(sid=>SEC[sid] && !chestOpen(SEC[sid])); return out(c ? "Prochain coffre : termine l'étage « " + SEC[c].name + " » pour gagner « " + CHESTS[c][2] + " ». Les tenues se choisissent dans Profil, Vestiaire." : "Tous les coffres sont ouverts !", [["Ouvrir le vestiaire", () => { $("chatDlg").close(); showTab("me"); $("fitOpen").click(); }]]); }
+  const m = findMs(q);
+  if (has("quand","combien de temps","semaine","delai","bientot")) { const t = m || m0; if (!t) return out("Tu as tout validé !"); const w = eta(t);
+    return out(st(t.id).done ? "« " + t.name + " » est déjà maîtrisé." : w ? "« " + t.name + " » : à ton rythme, " + etaTxt(w) + " pour atteindre " + goalTxt(t) + ". Plus tu enregistres de séances, plus l'estimation est juste." : "« " + t.name + " » se valide en le réussissant proprement 3 fois sur 5 : impossible de prévoir une date, mais " + planFor(t).short.toLowerCase()); }
+  if (has("record","meilleur","combien je tiens")) { const t = m || m0; if (!t) return out("Tu as tout validé !"); const x = st(t.id); return out(x.best ? "Ton record sur « " + t.name + " » : " + fmt(t, x.best) + "." + (nextStep(t) ? " Palier suivant : " + unitTxt(t, nextStep(t)) + "." : "") : "Pas encore de record sur « " + t.name + " ». Fais une tentative au chrono pour en avoir un."); }
+  if (has("aujourd","seance","quoi faire","programme du jour","que faire","je fais quoi")) { const t = m0; if (!t) return out("Tout est validé : entretiens tes figures une ou deux fois par semaine.");
+    return out("Aujourd'hui : « " + t.name + " ». " + planFor(t).short + " Touche « Démarrer la séance » sur l'accueil, je m'occupe du chrono et des repos.", [["Démarrer la séance", () => { $("chatDlg").close(); showTab("today"); setTimeout(()=>{ if (nextSet()) startGuided(); }, 300); }]]); }
+  if (m && !has("c est quoi","cest quoi","que veut dire","signifie")) { const D = DETAILS[m.id], x = st(m.id), lk = !x.done && msLocked(m);
+    return out("« " + m.name + " » — " + (m.desc || "") + (D && D.how ? " Comment faire : " + D.how.slice(0, 2).join(" ") : "") + (D && D.err ? " Erreur fréquente : " + D.err : "") + " " + (x.done ? "Tu la maîtrises." : lk ? "Elle s'ouvre après : " + missing(m) + "." : "Niveau " + lvlOf(m) + " sur " + lvls(m).length + "."), [["Voir la figure", () => { $("chatDlg").close(); quick(m.id); }]]); }
+  const lx = findLex(q); if (lx) return out(lx[0] + " : " + lx[1]);
+  if (m) return out("« " + m.name + " » — " + (m.desc || ""), [["Voir la figure", () => { $("chatDlg").close(); quick(m.id); }]]);
+  const ex = findEx(q); if (ex) return out("« " + ex.name + " » — " + ex.how);
+  if (has("planche")) { const t = GOALS[0].ms.filter(id=>id.startsWith("pl_")), d = t.filter(id=>st(id).done).length; return out("Voie Planche : " + d + " / " + t.length + " figures. " + (msLocked(MS.pl_lean) ? "Elle s'ouvre après : " + missing(MS.pl_lean) + "." : "Prochaine : « " + MS[t.find(id=>!st(id).done) || "pl_full"].name + " ».")); }
+  return out("Je ne sais répondre qu'à ce que je connais : ta séance, tes figures, tes records, le vocabulaire (straddle, tuck, lean…), la douleur, la récupération, tes badges et tes tenues. Essaie une des questions ci-dessous.");
+}
+function say(text, acts, who){ const log = $("chatLog"), b = el("div","msg " + (who || "bot")); b.append(el("p",null,text));
+  (acts || []).forEach(([lab, fn])=>{ const a = el("button","chip on", lab); a.onclick = fn; b.append(a); }); log.append(b); log.scrollTop = log.scrollHeight; }
+function ask(q){ say(q, null, "you"); const r = answer(q); setTimeout(()=>say(r.text, r.acts), 250); }
+function openChat(){ const log = $("chatLog"); if (!log.childElementCount) say("Salut ! " + tipOfDay());
+  const sug = $("chatSug"); sug.textContent = ""; ["Je fais quoi aujourd'hui ?","C'est quoi un straddle ?","Quand j'aurai ma figure ?","J'ai mal au poignet","Mon record ?"].forEach(t=>{ const c = el("button","chip",t); c.onclick = () => ask(t); sug.append(c); });
+  $("mascotDot").hidden = true; $("chatDlg").showModal(); }
+$("mascot").onclick = openChat;
+$("chatX").onclick = () => $("chatDlg").close();
+$("chatDlg").addEventListener("click", e => { if (e.target === $("chatDlg")) $("chatDlg").close(); });
+$("chatForm").onsubmit = e => { e.preventDefault(); const q = $("chatIn").value.trim(); if (!q) return; $("chatIn").value = ""; ask(q); };
+document.querySelectorAll("#mascot .sp, #chatDlg .sp").forEach(sp=>sprPaint(sp, sp.closest("#mascot") ? 58 : 44));
+
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n'est appliquée que si tu l'acceptes, jamais pendant une séance.
 let updating = false, reloaded = false;

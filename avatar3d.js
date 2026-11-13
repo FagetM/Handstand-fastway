@@ -272,6 +272,10 @@ export function mount(host, opts = {}){
     tmp.set((box.min.x + box.max.x) / 2, 0, (box.min.z + box.max.z) / 2); pivot.worldToLocal(tmp);
     root.position.set(-tmp.x, -low / scale, -tmp.z);                         // l'appui touche le socle, le corps est centré dessus
     pivot.position.y = jump;
+    // exercices au mur : le personnage reste au contact du mur (talons, pieds ou poitrine), au lieu de le traverser
+    if (wall.visible) { const ry = pivot.rotation.y; pivot.rotation.y = p.spin; pivot.updateMatrixWorld(true); box.setFromObject(root);
+      const side = wall.position.z > 0 ? 1 : -1, surf = side * (Math.abs(wall.position.z) - 0.03), ext = side > 0 ? box.max.z : box.min.z;
+      root.position.z += (surf - ext) / scale; pivot.rotation.y = ry; pivot.updateMatrixWorld(true); }
     // vignettes : la caméra suit le personnage et se rapproche quand la figure est basse ou ramassée
     if (opts.bare) { pivot.updateMatrixWorld(true); box.setFromObject(root); box.getSize(tmp); const r = 0.5 * Math.hypot(tmp.x, tmp.y, tmp.z), cy = (box.min.y + box.max.y) / 2;
       const wantD = Math.max(2.5, Math.min(4.3, r * 1.22 / 0.268)), wantY = Math.max(0.42, cy);
