@@ -130,7 +130,7 @@ function journey(nextId){
       const c = el("span","c"), R = 39, Cc = 2*Math.PI*R, sg = Cc / L.length, gap = L.length > 1 ? 5 : 0;
       let ring = '<svg class="rg" viewBox="0 0 84 84" width="84" height="84" fill="none" aria-hidden="true">';
       L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < kk ? "f" : "") + '" stroke-dasharray="' + (sg - gap).toFixed(1) + ' ' + (Cc - sg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*sg + gap/2)).toFixed(1) + '"/>'; });
-      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; if (!cur) sp.dataset.still = 1; sprPaint(sp, small ? 72 : cur ? 104 : 92); c.append(sp);
+      c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 72 : cur ? 104 : 92); c.append(sp);
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
       b.append(c, el("span","n", m.name));
       const nx = nextStep(m);
@@ -138,7 +138,9 @@ function journey(nextId){
       b.onclick = () => quick(id); cv.append(b);
       // toi, sur le chemin : ton personnage se tient à côté de ta figure du moment
       if (cur) { const me = el("div","me" + (it.lane ? " lane" : "")), msp = el("span","sp"); msp.dataset.pose = "stand"; msp.dataset.anim = "me"; msp.dataset.lk = ""; sprPaint(msp, it.lane ? 56 : 76); me.append(msp, el("span","tag","Toi"));
-        if (it.lane) { me.style.left = p[0] + "%"; me.style.top = (p[1] - 100) + "px"; } else { me.style.left = (p[0] >= 50 ? p[0] - 30 : p[0] + 30) + "%"; me.style.top = (p[1] - 46) + "px"; }
+        if (it.lane) { me.style.left = p[0] + "%"; me.style.top = (p[1] - 100) + "px"; } else { // à côté de la figure, du côté libre (pas sur une figure bonus voisine)
+          let mx = p[0] >= 50 ? p[0] - 30 : p[0] + 30; const busy = x0 => items.some(o => o.k === "n" && o.alt && pos[o.id] && Math.abs(pos[o.id][1] - p[1]) < 70 && Math.abs(pos[o.id][0] - x0) < 25);
+          if (busy(mx)) mx = p[0] >= 50 ? p[0] + 30 : p[0] - 30; me.style.left = Math.max(10, Math.min(90, mx)) + "%"; me.style.top = (p[1] - 46) + "px"; }
         cv.append(me); }
     }
   });

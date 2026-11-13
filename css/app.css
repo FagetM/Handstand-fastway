@@ -522,3 +522,8 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .qkblock .bar{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
 .qkblock .bar span{display:block;height:100%;border-radius:3px;background:var(--acc)}
 @media (prefers-reduced-motion:reduce){.qkn.on .sp{animation:none}}
+/* la figure du moment, aux couleurs de l'app : fond sauge, anneau sauge, halo qui respire */
+.jn.cur .c{background:color-mix(in srgb,var(--acc) 26%,var(--bg))}
+.jn.cur .rg circle{stroke:color-mix(in srgb,var(--acc) 45%,transparent)}
+.jn.cur .rg circle.f{stroke:var(--acc)}
+.jn.cur .n{color:var(--acc)}
