@@ -45,13 +45,16 @@ const DRILLS = {
   // avec du matériel (réglages › Mon matériel)
   bandpl:{name:"Planche à l'élastique", kind:"hold", sets:[4,10], rest:150, how:"Élastique en boucle sous les hanches, fixé en hauteur par un ancrage de porte (porte fermée à clé) : tiens la position de l'étape suivante, bras verrouillés, omoplates écartées.", eq:"band"},
   lsitpara:{name:"L-sit sur parallettes", kind:"hold", sets:[3,15], how:"Bras verrouillés, épaules abaissées loin des oreilles, jambes tendues à l'horizontale (groupé si besoin).", eq:"para"},
-  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], rest:90, alt:{name:"Dips lents (sans gilet)", reps:10, how:"Sans gilet aujourd'hui : descente en 3 secondes, une seconde en bas, remontée bras verrouillés."}, how:"Entre deux chaises solides ou aux barres, gilet sur le dos : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
+  dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], rest:90, alt:{name:"Dips lents (sans gilet)", reps:10, how:"Sans gilet aujourd'hui : descente en 3 secondes, une seconde en bas, remontée bras verrouillés."}, how:"Sur barres ou supports fixes, jamais sur des chaises avec le gilet : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
   pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], rest:90, alt:{name:"Pompes lentes (sans gilet)", reps:12, how:"Sans gilet aujourd'hui : descente en 3 secondes, poitrine au sol, épaules devant les mains."}, how:"Gilet lesté, corps gainé, poitrine jusqu'au sol. Pour construire la force qui porte la planche.", eq:"kg"},
   protrac:{name:"Pompes d'omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s'arrondit à chaque poussée."},
   pikepulse:{name:"Pulsations en pike", kind:"reps", sets:[3,15], how:"Assis jambes serrées tendues, mains près des chevilles, dos rond : décolle les talons et fais de petites pulsations sans reposer."},
   appuiArr:{name:"Appui arrière sur parallettes", kind:"hold", sets:[3,20], rest:45, how:"Mains derrière le bassin, doigts vers l'arrière, bras tendus, bassin levé, épaules basses et ouvertes."},
   mannaLift:{name:"Bassin qui recule depuis l'équerre", kind:"reps", sets:[3,5], rest:60, how:"En équerre groupée sur parallettes, pousse le bassin devant les mains et reviens, 2 s à chaque fois. Bras tendus."},
   extEp:{name:"Épaules en extension", kind:"hold", sets:[3,30], rest:30, how:"Assis, mains au sol derrière toi doigts vers l'arrière (ou sur un banc) : avance le bassin, ouvre la poitrine, bras tendus. Sans douleur à l'avant de l'épaule."},
+  tirage:{name:"Tirage à l'élastique", kind:"reps", sets:[3,12], rest:40, eq:"band", how:"Élastique à l'ancrage de porte : tire les coudes en arrière, serre les omoplates 1 s, reviens en 3 s."},
+  rotext:{name:"Rotation externe d'épaule", kind:"reps", sets:[2,15], rest:30, eq:"band", sides:true, how:"Coude au corps à 90°, écarte la main vers l'extérieur contre l'élastique, lentement."},
+  extpoig:{name:"Extenseurs du poignet", kind:"reps", sets:[2,15], rest:30, eq:"band", sides:true, how:"Avant-bras sur la cuisse, paume vers le sol : relève le poing contre l'élastique, redescends en 3 s."},
   stradlift:{name:"Élévations jambes écartées", kind:"reps", sets:[3,8], rest:45, how:"En écart facial, mains au sol devant le bassin : lève les deux jambes tendues, tiens 2 s, repose sans bruit."},
   elevpress:{name:"Montée pieds surélevés", kind:"reps", sets:[4,2], rest:90, how:"Mains sur parallettes, pieds sur une chaise, jambes écartées : épaules devant, le bassin monte jusqu'à l'équilibre, dos au mur si besoin."},
   stalneg:{name:"Descentes du stalder", kind:"reps", sets:[3,2], rest:120, how:"Sur parallettes : de l'équilibre à l'équerre écartée en 5 secondes, sans poser les pieds.", eq:"para"},
@@ -125,9 +128,9 @@ function fitTime(blocks, mins){
   while (estSecs(blocks) > cap && guard--) {
     const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
       if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
-    { const pool = blocks.filter(b => !b.ms && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
+    { const pool = blocks.filter(b => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
     { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 8)[0]; if (att) { att.sets.splice(-1, 1); continue; } }   // équilibre : 8 essais suffisent
-    { const dI = blocks.map((b, i) => !b.ms && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
+    { const dI = blocks.map((b, i) => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) || SIDED.has(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d'abord la dernière figure (la force), pas l'équilibre
       if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
     const mx = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.filter(s => s.max).length > (b.ms === "pl_1leg" ? 6 : /^pl_/.test(b.ms) ? 3 : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
@@ -142,14 +145,14 @@ function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
-  const mins = S.mins || 30, pain = painRecent(), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
-  const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, pain ? 0.7 : 1), scale = Math.max(0.6, Math.min(1.5, mins / 30)) * red;   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
+  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && ["epaule","coude"].includes(PS.zone), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
+  const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease), scale = Math.max(0.6, Math.min(1.5, mins / 30)) * red;   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d'entraînement de suite
 
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
-  if (pain && S.painZone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
+  if (pain && PS.zone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return ["poignets","epaules","hollow","pancake"].map(k=>drillBlock(k, false));
-  const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band)), fok = forceOk() && !(pain && ["epaule","coude"].includes(S.painZone));
+  const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band) && !(armPain && (/^(oa_|pl_|pr_|ul_)/.test(id) || id === "in_hspu"))), fok = forceOk() && !armPain;   /* épaule ou coude : ni un bras, ni planche, ni montées pendant l'éviction */
   // choix du jour : l'équilibre (une habileté) et, les jours de force, une place réservée à la force
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
   // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
@@ -163,7 +166,7 @@ function builtinBlocks(){
   let next;
   if (fok && pickF && !fConf && !tired) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);
-  if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && next.some(x => /^pl_/.test(x)))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
+  if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (plancheDays() >= 2 || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d'ouvert aujourd'hui (un bras au repos, pas de force) : séance de mobilité plutôt qu'une page vide
   if (!next.length && !(S.confirm || []).some(id => MS[id] && (fok || !FORCE(id)))) return ["poignets","epaules","pike","pancake","hollow"].map(k=>drillBlock(k, false));
   // combo : un seul par jour, en tout début de séance (frais) ; ces jours-là, le travail sur un bras est écourté
@@ -172,9 +175,9 @@ function builtinBlocks(){
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    const plR = /^pl_/.test(id) && m.type === "reps", sets = plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)), tries = pain || tired || deload ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
+    const plR = /^pl_/.test(id) && m.type === "reps", sets = plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)), tries = pain || PS.phase === 2 || tired || deload ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
-      sets:Array.from({length:pl.sides ? Math.min(ulDay ? 12 : 24, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
+      sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 12 : 16, sets * 2) : sets}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:/^ul_/.test(id) ? "Une réussite par séance suffit : il en faut sur 3 séances, à 2 jours d'écart au moins." : "Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
@@ -182,7 +185,7 @@ function builtinBlocks(){
     return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:pr ? (PL_REST[m.id] || 150) : /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id) ? (/Neg|negS|halfSt/.test(m.id) ? 120 : 150) : /Lift$/.test(m.id) ? 45 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75, auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 180 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
-  const conf = (tired || deload || pain ? [] : S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
+  const conf = (tired || deload || PS.phase ? [] : S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + " · vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l'essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
     return m.type === "check" ? Object.assign(base, {kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))})
       : Object.assign(base, {kind:m.type, sets:Array.from({length:2}, ()=>({goal:m.target, rest:m.type === "hold" ? 120 : 90, max:true}))}); });
   if (!next.length && !conf.length) return blocks;
@@ -193,8 +196,15 @@ function builtinBlocks(){
   // Postures « Poignets » ou « Contrôle » aujourd'hui ou hier : les poignets ont déjà travaillé, préparation raccourcie
   const zw = S.zw || [], wristDone = [0, 1].some(k => { const x = new Date(); x.setDate(x.getDate() - k); return zw.includes(dayKey(x)); });
   // semaine légère : vraiment plus courte, un exercice d'accompagnement de moins, rien de lesté
-  const drs = dr.filter(k => !(deload && DRILLS[k].eq === "kg")).slice(0, tired ? 1 : deload ? Math.max(1, nDr - 1) : nDr);
-  return fitTime([drillBlock("poignets", pain || wristDone)].concat(mob, conf, blocks, drs.map(k=>drillBlock(k, pain || deload))), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
+  const drs = dr.filter(k => !((deload || PS.phase) && DRILLS[k].eq === "kg")).slice(0, tired ? 1 : deload ? Math.max(1, nDr - 1) : nDr);
+  // préparation ciblée, juste après les poignets et jamais coupée : épaules en extension avant la manna, biceps et appui penché avant la planche
+  const prepB = (k, n, v) => { const b = drillBlock(k, false); b.sets = b.sets.slice(0, n); if (v) b.sets.forEach(s => { if (s.dur) s.dur = v; }); b.keep = true; b.name += " · préparation"; return b; };
+  const prep = []; if (next.some(id => /^pr_(manna|vsitH|extSup)|^ul_c3|^ul_full/.test(id))) prep.push(prepB("extEp", 2));
+  if (next.some(id => /^pl_/.test(id))) prep.push(prepB("lean", 2, 15), prepB("biceps", 1));
+  // antagonistes, les jours de force : tirage et, en alternance, rotateurs externes ou extenseurs du poignet (à l'élastique)
+  const anta = (S.equip || {}).band && next.some(FORCE) && !pain ? ["tirage", dn % 2 ? "rotext" : "extpoig"].map(k => { const b = drillBlock(k, mins <= 30); b.keep = true; return b; }) : [];
+  const BAD = armPain ? new Set(["lean","pseudo","dipsW","pushW","bandpl","oawall","oashrug","appuiArr","extEp","protrac","biceps"]) : new Set();
+  return fitTime([drillBlock("poignets", pain || wristDone)].concat(prep, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -453,9 +463,9 @@ function feedback(kind){
   const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner
   ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
-  if (kind === "pain") S.pain = Date.now();
+  if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
   sessRes = {}; save(); $("fbDlg").close(); render();
-  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Merci d'avoir écouté ton corps. On prend soin des poignets pendant 2 jours : gainage, respiration, souplesse." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : 48 h sans force (planche, montées, pompes), équilibre allégé." : "Noté : séances allégées pendant deux jours.") + " Si ça dure, offre-toi une vraie pause." : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Merci pour ce moment. À bientôt."));
+  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Merci d'avoir écouté ton corps. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().again ? "7 jours" : "3 jours") + " sans un bras, planche ni montées. La reprise se fera par paliers." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : montre-le à un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Merci pour ce moment. À bientôt."));
 }
 // Séance guidée : un seul toucher, puis l'app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas
@@ -626,6 +636,8 @@ $("sdGo").onclick = async e => {
 $("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (v > 0) saveSet(v); };
 $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
 $("sdX").addEventListener("click", hush);
+// douleur pendant la séance : on arrête tout de suite et on demande où
+$("sdPain").onclick = () => { hush(); sdStop(); $("sd").close(); $("fbIds").value = ""; $("fbZone").hidden = false; $("fbDlg").showModal(); };
 // l'écran reste allumé pendant le chrono : le verrou est repris au retour dans l'app, et rendu s'il arrive trop tard
 function sdKeep(w){ if (sdTimer) { sdWake = w; w.addEventListener && w.addEventListener("release", () => { if (sdWake === w) sdWake = null; }); } else w.release().catch(()=>{}); }
 document.addEventListener("visibilitychange", () => { if (!document.hidden && sdTimer && !sdWake) keepAwake(sdKeep); });

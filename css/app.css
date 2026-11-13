@@ -558,3 +558,4 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .zt2{font-size:13.5px;color:var(--mut);margin:2px 0 10px}
 #sdReps{flex-wrap:wrap}#sdQuick{flex-basis:100%;justify-content:center;margin:0 0 10px}
 .zchips{flex-wrap:wrap;overflow:visible}
+.lnk{display:block;margin:14px auto 0;background:none;border:0;color:var(--mut);font:inherit;font-size:13.5px;text-decoration:underline;padding:8px}

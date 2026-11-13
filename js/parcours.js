@@ -7,7 +7,13 @@ const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-dominatio
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
-const painRecent = () => !!S.pain && Date.now() - S.pain < 2 * 864e5;
+// Douleur : chaque signalement est daté par zone. Éviction de 3 jours (7 si la même zone revient en 3 semaines),
+// puis reprise par paliers : une semaine à 60 % sans tentative à fond, une semaine à 80 %.
+const painLog = () => S.painLog || (S.painLog = S.pain ? [{t:S.pain, zone:S.painZone || "autre"}] : []);
+function painState(){ const L = painLog(); if (!L.length) return {phase:0, ease:1, zone:null};
+  const last = L[L.length - 1], again = L.filter(p => p.zone === last.zone && last.t - p.t < 21 * 864e5).length >= 2, ev = (again ? 7 : 3) * 864e5, d = Date.now() - last.t;
+  return d < ev ? {phase:1, ease:0.6, zone:last.zone, days:Math.ceil((ev - d) / 864e5), again} : d < ev + 7 * 864e5 ? {phase:2, ease:0.6, zone:last.zone} : d < ev + 14 * 864e5 ? {phase:3, ease:0.8, zone:last.zone} : {phase:0, ease:1, zone:null}; }
+const painRecent = () => painState().phase === 1;
 // habiletés d'équilibre (y compris sur un bras) : des essais tenus jusqu'à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
 const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit","pr_vsitC","pr_extSup"].includes(id)) || /^ul_/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
@@ -66,7 +72,7 @@ function planFor(m){
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l'équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Chaque petite tenue te rapproche de " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
       "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec des tenues plus longues.",
-      "Si les poignets ou les épaules tirent, retire deux séries ce jour-là : la régularité prime. Si tu stagnes trois semaines, l'app allège cette figure une semaine, automatiquement."];
+      "Douleur au pli du coude, au poignet ou à l'avant de l'épaule : arrête la figure et signale-la. Si tu stagnes trois semaines, l'app allège cette figure une semaine, automatiquement."];
   }
   if (miss.length) out.lines.unshift("D'abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux déjà t'essayer ici, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
