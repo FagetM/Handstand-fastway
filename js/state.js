@@ -12,7 +12,8 @@ else if (S.ms.b1_free5 && S.ms.b1_free5.done && (S.ms.b1_free5.best || 0) < 15 &
 S.migr15 = true;
 // Fondations : qui savait déjà sortir en roue au mur maîtrise la roue, le gainage et la tenue au mur
 // nouvelles étapes vers le un bras et la planche : qui avait déjà validé l'étape d'après garde sa place
-if (!S.migrPr) { if (S.ms.pr_straddle && S.ms.pr_straddle.done) S.ms.pr_negS = {best:3, done:true}; S.migrPr = true; }   // les descentes passent avant la montée
+if (!S.migrPr) { if (S.ms.pr_straddle && S.ms.pr_straddle.done) S.ms.pr_negS = {best:3, done:true}; S.migrPr = true; }
+if (!S.migrPr2) { const dn = id => S.ms[id] && S.ms[id].done; if (dn("pr_straddle")) S.ms.pr_elev = {best:3, done:true}; if (dn("pr_stradL")) S.ms.pr_lsit = {best:15, done:true}; S.migrPr2 = true; }   // les descentes passent avant la montée
 if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[id] = {best:MS[id].target || 0, done:true}; };
   if (dn("oa_flaghoriz") || dn("oa_shift")) set("oa_strad30"); if (dn("oa_shift")) set("oa_wall"); if (dn("oa_oahs")) set("oa_lift");
   if (dn("pl_tuck")) set("pl_ppp"); if (dn("pl_straddle") || dn("pl_pike")) set("pl_1leg"); S.migrOa = true; }
@@ -29,8 +30,8 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_oahs10"]);
-const hitNeed = id => /^pl_/.test(id) && MS[id].type === "hold" ? 3 : SIDED.has(id) ? 2 : 1;
+const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_oahs10","pl_1leg"]);
+const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
 function hitTarget(id, side){
@@ -107,7 +108,7 @@ function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add(
 
 // ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
 const lvls = m => m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
-const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : L.filter(v=>x.best >= v).length; };
+const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
 const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;
 const noMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;

@@ -220,7 +220,7 @@ function openMs(id){
 }
 function fillDlg(){
   const m = MS[cur], x = st(cur), lk = !x.done && msLocked(m);
-  $("toggle").textContent = x.done ? "Retirer la validation" : (m.type === "check" ? "Marquer comme réussi" : "Valider sans mesure");
+  $("toggle").textContent = x.done ? "Retirer la validation" : "Réussi aujourd'hui"; $("toggle").hidden = !x.done && m.type !== "check";   // tenues et répétitions : seule la mesure valide
   $("toggle").className = "btn" + (!x.done && m.type === "check" ? "" : " line");
   const parts = [];
   if (m.type !== "check") parts.push(x.best ? "Record : " + fmt(m,x.best) : "Aucun essai enregistré");
@@ -240,7 +240,7 @@ function fillDlg(){
 }
 function record(v){
   const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false;
-  if (v === true) { x.done = true; }
+  if (v === true) { if (msLocked(m)) { toast("Valide d'abord : " + missing(m) + "."); return; } const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée : réussie sur deux séances !"); }
   else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée : deux séances à la cible !"); } if (m.type === "hold") cnt().hold += v; }
   S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();

@@ -94,16 +94,18 @@ const TREE = [
   {id:"press", name:"Montées en force", en:"Press", ms:[
     {id:"pr_negS", name:"Descentes lentes de la montée", en:"Straddle Press Negatives – 3", sub:"3 descentes de 5 s", type:"reps", target:3, req:["in_7d"],
       desc:"Depuis l'équilibre jambes écartées, tu redescends en 5 secondes jusqu'aux pieds, sans les laisser tomber. C'est la montée jambes écartées à l'envers : c'est par là qu'on l'apprend."},
-    {id:"pr_straddle", name:"Montée en force, jambes écartées", en:"Straddle Press", type:"check", req:["pr_negS"],
+    {id:"pr_elev", name:"Montée pieds surélevés", en:"Elevated Straddle Press – 3", sub:"3 montées, pieds sur une chaise", type:"reps", target:3, req:["pr_negS"],
+      desc:"Mains sur les parallettes, pieds sur une chaise, jambes écartées : les épaules avancent et le bassin monte jusqu'à l'équilibre. Le départ plus haut rend la montée accessible."},
+    {id:"pr_straddle", name:"Montée en force, jambes écartées", en:"Straddle Press", type:"check", req:["pr_elev"],
       desc:"Mains au sol, bras tendus, jambes écartées : tu montes en équilibre sans élan, en avançant les épaules pour soulever le bassin."},
     {id:"pr_pike", name:"Montée en force, jambes serrées", en:"Pike Press", type:"check", req:["pr_straddle"],
       desc:"La même montée, jambes tendues et jointes : le levier est plus long, donc nettement plus dur."},
-    {id:"pr_stradL", name:"Équerre jambes écartées", en:"Straddle L-sit – 10s", type:"hold", target:10, req:["fd_dips"],
-      desc:"Sur parallettes ou au sol, bras tendus : jambes écartées tendues au-dessus du sol. C'est la position de départ du stalder."},
-    {id:"pr_stalder", name:"Stalder", en:"Stalder", type:"check", req:["pr_straddle","pr_stradL"],
-      desc:"Montée en force depuis l'équerre jambes écartées, sans que les pieds touchent le sol."},
-    {id:"pr_lsit", name:"Équerre (L-sit) jambes serrées", en:"L-sit – 15s", type:"hold", target:15, req:["pr_stradL"],
+    {id:"pr_lsit", name:"Équerre (L-sit) jambes serrées", en:"L-sit – 15s", type:"hold", target:15, req:["fd_dips"],
       desc:"Bras tendus, jambes serrées et tendues à l'horizontale, épaules basses. Le point de départ du passage à l'équilibre."},
+    {id:"pr_stradL", name:"Équerre jambes écartées", en:"Straddle L-sit – 10s", type:"hold", target:10, req:["pr_lsit"],
+      desc:"Sur parallettes ou au sol, bras tendus : jambes écartées tendues au-dessus du sol. C'est la position de départ du stalder."},
+    {id:"pr_stalder", name:"Stalder", en:"Stalder", type:"check", req:["pr_pike","pr_stradL"],
+      desc:"Montée en force depuis l'équerre jambes écartées, sans que les pieds touchent le sol."},
     {id:"pr_lsitHs", name:"De l'équerre à l'équilibre", en:"L-sit to Handstand", sub:"dérivé du stalder, jambes serrées", type:"check", req:["pr_lsit","pr_pike","pr_stalder"],
       desc:"Depuis l'équerre jambes serrées, le bassin monte derrière les mains et les jambes, toujours serrées, passent au-dessus jusqu'à l'équilibre. Sans élan, sans poser les pieds."},
   ], videos:[["Mécanique d'une montée en force","Mechanics of a press"],["La montée en force qui se dérobe","The elusive press"],["Marches et flottements","Press walks and floating"],["Du bas vers le haut, du haut vers le bas, le maillon faible","Bottom up, top down, weak link"],["Stalder","Stalder"]]},
@@ -141,11 +143,11 @@ const P_FD = ["fd_plank","fd_roue","fd_c2w","fd_push","fd_dips"];
 const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
-  {id:"both", name:"Équilibre sur un bras, full planche et stalder", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_flaghoriz","pl_ppp","oa_wall","pr_stradL","pr_negS","pl_tuck","oa_shift","pr_straddle","pl_adv","oa_finger","pl_frog","oa_strarm","pr_stalder","pl_1leg","oa_lift","pr_lsit","pl_straddle","oa_oahs","pr_pike","pl_full","oa_oahs10","pr_lsitHs"]},
+  {id:"both", name:"Équilibre sur un bras, full planche et stalder", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_flaghoriz","pl_ppp","oa_wall","pr_lsit","pr_negS","pr_elev","pl_tuck","oa_shift","pr_straddle","pl_adv","oa_finger","pl_frog","oa_strarm","pr_stradL","pl_1leg","oa_lift","pr_pike","pl_straddle","oa_oahs","pr_stalder","pl_full","oa_oahs10","pr_lsitHs"]},
   {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_flaghoriz","oa_wall","oa_shift","oa_finger","oa_strarm","oa_lift","oa_oahs","oa_oahs10"]},
   {id:"planche", name:"Full planche · 10 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_ppp","pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle","pl_full"]},
   {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
-  {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_negS","pr_straddle","pr_pike"]},
+  {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_negS","pr_elev","pr_straddle","pr_pike"]},
   {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
 ];
 const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
@@ -200,6 +202,7 @@ const DETAILS = {
   pr_stradL:{how:["Assis jambes écartées tendues, mains entre les jambes (sur parallettes c'est plus facile).","Pousse le sol, abaisse les épaules et décolle les fesses et les talons."],cue:["Bras verrouillés, épaules basses.","Pointes tendues, genoux tendus."],err:"Se pencher en arrière : le buste reste au-dessus des mains.",ok:"10 s, fesses et talons décollés."},
   pr_lsit:{how:["Mains au sol ou sur parallettes à côté des hanches, bras tendus.","Pousse le sol, abaisse les épaules, décolle fesses et talons, jambes serrées tendues."],cue:["Genoux verrouillés, pointes tendues.","Épaules loin des oreilles."],err:"Laisser les jambes tomber sous l'horizontale ou plier les genoux.",ok:"15 s, jambes à l'horizontale."},
   pr_lsitHs:{how:["Depuis l'équerre, avance les épaules au-dessus des mains et arrondis le dos.","Le bassin monte derrière, les jambes serrées passent sous puis au-dessus de la ligne des épaules (forte compression).","Termine comme une montée en force jambes serrées, et ouvre jusqu'à l'équilibre."],cue:["Les pieds ne touchent jamais le sol.","Compression maximale : genoux près du visage."],err:"Donner un coup de reins : le passage doit être lent et continu.",ok:"Une montée complète et lente, de l'équerre à l'équilibre."},
+  pr_elev:{how:["Mains sur les parallettes, pieds sur une chaise derrière toi, jambes écartées.","Avance les épaules loin devant les mains, arrondis le dos, laisse le bassin monter.","Les pieds quittent la chaise sans saut, et tu montes jusqu'à l'équilibre (dos au mur au début si besoin)."],cue:["Épaules devant, bras verrouillés.","Pousse le sol, ne saute pas."],err:"Donner une impulsion avec les pieds : la chaise sert à commencer plus haut, pas à sauter.",ok:"3 montées propres, sans impulsion."},
   pr_stalder:{how:["Assis jambes écartées, mains au sol entre les jambes : soulève-toi en équerre.","Bascule le bassin vers l'arrière et le haut en avançant les épaules.","Termine comme une montée en force jambes écartées."],cue:["Les pieds ne touchent jamais le sol."],err:"Plier les bras ou frotter les pieds : sans compression, le bassin ne monte pas.",ok:"Une montée complète depuis l'équerre."},
   lo_elbow:{how:["À genoux, mains au sol, doigts tournés vers l'extérieur ou l'arrière.","Cale les coudes contre le ventre, près des hanches.","Penche-toi vers l'avant et tends les jambes : le corps passe à l'horizontale."],cue:["Corps gainé, comme une planche posée sur un tréteau."],err:"Coudes trop écartés : ils glissent sur les côtés.",ok:"10 s à l'horizontale."},
   lo_croc:{how:["Installe la planche sur les coudes.","Transfère le poids sur un seul coude.","Libère l'autre bras et tends-le devant toi."],cue:["Le coude d'appui est sous le centre du corps."],ok:"5 s de chaque côté."},

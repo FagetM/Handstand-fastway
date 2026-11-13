@@ -44,7 +44,8 @@ const ZEN = [
     {name:"L-sit groupé 4 × 10 s → 20 s", up:10, blocks:[W.talons(10), W.lgroup(10), W.cuil(20), W.ecart]},
     {name:"L-sit groupé 4 × 20 s, cuillère 3 × 30 s", up:10, blocks:[W.talons(12), W.lgroup(20), W.cuil(30), W.ecart]},
     {name:"L-sit une jambe tendue 3 × 10 s", up:10, blocks:[W.talons(15), W.lone(10), W.cuil(35), W.ecart]},
-    {name:"L-sit 3 × 10 s", up:10, blocks:[W.talons(15), W.lsit(10), W.cuil(45), W.ecart]}]},
+    {name:"L-sit 3 × 10 s", up:10, blocks:[W.talons(15), W.lsit(10), W.cuil(45), W.ecart]},
+    {name:"Équerre écartée 3 × 10 s", up:10, blocks:[W.talons(15), zn(3, "Équerre écartée", 10, "Mains entre les jambes, fesses et talons décollés."), W.cuil(45), W.ecart]}]},
   {id:"ligne", name:"Ligne et épaules", min:10, when:"Pour un équilibre droit : épaules ouvertes, corps gainé", tiers:[
     {name:"Épaules au mur et chien actif 3 × 30 s", up:15, blocks:[W.chiot, W.chien(30), W.murEp(30), W.omoP(10), W.creux(30)]},
     {name:"Gainage creux 3 × 45 s, appui pike sur caisse", up:10, blocks:[W.chiot, W.creux(45), W.pikeBox(20), W.omoP(12)]},
