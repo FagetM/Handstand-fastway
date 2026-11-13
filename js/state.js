@@ -32,7 +32,7 @@ const save = () => { window._bb = null; try { localStorage.setItem(KEY, JSON.str
 function warnBar(msg){ let b = document.getElementById("warnBar"); if (!msg) { if (b) b.remove(); return; } if (!b) { b = document.createElement("div"); b.id = "warnBar"; b.setAttribute("role","alert"); } b.textContent = msg; ([...document.querySelectorAll("dialog[open]")].pop() || document.body).append(b); }
 if (loadErr) addEventListener("load", () => warnBar("Ta sauvegarde était illisible : l'app repart de zéro. Une copie est gardée sur l'appareil."));
 // si l'app est ouverte dans deux onglets, l'autre onglet se recharge (hors séance) pour ne pas écraser les données
-window.addEventListener("storage", e => { if (e.key === KEY && !document.querySelector("dialog[open]")) location.reload(); });
+window.addEventListener("storage", e => { if (e.key !== KEY) return; if (!document.querySelector("dialog[open]")) location.reload(); else warnBar("L'app est ouverte dans un autre onglet : ferme-le, sinon l'un des deux écrasera l'autre."); });
 // l'écran reste allumé pendant le chrono ; on n'attend pas la réponse, pour qu'un double appui ne lance pas deux chronos
 function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(set).catch(()=>{}); } catch(e){} }
 // Validation exigeante : une figure se valide quand la cible est tenue sur DEUX séances, deux jours différents

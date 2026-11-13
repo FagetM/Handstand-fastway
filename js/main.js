@@ -10,7 +10,7 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const wa
   if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n'est pas commencée
-{ const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); };
+{ const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; else if (S.bday && S.bday.d === dayKey(Date.now())) toast("Séance déjà commencée : le changement vaudra dès demain."); save(); render(); };
   $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);
   $("eqBand").onchange = e => { E().band = e.target.checked; redo(); }; $("eqPara").onchange = e => { E().para = e.target.checked; redo(); };
   $("eqKg").onchange = e => { E().kg = +e.target.value; redo(); }; }

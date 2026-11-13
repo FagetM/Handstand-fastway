@@ -102,12 +102,13 @@ function render(){
       if (lock) c.append(icon("lock","lki")); c.append(all[id].name); c.setAttribute("aria-pressed", P.id === id); if (lock) c.setAttribute("aria-label", all[id].name + ", verrouillé");
       c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s'ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
     // météo du corps : comment tu te sens aujourd'hui ? (règle la séance d'équilibre)
-    if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = (S.mins || 30) + " min · " + md[1] + " · changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
+    if (P.builtin && dn && dn < tot) { const md = MOODS.find(x => x[0] === moodToday()); delete S.moodEdit; nc.append(el("div","moodset", (S.mins || 30) + " min" + (md ? " · " + md[1] : "") + " · séance en cours")); }   /* séance commencée : on ne change plus la durée ni l'humeur */
+    else if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = (S.mins || 30) + " min · " + md[1] + " · changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
     else if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Aujourd'hui, je suis…"));
       MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); b.append(el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => { delete S.moodEdit; setMood(k); }; mw.append(b); });
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd'hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
-    if (P.builtin && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
+    if (P.builtin && !(dn && dn < tot) && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d'entraînement de suite. Mobilité et poignets aujourd'hui, la force revient demain."));
     if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
