@@ -91,8 +91,8 @@ Object.assign(POSES, {
   hs_hspu:  P("hs", {pitch:PI - 0.18, arm:[-PI + 0.95,-PI + 0.95], elbow:[-1.75,-1.75], armZ:[0.15,0.15], head:-0.7}),
   hs_shiftL:P("hs_straddle", {roll:0.14, armZ:[0,0.16]}),
   hs_shiftR:mirror(P("hs_straddle", {roll:0.14, armZ:[0,0.16]})),
-  hs_finger:P("oahs", {arm:[-PI,-PI + 0.2], armZ:[0.14,0.5], roll:0.24}),
-  hs_oastr: P("oahs", {arm:[-PI,-PI+0.6], armZ:[0.24,0.9], roll:0.32}), // main libre au sol, loin sur le côté
+  hs_finger:P("oahs", {arm:[-PI,-PI], armZ:[0.14,0.3], roll:0.06}),   // main libre posée sur le bout des doigts
+  hs_oastr: P("oahs", {arm:[-PI,-PI], armZ:[0.2,0.4], roll:0.06}),     // main libre au sol, bras tendu, loin sur le côté // main libre au sol, loin sur le côté
   hs_oafull:P("oahs", {arm:[-PI,-0.2], armZ:[0.32,1.3], roll:0.4, one:1}), // bras libre en balancier, bassin au-dessus de la main
   fold_s:   P("fold", {hipZ:[0.55,0.55]}),
   // montée jambes serrées : forte compression, hanches fermées, puis ouverture ; jambes écartées : on ouvre seulement une fois le bassin en haut

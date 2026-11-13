@@ -30,7 +30,7 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 // (la planche demande en plus 3 séries à la cible dans chaque séance). Un bon jour ne suffit pas : on veut de la régularité.
 const NEED_DAYS = 2;
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_oahs10","pl_1leg"]);
+const SIDED = new Set(["oa_wall","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_lift","oa_oahs10","pl_1leg"]);
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 3 : 1;
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
