@@ -16,10 +16,10 @@ export const POSES = {
   hs_tuck:    {pitch:PI,   arm:[-PI,-PI],     armZ:[0,0],       hip:[-1.9,-1.9],  hipZ:[0,0],       knee:[2.1,2.1], head:-0.35},
   hs_seven1:  {pitch:PI+0.14,arm:[-PI-0.08,-PI-0.08],armZ:[0,0],  hip:[-1.7,0.05],     hipZ:[0,0],       knee:[0,0],     head:-0.45},
   // le 7 : bassin au-dessus des mains (légèrement en arrière), jambes tendues fermées à l'équerre, à l'horizontale ou un peu au-dessus
-  hs_seven:   {pitch:PI+0.28,arm:[-PI-0.2,-PI-0.2],armZ:[0,0],   hip:[-1.8,-1.8],  hipZ:[0,0],       knee:[0,0],     head:-0.5, arch:-0.12},
-  oahs:       {pitch:PI,   arm:[-PI,-0.2],    armZ:[0,1.35],    hip:[0,0],        hipZ:[0.55,0.55], knee:[0,0],     head:-0.3, roll:0.1},
+  hs_seven:   {pitch:PI+0.18,arm:[-PI,-PI],      armZ:[0,0],      hip:[-1.75,-1.75],hipZ:[0,0],       knee:[0,0],     head:-0.5, arch:0.05},   // épaules légèrement devant, dos jamais creusé
+  oahs:       {pitch:PI,   arm:[-PI,-0.2],    armZ:[0.32,1.35], hip:[0,0],        hipZ:[0.55,0.55], knee:[0,0],     head:-0.3, roll:0.4},   // bras d'appui vertical, bassin au-dessus de la main
   pl_lean:    {pitch:1.17, arm:[-0.85,-0.85], armZ:[0,0],       hip:[0,0],        hipZ:[0,0],       knee:[0,0],     head:-0.5},
-  pl_tuck:    {pitch:1.78, arm:[-1.4,-1.4], armZ:[0,0], arch:-0.4, hip:[-2.65,-2.65], hipZ:[0,0], knee:[2.55,2.55], head:-0.6},
+  pl_tuck:    {pitch:1.46, arm:[-1.34,-1.34], armZ:[0,0], arch:0.3, hip:[-2.65,-2.65], hipZ:[0,0], knee:[2.55,2.55], head:-0.6},   // dos arrondi, épaules devant les mains
   pl_adv:     {pitch:1.57, arm:[-1.12,-1.12], armZ:[0,0],       hip:[-1.55,-1.55],hipZ:[0,0],       knee:[2.0,2.0], head:-0.6},
   pl_frog:    {pitch:1.57, arm:[-1.08,-1.08],   armZ:[0,0],       hip:[-0.9,-0.9],  hipZ:[0.55,0.55], knee:[1.7,1.7], head:-0.6},
   pl_pike:    {pitch:1.57, arm:[-1.08,-1.08], armZ:[0,0],       hip:[-0.28,-0.28],hipZ:[0.55,0.55], knee:[0,0],     head:-0.6},
@@ -78,7 +78,7 @@ Object.assign(POSES, {
   hs_cw3:   {pitch:PI, roll:PI, spin:PI, arm:[0.08,0.08], armZ:[0.13,0.13], elbow:[-0.22,-0.22], hip:[0,0], hipZ:[0.05,0.05], knee:[0,0], head:0, feet:true},
   hs_splitM:mirror(POSES.hs_split),
   hs_split2:P("hs_split", {hip:[-0.5,0.95]}),
-  hs_tuck90:P("hs", {pitch:PI-0.22, arm:[-PI+0.1,-PI+0.1], hip:[-1.5,-1.5], knee:[1.6,1.6], head:-0.45}),
+  hs_tuck90:P("hs", {pitch:PI+0.05, arm:[-PI,-PI], arch:0.1, hip:[-1.62,-1.62], knee:[1.9,1.9], head:-0.45}),
   hs_headin:P("hs", {head:0.6}),
   hs_7headin:P("hs_seven", {head:0.55}),
   hs_flagM: mirror(POSES.hs_flag),
@@ -91,11 +91,11 @@ Object.assign(POSES, {
   hs_hspu:  P("hs", {pitch:PI - 0.18, arm:[-PI + 0.95,-PI + 0.95], elbow:[-1.75,-1.75], armZ:[0.15,0.15], head:-0.7}),
   hs_shiftL:P("hs_straddle", {roll:0.14, armZ:[0,0.16]}),
   hs_shiftR:mirror(P("hs_straddle", {roll:0.14, armZ:[0,0.16]})),
-  hs_finger:P("oahs", {arm:[-PI,-PI + 0.2], armZ:[0,0.5], roll:0.12}),
-  hs_oastr: P("oahs", {arm:[-PI,-PI+0.6], armZ:[0.15,0.9], roll:0.16}), // main libre au sol, loin sur le côté
-  hs_oafull:P("oahs", {arm:[-PI,-0.2], armZ:[0.18,1.3], roll:0.18, one:1}), // bras libre en balancier, bassin au-dessus de la main
+  hs_finger:P("oahs", {arm:[-PI,-PI + 0.2], armZ:[0.14,0.5], roll:0.24}),
+  hs_oastr: P("oahs", {arm:[-PI,-PI+0.6], armZ:[0.24,0.9], roll:0.32}), // main libre au sol, loin sur le côté
+  hs_oafull:P("oahs", {arm:[-PI,-0.2], armZ:[0.32,1.3], roll:0.4, one:1}), // bras libre en balancier, bassin au-dessus de la main
   fold_s:   P("fold", {hipZ:[0.55,0.55]}),
-  hs_spress:P("pike", {hip:[-1.5,-1.5], hipZ:[0.85,0.85]}),
+  hs_spress:P("pike", {pitch:1.78, arch:0.35, arm:[-1.65,-1.65], hip:[-2.0,-2.0], hipZ:[0.85,0.85]}),   // épaules loin devant les doigts, bassin haut
   hs_stal0: {pitch:0.05, arch:0.32, arm:[-0.3,-0.3], armZ:[0.12,0.12], hip:[-2.15,-2.15], hipZ:[0.85,0.85], knee:[0,0], head:-0.15},     // équerre écartée, jambes au-dessus de l'horizontale
   hs_stal1: {pitch:1.05, arch:0.4, arm:[-1.35,-1.35], armZ:[0.05,0.05], hip:[-2.6,-2.6], hipZ:[1.05,1.05], knee:[0,0], head:-0.5},      // le bassin monte derrière, jambes le long des bras
   // de l'équerre (L-sit, jambes serrées) à l'équilibre : le bassin monte derrière, les jambes restent serrées et passent au-dessus
@@ -140,7 +140,7 @@ export const SCRIPTS = {
   oa_wall:   {wall:1, yaw:0.4, s:[...UP,["hs_straddle",0.5,0.4],["hs_finger",0.6,0.3],["hs_oafull",0.7,1.8]], still:"hs_oafull"},
   oa_strad30:{s:[...UP,["hs_straddle",0.5,2.4]]},
   pr_straddle:{s:[["fold_s",0.5,0.3],["hs_spress",0.8,0],["hs_straddle",0.8,0.4],["hs",0.5,1.0]], still:"hs_spress"},
-  pr_negS:   {cut:true, yaw:-0.55, s:[...UP,["hs_straddle",0.5,0.6],["hs_stal2",1.2,0],["hs_stal1",1.0,0],["hs_stal0",0.9,0.6],["crouch",0.5,0.1],["stand",0.4,0.2]], still:"hs_stal1"},
+  pr_negS:   {cut:true, s:[...UP,["hs_straddle",0.5,0.6],["hs_spress",1.6,0.1],["fold_s",0.9,0.4],["stand",0.6,0.3]], still:"hs_spress"},
   pr_stradL: {cut:true, yaw:-0.55, s:[["crouch",0.4,0],["hs_stal0",0.6,2.2],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"hs_stal0"},
   pr_pike:   {s:[["fold",0.5,0.3],["pike",0.9,0],["hs",0.9,1.2]], still:"pike"},
   pr_lsit:   {cut:true, yaw:-0.7, s:[["crouch",0.4,0],["lsit0",0.6,2.0],["crouch",0.5,0.1],["stand",0.4,0.1]], still:"lsit0"},

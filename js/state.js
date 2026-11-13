@@ -12,6 +12,7 @@ else if (S.ms.b1_free5 && S.ms.b1_free5.done && (S.ms.b1_free5.best || 0) < 15 &
 S.migr15 = true;
 // Fondations : qui savait déjà sortir en roue au mur maîtrise la roue, le gainage et la tenue au mur
 // nouvelles étapes vers le un bras et la planche : qui avait déjà validé l'étape d'après garde sa place
+if (!S.migrPr) { if (S.ms.pr_straddle && S.ms.pr_straddle.done) S.ms.pr_negS = {best:3, done:true}; S.migrPr = true; }   // les descentes passent avant la montée
 if (!S.migrOa) { const dn = id => S.ms[id] && S.ms[id].done, set = id => { S.ms[id] = {best:MS[id].target || 0, done:true}; };
   if (dn("oa_flaghoriz") || dn("oa_shift")) set("oa_strad30"); if (dn("oa_shift")) set("oa_wall"); if (dn("oa_oahs")) set("oa_lift");
   if (dn("pl_tuck")) set("pl_ppp"); if (dn("pl_straddle") || dn("pl_pike")) set("pl_1leg"); S.migrOa = true; }
