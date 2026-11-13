@@ -11,7 +11,7 @@ let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
 // Chaque figure est rendue image par image dans une bande d'images, puis animée en boucle. Tant qu'elle n'est pas prête, on montre une image fixe.
 const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
-const animOn = () => S.anim !== false;
+const animOn = () => true;
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
 const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
 const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs", hs_oatuck:"oahs", hs_oastrad:"oahs", hs_oaflag:"oahs", vsitC:"crow", mannaP:"crow", manna:"crow", vsitH:"crow", revSup:"stand", pl_halfL:"pl_full", hs_pl45:"pl_full", pl_s45:"pl_straddle"};

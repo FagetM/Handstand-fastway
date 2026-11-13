@@ -9,7 +9,6 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const wa
   // en arrivant sur le parcours, on t'amène à ta position
   if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
-$("animOn").onchange = e => { S.anim = e.target.checked; save(); sprRepaint(); };
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n'est pas commencée
 { const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); };
   $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);

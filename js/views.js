@@ -156,17 +156,12 @@ function render(){
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
     pt.append(c);
-    const tip = el("button","tip"), ts = el("span","sp"); ts.dataset.pose = "stand"; ts.dataset.anim = "me"; ts.dataset.lk = ""; sprPaint(ts, 52);
-    const story = !painRecent() && (Math.floor(Date.now() / 864e5) % 2 === 0 || S.log.some(l => dayKey(l.t) === dayKey(Date.now())));
-    const tb = el("span","tb"); tb.append(el("b",null, story ? "Petite histoire" : "Conseil du jour"), el("span",null, story ? storyOfDay() : tipOfDay())); tip.append(ts, tb); tip.onclick = () => { const cm = curMs(); if (cm) quick(cm.id); }; pt.append(tip); }
+  }
   const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
 
-  const ll = $("logList"); ll.textContent = ""; $("logWrap").hidden = !S.log.length;
-  if (!S.log.length) ll.append(el("div","mut","Aucun essai pour l'instant. Ta première séance apparaîtra ici."));
-  S.log.slice(-60).reverse().forEach(l=>ll.append(logRow(l,true)));
-  $("countdown").value = String(S.countdown); $("animOn").checked = animOn();
+  $("countdown").value = String(S.countdown);
   renderQuest(Z, nextId);
   renderSess();
 }

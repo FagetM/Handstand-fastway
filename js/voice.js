@@ -71,9 +71,8 @@ function renderVoiceSel(){
 }
 if (!synth) $("voiceBlock").hidden = true;
 else {
-  $("voiceOn").checked = S.voice !== false; $("voiceRate").value = S.voiceRate || "douce"; renderVoiceSel();
+  $("voiceOn").checked = S.voice !== false; renderVoiceSel();
   $("voiceOn").onchange = e => { S.voice = e.target.checked; save(); if (!S.voice) hush(); };
-  $("voiceRate").onchange = e => { S.voiceRate = e.target.value; save(); };
   $("voiceSel").onchange = e => { S.voiceName = e.target.value || null; save(); };
   $("voiceTest").onclick = () => { voiceUnlock(); say("Gainage bras tendus. Série 1 sur 3. Tiens 20 secondes."); };
 }

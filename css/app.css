@@ -560,3 +560,4 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .zchips{flex-wrap:wrap;overflow:visible}
 .lnk{display:block;margin:14px auto 0;background:none;border:0;color:var(--mut);font:inherit;font-size:13.5px;text-decoration:underline;padding:8px}
 #warnBar{position:fixed;left:0;right:0;top:0;z-index:30;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;background:#b4532a;color:#fff;font-size:14px;font-weight:700;text-align:center}
+#dPlan,#dMore,#dEn,#dBest{display:none}

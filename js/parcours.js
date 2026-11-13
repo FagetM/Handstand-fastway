@@ -139,7 +139,7 @@ function journey(nextId){
     if (it.k === "b"){ const b = el("div","sign " + it.state + (it.sid === "hard" ? " hard" : "")); b.style.top = it.y + "px";
       const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.sid === "low" ? "+" : String(it.n);
       const g = el("div","grow"); g.append(el("div","sname", it.title), el("div","mut", it.sub));
-      b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); if (SEC[it.sid] && SEC[it.sid].videos.length) { const vc = vidChip(it.sid); vc.firstChild.textContent = "Vidéos"; b.append(vc); } cv.append(b); }
+      b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); cv.append(b); }
     else if (it.k === "l"){ const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
     else if (it.k === "d"){ const d = el("div","dsel"); d.style.top = it.y + "px";
       HARD.forEach(([sid, name]) => { const ms = SEC[sid].ms.filter(m=>!m.alt), dn = ms.filter(m=>reqDone(m.id)).length, here = ms.some(m=>m.id === nextId);
@@ -174,7 +174,6 @@ function journey(nextId){
     }
   });
   wrap.append(cv);
-  { const s = SEC.key; if (s && s.videos.length) { const kb = vidChip("key"); kb.classList.add("wide"); kb.firstChild.textContent = "Concepts clés, pour tous les niveaux"; wrap.append(kb); } }
   return wrap;
 }
 // Carte rapide d'une figure : animation, niveau, estimation, et deux boutons.
