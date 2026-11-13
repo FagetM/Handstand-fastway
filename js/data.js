@@ -242,6 +242,10 @@ const GOALS = [
   {id:"press", name:"Montée en force jambes serrées", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pr_pikeLift","pr_stradLift","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pr_lsit","pr_stradL","pr_straddle","pr_negP","pr_pike"]},
   {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
 ];
+// Photos (dossier photos/, en .webp) : seules celles listées ici sont affichées ; les emplacements vides ne montrent rien.
+// accueil · etage-<étage> (bandeau de chaque étage du parcours) · but-<figure> (fiche des grands buts)
+const PHOTOS = new Set([]);
+const photo = n => PHOTOS.has(n) ? new URL("photos/" + n + ".webp", document.baseURI).href : null;   /* adresse complète : une url() dans une variable CSS se lirait depuis css/ */
 const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
 const MS = {}; TREE.forEach(s=>s.ms.forEach(m=>{MS[m.id]=m; m.sec=s.id;}));
 

@@ -30,12 +30,24 @@ if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue
 // Effacer = revenir à la photo, comme un « Ctrl+Z » : la série, le record, le compteur et une éventuelle validation repartent ensemble.
 const UKEY = KEY + ".undo"; let undoT = 0;
 function undoList(){ try { return (JSON.parse(localStorage.getItem(UKEY)) || []).filter(u => u.d === dayKey(Date.now())); } catch(e){ return []; } }
+// deux photos de plus : l'état du matin (avant le premier enregistrement du jour) et l'état avant l'exercice en cours
+const ukGet = k => { try { const u = JSON.parse(localStorage.getItem(UKEY + "." + k)); return u && u.d === dayKey(Date.now()) ? u : null; } catch(e){ return null; } };
+const ukSet = (k, u) => { try { if (u) localStorage.setItem(UKEY + "." + k, JSON.stringify(u)); else localStorage.removeItem(UKEY + "." + k); } catch(e){} };
 function pushUndo(label, at){ if (Date.now() - undoT < 400) return; undoT = Date.now();   // un même geste ne fait qu'une photo
-  const a = undoList(); a.push(Object.assign({d:dayKey(Date.now()), label, s:JSON.stringify(S)}, at || {})); while (a.length > 4) a.shift();
+  const snap = Object.assign({d:dayKey(Date.now()), t:Date.now(), label, s:JSON.stringify(S)}, at || {});
+  if (!ukGet("day")) ukSet("day", snap);
+  if (at && at.bi != null) { const b = ukGet("blk"); if (!b || b.bi !== at.bi || b.p !== at.p) ukSet("blk", snap); }
+  const a = undoList(); a.push(snap); while (a.length > 3) a.shift();
   try { localStorage.setItem(UKEY, JSON.stringify(a)); } catch(e){ try { localStorage.setItem(UKEY, JSON.stringify(a.slice(-1))); } catch(_){ localStorage.removeItem(UKEY); } } }
-function undoLast(){ const a = undoList(), u = a.pop(); if (!u) return null;
-  try { S = Object.assign(blank(), JSON.parse(u.s)); S.sessOpen = false; } catch(e){ return null; }
-  try { localStorage.setItem(UKEY, JSON.stringify(a)); } catch(e){} lastZ = null; save(); return u; }
+// revenir à une photo : tout ce qui a été enregistré après disparaît, les photos plus récentes avec
+function undoTo(u){ if (!u) return null; try { S = Object.assign(blank(), JSON.parse(u.s)); S.sessOpen = false; } catch(e){ return null; }
+  try { localStorage.setItem(UKEY, JSON.stringify(undoList().filter(x => x.t < u.t))); } catch(e){}
+  ["day","blk"].forEach(k => { const x = ukGet(k); if (x && x.t >= u.t) ukSet(k, null); });
+  lastZ = null; save(); return u; }
+const undoLast = () => undoTo(undoList().pop());
+// annuler l'exercice en cours (toutes ses séries du jour) ou tout l'entraînement du jour
+const undoBlock = () => undoTo(ukGet("blk"));
+const undoDay = () => undoTo(ukGet("day"));
 let saveWarned = false;
 const save = () => { window._bb = null; try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l'appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
 // bandeau qui reste affiché tant que le problème dure (un toast disparaît trop vite)

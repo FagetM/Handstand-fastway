@@ -520,7 +520,7 @@ function nextSet(){
   return null;
 }
 function openSet(bi, si){
-  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdUndo").hidden = true; $("sdNote").hidden = true;
+  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdUndo").hidden = true; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === bi && ub.p === P.id + "|" + dayKey(nowS())); } $("sdNote").hidden = true;
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
@@ -564,14 +564,14 @@ function setSay(b, s, si, fx, tg, day){
   return b.name + ". " + ser + what;
 }
 function storeSet(v){
-  pushUndo(sd.b.name + " · " + (v === 0 ? "pas encore" : sd.fx && sd.s.dur == null && sd.s.reps == null ? "fait" : num(v) + (sd.b.kind === "hold" || (sd.fx && sd.s.dur != null) ? " s" : " rép.")), {bi:sd.bi, si:sd.si});
+  pushUndo2(sd.b.name + " · " + (v === 0 ? "pas encore" : sd.fx && sd.s.dur == null && sd.s.reps == null ? "fait" : num(v) + (sd.b.kind === "hold" || (sd.fx && sd.s.dur != null) ? " s" : " rép.")), {bi:sd.bi, si:sd.si});
   const k = wkKey(selDay), o = pg().wk[k] || (pg().wk[k] = {}), key = sd.bi + "-" + sd.si, fresh = o[key] == null; o[key] = v;
   if (fresh){ const c = cnt(); c.sets++; if (sd.b.kind === "hold" && sd.b.ms) c.hold += v * (sd.fx && sd.s.sides ? 2 : 1);
     if (!nextSet()) { c.sess++; if (/^etirements/.test(P.id)) c.stretch++; } }
   const keys = Object.keys(pg().wk); if (keys.length > 150) keys.slice(0, keys.length - 150).forEach(x=>delete pg().wk[x]);
 }
 // essai d'une figure « réussi / pas réussi » (roue, montée…) : 3 réussites le même jour = une séance validée
-function chkTry(ok){ const id = sd.b.ms; if (ok && id) { pushUndo(sd.b.name + " · réussi", {bi:sd.bi, si:sd.si}); chkHit(id); } }
+function chkTry(ok){ const id = sd.b.ms; if (ok && id) { pushUndo2(sd.b.name + " · réussi", {bi:sd.bi, si:sd.si}); chkHit(id); } }
 $("sdNo").onclick = () => { if (sd && sd.fx && sd.s.lab === "essai") saveFixed(0); };   // « pas encore » : l'essai compte, sans réussite
 function saveFixed(v){
   const {b, s, day, si} = sd; sdStop();
@@ -588,7 +588,7 @@ function saveFixed(v){
 }
 function startRest(r, nx, title){
   let end = Date.now() + r.rest*1000, done = false; const ck = $("sdClock");
-  sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true; $("sdUndo").hidden = !undoList().length;
+  sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true; $("sdUndo").hidden = !undoList().length; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === sd.bi); }
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
   $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance"; $("sdGo").disabled = true; setTimeout(() => { $("sdGo").disabled = false; }, 600);   /* un double appui sur « Enregistrer » ne saute pas le repos */
@@ -672,6 +672,10 @@ $("sdGo").onclick = async e => {
     if (v >= 0.5) saveSet(v); else openSet(sd.bi, sd.si);
   }
 };
+// la photo retient aussi le programme, pour ne pas confondre deux exercices de même rang
+const pushUndo2 = (label, at) => pushUndo(label, Object.assign({p:P.id + "|" + dayKey(nowS()), name:sd.b.name}, at));
+// trompé d'exercice : on efface toutes ses séries du jour et on revient à la liste
+$("sdUndoB").onclick = () => { if (!sd) return; const b = ukGet("blk"); if (!b || b.bi !== sd.bi) return; if (!confirm("Effacer toutes les séries de « " + b.name + " » faites aujourd'hui ?")) return; hush(); if (undoBlock()) { $("sd").close(); render(); toast("Exercice annulé : " + b.name); } };
 // je me suis trompé : on efface la série qu'on vient d'enregistrer et on la refait
 $("sdUndo").onclick = () => { if (!sd) return; hush(); const u = undoLast(); if (!u) return; render(); toast("Effacé : " + u.label); if (u.bi != null && pDay(selDay).blocks[u.bi]) openSet(u.bi, u.si); };
 // faux départ : on efface le chrono et on repart du décompte, sans rien enregistrer

@@ -61,6 +61,7 @@
         <div class="tile"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8 12.5l3 3 5-6"/></svg><b class="disp" id="stDone">0</b><span>figures validées</span></div>
       </div>
     </div>
+    <button class="btn line" id="histOpen" style="margin-top:16px;width:100%">Historique des séances</button>
     <div id="quest"></div>
     <h2 class="sect">Réglages</h2>
     <div class="block">
@@ -176,6 +177,13 @@
   </div>
 </dialog>
 
+<dialog id="histDlg">
+  <div style="display:flex;gap:16px;align-items:center">
+    <div class="grow"><div class="lab">Ce que tu as fait</div><h2 style="margin-top:6px">Historique</h2></div>
+    <button class="x" id="histX" aria-label="Fermer" style="align-self:flex-start"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
+  </div>
+  <div id="histBody"></div>
+</dialog>
 <dialog id="etaDlg">
   <div style="display:flex;gap:16px;align-items:center">
     <div class="grow"><div class="lab">Estimation</div><h2 style="margin-top:6px">Mes dates</h2></div>
@@ -218,6 +226,7 @@
   <button class="btn" id="sdGo">Démarrer</button>
   <button class="btn line" id="sdRedo" hidden>Faux départ : recommencer</button>
   <button class="lnk" id="sdUndo" hidden>Je me suis trompé : effacer cette série</button>
+  <button class="lnk" id="sdUndoB" hidden>Trompé d'exercice : annuler toutes ses séries</button>
   <div id="sdNote" hidden><div class="mut">Ou note ta tenue toi-même, sans le chrono :</div><div class="srcs" id="sdNoteQ"></div></div>
   <button class="btn line" id="sdNo" hidden>Pas encore</button>
   <div class="mut" id="sdMic" hidden></div>

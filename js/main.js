@@ -92,3 +92,6 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persisted(
 // l'app est restée ouverte la nuit : au retour, on affiche le bon jour
 { let seenDay = dayKey(Date.now()); const wake = () => { const d = dayKey(Date.now()); if (d !== seenDay && !document.querySelector("dialog[open]")) { seenDay = d; selDay = todayIdx(); pickP(); render(); } };
   document.addEventListener("visibilitychange", () => { if (!document.hidden) wake(); }); addEventListener("focus", wake); setInterval(wake, 60000); }
+
+// photo d'accueil derrière le code d'accès, si elle existe
+{ const ph = photo("accueil"); if (ph) { $("gate").classList.add("ph"); $("gate").style.setProperty("--ph", 'url("' + ph + '")'); } }

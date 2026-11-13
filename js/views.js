@@ -141,7 +141,8 @@ function render(){
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
       // effacer le dernier enregistrement du jour (une erreur de saisie, une série notée deux fois)
-      { const u = undoList().pop(); if (u) { const ub = el("button","lnk undo", "Effacer le dernier enregistrement : " + u.label); ub.onclick = () => { if (!confirm("Effacer « " + u.label + " » ?")) return; const r = undoLast(); if (r) { render(); toast("Effacé : " + r.label); } }; nc.append(ub); } }
+      { const u = undoList().pop(); if (u) { const ub = el("button","lnk undo", "Effacer le dernier enregistrement : " + u.label); ub.onclick = () => { if (!confirm("Effacer « " + u.label + " » ?")) return; const r = undoLast(); if (r) { render(); toast("Effacé : " + r.label); } }; nc.append(ub); }
+        if (ukGet("day") && dn) { const ud = el("button","lnk undo", "Annuler l'entraînement du jour"); ud.onclick = () => { if (!confirm("Effacer tout ce qui a été enregistré aujourd'hui (séries, records, validations) ?")) return; if (undoDay()) { render(); toast("Entraînement du jour annulé."); } }; nc.append(ud); } }
       // gilet lesté : s'il n'est pas là aujourd'hui, un toucher et les exercices lestés passent en version lente sans charge
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd'hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l'as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
@@ -153,7 +154,7 @@ function render(){
     }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
-    DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); wk.append(c); });
+    DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); if (did) { c.setAttribute("role","button"); c.setAttribute("aria-label", DAYN[i] + " : voir ce que tu as fait"); c.onclick = () => { histN = 30; openHist(dayKey(dd)); }; } wk.append(c); });
     nc.append(wk);
   }
 
@@ -306,3 +307,27 @@ $("repsP").onclick = () => { $("reps").value = String((parseInt($("reps").value,
 $("saveReps").onclick = () => { const v = parseInt($("reps").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (!saneReps(v, MS[cur] && MS[cur].target)) return; record(v); };
 $("toggle").onclick = () => { const x = st(cur); if (x.done) { if (!confirm("Retirer la validation de « " + MS[cur].name + " » ?")) return; x.done = false; if (S.hit && S.hit[cur]) S.hit[cur].days = (S.hit[cur].days || []).slice(0, -1); if (S.chk) delete S.chk[cur]; save(); fillDlg(); render(); } else record(true); };
 $("dlg").addEventListener("close", resetClock);
+
+// ---------- Historique : chaque jour d'entraînement, ce qui a été fait, dans l'ordre ----------
+let histN = 30;
+function histName(id){ if (MS[id]) return MS[id].name; return String(id).replace(/^pg:/, ""); }
+function histVal(l){ const m = MS[l.id], k = m ? m.type : l.k; if (l.v === true || k === "check") return l.v === 0 ? "pas encore" : "réussi"; if (typeof l.v !== "number") return "";
+  return k === "hold" ? num(l.v) + " s" : l.v + " rép."; }
+function openHist(focus){ const box = $("histBody"); box.textContent = "";
+  const days = new Map(); S.log.forEach(l => { const k = dayKey(l.t); if (!days.has(k)) days.set(k, []); days.get(k).push(l); });
+  const keys = [...days.keys()].reverse();
+  if (!keys.length) { box.append(el("p","mut","Rien encore : tes séances apparaîtront ici, jour par jour.")); return; }
+  keys.slice(0, histN).forEach(k => { const L = days.get(k), d = new Date(L[0].t), wrap = el("div","hday"); wrap.dataset.day = k;
+    const end = L.filter(l => l.k === "check" && l.v === true && String(l.id).startsWith("pg:") && !MS[l.id]);
+    const work = L.filter(l => !end.includes(l)), groups = [];
+    work.forEach(l => { const g = groups[groups.length - 1]; if (g && g.id === l.id) g.ls.push(l); else groups.push({id:l.id, ls:[l]}); });
+    const mins = Math.round((L[L.length - 1].t - L[0].t) / 60000);
+    wrap.append(el("div","hd", DAYN[(d.getDay() + 6) % 7] + " " + d.getDate() + " " + MOIS[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : "")),
+      el("div","mut hs", groups.length + (groups.length > 1 ? " exercices" : " exercice") + " · " + work.length + (work.length > 1 ? " séries" : " série") + (mins >= 5 ? " · " + mins + " min" : "") + (end.length ? " · séance terminée" : "")));
+    groups.forEach(g => { const r = el("div","hrow"), pr = g.ls.some(l => l.pr); r.append(el("span","hn", histName(g.id)), el("span","hv", g.ls.map(histVal).filter(Boolean).join(" · ") + (pr ? " · record" : ""))); if (pr) r.classList.add("pr"); wrap.append(r); });
+    box.append(wrap); });
+  if (keys.length > histN) { const more = el("button","golink","Plus ancien"); more.onclick = () => { histN += 30; openHist(); }; box.append(more); }
+  if (!$("histDlg").open) $("histDlg").showModal();
+  if (focus) { const t = box.querySelector('[data-day="' + focus + '"]'); if (t) { t.classList.add("on"); t.scrollIntoView({block:"start"}); } } }
+$("histOpen").onclick = () => { histN = 30; openHist(); };
+$("histX").onclick = () => $("histDlg").close(); $("histDlg").addEventListener("click", e => { if (e.target === $("histDlg")) $("histDlg").close(); });

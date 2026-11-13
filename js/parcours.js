@@ -185,6 +185,7 @@ function journey(nextId){
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
     if (it.k === "b"){ const b = el("div","sign " + it.state + (it.sid === "hard" ? " hard" : "")); b.style.top = it.y + "px";
+      { const ph = photo("etage-" + it.sid); if (ph) { b.classList.add("ph"); b.style.setProperty("--ph", 'url("' + ph + '")'); } }
       const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.sid === "low" ? "+" : String(it.n);
       const g = el("div","grow"); g.append(el("div","sname", it.title), el("div","mut", it.sub));
       b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); cv.append(b); }
@@ -228,6 +229,7 @@ function journey(nextId){
 function quick(id){
   const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
+  { const ph = photo("but-" + id); if (ph) { const f = el("figure","qkph"), im = el("img"); im.src = ph; im.alt = m.name; im.loading = "lazy"; f.append(im, el("figcaption",null,"Le but")); box.append(f); } }
   const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
   const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l'instant" + ((pw => pw > 0 ? " · ouverture estimée : " + dateTxt(pw) : "")(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + " · " + dateTxt(w) : ""));   /* loin du but : on montre l'écart au prochain niveau, pas une date qui recule */
