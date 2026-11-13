@@ -1,0 +1,89 @@
+// État sauvegardé, outils, progression (expérience, niveaux, badges).
+"use strict";
+// ---------- État ----------
+const KEY = "hs-fastway-v1";
+const blank = () => ({countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by:{}}});
+let S = blank();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(blank(), JSON.parse(raw)); } catch(e){}
+S.sessOpen = false;
+// fusion des deux « jambes en ciseaux » : l'ancienne figure de 15 s rejoint celle de 5 s
+if (S.ms.b2_free15) { const a = S.ms.b1_free5 || (S.ms.b1_free5 = {best:0, done:false}), b = S.ms.b2_free15; a.best = Math.max(a.best || 0, b.best || 0); a.done = !!b.done; delete S.ms.b2_free15; }
+else if (S.ms.b1_free5 && S.ms.b1_free5.done && (S.ms.b1_free5.best || 0) < 15 && !S.migr15) { S.ms.b1_free5.done = false; }
+S.migr15 = true;
+// Fondations : qui savait déjà sortir en roue au mur maîtrise la roue, le gainage et la tenue au mur
+if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue","fd_c2w"].forEach(id=>{ S.ms[id] = {best:Math.max(MS[id].target || 0, 0), done:true}; }); S.migrFd = true; }   // le détail de la séance est replié à chaque ouverture
+let saveWarned = false;
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; } catch(e){ if (!saveWarned && window.toast) { saveWarned = true; toast("Enregistrement impossible : la mémoire de l'appareil est pleine."); } } };
+// si l'app est ouverte dans deux onglets, l'autre onglet se recharge (hors séance) pour ne pas écraser les données
+window.addEventListener("storage", e => { if (e.key === KEY && !document.querySelector("dialog[open]")) location.reload(); });
+// l'écran reste allumé pendant le chrono ; on n'attend pas la réponse, pour qu'un double appui ne lance pas deux chronos
+function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.request("screen").then(set).catch(()=>{}); } catch(e){} }
+const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
+const $ = id => document.getElementById(id);
+const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+const ICON = {
+  check:'<svg width="11" height="9" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4.5l3 3 6-6.5"/></svg>',
+  lock:'<svg width="9" height="11" fill="none" stroke="currentColor" stroke-width="1.3"><rect x=".7" y="4.7" width="7.6" height="5.6" rx="1"/><path d="M2.5 4.5V3a2 2 0 014 0v1.5"/></svg>',
+  chev:'<svg width="8" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 1l5 5-5 5"/></svg>',
+};
+const icon = (name, cls) => { const s = el("span", cls); s.innerHTML = ICON[name]; return s; };
+const num = v => (Math.round(v*10)/10).toLocaleString("fr-FR");
+const fmt = (m, v) => m.type === "hold" ? num(v) + " s" : v + " rép.";
+const goalTxt = m => m.type === "hold" ? m.target + " s" : m.type === "reps" ? "× " + m.target : "";
+
+const msLocked = m => (m.req||[]).some(r=>!st(r).done);
+const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
+const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
+const missing = m => m.req.filter(r=>!st(r).done).map(r=>MS[r].name + (MS[r].target ? " " + goalTxt(MS[r]) : "")).join(" + ");
+
+// ---------- Progression : compteurs, expérience, niveau, badges ----------
+const cnt = () => {
+  if (!S.cnt){ const wk = (S.pg && S.pg.wk) || {};
+    S.cnt = { sets:Object.values(wk).reduce((n,o)=>n + Object.keys(o).length, 0),
+      hold:Math.round(S.log.reduce((n,l)=>n + ((l.k === "hold" || (MS[l.id] && MS[l.id].type === "hold")) && typeof l.v === "number" ? l.v : 0), 0)),
+      sess:S.log.filter(l=>l.k === "check").length, stretch:S.log.filter(l=>l.k === "check" && /tirements/.test(l.id)).length, streak:0 }; }
+  return S.cnt;
+};
+const RANKS = ["Débutant","Apprenti","Initié","Pratiquant","Confirmé","Avancé","Expert","Maître"];
+const xpFor = l => 50 * l * (l + 1);            // expérience totale pour atteindre le niveau l + 1
+const doneIn = ids => ids.filter(id=>st(id).done).length;
+const mins = s => Math.floor(s/60);
+const BADGES = [
+  {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},
+  {id:"st3", g:"3 j", name:"Trois jours d'affilée", desc:"S'entraîner trois jours de suite.", max:3, cur:c=>c.streak},
+  {id:"st7", g:"7 j", name:"Sept jours d'affilée", desc:"S'entraîner sept jours de suite.", max:7, cur:c=>c.streak},
+  {id:"st30", g:"30 j", name:"Trente jours d'affilée", desc:"S'entraîner trente jours de suite.", max:30, cur:c=>c.streak},
+  {id:"se10", g:"10", name:"Dix séances", desc:"Terminer dix séances complètes d'un programme.", max:10, cur:c=>c.sess},
+  {id:"se50", g:"50", name:"Cinquante séances", desc:"Terminer cinquante séances complètes.", max:50, cur:c=>c.sess},
+  {id:"s100", g:"100", name:"Cent séries", desc:"Faire cent séries en séance.", max:100, cur:c=>c.sets},
+  {id:"s1000", g:"1000", name:"Mille séries", desc:"Faire mille séries en séance.", max:1000, cur:c=>c.sets},
+  {id:"h10", g:"10 min", name:"Dix minutes en appui", desc:"Cumuler dix minutes de maintien chronométré.", max:600, cur:c=>c.hold, t:1},
+  {id:"h60", g:"1 h", name:"Une heure en appui", desc:"Cumuler une heure de maintien chronométré.", max:3600, cur:c=>c.hold, t:1},
+  {id:"e10", g:"Souple", name:"Dix séances d'étirements", desc:"Terminer dix séances d'étirements.", max:10, cur:c=>c.stretch},
+  ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:"Branche " + s.name, desc:"Valider tous les jalons de la branche « " + s.name + " ».", max:s.ms.length, cur:()=>doneIn(s.ms.map(m=>m.id))})),
+  ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
+];
+function stats(){
+  const c = cnt(), days = new Set(S.log.map(l=>dayKey(l.t)));
+  let streak = 0; const d = new Date();
+  if (!days.has(dayKey(d))) d.setDate(d.getDate()-1);
+  while (days.has(dayKey(d))) { streak++; d.setDate(d.getDate()-1); }
+  if (streak > (c.streak || 0)) c.streak = streak;
+  const done = Object.keys(MS).filter(id=>st(id).done).length, tries = S.log.filter(l=>MS[l.id]).length;
+  const ctx = Object.assign({tries}, c);
+  const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)); return Object.assign({}, b, {cur, ok:cur >= b.max}); });
+  const nodeXp = Object.values(MS).reduce((n,m)=>n + Math.round(100 * lvlOf(m) / lvls(m).length), 0);
+  const xp = nodeXp + 2*c.sets + 2*tries + 40*badges.filter(b=>b.ok).length;
+  let lvl = 1; while (xp >= xpFor(lvl)) lvl++;
+  return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[Math.min(RANKS.length-1, Math.floor((lvl-1)/2))]};
+}
+let toastT = null;
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
+
+// ---------- Niveaux d'un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
+const lvls = m => m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
+const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : L.filter(v=>x.best >= v).length; };
+const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
+const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;
+const noMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+const poseId = id => POSE3D[id] || (id.startsWith("pl_") ? id : "stand");

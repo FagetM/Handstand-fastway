@@ -1,0 +1,239 @@
+// Données : arbre des figures, fiches, schémas de posture.
+"use strict";
+// ---------- Données : l'arbre de compétences ----------
+// type: hold (secondes), reps (répétitions), check (réussi / pas réussi)
+// req: jalons à valider avant · alt: compétence alternative (hors chemin) · soon: parcours « à venir » dans le programme
+// yt: vidéos YouTube de référence · en: nom d'origine dans le programme
+const BASE = ["in_tuck","in_str60"]; // les deux jalons qui ouvrent le niveau Intermédiaire
+const TREE = [
+  {id:"base", name:"Fondations", en:"Foundations", ms:[
+    {id:"fd_plank", name:"Gainage bras tendus", en:"Plank", type:"hold", target:30, req:[],
+      desc:"Position de pompe, bras tendus, corps aligné de la tête aux talons. C'est la ligne du corps que tu garderas tête en bas."},
+    {id:"fd_roue", name:"Roue au sol", en:"Cartwheel", type:"check", req:[],
+      desc:"La roue, sur un sol dégagé. C'est ta sortie de secours : quand l'équilibre part, tu tournes sur le côté et tu retombes sur les pieds."},
+    {id:"fd_push", name:"Pompes", en:"Push-ups", type:"reps", target:20, req:["fd_plank"],
+      desc:"20 pompes propres d'affilée, corps gainé, poitrine jusqu'au poing. La force de base pour les épaules et la planche."},
+    {id:"fd_c2w", name:"Poitrine face au mur", en:"Chest To Wall Hold", type:"hold", target:60, req:["fd_plank"],
+      desc:"Dos au mur, mains au sol, tu montes les pieds le long du mur jusqu'à la verticale, poitrine face au mur. Tenir 60 s, c'est avoir l'endurance des épaules pour le reste."},
+    {id:"fd_dips", name:"Dips", en:"Dips", type:"reps", target:10, req:["fd_push"],
+      desc:"10 dips aux barres parallèles, bras jusqu'à 90°. Avec les pompes, c'est le prérequis de la planche."},
+  ], videos:[]},
+  {id:"starter", name:"Départ", en:"Starter", ms:[
+    {id:"st_bail30", name:"Sortie en roue, à 30 cm du mur", en:"Cartwheel Bail – 30cm From Wall", type:"check", req:["fd_roue","fd_c2w"],
+      desc:"Tu montes en équilibre avec les mains à environ 30 cm du mur, puis tu sors sur le côté, comme une roue. C'est ton issue de secours : la maîtriser d'abord enlève la peur de tomber.",
+      yt:[["CGb3ddy1Qd0","Équilibre contre le mur"]]},
+    {id:"lo_frog", name:"Grenouille et corbeau", en:"Frog & Crow", sub:"préparation conseillée", type:"check", req:[], alt:true,
+      desc:"Appuis bas, bras fléchis, genoux posés sur les coudes. Un premier équilibre sur les mains tout près du sol, qui prépare les poignets et l'équilibre au mur."},
+    {id:"st_split", name:"Jambes en ciseaux au mur", en:"Split Leg Balance On Wall", type:"hold", target:5, req:["st_bail30"],
+      desc:"Au mur, une jambe reste en contact et l'autre s'en éloigne, comme des ciseaux ouverts. Tu cherches le point d'équilibre et tu décolles le pied du mur pendant 5 s.",
+      yt:[["AuLdmq7V8Q0","Split leg balance"]]},
+    {id:"st_bailc2w", name:"Sortie en roue, poitrine face au mur", en:"Cartwheel Bail – Chest To Wall", type:"check", req:["st_bail30"],
+      desc:"La même sortie en roue, mais depuis l'équilibre ventre face au mur, la position la plus proche du vrai équilibre.",
+      yt:[["OnXxclKvCTA","Équilibre poitrine face au mur"]]},
+  ], videos:[["Tomber : pourquoi apprendre à tomber, et la roue ratée","Falling: why you must learn to fall & the terrible cartwheel"],["Tomber : 5 façons de prendre confiance","5 ways to gain confidence"],["Tomber : pourquoi poitrine face au mur ?","Why chest to wall?"],["Au mur : position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["Au mur : comment y monter","Entering the wall"],["Au mur : où est l'équilibre, et tirer avec les talons","Where is balance & heel pulls"],["Au mur : jambes en ciseaux","Split leg balance"]]},
+  {id:"b1", name:"Débutant 1", en:"Beginner 1", ms:[
+    {id:"b1_free5", name:"Équilibre libre, jambes en ciseaux", en:"Freestanding 5s In Split Leg · Split Leg Hold 15s", type:"hold", target:15, req:["st_split","st_bailc2w"],
+      desc:"Sans mur. Les jambes ouvertes en ciseaux servent de balancier, comme la perche d'un funambule : c'est la forme la plus facile à tenir. 5 s, puis 10 s, puis 15 s : tu apprends à corriger avec les doigts au lieu de redescendre.",
+      yt:[["FTnKgUnmD2E","Équilibre jambes en ciseaux"]]},
+    {id:"b2_str15", name:"Équilibre droit, jambes serrées", en:"Straight 15s", type:"hold", target:15, req:["b1_free5"],
+      desc:"Jambes jointes, corps en ligne. Plus de balancier : tout l'équilibre vient des mains et des épaules."},
+  ], videos:[["Au mur : jambes en ciseaux","Split leg balance"],["Au mur : tenues poitrine face au mur","Chest to wall holds"],["Au mur : quitter le mur en tirant avec les orteils","Leaving the wall with toe pulls"],["Monter en équilibre : limiter les variables pour être régulier","Limit the variables: tricks to increase your consistency"],["Monter en équilibre : la montée de base et la règle du 50/50","The basic kick up & 50/50 rule"]]},
+  {id:"b2", name:"Débutant 2", en:"Beginner 2", ms:[
+    {id:"in_holds", name:"Tenues de formes, niveau 1", en:"Level 1 Shape Holds", type:"check", req:["b2_str15"],
+      desc:"Tenir d'autres formes que la ligne droite : groupé, jambes écartées, ciseaux… Chaque forme déplace ton centre de gravité et t'oblige à rééquilibrer.",
+      img:["img/formes-silhouettes.jpg","img/formes-plage.jpg"]},
+    {id:"in_changes", name:"Changements de formes, niveau 1", en:"Level 1 Shape Changes", type:"check", req:["in_holds"],
+      desc:"Passer d'une forme à l'autre sans redescendre : c'est le mouvement des jambes qui devient l'exercice."},
+    {id:"in_tuck", name:"Groupé, genoux à hauteur des hanches", en:"Tuck – Knees In Line With Hips 10s", type:"hold", target:10, req:["in_changes"],
+      desc:"Genoux pliés ramenés devant toi jusqu'à la hauteur des hanches. Les épaules doivent avancer pour compenser : très formateur.",
+      yt:[["VtipeT7CMK0","Guide de l'équilibre groupé"]], img:["img/groupe.jpg"]},
+    {id:"in_str40", name:"Équilibre droit", en:"Straight 40s", type:"hold", target:40, req:["b2_str15"],
+      desc:"La ligne droite, tenue 40 s : l'endurance des épaules commence à compter autant que l'équilibre.",
+      yt:[["LcM0AGa2f6A","Apprendre l'équilibre : la méthode la plus rapide"]]},
+    {id:"in_str60", name:"Équilibre droit", en:"Straight 60s", type:"hold", target:60, req:["in_str40"],
+      desc:"La minute. Le jalon qui montre que ton équilibre est acquis et plus seulement « réussi parfois »."},
+  ], videos:[["Monter en équilibre : se battre et apprendre à rattraper","The fight & learning to save"],["Monter en équilibre : 4 montées à connaître","4 kick ups you should know"],["Vers la minute : 5 formes qui te feront progresser","5 shapes that will help you improve"],["Vers la minute : il faut grouper davantage","You need to tuck more"],["Vers la minute : anatomie des omoplates","Scapula anatomy"],["Vers la minute : combien de temps ça prend, et exemples","How long does it take & examples"],["Vers la minute : arguments pour la ligne droite","Arguments for a straight line"],["Vers la minute : 10 conseils pour une ligne droite","10 tips for a straight line"]]},
+  {id:"inter", name:"Intermédiaire", en:"Intermediate", ms:[
+    {id:"in_7s", name:"Le 7 sur une jambe", en:"Single Leg 7 – 5s", type:"hold", target:5, req:BASE,
+      desc:"En équilibre, une jambe descend à l'horizontale pendant que l'autre reste verticale : de profil, le corps dessine un 7."},
+    {id:"in_7d", name:"Le 7 à deux jambes", en:"Double Leg 7 – 5s", type:"hold", target:5, req:["in_7s"],
+      desc:"Les deux jambes serrées descendent à l'horizontale. Le bassin reste au-dessus des épaules, qui avancent pour faire contrepoids."},
+    {id:"in_toes", name:"Tête rentrée, regard vers les orteils", en:"Head Looking At Toes – 15s", type:"hold", target:15, req:BASE,
+      desc:"Tu rentres la tête entre les bras et tu regardes tes pieds. Sans repère visuel au sol, l'équilibre se fait uniquement aux sensations."},
+    {id:"in_toes7", name:"Le 7, regard vers les orteils", en:"Head Looking At Toes 7 – 5s", type:"hold", target:5, req:["in_7d","in_toes"],
+      desc:"Les deux précédents réunis : en 7, tête rentrée, regard vers les orteils."},
+    {id:"oa_flaghoriz", name:"Drapeaux sous l'horizontale, de chaque côté", en:"Flags Below Horizontal – Both Sides, 5s", type:"hold", target:5, req:BASE,
+      desc:"Jambes écartées, tu inclines tout le corps sur le côté jusqu'à ce qu'une jambe passe sous l'horizontale. Le poids part sur un seul bras : préparation directe à l'équilibre sur un bras."},
+    {id:"oa_flagfloor", name:"Drapeaux jusqu'au sol", en:"Flags To Floor", sub:"parcours à venir dans le programme", type:"check", req:["oa_flaghoriz"], soon:true,
+      desc:"Le drapeau poussé jusqu'à ce que le pied touche le sol sur le côté."},
+    {id:"in_mexican", name:"Équilibre mexicain", en:"Mexican Handstand", sub:"compétence alternative", type:"check", req:BASE, alt:true,
+      desc:"Dos très cambré, épaules ouvertes : les jambes partent loin au-dessus de la tête et le buste fait contrepoids.",
+      yt:[["qBgg3POD130","Équilibre mexicain"]]},
+    {id:"in_hspu", name:"Pompes en équilibre", en:"Handstand Push Up – 3 Reps", sub:"compétence alternative", type:"reps", target:3, req:BASE, alt:true,
+      desc:"En équilibre, tu fléchis les bras jusqu'à approcher la tête du sol, puis tu repousses. Demande surtout de la force d'épaules.",
+      yt:[["-sdV7YfO73Q","Tutoriel handstand push-up"]]},
+  ], videos:[["Affiner à deux bras : conseils et astuces niveau intermédiaire","Intermediate handstand tips & tricks"],["Affiner à deux bras : souffrir avec les 7","Suffering with 7's"],["Affiner à deux bras : tu crois savoir tenir l'équilibre ?","So you think you can balance?"],["Affiner à deux bras : tête rentrée, regard vers les orteils","Head looking at toes"],["Affiner à deux bras : arguments pour la ligne droite","Arguments for a straight line"],["Affiner à deux bras : 10 conseils pour une ligne droite","10 tips for a straight line"],["Affiner à deux bras : l'alignement","Alignment"],["Un bras : les drapeaux comme préparation","Flagging as one arm handstand prep"]]},
+  {id:"onearm", name:"Un bras", en:"One Arm", ms:[
+    {id:"oa_shift", name:"Transfert de poids", en:"Weight Shifting – 2x Per Side", sub:"2 fois de chaque côté", type:"reps", target:2, req:["in_toes7","oa_flaghoriz"],
+      desc:"Tu fais passer le poids d'une main sur l'autre, puis tu reviens, sans casser la ligne."},
+    {id:"oa_finger", name:"Appui sur le bout des doigts", en:"Fingertip Support – 15s", type:"hold", target:15, req:["oa_shift"],
+      desc:"Tout le poids sur un bras ; l'autre main ne touche plus le sol que du bout des doigts, comme une béquille très légère."},
+    {id:"oa_strarm", name:"Appui bras tendu", en:"Straight Arm Support – 15s", type:"hold", target:15, req:["oa_finger"],
+      desc:"Dernière étape avant de lâcher : le bras libre, tendu, ne donne plus qu'un appui minimal."},
+    {id:"oa_oahs", name:"Équilibre sur un bras", en:"One Arm Handstand – 5s", sub:"le sommet de l'arbre", type:"hold", target:5, req:["oa_strarm"],
+      desc:"Une seule main au sol, 5 secondes."},
+  ], videos:[["Mécanique de l'équilibre sur un bras","Mechanics of a one arm"],["Transfert de poids","Weight shifting"],["Appui sur le bout des doigts","Fingertip support"],["Tenter le tout pour le tout","Going for glory"],["Appui bras tendu","Straight arm support"],["Remonter le centre de gravité","Raising center of mass"],["10 conseils pour l'équilibre sur un bras","10 tips for the OAHS"]]},
+  {id:"press", name:"Montées en force", en:"Press", ms:[
+    {id:"pr_straddle", name:"Montée en force, jambes écartées", en:"Straddle Press", type:"check", req:["in_7d"],
+      desc:"Mains au sol, bras tendus, jambes écartées : tu montes en équilibre sans élan, en avançant les épaules pour soulever le bassin."},
+    {id:"pr_pike", name:"Montée en force, jambes serrées", en:"Pike Press", type:"check", req:["pr_straddle"],
+      desc:"La même montée, jambes tendues et jointes : le levier est plus long, donc nettement plus dur."},
+    {id:"pr_stalder", name:"Stalder", en:"Stalder", sub:"parcours à venir dans le programme", type:"check", req:["pr_pike"], soon:true,
+      desc:"Montée en force depuis l'équerre jambes écartées, sans que les pieds touchent le sol."},
+  ], videos:[["Mécanique d'une montée en force","Mechanics of a press"],["La montée en force qui se dérobe","The elusive press"],["Marches et flottements","Press walks and floating"],["Du bas vers le haut, du haut vers le bas, le maillon faible","Bottom up, top down, weak link"],["Stalder","Stalder"]]},
+  {id:"low", name:"Figures au sol", en:"Low Balances", ms:[
+    {id:"lo_elbow", name:"Planche sur les coudes", en:"Elbow Lever", type:"check", req:[],
+      desc:"Corps à l'horizontale, posé sur les deux coudes calés contre le ventre."},
+    {id:"lo_croc", name:"Crocodile", en:"Croc", type:"check", req:["lo_elbow"],
+      desc:"La même planche, sur un seul coude."},
+    {id:"lo_qdr", name:"Queda de rins", en:"QDR", type:"check", req:["lo_croc"],
+      desc:"Figure venue de la capoeira : la hanche repose sur un coude, corps de côté, en appui bas sur les mains."},
+  ], videos:[["Planche sur les coudes","Elbow lever"],["Crocodile","Croc"],["Queda de rins","QDR"]]},
+  {id:"planche", name:"Planche", en:"Planche", ms:[
+    {id:"pl_lean", name:"Planche lean", en:"Planche lean", type:"hold", target:15, req:["fd_push","fd_dips"],
+      desc:"Position de pompe, bras tendus, épaules avancées loin devant les mains, pieds au sol."},
+    {id:"pl_tuck", name:"Tuck planche", en:"Tuck planche", type:"hold", target:15, req:["pl_lean"],
+      desc:"Pieds décollés, genoux serrés contre la poitrine, bras tendus, dos arrondi."},
+    {id:"pl_adv", name:"Advanced tuck planche", en:"Advanced tuck planche", type:"hold", target:15, req:["pl_tuck"],
+      desc:"Le même groupé, dos à plat : les hanches montent à hauteur des épaules, les genoux s'éloignent de la poitrine."},
+    {id:"pl_frog", name:"Frog stand, jambes levées", en:"Frog stand with raised legs", type:"hold", target:15, req:["pl_adv"],
+      desc:"Bras tendus, jambes écartées et fléchies, pieds relevés derrière : le bassin s'ouvre vers la planche écartée."},
+    {id:"pl_pike", name:"Pike straddle planche", en:"Pike straddle planche", type:"hold", target:15, req:["pl_frog"],
+      desc:"Jambes tendues et écartées, hanches encore un peu fléchies."},
+    {id:"pl_straddle", name:"Straddle planche", en:"Straddle planche", type:"hold", target:10, req:["pl_pike"],
+      desc:"Corps à l'horizontale, hanches ouvertes, jambes tendues écartées."},
+    {id:"pl_full", name:"Full planche", en:"Full planche", type:"hold", target:10, req:["pl_straddle"],
+      desc:"Corps à l'horizontale, jambes tendues et serrées, bras tendus."},
+  ], videos:[]},
+  {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l'équilibre","The undisputed fastest way to learn to handstand"]]},
+];
+const P_FD = ["fd_plank","fd_roue","fd_c2w","fd_push","fd_dips"];
+const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
+const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
+const GOALS = [
+  {id:"both", name:"Équilibre sur un bras et full planche", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","pl_lean","oa_shift","pl_tuck","oa_finger","pl_adv","oa_strarm","pl_frog","pl_pike","pl_straddle","oa_oahs","pl_full"]},
+  {id:"oahs", name:"Équilibre sur un bras · 5 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_flaghoriz","oa_shift","oa_finger","oa_strarm","oa_oahs"]},
+  {id:"planche", name:"Full planche · 10 s", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_tuck","pl_adv","pl_frog","pl_pike","pl_straddle","pl_full"]},
+  {id:"min", name:"Équilibre droit · 60 s", ms:[...P_BASE,"in_str40","in_str60"]},
+  {id:"press", name:"Montée en force jambes serrées", ms:[...P_BASE,...P_B2,"in_7s","in_7d","pr_straddle","pr_pike"]},
+  {id:"all", name:"Tout l'arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
+];
+const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
+const MS = {}; TREE.forEach(s=>s.ms.forEach(m=>{MS[m.id]=m; m.sec=s.id;}));
+
+// ---------- Fiches détaillées : comment faire, repères, erreur fréquente, critère de validation ----------
+const DETAILS = {
+  st_bail30:{how:["Pose les mains à environ 30 cm du mur, largeur d'épaules, doigts bien écartés.","Monte en équilibre par une fente, sans chercher à tenir.","Dès que tu bascules, avance une main d'un quart de tour et laisse les jambes redescendre l'une après l'autre sur le côté, comme une roue.","Répète des deux côtés jusqu'à ce que le geste soit automatique."],cue:["Bras tendus du début à la fin.","Le regard reste au sol, entre les mains."],err:"Plier les bras, ou se laisser tomber sur le dos au lieu de pivoter.",ok:"Tu sors en roue 5 fois de suite sans hésiter, en arrivant sur les pieds."},
+  lo_frog:{how:["Accroupi, mains au sol largeur d'épaules, doigts écartés.","Grenouille : cale l'intérieur des genoux contre l'extérieur des coudes, bras fléchis, puis penche-toi vers l'avant jusqu'à ce que les pieds décollent.","Corbeau : même chose avec les genoux posés plus haut, sur l'arrière des bras, et les hanches plus hautes."],cue:["Regarde devant tes mains, pas tes pieds.","Ce sont les doigts qui freinent la bascule vers l'avant."],err:"Sauter dans la position au lieu de s'y pencher lentement.",ok:"Tu tiens chaque position 10 s sans que les pieds retouchent le sol."},
+  st_split:{how:["Monte ventre face au mur en marchant les pieds le long du mur, mains à 10–20 cm de celui-ci.","Écarte une jambe loin du mur ; l'autre pied reste posé dessus.","Appuie dans les doigts jusqu'à sentir le pied quitter le mur de lui-même.","Tiens, puis repose le pied en douceur."],cue:["Épaules poussées vers le haut, oreilles cachées par les bras.","Le pied quitte le mur parce que tu es en équilibre, pas parce que tu le repousses."],err:"Donner une impulsion sur le mur : tu pars alors à la renverse.",ok:"5 s pied décollé, 3 fois dans la même séance."},
+  st_bailc2w:{how:["Monte ventre face au mur, mains à une largeur de main du mur.","Déplace une main sur le côté en tournant le buste.","Laisse les jambes descendre l'une après l'autre du même côté.","Entraîne les deux côtés."],cue:["Choisis ton côté de sortie avant de monter."],err:"Redescendre en marchant le long du mur par habitude : la sortie doit devenir un réflexe.",ok:"Tu sors des deux côtés sans réfléchir, même fatigué."},
+  b1_free5:{how:["Loin du mur, monte par une fente, jambe arrière tendue.","Arrête-toi jambes ouvertes en ciseaux, sans chercher à les réunir.","Corrige avec les mains : appuie dans les doigts si tu pars vers l'avant, dans le talon de la main si tu reviens.","Si tu dépasses, sors en roue."],cue:["La même montée à chaque essai : même distance, même élan.","Mieux vaut monter un peu court que trop fort."],err:"Enchaîner des dizaines d'essais bâclés. Fais des séries courtes, reposé.",ok:"15 s au chrono, sans marcher sur les mains (paliers à 5 et 10 s)."},
+  b2_str15:{how:["Monte en ciseaux, stabilise, puis réunis lentement les jambes.","Serre les jambes l'une contre l'autre, pointes tendues.","Repousse le sol pour te grandir au maximum."],cue:["Côtes rentrées, bassin basculé : pas de dos creux.","Regard entre les mains."],err:"Réunir les jambes trop vite et perdre l'équilibre que tu venais de trouver.",ok:"15 s jambes serrées, corps aligné."},
+  in_holds:{how:["Depuis l'équilibre droit, prends une forme et tiens-la : jambes écartées, ciseaux, groupé.","Commence par les jambes écartées, la plus stable.","Vise 5 à 10 s par forme."],cue:["Quand les jambes partent d'un côté, les épaules compensent de l'autre."],err:"Changer de forme avant d'avoir stabilisé la précédente.",ok:"Tu tiens chaque forme du niveau 1 environ 10 s."},
+  in_changes:{how:["En équilibre, passe lentement d'une forme à l'autre : droit, écarté, droit, groupé.","Chaque transition dure 2 à 3 s.","Marque un arrêt net dans chaque forme."],cue:["Mouvement lent et continu, sans à-coup.","Les mains anticipent le déplacement des jambes."],err:"Accélérer pour « passer » la transition.",ok:"Tu enchaînes 3 changements de forme sur une seule montée."},
+  in_tuck:{how:["Depuis l'équilibre droit, plie les genoux et descends-les lentement vers la poitrine.","Arrête quand les cuisses sont à l'horizontale, genoux à hauteur des hanches.","Laisse les épaules avancer légèrement au-dessus des doigts pour compenser."],cue:["Dos arrondi, bassin au-dessus des épaules.","Talons près des fesses."],err:"Garder les épaules fixes : le poids des genoux te ramène alors au sol.",ok:"10 s, cuisses à l'horizontale."},
+  in_str40:{how:["Travaille en séries : 3 à 5 tenues proches de ton maximum, 2 min de repos.","Ajoute des tenues poitrine face au mur de 45 à 60 s pour l'endurance des épaules.","Respire lentement pendant la tenue."],cue:["Repousse le sol en continu, épaules hautes.","Corrige petit et tôt."],err:"Retenir sa respiration : tu tiens 20 s puis tout lâche d'un coup.",ok:"40 s au chrono."},
+  in_str60:{how:["Même travail, en visant des tenues de 45 s et plus.","Garde une à deux séances par semaine pour les tenues longues.","Arrête la série quand la ligne se dégrade."],cue:["Économise-toi : le moins de corrections possible."],err:"Tenter le record à chaque séance.",ok:"60 s au chrono."},
+  in_7s:{how:["Depuis l'équilibre droit, descends une jambe tendue vers l'avant jusqu'à l'horizontale.","L'autre jambe reste verticale.","Les épaules avancent un peu pour compenser."],cue:["Jambe basse tendue, parallèle au sol.","Bassin au-dessus des épaules."],err:"Plier la jambe ou cambrer pour compenser.",ok:"5 s de chaque côté."},
+  in_7d:{how:["Depuis l'équilibre droit, descends les deux jambes serrées et tendues vers l'avant.","Arrête à l'horizontale.","Avance franchement les épaules au-dessus des doigts."],cue:["Dos plat ou arrondi, jamais creusé.","Appuie fort dans les doigts."],err:"Descendre trop vite : la bascule arrive d'un coup.",ok:"5 s jambes à l'horizontale."},
+  in_toes:{how:["En équilibre droit, rentre lentement le menton vers la poitrine.","Amène la tête entre les bras et regarde tes orteils.","Les premières fois, fais-le près d'un mur."],cue:["Tu t'équilibres à la pression dans les mains, plus à la vue.","Les épaules s'ouvrent davantage."],err:"Bouger la tête brusquement.",ok:"15 s tête rentrée."},
+  in_toes7:{how:["Installe d'abord le 7 à deux jambes.","Rentre ensuite la tête et regarde tes orteils.","Ressors la tête avant de remonter les jambes."],cue:["Un seul changement à la fois."],err:"Tout faire en même temps.",ok:"5 s en 7, tête rentrée."},
+  oa_flaghoriz:{how:["En équilibre jambes écartées, incline lentement les jambes sur le côté : une jambe descend, l'autre monte.","Le bassin se décale pour faire contrepoids et le poids se concentre sur une main.","Arrête quand la jambe basse passe sous l'horizontale, tiens, reviens."],cue:["Les deux bras restent tendus.","Le bassin s'incline sans vriller."],err:"Tourner le bassin au lieu de l'incliner.",ok:"5 s de chaque côté, jambe basse sous l'horizontale."},
+  oa_flagfloor:{how:["Même mouvement que le drapeau, poussé plus loin.","Descends la jambe basse jusqu'à effleurer le sol.","Remonte sans élan."],cue:["Contrôle la descente : le pied ne tombe pas."],err:"Poser du poids sur le pied.",ok:"Tu touches le sol et tu remontes, des deux côtés."},
+  in_mexican:{how:["Échauffe longuement les épaules et le dos.","En équilibre, laisse les jambes partir derrière toi en cambrant.","Pousse la poitrine vers l'avant, entre les bras, pour faire contrepoids."],cue:["La cambrure vient du haut du dos et des épaules, pas seulement des lombaires."],err:"Forcer sans avoir la mobilité d'épaules nécessaire.",ok:"Tu tiens la forme quelques secondes et tu reviens à l'équilibre droit."},
+  in_hspu:{how:["Commence contre un mur.","Descends en 3 s en amenant la tête en avant des mains : tête et mains forment un triangle.","Repousse jusqu'aux bras tendus."],cue:["Coudes vers l'arrière, pas écartés.","Corps gainé du début à la fin."],err:"Laisser tomber la tête sur le sol.",ok:"3 répétitions complètes d'affilée."},
+  fd_plank:{how:["Mains sous les épaules, bras tendus, doigts écartés.","Serre les fessiers et rentre le ventre : le bas du dos ne se creuse pas.","Repousse le sol pour écarter les omoplates."],cue:["Une ligne droite de la tête aux talons."],err:"Laisser tomber le bassin ou le monter en pic.",ok:"30 s sans que le bassin bouge."},
+  fd_roue:{how:["Debout, bras en l'air, regarde le point où tu poseras les mains.","Pose une main puis l'autre sur une ligne, jambes qui passent écartées par-dessus.","Retombe sur un pied puis l'autre, face au point de départ."],cue:["Les jambes passent au-dessus, pas sur le côté.","Commence petit : jambes basses, puis de plus en plus hautes."],err:"Avoir peur de lâcher une main : c'est justement ce geste qui te sauvera.",ok:"5 roues de chaque côté, retombée sur les pieds."},
+  fd_push:{how:["Mains un peu plus larges que les épaules, corps gainé.","Descends jusqu'à frôler le sol avec la poitrine, coudes à 45° du corps.","Remonte en poussant fort, bras tendus en haut."],cue:["Le corps monte et descend d'un bloc."],err:"Creuser le dos ou faire des demi-pompes.",ok:"20 pompes complètes d'affilée."},
+  fd_c2w:{how:["Mets-toi en position de pompe, pieds contre le mur.","Monte les pieds le long du mur en rapprochant les mains, petit pas par petit pas.","Arrête-toi mains à une main du mur, corps vertical, poitrine face au mur.","Redescends de la même façon, sans te jeter."],cue:["Pousse le sol : les épaules montent vers les oreilles.","Ventre rentré, regard entre les mains."],err:"Mains trop loin du mur : le dos se creuse en banane.",ok:"60 s tenues, corps aligné."},
+  fd_dips:{how:["En appui sur les barres, bras tendus, épaules basses.","Descends en pliant les coudes jusqu'à 90°, buste légèrement penché.","Remonte jusqu'aux bras tendus."],cue:["Épaules loin des oreilles en bas."],err:"Descendre trop bas les premières fois : ça tire sur l'avant des épaules.",ok:"10 dips complets d'affilée."},
+  pl_lean:{how:["Position de pompe, bras tendus, doigts vers l'extérieur ou sur parallettes.","Avance les épaules loin devant les mains, sur la pointe des pieds.","Écarte les omoplates et rentre le bassin."],cue:["Épaules 10 à 15 cm devant les mains, puis plus.","Coudes verrouillés, creux du coude tourné vers l'avant."],err:"Plier les coudes pour avancer : c'est l'épaule qui avance, pas le bras qui se plie.",ok:"15 s, épaules nettement devant les mains."},
+  pl_tuck:{how:["Depuis le lean, décolle les pieds en ramenant les genoux contre la poitrine.","Dos rond, omoplates écartées et abaissées.","Hanches qui montent presque à hauteur des épaules."],cue:["Bras tendus, verrouillés.","Les épaules restent devant les mains."],err:"S'accroupir sur les bras : pieds trop bas, hanches tombantes.",ok:"15 s, pieds décollés, bras tendus."},
+  pl_adv:{how:["Depuis le tuck, éloigne les genoux de la poitrine.","Dos plat : les hanches montent à hauteur des épaules."],cue:["Bassin rétroversé, ventre serré.","Épaules encore plus en avant qu'en tuck."],err:"Garder le dos rond : ce n'est plus un advanced tuck.",ok:"15 s, dos plat, hanches à hauteur des épaules."},
+  pl_frog:{how:["Depuis l'advanced tuck, ouvre les genoux sur les côtés.","Pieds relevés derrière, jambes fléchies et écartées."],cue:["Les hanches ne tombent pas quand les jambes s'ouvrent."],err:"Plier les bras pour compenser.",ok:"15 s, hanches à hauteur des épaules."},
+  pl_pike:{how:["Tends les jambes écartées, hanches encore un peu fléchies.","Étape de transition : chaque séance, ouvre un peu plus les hanches."],cue:["Bassin rétroversé : ne casse pas la ligne au bassin."],err:"Rester carpé longtemps : vise vite la ligne droite.",ok:"15 s, jambes tendues."},
+  pl_straddle:{how:["Corps à l'horizontale, jambes tendues et écartées.","Épaules loin devant les mains, omoplates écartées et abaissées."],cue:["Bassin rétroversé, fessiers serrés.","Coudes verrouillés."],err:"Creuser le dos ou plier les bras.",ok:"10 s, corps horizontal, jambes tendues."},
+  pl_full:{how:["Depuis la straddle, resserre les jambes jusqu'à la full.","Tout le corps horizontal, d'un bloc."],cue:["Épaules très en avant, bassin rétroversé."],err:"Descendre les jambes en les resserrant.",ok:"10 s, jambes serrées, corps horizontal."},
+  oa_shift:{how:["En équilibre jambes écartées, envoie le bassin au-dessus de la main d'appui.","L'épaule d'appui reste empilée au-dessus du poignet : elle ne se balade pas.","L'autre main s'allège jusqu'à ne presque plus appuyer, puis reviens au centre et change de côté."],cue:["Main d'appui légèrement tournée vers l'extérieur, doigts en griffe.","Lent : 2 à 3 s par transfert."],err:"Déplacer les épaules au lieu du bassin.",ok:"2 allers-retours de chaque côté sur une seule montée."},
+  oa_finger:{how:["Transfère le poids sur un bras.","Soulève la paume de l'autre main : seuls les doigts touchent le sol.","Allège progressivement : cinq doigts, puis trois, puis un."],cue:["Épaule d'appui poussée vers l'oreille.","Bassin au-dessus de la main d'appui."],err:"S'appuyer sur les doigts plus qu'on ne le croit.",ok:"15 s de chaque côté."},
+  oa_strarm:{how:["Même transfert, mais éloigne la main libre sur le côté, bras tendu.","Elle ne garde qu'un contact léger avec le sol.","Éloigne-la un peu plus à chaque séance."],cue:["Plus la main est loin, moins elle peut t'aider."],err:"Plier le bras libre pour reprendre appui.",ok:"15 s de chaque côté (note le côté travaillé)."},
+  oa_oahs:{how:["Depuis l'appui léger, décolle la main libre de quelques centimètres.","Garde les jambes écartées pour l'équilibre latéral.","Multiplie les essais courts et propres."],cue:["Repousse le sol, épaule haute.","Regard fixe."],err:"Lancer la main en l'air. Elle se soulève parce que le poids n'y est plus, pas l'inverse.",ok:"5 s main décollée."},
+  pr_straddle:{how:["Debout jambes très écartées, mains au sol près des pieds, bras tendus.","Avance les épaules au-dessus des doigts et monte sur la pointe des pieds.","Soulève le bassin au-dessus des épaules : les pieds décollent sans saut.","Ouvre les jambes sur les côtés, puis réunis-les en haut."],cue:["Bras tendus tout du long.","C'est le bassin qui monte, pas les pieds qui sautent."],err:"Sauter. Travaille plutôt la descente lente depuis l'équilibre.",ok:"3 montées propres d'affilée, sans saut."},
+  pr_pike:{how:["Même principe, pieds joints devant les mains.","Avance davantage les épaules.","Les jambes, tendues et serrées, montent par l'avant."],cue:["Ventre contre les cuisses au départ."],err:"Écarter les jambes en cours de montée.",ok:"Une montée jambes serrées et tendues."},
+  pr_stalder:{how:["Assis jambes écartées, mains au sol entre les jambes : soulève-toi en équerre.","Bascule le bassin vers l'arrière et le haut en avançant les épaules.","Termine comme une montée en force jambes écartées."],cue:["Les pieds ne touchent jamais le sol."],ok:"Une montée complète depuis l'équerre."},
+  lo_elbow:{how:["À genoux, mains au sol, doigts tournés vers l'extérieur ou l'arrière.","Cale les coudes contre le ventre, près des hanches.","Penche-toi vers l'avant et tends les jambes : le corps passe à l'horizontale."],cue:["Corps gainé, comme une planche posée sur un tréteau."],err:"Coudes trop écartés : ils glissent sur les côtés.",ok:"10 s à l'horizontale."},
+  lo_croc:{how:["Installe la planche sur les coudes.","Transfère le poids sur un seul coude.","Libère l'autre bras et tends-le devant toi."],cue:["Le coude d'appui est sous le centre du corps."],ok:"5 s de chaque côté."},
+  lo_qdr:{how:["Accroupi, cale un coude contre la hanche du même côté.","Pose les deux mains et le côté de la tête au sol.","Bascule le poids sur le coude et décolle les pieds, genoux groupés."],cue:["Trois appuis : les deux mains et la tête."],ok:"5 s pieds décollés."},
+};
+// ---------- Schémas de posture (vue de profil ou de face) ----------
+// l: segments du corps · g: position de départ ou d'arrivée (pointillés) · a: sens du mouvement · d: direction du regard · h: tête · w: mur
+const ARM = "60,106 60,72", STRAIGHT = [ARM,"60,72 61,42","61,42 61,8"], FRONT = ["48,106 53,74","72,106 67,74","53,74 67,74"];
+const FIG = {
+  st_bail30:{w:92,l:STRAIGHT,h:[53,84],a:["46,30 24,56"]},
+  lo_frog:{l:["56,106 64,90 52,80","52,80 80,70","80,70 64,88 86,90"],h:[42,76]},
+  st_split:{w:76,l:[ARM,"60,72 62,42","62,42 76,10","62,42 36,18"],h:[53,84]},
+  st_bailc2w:{w:72,l:[ARM,"60,72 62,42","62,42 72,8"],h:[53,84],a:["48,34 24,58"]},
+  b1_free5:{l:[ARM,"60,72 61,42","61,42 84,14","61,42 38,18"],h:[53,84]},
+  b2_str15:{l:STRAIGHT,h:[53,84]}, in_str40:{l:STRAIGHT,h:[53,84]}, in_str60:{l:STRAIGHT,h:[53,84]},
+  in_holds:{l:[...FRONT,"60,74 60,46","60,46 30,22","60,46 90,22"],h:[60,88]},
+  in_changes:{l:STRAIGHT,g:["61,42 84,14","61,42 38,18"],h:[53,84]},
+  in_tuck:{l:["60,106 63,72","63,72 58,44","58,44 78,46 72,26"],h:[56,84]},
+  in_7s:{l:["60,106 62,72","62,72 60,42","60,42 60,8","60,42 94,44"],h:[55,84]},
+  in_7d:{l:["60,106 64,72","64,72 57,42","57,42 92,44"],h:[57,84]},
+  in_toes:{l:STRAIGHT,h:[60,87],d:["64,80 64,14"]},
+  in_toes7:{l:["60,106 64,72","64,72 57,42","57,42 92,44"],h:[63,87],d:["68,80 88,52"]},
+  oa_flaghoriz:{l:[...FRONT,"60,74 54,48","54,48 92,58","54,48 30,22"],h:[60,88]},
+  oa_flagfloor:{l:[...FRONT,"60,74 54,48","54,48 96,98","54,48 34,18"],h:[60,88]},
+  in_mexican:{l:["60,106 66,74","66,74 64,58 56,46","56,46 40,36 22,38"],h:[60,88]},
+  in_hspu:{l:["60,106 70,94 62,84","62,84 62,54","62,54 62,20"],h:[52,97],a:["82,72 82,42"]},
+  oa_shift:{l:["48,106 51,74","72,106 65,74","51,74 65,74","58,74 54,46","54,46 30,24","54,46 80,22"],h:[58,88],a:["90,64 72,64"]},
+  oa_finger:{l:["52,106 52,74","52,74 66,74","66,74 82,105","59,74 54,46","54,46 28,26","54,46 80,22"],h:[59,88]},
+  oa_strarm:{l:["52,106 52,74","52,74 66,74","66,74 100,105","59,74 54,46","54,46 28,26","54,46 80,22"],h:[59,88]},
+  oa_oahs:{l:["52,106 52,74","52,74 66,74","66,74 92,66","59,74 54,46","54,46 28,26","54,46 80,22"],h:[59,88]},
+  pr_straddle:{l:["60,106 66,74","66,74 56,46","56,46 84,70"],h:[58,86],a:["40,62 40,36"]},
+  pr_pike:{l:["60,106 66,74","66,74 56,46","56,46 76,98"],h:[58,86],a:["40,62 40,36"]},
+  pr_stalder:{l:["60,106 60,76","60,76 52,99","52,99 98,92"],h:[62,64],a:["36,96 36,70"]},
+  lo_elbow:{l:["60,106 60,90 46,82","46,82 102,82"],h:[36,80]},
+  lo_croc:{l:["60,106 60,90 46,82","46,82 102,82","46,82 16,84"],h:[38,72]},
+};
+Object.assign(FIG, {
+  _stand:{l:["60,70 54,106","60,70 66,106","60,70 60,42","60,48 47,72","60,48 73,72"],h:[60,32]},
+  pl_lean:{l:["44,106 50,78","50,78 104,104"],h:[42,72]},
+  pl_tuck:{l:["58,106 58,76","58,76 82,72 68,88"],h:[50,70]},
+  pl_adv:{l:["58,106 58,76","58,76 88,74 76,90"],h:[49,72]},
+  pl_frog:{l:["58,106 58,76","58,76 86,74 98,58"],h:[49,72]},
+  pl_pike:{l:["58,106 58,76","58,76 84,70 110,84"],h:[49,72]},
+  pl_straddle:{l:["58,106 58,76","58,76 86,74","86,74 112,66","86,74 112,84"],h:[49,74]},
+  pl_full:{l:["58,106 58,76","58,76 114,76"],h:[49,76]},
+});
+// Version réduite d'une posture, sans décor : icône d'un talent ou personnage.
+function figMini(id, size){
+  const f = FIG[id]; if (!f) return "";
+  return '<svg viewBox="0 0 120 120" width="' + size + '" height="' + size + '" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + f.l.map(p=>'<polyline points="' + p + '" stroke-width="7"/>').join("")
+    + '<circle cx="' + f.h[0] + '" cy="' + f.h[1] + '" r="8" fill="currentColor" stroke="none"/></svg>';
+}
+function figure(id){
+  const f = FIG[id]; if (!f) return null;
+  const pl = (pts, attr) => '<polyline points="' + pts + '" ' + attr + '/>';
+  let h = '<svg viewBox="0 0 120 120" width="132" height="132" fill="none" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + '<defs><marker id="ah" viewBox="0 0 8 8" refX="6" refY="4" markerWidth="5" markerHeight="5" orient="auto"><path d="M1 1l5 3-5 3" fill="none" stroke="var(--acc)" stroke-width="1.6"/></marker></defs>'
+    + '<path d="M8 108h104" stroke="var(--line)" stroke-width="2"/>';
+  if (f.w) h += '<path d="M' + (f.w+3) + ' 4v104" stroke="var(--line)" stroke-width="6" stroke-linecap="butt"/>';
+  (f.g||[]).forEach(p => h += pl(p, 'stroke="var(--mut)" stroke-width="3" stroke-dasharray="1 6"'));
+  f.l.forEach(p => h += pl(p, 'stroke="var(--txt)" stroke-width="4.5"'));
+  h += '<circle cx="' + f.h[0] + '" cy="' + f.h[1] + '" r="6" fill="var(--bg)" stroke="var(--txt)" stroke-width="3"/>';
+  (f.d||[]).forEach(p => h += pl(p, 'stroke="var(--acc)" stroke-width="1.6" stroke-dasharray="2 4" marker-end="url(#ah)"'));
+  (f.a||[]).forEach(p => h += pl(p, 'stroke="var(--acc)" stroke-width="2" marker-end="url(#ah)"'));
+  const w = el("div","fig"); w.innerHTML = h + '</svg>'; return w;
+}

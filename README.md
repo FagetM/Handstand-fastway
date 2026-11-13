@@ -18,6 +18,22 @@ Le service worker (`sw.js`) garde les fichiers sur l'appareil ; changer la const
 Aucune installation : c'est une page statique. Ouvrir `index.html`, ou la publier avec GitHub Pages
 (Settings → Pages → branche du dépôt, dossier racine) puis « Ajouter à l'écran d'accueil » sur le téléphone.
 
-L'arbre est décrit en haut du script de `index.html` (`TREE` et `GOALS`) : c'est là qu'on ajuste jalons et objectifs.
+L'arbre est décrit dans `js/data.js` (`TREE` et `GOALS`) : c'est là qu'on ajuste jalons et objectifs.
+
+Organisation du code (scripts classiques chargés dans l'ordre, sans étape de build) :
+
+| Fichier | Rôle |
+|---|---|
+| `index.html` | la page : structure des trois onglets et des fenêtres |
+| `css/app.css` | l'apparence |
+| `js/data.js` | arbre des figures, fiches détaillées, schémas de posture |
+| `js/state.js` | sauvegarde sur l'appareil, outils, expérience, niveaux, badges |
+| `js/parcours.js` | plan par figure, chemin du parcours, coffres, estimation, carte rapide |
+| `js/sprites.js` | personnage 3D et animations des figures |
+| `js/views.js` | vestiaire, rendu des onglets, fiche d'une figure avec chrono |
+| `js/seance.js` | programmes, séance du jour, exercices, bilan, séance guidée |
+| `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
+
+À chaque nouvelle version, changer `CACHE` dans `sw.js` (et `SPV` dans `js/sprites.js` si une animation change).
 
 L'app ne contient aucun contenu du programme d'origine (vidéos, textes) : uniquement des noms de jalons pour le suivi personnel.
