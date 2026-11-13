@@ -71,7 +71,7 @@ function zenP(){
     const d = {type:"train", blocks:t.blocks.map(b => ({name:b.name, how:b.how, kind:b.kind, zen:true,
       sets:b.sets.map(s => s.dur ? {dur:s.dur + (b.work ? Math.min(t.up, add * zStep(s.dur)) : 0), sides:b.sides ? true : undefined, rest:b.sets.length > 1 ? 20 : undefined} : {reps:s.reps, rest:20})}))};
     const o = {}; DAYK.forEach(x => o[x] = d); return o; };
-  return {id:"detente", name:"Maîtrise", zen:true, steps:ZEN.map(z => ({name:z.name, info:z.when, days:day(z)}))};
+  return {id:"detente", name:"Postures", zen:true, steps:ZEN.map(z => ({name:z.name, info:z.when, days:day(z)}))};
 }
 document.querySelectorAll("#zfDlg [data-zk]").forEach(b => b.onclick = () => zenRate(b.dataset.zk));
 const zenIdx = id => Math.max(0, ZEN.findIndex(z => z.id === id));

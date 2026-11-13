@@ -19,7 +19,7 @@ function builtin(){
   return window._bb || (window._bb = builtinOf(builtinBlocks()));
 }
 const builtinOf = blocks => { const day = {type:"train", blocks};
-  return {id:"equilibre", name:"Mes jalons", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours et du temps que tu as indiqué : tes prochains jalons accessibles, avec des séries ajustées à tes dernières séances.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]}; };
+  return {id:"equilibre", name:"Ma séance", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours et du temps que tu as indiqué : tes prochains jalons accessibles, avec des séries ajustées à tes dernières séances.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]}; };
 // ---------- Exercices d'accompagnement : ce qui prépare chaque figure, en plus de la figure elle-même ----------
 // sets : [séries, durée en s] (tenue) ou [séries, répétitions] (reps). Repères généraux d'entraînement.
 const DRILLS = {
