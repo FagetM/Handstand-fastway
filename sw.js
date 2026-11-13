@@ -1,7 +1,7 @@
 // Service worker : l'app s'ouvre instantanément depuis l'appareil, même hors connexion (salle, parc…).
 // Les fichiers de l'app sont mis en cache à l'installation ; chaque nouvelle version change CACHE, s'installe en arrière-plan
 // puis attend que l'utilisateur accepte la mise à jour (ou ferme l'app), pour ne jamais couper une séance en cours.
-const CACHE = "hs-fastway-v51", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
+const CACHE = "hs-fastway-v52", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon.svg", "icon-192.png", "icon-512.png",
   "fonts/barlow-condensed-600.woff2", "avatar3d.js", "spr-worker.js", "vendor/three.module.min.js"];
 
@@ -23,8 +23,9 @@ self.addEventListener("fetch", e => {
     return;
   }
   // fichiers de l'app : la copie de l'appareil d'abord (ouverture immédiate) ; le reste est gardé au premier passage
-  e.respondWith(caches.match(req, {ignoreSearch:req.mode === "navigate"}).then(hit => hit || fetch(req).then(r => {
+  const opt = {ignoreSearch:req.mode === "navigate"};
+  e.respondWith(caches.open(CACHE).then(c => c.match(req, opt)).then(hit => hit || caches.open(RUNTIME).then(c => c.match(req, opt))).then(hit => hit || fetch(req).then(r => {
     if (r.ok) { const copy = r.clone(); caches.open(RUNTIME).then(c => c.put(req, copy)).catch(() => {}); }
     return r;
-  }).catch(() => req.mode === "navigate" ? caches.match("index.html") : Response.error())));
+  }).catch(() => req.mode === "navigate" ? caches.open(CACHE).then(c => c.match("index.html")) : Response.error())));
 });
