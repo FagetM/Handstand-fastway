@@ -35,8 +35,8 @@ Object.assign(POSES, {
   // accroupi pour poser les mains : genoux fléchis, bassin bas (avant la planche, les pompes, la montée face au mur)
   squat:{pitch:0.85, arch:0.1, arm:[-1.25,-1.25], armZ:[0.12,0.12], elbow:[-0.1,-0.1], hip:[-2.1,-2.1], hipZ:[0.18,0.18], knee:[2.15,2.15], head:-0.25, point:0},
   reach:{pitch:0,    arm:[-2.95,-2.95], armZ:[0.05,0.05], hip:[0,0],      hipZ:[0.03,0.03], knee:[0,0],      head:0.05},
-  lunge:{pitch:0.12, arm:[-3.0,-3.0],   armZ:[0.05,0.05], hip:[-1.05,0.42], hipZ:[0.03,0.03], knee:[1.15,0.05], head:0, point:0},
-  tip:  {pitch:0.95, arch:-0.1, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-1.75,0.05], hipZ:[0.03,0.03], knee:[0.95,0], head:-0.15, point:0},
+  lunge:{pitch:0.15, arm:[-3.0,-3.0],   armZ:[0.05,0.05], hip:[-1.5,0.8], hipZ:[0.04,0.04], knee:[1.5,0.08], head:0, point:0},   // genou avant à 90°, jambe arrière loin derrière
+  tip:  {pitch:0.95, arch:-0.1, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-2.1,0.1], hipZ:[0.03,0.03], knee:[1.3,0], head:-0.15, point:0},
   plant:{pitch:1.62, arch:-0.15, arm:[-1.62,-1.62], armZ:[0.05,0.05], hip:[-2.5,-0.2], hipZ:[0,0], knee:[1.7,0], head:-0.45, point:0.4},
   kick: {pitch:2.45, arm:[-2.5,-2.5],   armZ:[0,0], hip:[-1.75,0.3],   hipZ:[0,0],       knee:[0.75,0],    head:-0.4},
   pike: {pitch:2.3,  arm:[-2.45,-2.45], armZ:[0,0], hip:[-1.15,-1.15], hipZ:[0.35,0.35], knee:[0,0],       head:-0.45},
@@ -100,7 +100,7 @@ Object.assign(POSES, {
 });
 Object.assign(FEET, {fold_s:1});
 // Un script : [posture, durée du mouvement en s, temps de maintien en s]. wall : mur derrière (-1) ou devant (1). cut : la boucle se referme sans retour.
-const UP = [["reach",0.3,0.1],["lunge",0.35,0.05],["tip",0.3,0],["plant",0.2,0],["kick",0.25,0]];
+const UP = [["reach",0.3,0.1],["lunge",0.4,0.25],["tip",0.3,0],["plant",0.2,0],["kick",0.25,0]];
 export const SCRIPTS = {
   st_bail30: {wall:1, cut:true, s:[...UP,["hs",0.5,0.8],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
   st_bailc2w:{wall:-1, cut:true, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",0.6,0.2],["c2w_2",0.6,0.2],["hs",0.6,1.0],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs"},
