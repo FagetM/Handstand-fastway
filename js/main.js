@@ -95,3 +95,6 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persisted(
 
 // photo d’accueil derrière le code d’accès, si elle existe
 { const ph = photo("accueil"); if (ph) { $("gate").classList.add("ph"); $("gate").style.setProperty("--ph", 'url("' + ph + '")'); } }
+
+// à l'ouverture d'une fenêtre, le titre reçoit le focus (lu par les lecteurs d'écran) au lieu du bouton fermer, qui affichait un contour
+{ const open0 = HTMLDialogElement.prototype.showModal; HTMLDialogElement.prototype.showModal = function(){ open0.call(this); const h = this.querySelector("h2"); if (h) { h.tabIndex = -1; h.focus({preventScroll:true}); } }; }

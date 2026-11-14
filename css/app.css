@@ -106,13 +106,13 @@ nav.tabs button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
 .log{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
 .log .v{font:600 20px/1 var(--disp);font-variant-numeric:tabular-nums;white-space:nowrap}
 .log .v.pr{color:var(--acc)}
-textarea{width:100%;min-height:90px;margin-top:8px;background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:8px;font:13px ui-monospace,monospace}
+textarea{width:100%;min-height:90px;margin-top:8px;background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:12px;font:14px/1.4 var(--disp)}
 input[type=number]{background:var(--raise);border:1px solid var(--line);border-radius:14px;padding:8px 12px;width:100%;min-height:48px}
 
 /* fiche */
 dialog{border:0;padding:20px 20px calc(20px + env(safe-area-inset-bottom));margin:auto auto 0;width:100%;max-width:640px;max-height:92dvh;overflow:auto;background:var(--bg);color:var(--txt);border-radius:16px 16px 0 0;border-top:1px solid var(--line)}
 dialog::backdrop{background:var(--scrim)}
-.x{flex:none;width:44px;height:44px;margin:-8px -8px 0 0;display:grid;place-items:center;color:var(--mut)}
+.x{flex:none;width:44px;height:44px;margin:-8px -8px 0 0;display:grid;place-items:center;color:var(--mut);border-radius:50%}
 .intro{display:flex;gap:16px;align-items:center;margin-top:16px}
 .intro #dFig:empty{display:none}
 .fig{flex:none;background:var(--raise);border-radius:14px}
@@ -218,9 +218,9 @@ button,.jn,.src{touch-action:manipulation}
 .qb .qd i.ok{background:var(--acc)}
 .qb .chev{color:var(--mut)}
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
-.tile{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 8px;border-radius:20px;background:var(--raise);text-align:center;color:var(--mut)}
+.tile{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:12px;border-radius:20px;background:var(--raise);text-align:left;color:var(--mut)}
 .tile b{font-size:30px;color:var(--txt)}
-.tile span{font-size:11.5px;line-height:1.2}
+.tile span{font-size:13px;line-height:1.25}
 .hw{display:flex;gap:8px;overflow-x:auto;padding:2px 0 16px;scrollbar-width:none}
 .hw::-webkit-scrollbar{display:none}
 .hwc{flex:0 0 118px;display:flex;flex-direction:column;gap:8px;padding:16px 8px;border-radius:20px;background:var(--raise);color:var(--mut)}
@@ -522,7 +522,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .qklink svg{display:block;width:100%;height:28px}
 .qklink path{fill:none;stroke:var(--line);stroke-width:2;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}
 .qklink path.on{stroke:var(--acc);stroke-dasharray:none}
-.qkblock{margin:12px 0;padding:12px 16px;border-radius:14px;background:var(--raise);border-left:3px solid color-mix(in srgb,var(--acc) 55%,transparent)}
+.qkblock{margin:12px 0;padding:12px 16px;border-radius:14px;background:var(--raise);}
 .qkblock.ok{border-color:var(--acc)}
 .qkblock b{font:700 15px/1.3 var(--disp)}.qkblock p{margin:4px 0 0;font-size:14px;color:var(--mut)}
 .qkblock .bar{height:6px;border-radius:3px;background:var(--line);margin-top:8px;overflow:hidden}
@@ -630,7 +630,7 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .hdday{width:100%;margin-top:8px;color:var(--acc2)}
 
 /* bouton de séance toujours visible au-dessus des onglets */
-.btn.big{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));z-index:3}
+.btn.big{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));z-index:3;box-shadow:0 0 0 14px var(--raise),var(--shadow)}
 /* douleur : visible, jamais un simple lien gris */
 .pain{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:16px auto 0;padding:8px 16px;border-radius:999px;color:var(--acc2);box-shadow:inset 0 0 0 1.5px var(--acc2);font-weight:600;font-size:14.5px}
 #sdOopsM{display:flex;flex-direction:column;align-items:center}#sdOopsM[hidden]{display:none}.lnk.inl{display:inline;margin:0;padding:0 2px}
@@ -666,3 +666,8 @@ nav.tabs button.on{box-shadow:none}nav.tabs button.on svg{background:color-mix(i
 @media (prefers-reduced-motion: reduce){.cscene *{animation:none!important}.chest.near svg{animation:none}}
 
 h1,h2{text-wrap:balance}
+
+.cues{margin:4px 0 12px;padding-left:20px;color:var(--mut)}.cues li{margin:2px 0}
+.mood button{flex:1 1 0}.mins button{flex:1 1 0}
+.chest .cl,.chest .cn{background:var(--bg);padding:0 4px;border-radius:4px}
+h2[tabindex="-1"]:focus{outline:none}

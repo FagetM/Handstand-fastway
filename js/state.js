@@ -115,8 +115,8 @@ const ICON = {
 };
 const icon = (name, cls) => { const s = el("span", cls); s.innerHTML = ICON[name]; return s; };
 const num = v => (Math.round(v*10)/10).toLocaleString("fr-FR");
-const fmt = (m, v) => m.type === "hold" ? num(v) + " s" : v + " rép.";
-const goalTxt = m => m.type === "hold" ? m.target + " s" : m.type === "reps" ? "× " + m.target : "";
+const fmt = (m, v) => m.type === "hold" ? num(v) + "\u00a0s" : v + "\u00a0rép.";
+const goalTxt = m => m.type === "hold" ? m.target + "\u00a0s" : m.type === "reps" ? "×\u00a0" + m.target : "";
 
 // étapes à l’élastique : sans élastique déclaré, elles ne bloquent pas le parcours
 const BAND_STEPS = new Set(["pl_strBand","pl_strBandL","pl_fullBand"]);
@@ -191,6 +191,6 @@ const LVLS = {pr_negS:[3], pr_negP:[3], pr_halfSt:[3], pr_lsitNeg:[3], pr_wallNe
 const lvls = m => LVLS[m.id] ? LVLS[m.id] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
 const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };
-const unitTxt = (m, v) => m.type === "hold" ? v + " s" : "× " + v;
+const unitTxt = (m, v) => m.type === "hold" ? v + "\u00a0s" : "×\u00a0" + v;   /* espace insécable : « 30 s » ne se coupe jamais */
 const noMotion = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 const poseId = id => POSE3D[id] || (id.startsWith("pl_") ? id : "stand");

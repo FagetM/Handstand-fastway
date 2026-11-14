@@ -280,7 +280,7 @@ function quick(id){
   // le détail reste replié : la carte montre d’abord l’essentiel (prérequis, ce qui bloque, les deux boutons)
   const D = DETAILS[id] || {}, info = el("div","qkinfo"), fold = (title, node) => { const d = el("details","qkd"), sm = el("summary"); sm.textContent = title; d.append(sm, node); info.append(d); };
   { const t = el("div"); if (m.desc) t.append(el("p",null,m.desc)); if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); t.append(ol); }
-    if (D.cue && D.cue.length) t.append(el("p","mut", D.cue.join(", "))); if (D.err) t.append(el("p",null,"À éviter : " + D.err));
+    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (D.err) t.append(el("p",null,"À éviter : " + D.err));
     // l’erreur la plus visible, montrée : à gauche la bonne posture, à droite la même qui se dégrade
     { const f = faultOf(id); if (f) { const cmp = el("div","fxcmp"), card = (cls, lab, anim, still) => { const c = el("div","fx " + cls), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = anim; sp.dataset.lk = ""; if (still) sp.dataset.still = 1; sprPaint(sp, 108); c.append(sp, el("b",null, lab)); return c; };
       cmp.append(card("ok", "À faire", id, true), card("ko", "À éviter : " + f.label, faultKey(id), false)); t.prepend(cmp);
@@ -314,7 +314,7 @@ function renderQuest(S0, nextId){
   BFAM.forEach(([name, ids, pre])=>{ const list = S0.badges.filter(b=>(ids ? ids.includes(b.id) : b.id.startsWith(pre)) && shown(b)); if (!list.length) return;
     box.append(el("div","lab bfam",name)); const grid = el("div","badges");
     list.forEach(b=>{ const x = el("button","bdg" + (b.ok ? "" : " off")); x.setAttribute("aria-label", b.name + ", " + (b.ok ? "obtenu" : b.cur + " sur " + b.max));
-      const m = el("span","m"); m.innerHTML = ringSvg(b.ok ? 0 : b.cur / b.max, 76, 35, 4, "rg"); m.append(el("span","gl", b.g)); if (b.ok) m.append(icon("check","ck"));
+      const m = el("span","m"); m.innerHTML = ringSvg(b.ok ? 0 : b.cur / b.max, 76, 35, 4, "rg"); m.append(el("span","gl", b.id.startsWith("goal_") && !b.ok ? b.cur + "/" + b.max : b.g));   /* une quête montre son avancement, pas son étiquette */ if (b.ok) m.append(icon("check","ck"));
       x.append(m, el("span","bn", b.name), el("span","bc", b.ok ? "Obtenu" : b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max));
       x.onclick = () => { $("bdG").textContent = b.g; $("bdT").textContent = b.name; $("bdD").textContent = b.desc; $("bdBar").style.width = (b.cur / b.max * 100) + "%";
         $("bdC").textContent = b.ok ? "Obtenu" : (b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max);

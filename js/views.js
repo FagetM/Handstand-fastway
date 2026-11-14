@@ -133,7 +133,7 @@ function render(){
     // tout ce qui vient d’être gagné, d’un coup : badges, niveau, et les tenues qui vont avec
     const gifts = nbs.flatMap(b => badgeReward(b.id)).concat(up ? WARD.flatMap(w => w.items.filter(it => typeof it[2] === "number" && it[2] > seen.lvl && it[2] <= Z.lvl).map(it => it[1])) : []);
     const parts = []; if (nbs.length) parts.push((nbs.length > 1 ? "Badges : " : "Badge : ") + nbs.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + ", " + Z.rank);
-    if (parts.length) { toast(parts.join(", ") + (gifts.length ? ", Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
+    if (parts.length) { toast(parts.join(". ") + (gifts.length ? ". Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
   { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste
@@ -299,7 +299,7 @@ function fillDlg(){
   { const L = lvls(m), k = lvlOf(m), nx = nextStep(m); if (L.length > 1) parts.push("Niveau " + k + " sur " + L.length + (nx ? ", niveau suivant : " + unitTxt(m, nx) : "")); }
   if (x.done) parts.push("Jalon validé");
   if (lk) parts.push("Recommandé après : " + missing(m));
-  $("dBest").textContent = parts.join(", ");
+  $("dBest").textContent = parts.join(". ") + ".";
   { const dp = $("dPlan"), L = lvls(m), k = lvlOf(m), pl = planFor(m); dp.textContent = "";
     if (L.length > 1){ dp.append(el("h3",null,"Les niveaux")); const ld = el("div","ladder");
       L.forEach((v,i)=>{ const r = el("div","lv" + (i < k ? " ok" : i === k ? " now" : "")); r.append(el("span","b", i < k ? "" : String(i+1)), el("span","grow","Niveau " + (i+1) + (i === L.length - 1 ? ", jalon validé" : "")), el("span","v", unitTxt(m, v))); if (i < k) r.firstChild.innerHTML = ICON.check; ld.append(r); });
