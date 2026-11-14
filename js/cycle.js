@@ -5,7 +5,7 @@ const monday = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d
 // le cycle part du lundi de la première séance ; sans bilan, il se clôt seul au bout de 5 semaines
 function cyc(){
   if (!Array.isArray(S.cycles)) delete S.cycles;   // données abîmées : on repart proprement plutôt que de bloquer l’écran
-  if (!S.cyc || typeof S.cyc.start !== "number" || !isFinite(S.cyc.start)) { S.cyc = {start:monday(Math.max(S.log.length ? S.log[0].t : Date.now(), Date.now() - 27 * 864e5)), intent:""}; save(); }   // au plus 4 semaines en arrière : pas de cycles fantômes pour un historique ancien
+  if (!S.cyc || typeof S.cyc.start !== "number" || !isFinite(S.cyc.start)) { const t0 = S.log.length ? S.log[0].t : Date.now(); S.cyc = {start:monday(Date.now() - t0 < 21 * 864e5 ? t0 : Date.now()), intent:""}; save(); }   // un historique ancien commence son premier cycle cette semaine : ni cycles fantômes, ni bilan d’emblée
   while (Date.now() - S.cyc.start >= 35 * 864e5) { const C = S.cyc, end = C.start + 28 * 864e5, best = {}; cycFigs(C.start, end).forEach(id => { best[id] = cycBest(id, C.start, end); });
     (S.cycles || (S.cycles = [])).push({start:C.start, end, intent:C.intent, best, refl:""}); S.cyc = {start:monday(Math.max(end, Date.now() - 6 * 864e5)), intent:C.intent}; S._cs = 1; }
   if (S._cs) { delete S._cs; save(); }
