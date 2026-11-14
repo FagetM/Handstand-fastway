@@ -228,6 +228,15 @@ function journey(nextId){
   return wrap;
 }
 // Carte rapide d'une figure : animation, niveau, estimation, et deux boutons.
+// erreur de technique à montrer en animation : la première erreur visible citée dans « À éviter »
+const FAULTS = [["bras", /(plier|plie|pliés?) (les |le |du )?(bras|coudes?)(?! libre)|demi-pompes|coudes trop/i, "bras pliés"], ["banane", /creus|banane|cambr/i, "dos creusé"], ["rond", /dos rond/i, "dos rond"],
+  ["hanches", /hanches?( qui)? (tomb|fl[ée]ch)|bassin (ou le monter )?.*tomb|tomber le bassin|plier le bassin|en pike|casser la ligne|jambes? (tomber|descendre)/i, "hanches qui tombent"],
+  ["genoux", /plier (la jambe|les genoux)/i, "genoux pliés"], ["ecart", /(écarter|ouvrir) les jambes/i, "jambes écartées"]];
+// cas où le texte trompe la détection (sens du mouvement, erreur d'un seul côté) : on choisit à la main, ou on ne montre rien
+const FX_ID = {oa_shTuck:["banane","dos creusé"], oa_strad30:["banane","dos creusé"], pr_lsit:["jambes","jambes qui tombent"], oa_shStrad:null, lo_elbow:null};
+function faultOf(id){ if (id in FX_ID) return FX_ID[id] && {t:FX_ID[id][0], label:FX_ID[id][1]}; const e = (DETAILS[id] || {}).err; if (!e) return null; let best = null;
+  FAULTS.forEach(([t, re, label]) => { const m = re.exec(e); if (m && (!best || m.index < best.i)) best = {t, label, i:m.index}; }); return best; }
+const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + id : null; };
 function quick(id){
   const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
@@ -267,7 +276,12 @@ function quick(id){
   // le détail reste replié : la carte montre d'abord l'essentiel (prérequis, ce qui bloque, les deux boutons)
   const D = DETAILS[id] || {}, info = el("div","qkinfo"), fold = (title, node) => { const d = el("details","qkd"), sm = el("summary"); sm.textContent = title; d.append(sm, node); info.append(d); };
   { const t = el("div"); if (m.desc) t.append(el("p",null,m.desc)); if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); t.append(ol); }
-    if (D.cue && D.cue.length) t.append(el("p","mut", D.cue.join(" · "))); if (D.err) t.append(el("p",null,"À éviter : " + D.err)); if (t.childElementCount) fold("Technique", t); }
+    if (D.cue && D.cue.length) t.append(el("p","mut", D.cue.join(" · "))); if (D.err) t.append(el("p",null,"À éviter : " + D.err));
+    // l'erreur la plus visible, montrée : à gauche la bonne posture, à droite la même qui se dégrade
+    { const f = faultOf(id); if (f) { const cmp = el("div","fxcmp"), card = (cls, lab, anim, still) => { const c = el("div","fx " + cls), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = anim; sp.dataset.lk = ""; if (still) sp.dataset.still = 1; sprPaint(sp, 108); c.append(sp, el("b",null, lab)); return c; };
+      cmp.append(card("ok", "À faire", id, true), card("ko", "À éviter : " + f.label, faultKey(id), false)); t.prepend(cmp);
+      if (!SPR[faultKey(id)]) setTimeout(() => buildSprites(true), 60); } }   /* pas encore calculée : on la fait passer en tête de file */
+    if (t.childElementCount) fold("Technique", t); }
   { const t = el("div"); if (!x.done) t.append(el("p",null, planFor(m).short));
     const dl = el("ul","drc"); drillsFor(m).forEach(k=>{ const d = DRILLS[k]; dl.append(el("li",null, d.name + " · " + d.sets[0] + " × " + (d.kind === "hold" ? d.sets[1] + " s" : d.sets[1]))); });
     if (dl.childElementCount) t.append(dl); if (t.childElementCount) fold(x.done ? "Préparation" : "Plan et préparation", t); }

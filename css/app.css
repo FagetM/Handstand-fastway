@@ -603,3 +603,9 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .qkph figcaption{position:absolute;left:12px;bottom:10px;padding:4px 10px;border-radius:999px;background:rgb(0 0 0 / .55);color:#fff;font-size:12.5px;font-weight:600}
 #gate.ph{background:linear-gradient(rgb(20 20 24 / .55),rgb(20 20 24 / .85)),var(--ph) center/cover;color:#f3eee6}
 #gate.ph .mut{color:#d9d2c6}#gate.ph input{border-bottom-color:#d9d2c6;color:#fff}
+
+/* technique : bonne posture et erreur, côte à côte */
+.fxcmp{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:4px 0 14px}
+.fx{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;background:var(--raise);box-shadow:inset 0 0 0 1.5px var(--line)}
+.fx b{font-size:12.5px;text-align:center;line-height:1.25}.fx.ok{box-shadow:inset 0 0 0 1.5px var(--acc)}.fx.ok b{color:var(--acc)}
+.fx.ko{box-shadow:inset 0 0 0 1.5px var(--acc2)}.fx.ko b{color:var(--acc2)}

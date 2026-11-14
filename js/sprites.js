@@ -42,7 +42,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "37-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "38-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
@@ -65,7 +65,8 @@ async function buildSprites(force){
   // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l'écran
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
-  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"]))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
+  const fxIds = Object.keys(MS).map(faultKey).filter(Boolean); fxIds.forEach(k => sprMod.faultScript && sprMod.faultScript(k));
+  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"], fxIds))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
   // de préférence dans un Web Worker (hors de la page) ; sinon par petits morceaux dans la page
   if (await sprViaWorker(ids, F, key, job)) return;
   if (job !== sprJob) return;
@@ -78,7 +79,7 @@ async function buildSprites(force){
     const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1, g = 0;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
     const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
-    A.vest(sc.vest); A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump("stand"); A.set({pose:"stand", fit:F, level:6}); snap(); snap();
+    A.vest(sc.vest); A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump(sc.start || "stand"); A.set({pose:sc.start || "stand", fit:F, level:6}); snap(); snap();
     A.play(sc.s, !sc.cut);
     do { snap(); g++; if (g % 4 === 0) { await idle(); if (job !== sprJob) return; } } while (A.moving() && g < MAXF);
     if (!sc.cut) snap(); if (hold < 0) hold = Math.floor(n / 2);
