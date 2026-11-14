@@ -121,19 +121,7 @@ function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["
 function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate() - 1); if (fd.has(dayKey(d))) return false;
   let n = 0; const w = new Date(); w.setDate(w.getDate() - todayIdx()); for (let i = 0; i < 7; i++) { const x = new Date(w); x.setDate(w.getDate() + i); if (fd.has(dayKey(x))) n++; }
   return n < 3 || fd.has(dayKey(Date.now())); }
-// une semaine légère toutes les cinq : moins de séries, pas de tentative à fond (tendons et poignets récupèrent)
-// la semaine qui suit une décharge : pas de détection de plateau (les tentatives à fond viennent de reprendre)
-// Semaine légère : après 16 séances et 4 semaines au moins depuis la précédente (plus selon le calendrier). Un arrêt de 7 jours remet le compteur à zéro.
-let dlMemo = null;
-function dlState(){ const now = Date.now(), key = dayKey(now) + "|" + S.log.length; if (dlMemo && dlMemo[0] === key) return dlMemo[1];
-  if (!S.t0) S.t0 = S.log.length ? S.log[0].t : now;
-  const D = S.dlw || (S.dlw = {end:S.t0}); let r = "";
-  if (D.start && now - D.start < 7 * 864e5) r = "on";
-  else { if (D.start) { D.end = D.start + 7 * 864e5; delete D.start; }
-    const days = []; let lastK = ""; S.log.forEach(l => { if (l.t > D.end) { const k = dayKey(l.t); if (k !== lastK) { lastK = k; days.push(l.t); } } });
-    let n = 0; days.forEach((t, q) => { n = q && t - days[q - 1] >= 7 * 864e5 ? 1 : n + 1; }); if (days.length && now - days[days.length - 1] >= 7 * 864e5) n = 0;
-    if (n >= 16 && now - D.end >= 28 * 864e5) { D.start = now; r = "on"; } else if (D.end > S.t0 && now - D.end < 7 * 864e5) r = "after"; }
-  dlMemo = [key, r]; return r; }
+// semaine légère : la 4e de chaque cycle de 4 semaines (cycle.js) ; la semaine qui suit, pas de détection de plateau
 const afterDeload = () => (S.cycles || []).length > 0 && cycDay() < 7, deloadWeek = () => cycLight();   // la semaine légère est la 4e du cycle (cycle.js)
 // retour après 7 jours sans séance : une séance de reprise à 70 %
 function comeback(){ const today = dayKey(Date.now()); for (let q = S.log.length - 1; q >= 0; q--) if (dayKey(S.log[q].t) !== today) return Date.now() - S.log[q].t >= 7 * 864e5; return false; }

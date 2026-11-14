@@ -170,7 +170,7 @@ function render(){
     if (P.builtin && !(dn && dn < tot) && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d’entraînement de suite. Mobilité et poignets aujourd’hui, la force revient demain."));
-    if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons récupèrent."));
+    if (P.builtin && deloadWeek() && !cycTest()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons récupèrent."));
     { const PS = painState(); if (PS.phase) nc.append(el("div","painnote", PS.phase === 1 ? (PS.zone === "poignet" ? "Poignets au repos encore " + PS.days + " j : pas d’appui sur les mains." : PS.zone === "epaule" || PS.zone === "coude" ? "Encore " + PS.days + " j sans travail à un bras, ni planche, ni montées." : "Séance allégée encore " + PS.days + " j.") : PS.phase === 2 ? "Reprise : 60 % de la charge, sans tentative à fond." : "Reprise : 80 % de la charge.")); }
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : arrête-toi et demande l’avis d’un professionnel de santé avant de reprendre.")); }
     // Maîtrise : on choisit sa séance de postures tenues (poignets, compression, ligne, contrôle, récup)
@@ -187,7 +187,7 @@ function render(){
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
         const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
-        const dose = mx.length && !work.length ? ess(mx.length) + " calmes" : mx.length ? work.length + " × " + u(work[0]) + " + " + ess(mx.length) + " à " + u(mx[0]) : b.sets.length > 1 ? b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0)) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
+        const dose = mx.length && !work.length ? ess(mx.length) + " calmes" : mx.length ? work.length + " × " + u(work[0]) + " + " + ess(mx.length) + " à " + u(mx[0]) : b.sets.length > 1 ? (s0.lab ? b.sets.length + " " + s0.lab + (b.sets.length > 1 ? "s" : "") : b.sets.length + " × " + (fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0))) : fixed(s0) ? fixTxt(b, s0, day.scale) : u(s0);
         g.append(el("div","tn2", b.name), el("div","td", dose + (b.ms && !b.confirm && canValToday(b.ms) ? ", validation possible aujourd’hui" : "")));
         const dots = el("div","dots"); if (dn) b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });

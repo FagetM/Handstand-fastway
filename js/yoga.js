@@ -65,14 +65,13 @@ function renderSommet(){
   const anc = new Set(), walk = i => (MS[i].req || []).forEach(r => { if (MS[r] && !anc.has(r)) { anc.add(r); walk(r); } }); walk(id);
   const done = [...anc].filter(r => reqDone(r)).length, tot = anc.size || 1, pct = Math.round(done / tot * 100), y = yogaOf(id);
   box.hidden = false;
-  const near0 = Object.values(MS).filter(f => !f.alt && !st(f.id).done && !msLocked(f) && f.target).map(f => [f, eta(f)]).filter(([, w]) => w > 0).sort((a, b) => a[1] - b[1])[0], aid = near0 ? near0[0].id : id;
+  const near0 = Object.values(MS).filter(f => !f.alt && !st(f.id).done && !msLocked(f) && f.target && P.fin[f.id] > 0).map(f => [f, P.fin[f.id]]).sort((a, b) => a[1] - b[1])[0], aid = near0 ? near0[0].id : id;
   const art = el("span","smart"), sp = el("span","sp"); sp.dataset.pose = poseId(aid); sp.dataset.anim = aid; sp.dataset.lk = ""; sprPaint(sp, 88); art.append(sp);   // la figure de la prochaine victoire
   if (!near0) { const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr); }
   // d’abord la victoire proche (une figure ouverte, datée en semaines), puis le sommet, avec une fourchette plutôt qu’une date lointaine
-  const near = near0;
   const g = el("span","grow");
-  if (near) g.append(el("span","lab","Prochaine victoire"), el("b","smn", near[0].name + ", " + goalTxt(near[0])), el("span","mut", dateTxt(near[1]).replace(/^vers/, "Vers") + "."));
-  const yrs = w => new Date(Date.now() + w * 7 * 864e5).getFullYear(), fw = P.fin[id], rng = fw ? (yrs(fw * 0.8) === yrs(fw * 1.25) ? "vers " + dateTxt(fw).replace(/^vers le /, "") : "entre " + yrs(fw * 0.8) + " et " + yrs(fw * 1.25)) : "";
+  if (near0) g.append(el("span","lab","Prochaine victoire"), el("b","smn", near0[0].name + ", " + (near0[0].type === "reps" ? near0[0].target + " répétitions" : goalTxt(near0[0]))), el("span","mut", (t => /^vers/.test(t) ? "V" + t.slice(1) : "Vers " + t)(dateTxt(near0[1])) + "."));
+  const fw = P.fin[id], rng = fw ? (t => /^(vers|entre)/.test(t) ? t : "vers " + t)(rangeTxt(fw)) : "";
   const bar = el("span","smbar"), i = el("span"); i.style.width = pct + "%"; bar.append(i);
   const sl = el("span","lab smlab"); sl.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2Z" fill="currentColor"/></svg>'; sl.append(" Ton prochain sommet : " + m.name);
   g.append(sl, bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + (rng ? ", " + rng : "") + "."));

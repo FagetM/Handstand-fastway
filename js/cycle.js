@@ -1,13 +1,21 @@
 // Cycles de 4 semaines : trois semaines de travail, une semaine plus légère qui finit par un test,
 // puis un bilan (records, intention, carnet) avant d’ouvrir le cycle suivant. L’intention du cycle tient en une phrase.
 "use strict";
-function cyc(){ if (!S.cyc) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); S.cyc = {start:d.getTime(), intent:""}; save(); } return S.cyc; }   // commence le lundi
+const monday = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
+// le cycle part du lundi de la première séance ; sans bilan, il se clôt seul au bout de 5 semaines
+function cyc(){
+  if (!Array.isArray(S.cycles)) delete S.cycles;   // données abîmées : on repart proprement plutôt que de bloquer l’écran
+  if (!S.cyc || typeof S.cyc.start !== "number" || !isFinite(S.cyc.start)) { S.cyc = {start:monday(S.log.length ? S.log[0].t : Date.now()), intent:""}; save(); }
+  while (Date.now() - S.cyc.start >= 35 * 864e5) { const C = S.cyc, end = C.start + 28 * 864e5, best = {}; cycFigs(C.start, end).forEach(id => { best[id] = cycBest(id, C.start, end); });
+    (S.cycles || (S.cycles = [])).push({start:C.start, end, intent:C.intent, best, refl:""}); S.cyc = {start:monday(Math.max(end, Date.now() - 6 * 864e5)), intent:C.intent}; save(); }
+  return S.cyc; }
 const cycDay = () => Math.floor((Date.now() - cyc().start) / 864e5);
 const cycN = () => (S.cycles || []).length + 1;
-const cycLight = () => { const d = cycDay(); return d >= 21 && d < 28; };   // 4e semaine : plus légère
-const cycTest = () => cycDay() >= 25;                                        // fin de cycle : jour de test, puis bilan
+const cycDays = () => new Set(S.log.filter(l => l.t >= cyc().start).map(l => dayKey(l.t))).size;   // jours d’entraînement dans ce cycle
+const cycTest = () => cycDay() >= 25;                                                              // fin de cycle : jour de test, puis bilan
+const cycLight = () => { const d = cycDay(); return d >= 21 && d < 25 && cycDays() >= 8; };        // 4e semaine plus légère, avant le test, si le cycle a été travaillé
 // les figures suivies : les plus travaillées du cycle (tenues ou répétitions chiffrées)
-function cycFigs(since){ const n = {}; S.log.filter(l => l.t >= since && MS[l.id] && typeof l.v === "number").forEach(l => { n[l.id] = (n[l.id] || 0) + 1; });
+function cycFigs(since, until){ const n = {}; S.log.filter(l => l.t >= since && l.t < (until || Infinity) && MS[l.id] && typeof l.v === "number").forEach(l => { n[l.id] = (n[l.id] || 0) + 1; });
   return Object.keys(n).sort((a, b) => n[b] - n[a]).slice(0, 4); }
 function cycBest(id, a, b){ let m = 0; S.log.forEach(l => { if (l.id === id && typeof l.v === "number" && l.t >= a && l.t < b) m = Math.max(m, l.v); }); return m; }
 // Aujourd’hui : une ligne de cycle, et la carte du test ou du bilan au bon moment
@@ -34,17 +42,17 @@ function cycBilan(){
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Cycle " + cycN()), el("h2",null,"Le bilan")); box.append(hd);
   const figs = cycFigs(C.start), best = {}; figs.forEach(id => { best[id] = cycBest(id, C.start, end); });
   { const s = el("div","qkinfo"), sc = el("section"); sc.append(el("h3",null,"Tes records du cycle"));
-    if (!figs.length) sc.append(el("p","mut","Pas de tenue chiffrée ce cycle-ci."));
+    if (!figs.length) sc.append(el("p","mut","Rien de chiffré ce cycle-ci."));
     figs.forEach(id => { const m = MS[id], p = prev && prev.best && prev.best[id], r = el("div","cyrec"); r.append(el("span",null,m.name), el("b",null,fmt(m, best[id]) + (p ? (best[id] > p ? ", + " + fmt(m, Math.round((best[id] - p) * 10) / 10) : best[id] === p ? ", stable" : ", un peu moins") : ""))); sc.append(r); });
     s.append(sc); box.append(s); }
   if (C.intent) box.append(el("p","vq","Ton intention : « " + C.intent + " »"));
   const notes = (S.jr || []).filter(e => e.t >= C.start); if (notes.length) { const s = el("div","qkinfo"), sc = el("section"); sc.append(el("h3",null,"Ce que tu as écrit")); notes.slice(-4).forEach(e => { const r = el("div","vjr"); r.append(el("div","mut", new Date(e.t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ", " + lc1(e.q)), el("p",null,e.a)); sc.append(r); }); s.append(sc); box.append(s); }
   box.append(el("p","vq","Qu’est-ce qui a changé ?")); const ta = el("textarea","vta"); ta.rows = 3; ta.setAttribute("aria-label","Qu’est-ce qui a changé ?"); box.append(ta);
   box.append(el("p","vq","Ton intention pour le cycle suivant")); const ni = el("input","cyin"); ni.placeholder = "Une phrase"; ni.value = C.intent || ""; ni.maxLength = 80; ni.setAttribute("aria-label","Intention du cycle suivant"); box.append(ni);
-  const ok = el("button","btn","Ouvrir le cycle suivant"); ok.onclick = () => {
+  const ok = el("button","btn cyok","Ouvrir le cycle suivant"); ok.onclick = () => {
     const refl = ta.value.trim(), n = cycN(); (S.cycles || (S.cycles = [])).push({start:C.start, end, intent:C.intent, best, refl});
     if (refl) (S.jr || (S.jr = [])).push({t:end, q:"Bilan du cycle " + n + " : qu’est-ce qui a changé ?", a:refl});
-    const d = new Date(); d.setHours(0, 0, 0, 0); S.cyc = {start:d.getTime(), intent:ni.value.trim()}; save(); $("qkDlg").close(); render(); toast("Cycle " + cycN() + " ouvert. Bonne route."); };
+    S.cyc = {start:monday(Date.now()), intent:ni.value.trim()}; save(); $("qkDlg").close(); render(); toast("Cycle " + cycN() + " ouvert. Bonne route."); };
   box.append(ok);
   $("qkT").textContent = "Bilan du cycle"; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
 }
@@ -53,8 +61,8 @@ function renderRecords(){
   const box = $("records"); if (!box) return; box.textContent = ""; const L = S.cycles || [], C = cyc();
   const ids = [...new Set(L.flatMap(c => Object.keys(c.best || {})).concat(cycFigs(C.start)))].filter(id => MS[id]).slice(0, 6);
   box.append(el("h2",null,"Mes records"), el("p","mut","Le meilleur de chaque cycle de 4 semaines."));
-  if (!ids.length) { box.append(el("p","mut","Ils apparaîtront après tes premières tenues chronométrées.")); return; }
-  ids.forEach(id => { const m = MS[id], pts = L.map(c => (c.best || {})[id] || 0).concat([cycBest(id, C.start, Date.now())]).filter((v, k, a) => v > 0 || k === a.length - 1);
+  if (!ids.length) { box.append(el("p","mut","Ils apparaîtront après tes premiers essais chiffrés.")); return; }
+  ids.forEach(id => { const m = MS[id], pts = L.map(c => (c.best || {})[id] || 0).concat([cycBest(id, C.start, Date.now())]).filter(v => v > 0); if (!pts.length) return;
     const r = el("div","recrow"), mx = Math.max(1, ...pts), W = 120, H = 32, X = k => pts.length > 1 ? 4 + k * (W - 8) / (pts.length - 1) : W / 2, Y = v => H - 4 - v / mx * (H - 8);
     const g = el("span","recsvg"); g.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true">' + (pts.length > 1 ? '<polyline fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" points="' + pts.map((v, k) => X(k).toFixed(1) + "," + Y(v).toFixed(1)).join(" ") + '"/>' : "") + pts.map((v, k) => '<circle cx="' + X(k).toFixed(1) + '" cy="' + Y(v).toFixed(1) + '" r="2.6" fill="var(--gold)"/>').join("") + '</svg>';
     const last = pts[pts.length - 1]; r.append(el("span","recn", m.name), g, el("b",null, last ? fmt(m, last) : "à venir")); r.setAttribute("aria-label", m.name + " : " + pts.map(v => fmt(m, v)).join(", ")); box.append(r); });
