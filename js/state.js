@@ -29,12 +29,14 @@ if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue
 // Effacer ce qu'on vient de faire : avant chaque enregistrement, une photo de l'état est gardée (les 4 dernières du jour).
 // Effacer = revenir à la photo, comme un « Ctrl+Z » : la série, le record, le compteur et une éventuelle validation repartent ensemble.
 const UKEY = KEY + ".undo"; let undoT = 0;
-function undoList(){ try { return (JSON.parse(localStorage.getItem(UKEY)) || []).filter(u => u.d === dayKey(Date.now())); } catch(e){ return []; } }
+// le jour qui compte : celui où la séance a commencé (une séance qui passe minuit reste sur un seul jour)
+const nowD = () => dayKey(typeof nowS === "function" ? nowS() : Date.now());
+function undoList(){ try { return (JSON.parse(localStorage.getItem(UKEY)) || []).filter(u => u.d === nowD()); } catch(e){ return []; } }
 // deux photos de plus : l'état du matin (avant le premier enregistrement du jour) et l'état avant l'exercice en cours
-const ukGet = k => { try { const u = JSON.parse(localStorage.getItem(UKEY + "." + k)); return u && u.d === dayKey(Date.now()) ? u : null; } catch(e){ return null; } };
+const ukGet = k => { try { const u = JSON.parse(localStorage.getItem(UKEY + "." + k)); return u && u.d === nowD() ? u : null; } catch(e){ return null; } };
 const ukSet = (k, u) => { try { if (u) localStorage.setItem(UKEY + "." + k, JSON.stringify(u)); else localStorage.removeItem(UKEY + "." + k); } catch(e){} };
 function pushUndo(label, at){ if (Date.now() - undoT < 400) return; undoT = Date.now();   // un même geste ne fait qu'une photo
-  const snap = Object.assign({d:dayKey(Date.now()), t:Date.now(), label, s:JSON.stringify(S)}, at || {});
+  const snap = Object.assign({d:nowD(), t:Date.now(), label, s:JSON.stringify(S)}, at || {});
   if (!ukGet("day")) ukSet("day", snap);
   if (at && at.bi != null) { const b = ukGet("blk"); if (!b || b.bi !== at.bi || b.p !== at.p) ukSet("blk", snap); }
   const a = undoList(); a.push(snap); while (a.length > 3) a.shift();
@@ -62,6 +64,8 @@ function keepAwake(set){ try { if (navigator.wakeLock) navigator.wakeLock.reques
 const NEED_DAYS = 2;
 // premier essai d'une figure : sa date sert à mesurer ton rythme réel (dates estimées)
 function stamp(id){ if (MS[id]) { const x = st(id); if (!x.t0 && !x.done) x.t0 = Date.now(); } }
+// record d'avant le premier enregistrement (bilan de départ) : il sert de plancher quand on efface l'historique
+function base0(id){ if (MS[id]) { const x = st(id); if (x.b0 == null) x.b0 = x.best || 0; } }
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
 const valRule = id => /^pl_(straddle|strNar|half|full)$/.test(id) ? {n:3, gap:2, span:21} /* grands leviers sans aide : trois semaines, le temps que les tendons suivent */ : /^ul_/.test(id) || id === "pl_press" || (/^pl_/.test(id) && MS[id] && MS[id].type === "hold" && !/^pl_(lean|ppp)/.test(id)) ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
@@ -72,10 +76,10 @@ function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days ||
 // à appeler quand la cible est atteinte sur une série ; renvoie un message (ou "" si la figure vient d'être validée)
 // figure « réussi / pas réussi » : 3 réussites le même jour = une séance validée (en séance ou depuis la fiche)
 function chkHit(id){ if (!MS[id] || MS[id].type !== "check" || st(id).done) return;
-  const c = S.chk || (S.chk = {}), d = dayKey(Date.now()), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}), need = /^ul_/.test(id) ? 1 : 3; r.n++;   // un combo : une réussite par séance suffit
+  const c = S.chk || (S.chk = {}), d = nowD(), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}), need = /^ul_/.test(id) ? 1 : 3; r.n++;   // un combo : une réussite par séance suffit
   if (r.n === need) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée !"); } else if (r.n < need) toast("Réussi (" + r.n + "/" + need + " aujourd'hui)"); }
 function hitTarget(id, side){
-  const all = S.hit || (S.hit = {}), d = dayKey(Date.now()), need = hitNeed(id);
+  const all = S.hit || (S.hit = {}), d = nowD(), need = hitNeed(id);
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }
   if (SIDED.has(id) && side != null) { h.sc = h.d === d && h.sc ? h.sc : {}; h.sc[side] = (h.sc[side] || 0) + 1; h.n = [0, 1].filter(k => (h.sc[k] || 0) >= perSide(id)).length; } else h.n++;
   // un bras : les séances validées doivent être espacées d'au moins 2 jours (le système nerveux consolide entre deux)
@@ -120,7 +124,7 @@ const cnt = () => {
       sess:S.log.filter(l=>l.k === "check").length, stretch:S.log.filter(l=>l.k === "check" && /tirements/.test(l.id)).length, streak:0 }; }
   return S.cnt;
 };
-const RANKS = ["Graine","Pousse","Racine","Tige","Feuille","Fleur","Arbre","Forêt"];   // on grandit comme une plante, à son rythme
+const RANKS = ["Graine","Pousse","Racine","Tige","Feuille","Fleur","Arbre","Forêt","Montagne","Ciel","Étoile","Galaxie"];   // on grandit comme une plante, à son rythme
 const xpFor = l => 50 * l * (l + 1);            // expérience totale pour atteindre le niveau l + 1
 const doneIn = ids => ids.filter(id=>reqDone(id)).length;   // les étapes à l'élastique comptent comme faites sans élastique
 const mins = s => Math.floor(s/60);
@@ -129,6 +133,9 @@ const BADGES = [
   {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou détente. Deux jours de repos de suite ne cassent rien.", max:3, cur:c=>c.streak},
   {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou détente, avec des jours de repos au milieu si tu veux.", max:7, cur:c=>c.streak},
   {id:"st30", g:"30 j", name:"Trente jours fidèles", desc:"Un mois à prendre soin de toi, repos compris.", max:30, cur:c=>c.streak},
+  {id:"st60", g:"60 j", name:"Deux mois fidèles", desc:"Deux mois à bouger, repos compris.", max:60, cur:c=>c.streak},
+  {id:"st100", g:"100 j", name:"Cent jours fidèles", desc:"Cent jours de suite à prendre soin de toi.", max:100, cur:c=>c.streak},
+  {id:"st365", g:"1 an", name:"Une année fidèle", desc:"Un an sans lâcher, deux jours de repos de suite au plus.", max:365, cur:c=>c.streak},
   {id:"se10", g:"10", name:"Dix séances", desc:"Terminer dix séances complètes d'un programme.", max:10, cur:c=>c.sess},
   {id:"se50", g:"50", name:"Cinquante séances", desc:"Terminer cinquante séances complètes.", max:50, cur:c=>c.sess},
   {id:"se100", g:"100", name:"Cent séances", desc:"Terminer cent séances complètes.", max:100, cur:c=>c.sess},
@@ -158,7 +165,7 @@ function stats(){
   const nodeXp = Object.values(MS).reduce((n,m)=>n + Math.round(100 * lvlOf(m) / lvls(m).length), 0);
   const xp = nodeXp + 2*c.sets + 2*tries + 40*badges.filter(b=>b.ok).length;
   let lvl = 1; while (xp >= xpFor(lvl)) lvl++;
-  return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[Math.min(RANKS.length-1, Math.floor((lvl-1)/2))]};
+  return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[lvl <= 16 ? Math.floor((lvl-1)/2) : Math.min(RANKS.length-1, 8 + Math.floor((lvl-17)/6))]};   /* après la forêt, un rang tous les 6 niveaux */
 }
 let toastT = null;
 function toast(msg){ const t = $("toast"), dl = [...document.querySelectorAll("dialog[open]")].pop(); (dl || document.body).append(t);   // au-dessus de la fenêtre ouverte (séance, fiche)

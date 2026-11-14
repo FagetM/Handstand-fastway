@@ -29,7 +29,7 @@ header.top{padding-top:20px;padding-bottom:4px}
 
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;padding:12px 16px;border-radius:999px;font-weight:700;background:var(--acc);color:var(--onacc)}
 .btn.line{background:none;color:var(--txt);box-shadow:inset 0 0 0 1px var(--line)}
-.btn.warn{background:none;color:var(--acc);box-shadow:inset 0 0 0 1px var(--line)}
+.btn.warn{background:none;color:var(--acc2);box-shadow:inset 0 0 0 1.5px var(--acc2)}
 .btns{display:flex;gap:8px;margin-top:12px}
 
 /* objectif */
@@ -624,3 +624,13 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .hrow.ed{align-items:center;padding-bottom:0}.hdel{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:var(--acc2)}
 .hvs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.hvb{min-height:36px;padding:6px 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px;font-variant-numeric:tabular-nums}
 .hdday{width:100%;margin-top:8px;color:var(--acc2)}
+
+/* bouton de séance toujours visible au-dessus des onglets */
+.btn.big{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));z-index:3}
+/* douleur : visible, jamais un simple lien gris */
+.pain{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:16px auto 0;padding:8px 18px;border-radius:999px;color:var(--acc2);box-shadow:inset 0 0 0 1.5px var(--acc2);font-weight:600;font-size:14.5px}
+#sdOopsM{display:flex;flex-direction:column;align-items:center}#sdOopsM[hidden]{display:none}.lnk.inl{display:inline;margin:0;padding:0 2px}
+
+.gift{display:flex;align-items:center;gap:8px;width:100%;margin-top:14px;padding:6px 10px;border-radius:14px;background:var(--bg);font-size:13.5px;text-align:left;flex-wrap:wrap}
+.gift svg{width:34px;height:34px;flex:none}.gift b{color:var(--acc)}
+.wbtn.new::after{content:"";position:absolute;top:-4px;right:-4px;width:12px;height:12px;border-radius:50%;background:var(--acc2);box-shadow:0 0 0 2px var(--bg)}

@@ -8,18 +8,23 @@ const WARD = [
   {slot:"top", name:"Haut", items:[["none","Torse nu"],["tank_k","Débardeur noir"],["tee_w","T-shirt blanc"],["tank_w","Débardeur blanc",2],["tee_g","T-shirt gris",2],["tee_k","T-shirt noir",3],
     ["tee_o","T-shirt orange",5],["tank_o","Débardeur orange",6],["tee_b","T-shirt bleu",7],["ls_k","Manches longues noir",9],["tee_v","T-shirt vert",10],["ls_w","Manches longues blanc",11],
     ["tee_y","T-shirt jaune","b:st7"],["tee_r","T-shirt rouge","b:s100"],["tee_p","T-shirt violet","b:e10"],["ls_n","Manches longues marine","b:se10"],
-    ["tee_x","T-shirt rose","m:in_holds"],["tank_v","Débardeur vert","m:pl_lean"],["ls_v","Manches longues vert","m:pl_half"],["tank_r","Débardeur rouge","b:h180"],["ls_r","Manches longues rouge","m:oa_switch"],["tank_p","Débardeur violet","b:se200"],["ls_p","Manches longues violet","b:se400"],["tank_y","Débardeur jaune","m:pl_press"]]},
+    ["tee_x","T-shirt rose","m:in_holds"],["tank_v","Débardeur vert","m:pl_lean"],["ls_v","Manches longues vert","m:pl_half"],["tank_r","Débardeur rouge","b:h180"],["ls_r","Manches longues rouge","m:oa_switch"],["tank_p","Débardeur violet","b:se200"],["ls_p","Manches longues violet","b:se400"],["tank_y","Débardeur jaune","m:pl_press"],
+    ["tee_n","T-shirt marine","l:oa_oahs10:1"],["tank_n","Débardeur marine",15],["ls_x","Manches longues rose",18],["tank_x","Débardeur rose",39],["ls_y","Manches longues jaune",42]]},
   {slot:"bottom", name:"Bas", items:[["short_k","Short noir"],["short_g","Short gris",2],["short_o","Short orange",4],["short_b","Short bleu",5],["pants_k","Pantalon noir",6],["pants_g","Pantalon gris",8],
     ["pants_n","Pantalon marine",10],["short_v","Short vert","b:st3"],["short_r","Short rouge","b:h10"],["pants_w","Pantalon blanc","b:st30"],
-    ["short_x","Short rose","m:in_7s"],["short_y","Short jaune","m:pr_lsit"],["pants_o","Pantalon orange","m:oa_wall"],["pants_r","Pantalon rouge","b:se100"],["pants_p","Pantalon violet","m:pr_manna"],["pants_x","Pantalon rose","b:h600"]]},
+    ["short_x","Short rose","m:in_7s"],["short_y","Short jaune","m:pr_lsit"],["pants_o","Pantalon orange","m:oa_wall"],["pants_r","Pantalon rouge","b:se100"],["pants_p","Pantalon violet","m:pr_manna"],["pants_x","Pantalon rose","b:h600"],["pants_y","Pantalon jaune",21]]},
   {slot:"feet", name:"Pieds", items:[["bare","Pieds nus"],["socks_w","Chaussettes blanches",2],["socks_k","Chaussettes noires",3],["shoes_k","Chaussures noires",4],["shoes_w","Chaussures blanches",6],["shoes_o","Chaussures orange",9],["shoes_y","Chaussures jaunes","b:se50"],
-    ["socks_r","Chaussettes rouges","m:b2_str15"],["socks_x","Chaussettes roses","m:in_str40"],["shoes_x","Chaussures roses","m:oa_flaghoriz"],["flip_b","Palmes de plongée","m:st_split"],["clown_r","Chaussures de clown","b:se100"]]},
-  {slot:"wrists", name:"Poignets et mains", items:[["none","Rien"],["wraps_w","Bandes blanches",3],["wraps_o","Bandes orange",4],["wraps_k","Bandes noires",7],["chalk","Magnésie","b:h10"],["wraps_r","Bandes rouges","m:in_str60"],["wraps_p","Bandes violettes","m:pl_tuck"],["wraps_y","Bandes jaunes","m:pr_lsitHs"],["box_r","Gants de boxe","m:oa_wall"]]},
+    ["socks_r","Chaussettes rouges","m:b2_str15"],["socks_x","Chaussettes roses","m:in_str40"],["shoes_x","Chaussures roses","m:oa_flaghoriz"],["flip_b","Palmes de plongée","m:st_split"],["clown_r","Chaussures de clown","b:se100"],
+    ["socks_v","Chaussettes vertes","l:pl_straddle:1"],["shoes_v","Chaussures vertes","l:pl_straddle:2"],["socks_y","Chaussettes jaunes","b:st100"],["shoes_p","Chaussures violettes",33]]},
+  {slot:"wrists", name:"Poignets et mains", items:[["none","Rien"],["wraps_w","Bandes blanches",3],["wraps_o","Bandes orange",4],["wraps_k","Bandes noires",7],["chalk","Magnésie","b:h10"],["wraps_r","Bandes rouges","m:in_str60"],["wraps_p","Bandes violettes","m:pl_tuck"],["wraps_y","Bandes jaunes","m:pr_lsitHs"],["box_r","Gants de boxe","m:oa_wall"],["wraps_v","Bandes vertes","l:pr_stalder:1"],["wraps_x","Bandes roses","b:st60"]]},
   {slot:"head", name:"Tête", items:[["none","Rien"],["band_o","Bandeau orange",5],["band_w","Bandeau blanc",5],["beanie_k","Bonnet noir",7],["cap_o","Casquette orange",8],["cap_k","Casquette noire",9],["beanie_r","Bonnet rouge","b:s1000"],["crown","Couronne","b:goal_oahs"],
-    ["prop_b","Casquette à hélice",2],["party_r","Chapeau de fête","b:se10"],["cat_k","Oreilles de chat","m:b2_str15"],["chef_w","Toque de chef","m:in_str60"],["viking_g","Casque de viking","m:pl_straddle"],["horn","Corne de licorne","m:oa_oahs"],["halo","Auréole","m:pr_manna"]]},
+    ["prop_b","Casquette à hélice",2],["party_r","Chapeau de fête","b:se10"],["cat_k","Oreilles de chat","m:b2_str15"],["chef_w","Toque de chef","m:in_str60"],["viking_g","Casque de viking","m:pl_straddle"],["horn","Corne de licorne","m:oa_oahs"],["halo","Auréole","m:pr_manna"],
+    ["band_p","Bandeau violet","l:oa_oahs:1"],["beanie_p","Bonnet violet","l:oa_oahs:2"],["cap_v","Casquette verte","l:pl_full:1"],["beanie_x","Bonnet rose",24],["cap_p","Casquette violette",27],["band_x","Bandeau rose",30]]},
   {slot:"face", name:"Visage", items:[["none","Rien"],["stache","Moustache",3],["nose","Nez de clown","b:st3"],["shades","Lunettes de soleil","m:b1_free5"],["mono","Monocle","m:pr_straddle"],["beard","Barbe de sage","b:h60"]]},
   {slot:"extra", name:"Accessoire", items:[["none","Rien"],["belt_w","Ceinture blanche",3],["belt_o","Ceinture orange",6],["belt_k","Ceinture noire",12],["medal","Médaille","quest"],["medal2","Deux médailles","b:goal_planche"],
-    ["bow_r","Nœud papillon","m:in_holds"],["duck","Bouée canard","m:pr_lsit"],["tutu","Tutu rose","m:in_7s"],["cape_r","Cape de super-héros","m:pr_straddle"],["cape_k","Cape noire","m:pl_press"]]},
+    ["bow_r","Nœud papillon","m:in_holds"],["duck","Bouée canard","m:pr_lsit"],["tutu","Tutu rose","m:in_7s"],["cape_r","Cape de super-héros","m:pr_straddle"],["cape_k","Cape noire","m:pl_press"],
+    ["cape_v","Cape verte","l:pl_full:2"],["bow_y","Nœud papillon jaune","l:pr_manna:1"],["cape_b","Cape bleue","l:pr_manna:2"],["cape_p","Cape violette","m:ul_c1"],["bow_p","Nœud papillon violet","m:ul_c3"],["belt_p","Ceinture violette","m:ul_c12"],
+    ["belt_x","Ceinture rose",36],["cape_y","Cape dorée",45],["cape_x","Cape rose","b:st365"]]},
 ];
 // Postures que le personnage peut prendre : debout, plus celle de chaque jalon validé.
 const poseOf = id => POSE3D[id] || (id.startsWith("pl_") ? id : null);
@@ -28,7 +33,7 @@ function unlockedPoses(){ const out = [["stand","Debout"]], seen = new Set(["sta
   return out; }
 // les coffres du parcours ajoutent chacun une tenue au vestiaire
 Object.entries(CHESTS).forEach(([sid, [slot, id, name]])=>{ const w = WARD.find(x=>x.slot === slot); if (w && !w.items.some(it=>it[0] === id)) w.items.push([id, name, "c:" + sid]); });
-const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? need.startsWith("m:") ? st(need.slice(2)).done : (need.startsWith("c:") ? (chestOpen(SEC[need.slice(2)]) || (S.chests || []).includes(need.slice(2))) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
+const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? need.startsWith("l:") ? (([, id, k]) => MS[id] && lvlOf(MS[id]) >= +k)(need.split(":")) : need.startsWith("m:") ? st(need.slice(2)).done : (need.startsWith("c:") ? (chestOpen(SEC[need.slice(2)]) || (S.chests || []).includes(need.slice(2))) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
 const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", face:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
 // ---------- Vestiaire visuel : chaque élément est dessiné, aux couleurs du personnage ; les verrouillés se voient aussi ----------
@@ -60,9 +65,10 @@ function wIcon(slot, id, F){ const [k, c] = String(id).split("_"), C = WCOL[c] |
   return "<svg viewBox='0 0 48 48' width='44' height='44' aria-hidden='true'>" + g + "</svg>"; }
 // ce qui débloque un élément, en clair
 function wardNeed(need, Z){ if (!need) return ""; if (need === "quest") return "Termine une quête"; if (typeof need === "number") return "Niveau " + need;
-  if (need.startsWith("m:")) return "Valide « " + MS[need.slice(2)].name + " »"; if (need.startsWith("c:")) return "Coffre « " + SEC[need.slice(2)].name + " »";
+  if (need.startsWith("m:")) return "Valide « " + MS[need.slice(2)].name + " »";
+  if (need.startsWith("l:")) { const [, id, k] = need.split(":"); return "Palier " + k + " de « " + MS[id].name + " »"; } if (need.startsWith("c:")) return "Coffre « " + SEC[need.slice(2)].name + " »";
   const bd = Z.badges.find(b => b.id === need.slice(2)); return bd ? "Badge « " + bd.name + " »" : ""; }
-const wNeedShort = (need, Z) => typeof need === "number" ? "niv. " + need : need === "quest" ? "quête" : need.startsWith("m:") ? "figure" : need.startsWith("c:") ? "coffre" : "badge";
+const wNeedShort = (need, Z) => typeof need === "number" ? "niv. " + need : need === "quest" ? "quête" : need.startsWith("m:") ? "figure" : need.startsWith("l:") ? "palier" : need.startsWith("c:") ? "coffre" : "badge";
 // aperçu en grand : le personnage du vestiaire, qui porte ce que tu touches (même un élément verrouillé, pour l'essayer)
 let fitA = null;
 function fitPreview(F, label){ const host = $("fitPrev"); if (!host || !sprMod) { if (host) host.hidden = true; return; } host.hidden = false;
@@ -89,7 +95,7 @@ function renderFit(tryF){
       grid.append(b); });
     s.append(grid); box.append(s); });
 }
-$("fitOpen").onclick = () => { renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
+$("fitOpen").onclick = () => { delete S.newFit; save(); $("fitOpen").classList.remove("new"); renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
 document.querySelectorAll("#fbDlg [data-k]").forEach(b=>b.onclick = () => { if (b.dataset.k === "pain") { $("fbZone").hidden = false; return; } feedback(b.dataset.k); });
 document.querySelectorAll("#fbDlg [data-z]").forEach(b=>b.onclick = () => { S.painZone = b.dataset.z; feedback("pain"); $("fbZone").hidden = true; });
 $("plX").onclick = () => { S.placed = true; save(); $("plDlg").close(); render(); };
@@ -119,15 +125,17 @@ function render(){
   $("av").setAttribute("aria-label","Ton personnage, niveau " + Z.lvl);
   const autoPose = POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), want = (S.fit || {}).pose;
   setAvatar({pose:want && want !== "auto" && unlockedPoses().some(p=>p[0] === want) ? want : autoPose, frac, level:Z.lvl, fit:fit(), label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
-  lastZ = Z;
+  lastZ = Z; $("fitOpen").classList.toggle("new", !!S.newFit);
   $("lvRank").textContent = Z.rank; $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d'expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
-  if (seen){ const nb = Z.badges.find(b=>b.ok && !seen.b.includes(b.id));
-    if (nb) toast("Badge débloqué : " + nb.name); else if (Z.lvl > seen.lvl) toast("Niveau " + Z.lvl + " · " + Z.rank);
-    if ((nb || Z.lvl > seen.lvl) && A3) A3.celebrate(); }
+  if (seen){ const nbs = Z.badges.filter(b=>b.ok && !seen.b.includes(b.id)), up = Z.lvl > seen.lvl;
+    // tout ce qui vient d'être gagné, d'un coup : badges, niveau, et les tenues qui vont avec
+    const gifts = nbs.flatMap(b => badgeReward(b.id)).concat(up ? WARD.flatMap(w => w.items.filter(it => typeof it[2] === "number" && it[2] > seen.lvl && it[2] <= Z.lvl).map(it => it[1])) : []);
+    const parts = []; if (nbs.length) parts.push((nbs.length > 1 ? "Badges : " : "Badge : ") + nbs.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + " · " + Z.rank);
+    if (parts.length) { toast(parts.join(" · ") + (gifts.length ? " · Nouveau au vestiaire : " + gifts.join(", ") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
   { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
-    if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { toast("Coffre ouvert : " + CHESTS[nw][2] + " ! Va l'enfiler dans le vestiaire."); if (A3) A3.celebrate(); } }
+    if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { toast("Coffre ouvert : " + CHESTS[nw][2] + " ! Va l'enfiler dans le vestiaire."); S.newFit = true; if (A3) A3.celebrate(); } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
@@ -179,9 +187,6 @@ function render(){
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
       nc.append(list);
-      // effacer le dernier enregistrement du jour (une erreur de saisie, une série notée deux fois)
-      { const u = undoList().pop(); if (u) { const ub = el("button","lnk undo", "Effacer le dernier enregistrement : " + u.label); ub.onclick = () => { if (!confirm("Effacer « " + u.label + " » ?")) return; const r = undoLast(); if (r) { render(); toast("Effacé : " + r.label); } }; nc.append(ub); }
-        if (ukGet("day") && dn) { const ud = el("button","lnk undo", "Annuler l'entraînement du jour"); ud.onclick = () => { if (!confirm("Effacer tout ce qui a été enregistré aujourd'hui (séries, records, validations) ?")) return; if (undoDay()) { render(); toast("Entraînement du jour annulé."); } }; nc.append(ud); } }
       // gilet lesté : s'il n'est pas là aujourd'hui, un toucher et les exercices lestés passent en version lente sans charge
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd'hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l'as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
@@ -190,11 +195,15 @@ function render(){
       bt.onclick = () => dn >= tot ? showTab("path") : startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active · 8 min"), el("span",null,"Mobilité après l'effort : le corps construit pendant le repos.")); z.onclick = () => openZen("recup"); nc.append(z); }
       if (dn >= tot) nc.append(el("div","tmeta", daySummary()));
+      // effacer le dernier enregistrement du jour (une erreur de saisie, une série notée deux fois)
+      { const u = undoList().pop(); if (u) { const ub = el("button","lnk undo", "Effacer le dernier enregistrement : " + u.label); ub.onclick = () => { if (!confirm("Effacer « " + u.label + " » ?")) return; const r = undoLast(); if (r) { render(); toast("Effacé : " + r.label); } }; nc.append(ub); }
+        if (ukGet("day") && dn) { const ud = el("button","lnk undo", "Annuler l'entraînement du jour"); ud.onclick = () => { if (!confirm("Effacer tout ce qui a été enregistré aujourd'hui (séries, records, validations) ?")) return; if (undoDay()) { render(); toast("Entraînement du jour annulé."); } }; nc.append(ud); } }
     }
     // la semaine en un coup d'œil : un point par jour, plein si tu t'es entraîné
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
     DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); if (did) { c.setAttribute("role","button"); c.setAttribute("aria-label", DAYN[i] + " : voir ce que tu as fait"); c.onclick = () => { histN = 30; openHist(dayKey(dd)); }; } wk.append(c); });
     nc.append(wk);
+    { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; b.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), el("span","mut"," · " + (g.wk <= 1 ? "cette semaine" : "≈ " + gainTxt(g.wk)))); b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
   }
 
   { const pt = $("pathTop"), gms = GOALS[0].ms, dn = doneIn(gms); pt.textContent = "";
@@ -300,8 +309,10 @@ function fillDlg(){
   S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
 }
 function record(v){
-  const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false; pushUndo(m.name + " · " + (v === true ? "réussi" : num(v) + (m.type === "hold" ? " s" : " rép.")));
-  if (v === true) { if (msLocked(m)) { toast("Valide d'abord : " + missing(m) + "."); return; } chkHit(cur); }
+  const m = MS[cur], x = st(cur), lv0 = lvlOf(m); let pr = false;
+  if (v === true && msLocked(m)) { toast("Valide d'abord : " + missing(m) + "."); return; }
+  pushUndo(m.name + " · " + (v === true ? "réussi" : num(v) + (m.type === "hold" ? " s" : " rép."))); base0(cur);
+  if (v === true) chkHit(cur);
   else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée !"); } if (m.type === "hold") cnt().hold += v; }
   stamp(cur); S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();
@@ -350,32 +361,41 @@ $("dlg").addEventListener("close", resetClock);
 // ---------- Historique : chaque jour d'entraînement, ce qui a été fait, dans l'ordre ----------
 let histN = 30;
 function histName(id){ if (MS[id]) return MS[id].name; return String(id).replace(/^pg:/, ""); }
-function histVal(l){ const m = MS[l.id], k = m ? m.type : l.k; if (l.v === true || k === "check") return l.v === 0 ? "pas encore" : "réussi"; if (typeof l.v !== "number") return "";
+function histVal(l){ const m = MS[l.id], k = m ? m.type : l.k; if (l.k === "try") return l.v ? "réussi" : "pas encore"; if (l.v === true || k === "check") return l.v === 0 ? "pas encore" : "réussi"; if (l.k === "fix") return l.v >= 60 ? Math.round(l.v / 60) + " min" : l.v + " s"; if (typeof l.v !== "number") return "";
   return k === "hold" ? num(l.v) + " s" : l.v + " rép."; }
 // ---------- Modifier l'historique : effacer une journée, un exercice ou une série, corriger une valeur ----------
 // tout ce qui en découle suit : records, compteurs, séances validées, validation d'une figure
 const histFig = id => MS[id] ? id : (Object.values(MS).find(m => "pg:" + m.name === id) || {}).id || null;
 function histApply(drop, change){   // drop : entrées à effacer ; change : [entrée, nouvelle valeur]
-  pushUndo("Modification de l'historique"); const days = new Set(), figs = new Set(), names = new Set(), c = cnt(), top = {};
+  pushUndo("Modification de l'historique"); const days = new Set(), figs = new Set(), names = new Set(), c = cnt(), top = {}, hadDays = {};
+  // temps en appui cumulé : seules les tenues de figures y entrent (depuis la fiche ou en séance)
+  const holdOf = l => typeof l.v === "number" && ((MS[l.id] && MS[l.id].type === "hold") || (l.k === "hold" && !!histFig(l.id)));
   // le record d'une figure venait-il d'une entrée touchée ? (sinon il vient d'ailleurs, du bilan par exemple, et on n'y touche pas)
   drop.concat(change.map(x => x[0])).forEach(l => { const f = histFig(l.id); if (f && typeof l.v === "number" && l.v >= st(f).best - 1e-9) top[f] = true; });
+  Object.keys(S.hit || {}).forEach(id => { hadDays[id] = ((S.hit[id] || {}).days || []).slice(); });
+  const rmSet = ref => { const [k, bs] = String(ref).split("#"), o = pg().wk[k]; if (o && bs in o) { delete o[bs]; c.sets = Math.max(0, c.sets - 1); if (!Object.keys(o).length) delete pg().wk[k]; } };
   drop.forEach(l => { days.add(dayKey(l.t)); const f = histFig(l.id); if (f) figs.add(f); if (String(l.id).startsWith("pg:")) names.add(l.id.slice(3));
-    const m = MS[l.id], end = l.k === "check" && String(l.id).startsWith("pg:") && !histFig(l.id);
-    if (end) c.sess = Math.max(0, c.sess - 1); else if (String(l.id).startsWith("pg:")) c.sets = Math.max(0, c.sets - 1);
-    if (typeof l.v === "number" && ((m && m.type === "hold") || l.k === "hold") && f) c.hold = Math.max(0, c.hold - l.v); });
-  change.forEach(([l, v]) => { days.add(dayKey(l.t)); const f = histFig(l.id); if (f) figs.add(f); if (String(l.id).startsWith("pg:")) names.add(l.id.slice(3)); l.v = v; });
+    const end = l.k === "check" && String(l.id).startsWith("pg:") && !histFig(l.id);
+    if (end) c.sess = Math.max(0, c.sess - 1); else if (l.s) rmSet(l.s);   // la série exacte est libérée dans la séance du jour
+    if (holdOf(l)) c.hold = Math.max(0, c.hold - l.v); });
+  change.forEach(([l, v]) => { days.add(dayKey(l.t)); const f = histFig(l.id); if (f) figs.add(f); if (String(l.id).startsWith("pg:")) names.add(l.id.slice(3));
+    if (holdOf(l)) c.hold = Math.max(0, c.hold + v - l.v);
+    if (l.s) { const [k, bs] = l.s.split("#"); if (pg().wk[k] && bs in pg().wk[k]) pg().wk[k][bs] = v; } l.v = v; });
+  c.hold = Math.round(c.hold * 10) / 10;
   S.log = S.log.filter(l => !drop.includes(l));
-  // séries enregistrées dans la semaine : une journée effacée n'apparaît plus comme faite
-  drop.forEach(l => { const d = new Date(l.t), di = (d.getDay() + 6) % 7, ws = new Date(d); ws.setDate(d.getDate() - di); const pre = dayKey(ws) + "|", suf = "|" + DAYK[di];
-    if (!S.log.some(x => dayKey(x.t) === dayKey(l.t))) Object.keys(pg().wk).forEach(k => { if (k.startsWith(pre) && k.endsWith(suf)) delete pg().wk[k]; }); });
+  // journée vidée : ce qui reste rangé pour ce jour (séries d'avant l'historique complet) s'efface aussi, compteur compris
+  days.forEach(d => { if (S.log.some(x => dayKey(x.t) === d)) return; const dd = dk(d), di = (dd.getDay() + 6) % 7, ws = new Date(dd); ws.setDate(dd.getDate() - di); const pre = dayKey(ws) + "|", suf = "|" + DAYK[di];
+    Object.keys(pg().wk).forEach(k => { if (k.startsWith(pre) && k.endsWith(suf)) { c.sets = Math.max(0, c.sets - Object.keys(pg().wk[k]).length); delete pg().wk[k]; } }); });
   names.forEach(n => { const v = S.log.filter(l => l.id === "pg:" + n && typeof l.v === "number").map(l => l.v); if (v.length) pg().best[n] = Math.max(...v); else delete pg().best[n]; });
   let lost = [];
   figs.forEach(id => { const m = MS[id], x = st(id), vals = S.log.filter(l => (l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").map(l => l.v), mx = vals.length ? Math.max(...vals) : 0;
-    x.best = top[id] ? mx : Math.max(x.best, mx);   // un record qui venait d'une entrée effacée ou corrigée suit la correction
+    x.best = top[id] ? Math.max(mx, x.b0 || 0) : Math.max(x.best, mx);   // un record effacé redescend, jamais sous celui du bilan
     const h = (S.hit || {})[id]; if (h && h.days) days.forEach(d => { const okDay = S.log.some(l => dayKey(l.t) === d && (l.id === id || l.id === "pg:" + m.name) && (l.v === true || (typeof l.v === "number" && m.target && l.v >= m.target)));
       if (!okDay) { h.days = h.days.filter(x => x !== d); if (h.d === d) h.n = 0; } });
     if ((S.chk || {})[id] && days.has(S.chk[id].d)) delete S.chk[id];
-    if (x.done && x.dt && days.has(dayKey(x.dt)) && !(h && h.days && h.days.length >= valRule(id).n)) { x.done = false; delete x.dt; lost.push(m.name); } });
+    // validée grâce à une journée effacée (n'importe laquelle de celles qui comptaient) : elle ne l'est plus
+    const lostDay = h && (hadDays[id] || []).some(d => !h.days.includes(d));
+    if (x.done && lostDay && h.days.length < valRule(id).n) { x.done = false; delete x.dt; lost.push(m.name); } });
   lastZ = null; save(); render(); openHist(histEdit); if (lost.length) toast("Plus validée : " + lost.join(", ") + ".");
 }
 let histEdit = null;
@@ -411,3 +431,10 @@ function openHist(focus){ const box = $("histBody"); box.textContent = ""; if (f
   if (focus) { const t = box.querySelector('[data-day="' + focus + '"]'); if (t) { t.classList.add("on"); t.scrollIntoView({block:"start"}); } } }
 $("histOpen").onclick = () => { histN = 30; openHist(); };
 $("histX").onclick = () => $("histDlg").close(); $("histDlg").addEventListener("click", e => { if (e.target === $("histDlg")) $("histDlg").close(); });
+
+// le prochain élément du vestiaire qui tombera, d'après les dates estimées (figures et paliers)
+function nextGift(){ let P; try { P = plan(); } catch(e){ return null; } const Z = lastZ || stats(), F = fit(); let best = null;
+  WARD.forEach(w => w.items.forEach(([id, name, need]) => { if (typeof need !== "string" || wardOk(need, Z)) return; let wk = null;
+    if (need.startsWith("m:")) wk = P.fin[need.slice(2)]; else if (need.startsWith("l:")) { const [, f, k] = need.split(":"), m = MS[f]; if (m && P.fin[f] != null) { const L = lvls(m).length, s0 = P.start[f] || 0; wk = s0 + (P.fin[f] - s0) * (+k) / Math.max(1, L); } }
+    else if (need.startsWith("c:")) { const sec = SEC[need.slice(2)]; if (sec) wk = Math.max(0, ...sec.ms.filter(m => !m.alt).map(m => P.fin[m.id] || 0)); }
+    if (wk != null && (!best || wk < best.wk)) best = {wk, name, icon:wIcon(w.slot, id, F)}; })); return best; }

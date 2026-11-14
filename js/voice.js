@@ -80,13 +80,16 @@ else {
 // ---------- Commandes à la voix : top, stop, pause, recommence (seulement pendant la séance) ----------
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let vcRec = null, vcWant = false, vcLastCmd = "", vcLastT = 0, vcSeen = "";
-const VC = [["redo", /(recommenc|faux d[ée]part)/], ["pause", /\b(pause|pose)\b/], ["stop", /\b(stop|stoppe|fini|termin[ée]|arr[êe]te)\b/], ["top", /\b(top|go|reprends?|c'est parti|continue)\b/]];
+// \b ne connaît pas les lettres accentuées : on borne les mots à la main
+const VW = w => new RegExp("(?:^|[^a-zà-ÿ])(?:" + w + ")(?![a-zà-ÿ])");
+const VC = [["redo", /(recommenc|faux d[ée]part)/], ["pause", VW("pause|pose")], ["stop", VW("stop|stoppe|fini|termin[ée]e?|arr[êe]t[ée]?")], ["top", VW("top|go|reprends?|c'est parti|continue")]];
 const vcOn = () => !!SR && !!S.vcmd;
 function vcDo(cmd){ if (typeof sd === "undefined" || !sd || !$("sd").open) return;
   const now = Date.now(); if (cmd === vcLastCmd && now - vcLastT < 1800) return; vcLastCmd = cmd; vcLastT = now;
   const go = $("sdGo"), shown = e => e && !e.hidden && e.style.display !== "none" && !e.disabled;
   if (cmd === "pause") { if (sdTimer) setPause(true); return; }
   if (cmd === "top") { if (sd.paused) setPause(false); else if ((sd.mode === "idle" || sd.mode === "rest") && shown(go)) go.click(); return; }
+  if (cmd === "stop" && sd.mode === "count") { openSet(sd.bi, sd.si); return; }   // stop pendant le décompte : on annule, on n'enregistre rien
   if (cmd === "stop") { if (sd.paused) sd.paused = false; if ((sd.mode === "run" || sd.mode === "count" || (sd.mode === "idle" && sd.fx && sd.s.dur == null)) && shown(go)) go.click(); return; }
   if (cmd === "redo") { if (shown($("sdRedo"))) $("sdRedo").click(); } }
 // une phrase entendue : on ne regarde que ses derniers mots, pour réagir à l'ordre le plus récent

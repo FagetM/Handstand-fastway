@@ -5,7 +5,7 @@
 const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
   pl_lean2:["planche-domination",0], pl_tuckP:["planche-domination",1], pl_tuckPu:["planche-domination",1], pl_tuckO:["planche-domination",2], pl_strBand:["planche-domination",5], pl_strBandL:["planche-domination",5], pl_strNar:["planche-domination",6], pl_half:["planche-domination",6], pl_fullBand:["planche-domination",6], pl_fullNeg:["planche-domination",6], pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
-const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
+const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pr_vsitC","pr_mannaP","pr_vsitH","pr_manna","pr_lsitHs","pr_lsitNeg","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 // Douleur : chaque signalement est daté par zone. Éviction de 3 jours (7 si la même zone revient en 3 semaines),
 // puis reprise par paliers : une semaine à 60 % sans tentative à fond, une semaine à 80 %.
@@ -33,13 +33,13 @@ function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[i
 function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
 // la règle de validation, en clair (même règle que hitTarget)
 function valTxt(m){ const V = valRule(m.id); return "Validation : la cible tenue sur " + V.n + " séances" + (V.gap > 1 ? ", espacées d'au moins " + V.gap + " jours" : ", jours différents") + (V.span ? ", sur " + V.span + " jours au moins" : "")
-  + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 3 séries à la cible à chaque fois" : "") + "."; }
+  + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 2 tentatives sur 3 à la cible à chaque fois" : "") + "."; }
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), out = {head:"", lines:[], short:"", n:null}; let T = nextStep(m);
   if (x.done) { out.head = "Figure maîtrisée"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Cette figure t'appartient. Reviens-y une ou deux fois par semaine, quand ça te fait plaisir, pour l'entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l'équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id),   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", days = /^(pl_|pr_)/.test(m.id) ? 3 : force ? 4 : 5,
+  const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id),   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", days = /^pl_/.test(m.id) ? 2 : /^pr_/.test(m.id) ? 3 : force ? 4 : 5,
     sets = /^ul_/.test(m.id) ? 4 : oaReps ? 6 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
   const freq = days + " séances par semaine" + (force ? " : laisse un jour de douceur entre deux, ton corps construit pendant le repos." : " : c'est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c'est une habileté, on la travaille en essais tenus jusqu'à la perte d'équilibre
@@ -233,7 +233,9 @@ const FAULTS = [["bras", /(plier|plie|pliés?) (les |le |du )?(bras|coudes?)(?! 
   ["hanches", /hanches?( qui)? (tomb|fl[ée]ch)|bassin (ou le monter )?.*tomb|tomber le bassin|plier le bassin|en pike|casser la ligne|jambes? (tomber|descendre)/i, "hanches qui tombent"],
   ["genoux", /plier (la jambe|les genoux)/i, "genoux pliés"], ["ecart", /(écarter|ouvrir) les jambes/i, "jambes écartées"]];
 // cas où le texte trompe la détection (sens du mouvement, erreur d'un seul côté) : on choisit à la main, ou on ne montre rien
-const FX_ID = {oa_shTuck:["banane","dos creusé"], oa_strad30:["banane","dos creusé"], pr_lsit:["jambes","jambes qui tombent"], oa_shStrad:null, lo_elbow:null};
+const FX_ID = {oa_shTuck:["banane","dos creusé"], oa_strad30:["banane","dos creusé"], pr_lsit:["jambes","jambes qui tombent"], oa_shStrad:null, lo_elbow:null,
+  fd_plank:["banane","bassin qui tombe"], pl_tuck:["bas","hanches qui tombent"], pl_tuckO:["bas","hanches qui tombent"], pl_full:["bas","hanches sous la ligne"],
+  pr_straddle:["bras","bras pliés"], pr_pike:["bras","bras pliés"], pr_manna:["bras","bras pliés"], oa_oahs:["bras","bras d'appui plié"], oa_oahs10:["bras","bras d'appui plié"], pr_vsitC:["buste","buste qui bascule"], pr_stradL:["buste","buste qui bascule"]};
 function faultOf(id){ if (id in FX_ID) return FX_ID[id] && {t:FX_ID[id][0], label:FX_ID[id][1]}; const e = (DETAILS[id] || {}).err; if (!e) return null; let best = null;
   FAULTS.forEach(([t, re, label]) => { const m = re.exec(e); if (m && (!best || m.index < best.i)) best = {t, label, i:m.index}; }); return best; }
 const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + id : null; };

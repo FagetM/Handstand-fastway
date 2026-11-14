@@ -509,6 +509,9 @@ const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd 
 // pause : les chronos se figent (le temps écoulé en pause est rendu à chaque battement)
 let pzT = 0; const pzShift = () => { const n = Date.now(), d = sd && sd.paused ? n - pzT : 0; pzT = n; return d; };
 function setPause(on){ if (!sd || !sdTimer || !!sd.paused === !!on) return; sd.paused = !!on; pzT = Date.now(); $("sdClock").classList.toggle("paused", !!on); if (on) { hush(); toast("En pause. Dis « top » ou touche le bouton pour reprendre."); } else beep(880, 150); }
+// consigne longue : la première phrase, et « Plus » pour lire la suite
+function howShort(t){ const h = $("sdHow"); h.textContent = ""; const m = /^(.{25,}?[.:!?])\s/.exec(t); if (!m || t.length < 110) { h.textContent = t; return; }
+  h.append(m[1] + " "); const more = el("button","lnk inl","Plus"); more.onclick = () => { h.textContent = t; }; h.append(more); }
 const cdSec = () => Math.max(3, S.countdown || 0);   // toujours au moins 3 secondes pour se placer
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -520,10 +523,10 @@ function nextSet(){
   return null;
 }
 function openSet(bi, si){
-  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdUndo").hidden = true; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === bi && ub.p === P.id + "|" + dayKey(nowS())); } $("sdNote").hidden = true;
+  sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdUndo").hidden = true; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === bi && ub.p === P.id + "|" + dayKey(nowS())); } oopsSync(); $("sdNote").hidden = true;
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
-  $("sdT").textContent = b.name; $("sdHow").textContent = b.how || "";
+  $("sdT").textContent = b.name; howShort(b.how || "");
   { const art = $("sdArt"); art.textContent = ""; if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(b)) art.append(drSp(b, 110)); }
   const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
   if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l'exercice"; sv.append(vl); }
@@ -543,7 +546,7 @@ function openSet(bi, si){
     { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","src", String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); }); }
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
     // tenue libre : impossible de toucher Stop la tête en bas, alors on peut noter sa tenue après coup
-    if (hold) { const q = $("sdNoteQ"), T = tg || 10; q.textContent = ""; [...new Set([0.3, 0.5, 0.75, 1, 1.25, 1.5].map(k => Math.max(1, Math.round(T * k))))].forEach(n => { const bq = el("button","src", n + " s"); bq.setAttribute("aria-label", "Tenue de " + n + " secondes"); bq.onclick = () => { clearInterval(sdTimer); sdTimer = null; saveSet(n); }; q.append(bq); }); $("sdNote").hidden = false; }
+    if (hold) { const q = $("sdNoteQ"), T = tg || 10; q.textContent = ""; [...new Set([0.3, 0.5, 0.75, 1, 1.25, 1.5].map(k => Math.max(1, Math.round(T * k))))].forEach(n => { const bq = el("button","src", n + " s"); bq.setAttribute("aria-label", "Tenue de " + n + " secondes"); bq.onclick = () => { clearInterval(sdTimer); sdTimer = null; saveSet(n); }; q.append(bq); }); }   /* les durées n'apparaissent qu'une fois le chrono lancé */
     $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
       : "Premier passage : fais ton maximum propre, il servira de référence.";
     if (b.note) $("sdHint").textContent += " " + b.note;
@@ -563,6 +566,8 @@ function setSay(b, s, si, fx, tg, day){
   else what = tg ? tg + " répétitions." : "Ton maximum propre.";
   return b.name + ". " + ser + what;
 }
+// où la série est rangée dans la semaine : permet de l'effacer exactement depuis l'historique
+const setRef = () => wkKey(selDay) + "#" + sd.bi + "-" + sd.si;
 function storeSet(v){
   pushUndo2(sd.b.name + " · " + (v === 0 ? "pas encore" : sd.fx && sd.s.dur == null && sd.s.reps == null ? "fait" : num(v) + (sd.b.kind === "hold" || (sd.fx && sd.s.dur != null) ? " s" : " rép.")), {bi:sd.bi, si:sd.si});
   const k = wkKey(selDay), o = pg().wk[k] || (pg().wk[k] = {}), key = sd.bi + "-" + sd.si, fresh = o[key] == null; o[key] = v;
@@ -575,7 +580,9 @@ function chkTry(ok){ const id = sd.b.ms; if (ok && id) { pushUndo2(sd.b.name + "
 $("sdNo").onclick = () => { if (sd && sd.fx && sd.s.lab === "essai") saveFixed(0); };   // « pas encore » : l'essai compte, sans réussite
 function saveFixed(v){
   const {b, s, day, si} = sd; sdStop();
-  storeSet(v != null ? v : s.dur != null ? sDur(s, day.scale) : s.reps);
+  const val = v != null ? v : s.dur != null ? sDur(s, day.scale) : s.reps; storeSet(val);
+  // chaque série faite entre dans l'historique, même à durée ou nombre fixes, et chaque essai réussi / pas encore
+  S.log.push(s.lab === "essai" ? {t:Date.now(), id:"pg:" + b.name, k:"try", v:val > 0, s:setRef()} : {t:Date.now(), id:"pg:" + b.name, k:s.dur != null ? "fix" : "reps", v:val, s:setRef()}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   if (b.confirm && (S.confirm || []).includes(b.ms) && b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null)) {
     const okN = b.sets.filter((_,i)=>wkGet(selDay)[sd.bi + "-" + i] > 0).length; S.confirm = (S.confirm || []).filter(x=>x !== b.ms);
     if (okN >= 2) toast("« " + MS[b.ms].name + " » confirmée"); else { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } }
@@ -588,11 +595,12 @@ function saveFixed(v){
 }
 function startRest(r, nx, title){
   let end = Date.now() + r.rest*1000, done = false; const ck = $("sdClock");
-  sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true; $("sdUndo").hidden = !undoList().length; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === sd.bi); }
+  sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true; $("sdUndo").hidden = !undoList().length; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === sd.bi); } oopsSync();
   ck.style.display = ""; ck.className = "clock count"; $("sdReps").style.display = "none";
-  $("sdS").textContent = "Repos · " + restTxt(r); $("sdT").textContent = title; $("sdHow").textContent = ""; $("sdVid").textContent = "";
+  $("sdS").textContent = title + " · repos " + restTxt(r); $("sdT").textContent = "Repos"; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance"; $("sdGo").disabled = true; setTimeout(() => { $("sdGo").disabled = false; }, 600);   /* un double appui sur « Enregistrer » ne saute pas le repos */
   const nb = nx && pDay(selDay).blocks[nx[0]];
+  { const art = $("sdArt"); art.textContent = ""; if (nb) { if (nb.ms && MS[nb.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(nb.ms); sp.dataset.anim = nb.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(nb)) art.append(drSp(nb, 110)); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C'était la dernière série du jour.";
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C'était la dernière série. Bravo.");
   let warned = r.rest < 25;
@@ -626,7 +634,7 @@ function runFixed(){
   }, 200);
 }
 function saveSet(v){
-  const {b, s} = sd; storeSet(v);
+  const {b, s} = sd; if (b.ms) base0(b.ms); storeSet(v);
   // vérification d'une figure déclarée au bilan : réussie, elle est confirmée ; ratée sur tous les essais, elle repasse à travailler
   if (b.confirm && MS[b.ms] && (S.confirm || []).includes(b.ms)) { const vals = wkGet(selDay), hits = b.sets.map((_,i)=>vals[sd.bi + "-" + i] >= MS[b.ms].target), ok = SIDED.has(b.ms) ? hits.some((h,i)=>h && i % 2 === 0) && hits.some((h,i)=>h && i % 2 === 1) : v >= MS[b.ms].target, all = b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null);
     if (ok || all) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); if (!ok) { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } else toast("« " + MS[b.ms].name + " » confirmée."); } }
@@ -637,7 +645,7 @@ function saveSet(v){
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd'hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });
         toast(num(v) + " s sur " + sd.tg + " : les séries suivantes visent " + ng + " s aujourd'hui. Propre avant long."); } } }
-  if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0, s:setRef()}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); render();
   const nx = nextSet();
   if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else closeEnd(); return; }
@@ -658,7 +666,7 @@ $("sdGo").onclick = async e => {
     keepAwake(sdKeep);
     const left = cdSec(), hint0 = $("sdHint").textContent; let t = performance.now(), last = -1, hit = false; $("sdRedo").hidden = false;
     let said3 = !(sd.tg >= 8);
-    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdHint").textContent = hint0; setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); $("sdGo").textContent = AUTO && sd.s.auto ? (/^(st_|b1_|b2_|in_|oa_|pr_)/.test(sd.b.ms || "") ? "J'ai chuté" : "J'arrête") : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
+    const run = () => { sd.mode = "run"; t = performance.now(); sd.t0 = t; ck.className = "clock"; $("sdHint").textContent = hint0; $("sdNote").hidden = !$("sdNoteQ").childElementCount; setTimeout(() => { if (sd && sd.mode === "run") say(cueFor(sd.b)); }, 450); $("sdGo").textContent = AUTO && sd.s.auto ? (/^(st_|b1_|b2_|in_|oa_|pr_)/.test(sd.b.ms || "") ? "J'ai chuté" : "J'arrête") : AUTO ? "Stop" : "Arrêter"; beep(880, 350); };
     if (left > 0) { sd.mode = "count"; ck.className = "clock count"; $("sdGo").textContent = "Annuler"; $("sdHint").textContent = "Mets-toi en position : le chrono démarre dans " + left + " secondes."; say("Départ dans " + left + " secondes.", true); } else run();
     sdTimer = setInterval(()=>{
       { const d = pzShift(); if (d) { t += d; if (sd.mode === "run") sd.t0 = t; } } const e = (performance.now() - t)/1000;
@@ -676,6 +684,9 @@ $("sdGo").onclick = async e => {
 const pushUndo2 = (label, at) => pushUndo(label, Object.assign({p:P.id + "|" + dayKey(nowS()), name:sd.b.name}, at));
 // trompé d'exercice : on efface toutes ses séries du jour et on revient à la liste
 $("sdUndoB").onclick = () => { if (!sd) return; const b = ukGet("blk"); if (!b || b.bi !== sd.bi) return; if (!confirm("Effacer toutes les séries de « " + b.name + " » faites aujourd'hui ?")) return; hush(); if (undoBlock()) { $("sd").close(); render(); toast("Exercice annulé : " + b.name); } };
+// « Je me suis trompé… » : un seul lien, qui déplie les deux choix (cette série, tout l'exercice)
+function oopsSync(){ const any = !$("sdUndo").hidden || !$("sdUndoB").hidden; $("sdOops").hidden = !any; $("sdOopsM").hidden = true; }
+$("sdOops").onclick = () => { $("sdOopsM").hidden = !$("sdOopsM").hidden; };
 // je me suis trompé : on efface la série qu'on vient d'enregistrer et on la refait
 $("sdUndo").onclick = () => { if (!sd) return; hush(); const u = undoLast(); if (!u) return; render(); toast("Effacé : " + u.label); if (u.bi != null && pDay(selDay).blocks[u.bi]) openSet(u.bi, u.si); };
 // faux départ : on efface le chrono et on repart du décompte, sans rien enregistrer

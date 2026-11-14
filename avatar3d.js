@@ -692,6 +692,8 @@ const FX = {
   rond:  p => ({arch:(p.arch || 0) + 0.45}),
   hanches:p => ({hip:p.hip.map(h => h - 0.55)}),
   jambes:p => ({hip:p.hip.map(h => h + 0.45)}),
+  bas:   p => ({pitch:p.pitch - 0.3}),        // tout le corps bascule : hanches plus basses que les épaules
+  buste: p => ({pitch:p.pitch - 0.3, arch:(p.arch || 0) - 0.15}),
   genoux:p => ({knee:p.knee.map(k => k + 0.8)}),
   ecart: p => ({hipZ:p.hipZ.map(z => z + 0.45)}),
 };
