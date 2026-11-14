@@ -94,21 +94,21 @@ const CHESTS = {base:["bottom","short_n","Short marine"], starter:["head","band_
   onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"], ultime:["extra","wings","Ailes d’ange"]};
 // quêtes annexes : petits défis pour le plaisir, posés dans les creux du chemin ; elles ne comptent ni dans les séances ni dans les dates
 const SQ = [
-  {id:"sq_tripod", name:"Trépied immobile", req:"fd_c2w", d:"Équilibre tête-mains en trépied, 20 s, le regard fixé entre les mains."},
-  {id:"sq_roueG", name:"Roue du mauvais côté", req:"fd_roue", d:"5 roues du côté faible, les mains posées sur une ligne au sol."},
-  {id:"sq_pont", name:"Le pont tient bon", req:"st_bailc2w", d:"Pont, épaules au-dessus des mains, 20 s."},
-  {id:"sq_corbeau", name:"Corbeau patient", req:"lo_frog", d:"Corbeau 30 s, puis tends une jambe derrière toi 3 s, de chaque côté."},
-  {id:"sq_pq", name:"Le rouleau sur les pieds", req:"in_str40", d:"Un rouleau de papier toilette posé sur la plante des pieds : 10 s d’équilibre libre sans le faire tomber."},
-  {id:"sq_marche", name:"Dix mètres à l’envers", req:"b2_str15", d:"Marche 10 m sur les mains sans poser les pieds."},
-  {id:"sq_demitour", name:"Demi-tour sur les mains", req:"in_7s", d:"Pivote d’un demi-tour en équilibre, puis tiens 3 s."},
-  {id:"sq_roulade", name:"Roulade arrière à l’équilibre", req:"in_str60", d:"Une roulade arrière qui finit en équilibre, tenu 2 s."},
-  {id:"sq_epaule", name:"Petites tapes", req:"oa_wall", d:"Équilibre dos au mur : 10 tapes sur l’épaule opposée, 5 par main."},
-  {id:"sq_pianiste", name:"Le pianiste", req:"oa_finger", d:"En équilibre libre, décolle un à un les doigts d’une main, puis repose-les."},
-  {id:"sq_pistol", name:"Pistol des deux côtés", req:"pr_pikeLift", d:"3 pistol squats par jambe, le talon reste au sol."},
-  {id:"sq_crepe", name:"La crêpe", req:"pr_stradLift", d:"Écart facial, coudes au sol, 30 s."},
-  {id:"sq_crabe", name:"Crabe pressé", req:"pr_extSup", d:"10 m en marche du crabe, le bassin à la hauteur des genoux."},
-  {id:"sq_croco", name:"Le crocodile marche", req:"lo_croc", d:"3 pas des mains en crocodile, sans poser les pieds."},
-  {id:"sq_poings", name:"Planche lean sur les poings", req:"pl_lean", d:"Planche lean sur les poings, 20 s."}];
+  {id:"sq_tripod", name:"Trépied immobile", req:"fd_c2w", d:"Équilibre tête-mains en trépied, 20 s, le regard fixé entre les mains.", h:"Dans Light on Yoga (1966), B.K.S. Iyengar appelle l’équilibre sur la tête, Sirsasana, le roi des postures. Sa reine, c’est la chandelle."},
+  {id:"sq_roueG", name:"Roue du mauvais côté", req:"fd_roue", d:"5 roues du côté faible, les mains posées sur une ligne au sol.", h:"À Düsseldorf, des enfants font la roue dans la rue depuis des siècles. D’après la légende, ils fêtaient ainsi la victoire de Worringen, en 1288. La ville en a fait son emblème."},
+  {id:"sq_pont", name:"Le pont tient bon", req:"st_bailc2w", d:"Pont, épaules au-dessus des mains, 20 s.", h:"En yoga, le pont complet s’appelle Urdhva Dhanurasana : l’arc tourné vers le ciel. On l’appelle aussi Chakrasana, la roue."},
+  {id:"sq_corbeau", name:"Corbeau patient", req:"lo_frog", d:"Corbeau 30 s, puis tends une jambe derrière toi 3 s, de chaque côté.", h:"En sanskrit, kaka veut dire corbeau, et baka désigne un échassier, grue ou héron. Kakasana se fait bras fléchis, Bakasana bras tendus."},
+  {id:"sq_pq", name:"Le rouleau sur les pieds", req:"in_str40", d:"Un rouleau de papier toilette posé sur la plante des pieds : 10 s d’équilibre libre sans le faire tomber.", h:"Jongler avec les pieds, couché sur le dos, porte un nom au cirque : l’antipodisme. Les antipodistes y font tourner des tapis, des tonneaux, et même des partenaires."},
+  {id:"sq_marche", name:"Dix mètres à l’envers", req:"b2_str15", d:"Marche 10 m sur les mains sans poser les pieds.", h:"En 1900, raconte-t-on, l’Autrichien Johann Hurlinger serait allé de Vienne à Paris sur les mains : 1 400 km en 55 jours, à raison de 10 heures par jour."},
+  {id:"sq_demitour", name:"Demi-tour sur les mains", req:"in_7s", d:"Pivote d’un demi-tour en équilibre, puis tiens 3 s.", h:"Aux barres parallèles, le Soviétique Sergueï Diamidov a donné son nom à un tour complet sur un bras en équilibre, dans les années 1960. Ton demi-tour en est le petit cousin."},
+  {id:"sq_roulade", name:"Roulade arrière à l’équilibre", req:"in_str60", d:"Une roulade arrière qui finit en équilibre, tenu 2 s.", h:"ATR, c’est l’appui tendu renversé : le nom de l’équilibre dans les gymnases français. La roulade arrière qui y monte est un classique des concours de gym."},
+  {id:"sq_epaule", name:"Petites tapes", req:"oa_wall", d:"Équilibre dos au mur : 10 tapes sur l’épaule opposée, 5 par main.", h:"En yoga, l’équilibre sur les mains s’appelle Adho Mukha Vrksasana : l’arbre tourné vers le bas. Un arbre qui lâche une branche, c’est cette quête."},
+  {id:"sq_pianiste", name:"Le pianiste", req:"oa_finger", d:"En équilibre libre, décolle un à un les doigts d’une main, puis repose-les.", h:"Sur les mains, l’équilibre se règle au bout des doigts : ils appuient quand tu bascules vers le dos, ils lâchent quand tu reviens. Les décoller un à un, c’est sentir lequel travaille."},
+  {id:"sq_pistol", name:"Pistol des deux côtés", req:"pr_pikeLift", d:"3 pistol squats par jambe, le talon reste au sol.", h:"Le pistol squat doit son nom à la jambe tendue devant, comme un canon. Pavel Tsatsouline l’a rendu célèbre en 2003 dans The Naked Warrior, avec la pompe sur un bras."},
+  {id:"sq_crepe", name:"La crêpe", req:"pr_stradLift", d:"Écart facial, coudes au sol, 30 s.", h:"Les gymnastes anglophones disent pancake, la crêpe. Le yoga l’appelle Upavistha Konasana, l’angle ouvert assis."},
+  {id:"sq_crabe", name:"Crabe pressé", req:"pr_extSup", d:"10 m en marche du crabe, le bassin à la hauteur des genoux.", h:"Purvottanasana, la table inversée du yoga, veut dire étirement intense de l’est : le devant du corps, celui qui fait face au soleil levant. Le crabe, c’est la même table qui se met à marcher."},
+  {id:"sq_croco", name:"Le crocodile marche", req:"lo_croc", d:"3 pas des mains en crocodile, sans poser les pieds.", h:"Le crocodile a un cousin en yoga : Mayurasana, le paon, en appui sur les coudes plantés dans le ventre. La Hatha Yoga Pradipika lui prête le pouvoir d’aider à digérer."},
+  {id:"sq_poings", name:"Planche lean sur les poings", req:"pl_lean", d:"Planche lean sur les poings, 20 s.", h:"Bruce Lee faisait ses pompes sur les poings, et même sur deux doigts. Sur les poings, le poignet reste droit : une planche lean qui le ménage."}];
 const sqDone = () => S.sq || (S.sq = {});
 function sqOpen(q){
   const box = $("qkBody"), on = reqDone(q.req), dn = sqDone()[q.id]; box.textContent = "";
@@ -117,6 +117,7 @@ function sqOpen(q){
   if (!on) blk.append(el("b",null,"Après : " + MS[q.req].name), el("p",null,"Le défi se dévoile quand cette figure est validée."));
   else blk.append(el("b",null,"Le défi"), el("p",null,q.d));
   box.append(blk);
+  if (q.h) { const st = el("div","qkinfo"), sc = el("section"); sc.append(el("h3",null,"La petite histoire"), el("p",null,q.h)); st.append(sc); box.append(st); }   /* visible même verrouillée : l’envie d’y aller */
   if (on) { const row = el("div","btns");
     if (dn) { row.append(el("p","mut","Réussie le " + new Date(dn).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ".")); const u = el("button","btn line","Retirer le tampon"); u.onclick = () => { delete sqDone()[q.id]; save(); $("qkDlg").close(); render(); }; row.append(u); }
     else { const b = el("button","btn","C’est fait"); b.onclick = () => { const had = (S.bgot || []).includes("sq8"); sqDone()[q.id] = Date.now(); save(); $("qkDlg").close(); render(); const n = Object.keys(sqDone()).length; if (!(n >= 8 && !had)) toast("Tampon posé : " + n + " sur " + SQ.length + "."); };   /* le 8e : c’est l’annonce du badge qui parle */ row.append(b); }
