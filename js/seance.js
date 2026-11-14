@@ -102,7 +102,7 @@ function drillsFor(m){
   if (id === "in_hspu") out.unshift("pikepu");
   const E = S.equip || {};
   if (E.band && ["pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle","pl_full"].includes(id)) out.unshift("bandpl");
-  if (E.para && (s === "planche" || s === "press")) out.push("lsitpara");
+  if ((E.para || E.blocks) && (s === "planche" || s === "press")) out.push("lsitpara");
   if (E.kg && ["pl_lean","pl_ppp","pl_tuck"].includes(id) && st("fd_push").done) out.push("pushW");
   const iw = out.indexOf("dipsW"); if (iw > 0) { out.splice(iw, 1); out.unshift("dipsW"); }   // la force de base de la planche passe en premier
   const dup = {oa_tuckflag:"tuckflag", oa_shrug:"oashrug", pr_pikeLift:"pikepulse", pr_stradLift:"stradlift", pl_strBand:"bandpl", pl_strBandL:"bandpl", pl_fullBand:"bandpl"}[id];
@@ -117,10 +117,10 @@ function setNoVest(on){ S.noVest = on ? dayKey(Date.now()) : null;
 const drillBlock = (k, pain) => { const d = DRILLS[k];
   // parallettes : les exercices d’appui se font dessus ; lest : on indique la charge
   const E = S.equip || {}, nv = d.eq === "kg" && (noVest() || deloadWeek()) && d.alt, d2 = nv ? Object.assign({}, d, {name:d.alt.name, how:d.alt.how, sets:[d.sets[0], d.alt.reps]}) : d;
-  const how = d2.how + (E.para && ["lean","pseudo","protrac","bandpl"].includes(k) ? " Sur parallettes si tu veux : poignets ménagés." : "")
+  const how = d2.how + (eqLine(k) ? " " + eqLine(k) : "") + (E.para && ["lean","pseudo","protrac","bandpl"].includes(k) ? " Sur parallettes si tu veux : poignets ménagés." : "")
     + (d.eq === "kg" && !nv ? " Charge : commence à 5 kg" + (E.kg > 5 ? ", monte jusqu’à " + E.kg + " kg quand les 3 séries sont propres." : ".") : "");
   const n = Math.max(1, pain ? d2.sets[0] - 1 : d2.sets[0]);
-  return {name:d2.name, kind:d.kind, how, dk:k, pnf:d.pnf ? true : undefined, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined} : {reps:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined})}; };
+  return {name:k === "lsitpara" && !E.para ? "L-sit sur briques de yoga" : d2.name, kind:d.kind, how, dk:k, pnf:d.pnf ? true : undefined, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined} : {reps:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined})}; };
 // jours où une figure de force a été travaillée (planche, montées, pompes, dips)
 // dernier jour où une figure a été travaillée (0 si jamais)
 function lastWorked(id){ const m = MS[id]; for (let i = S.log.length - 1; i >= 0; i--) { const l = S.log[i]; if (l.id === id || l.id === "pg:" + m.name || l.id === "pg:" + m.name + ", vérification") return l.t; } return 0; }
@@ -218,7 +218,7 @@ function builtinBlocks(){
   const ulDay = next.some(id => /^ul_/.test(id));
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
-  const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:(DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc) + (PARA_ALT[id] && !(S.equip || {}).para ? " Sans parallettes : " + PARA_ALT[id] : ""), ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
+  const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:(DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc) + (eqLine(id) ? " " + eqLine(id) : PARA_ALT[id] && !(S.equip || {}).para ? " Sans parallettes : " + PARA_ALT[id] : ""), ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const ecc = ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id), plR = /^pl_/.test(id) && m.type === "reps", sets = ecc ? 4 : plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)),   /* excentriques en full planche : 4 × 1, jamais plus */
       tries = ecc || pain || PS.phase === 2 || (PS.phase === 3 && (PS.zone === "coude" || PS.zone === "epaule") && FORCE(id)) || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,

@@ -21,6 +21,8 @@ $("theme").onchange = e => { S.theme = e.target.value; save(); location.reload()
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n’est pas commencée
 { const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; else if (S.bday && S.bday.d === dayKey(Date.now())) toast("Séance déjà commencée : le changement vaudra dès demain."); save(); render(); };
   $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);
+  $("eqBlocks").checked = !!E().blocks; $("eqBench").checked = !!E().bench;
+  $("eqBlocks").onchange = e => { E().blocks = e.target.checked; redo(); }; $("eqBench").onchange = e => { E().bench = e.target.checked; redo(); };
   $("eqBand").onchange = e => { E().band = e.target.checked; redo(); }; $("eqPara").onchange = e => { E().para = e.target.checked; redo(); };
   $("eqKg").onchange = e => { E().kg = +e.target.value; redo(); }; }
 $("exp").onclick = () => { let pr = null; try { pr = JSON.parse(localStorage.getItem("hs-fastway-progs")); } catch(e){} $("io").value = JSON.stringify(pr ? Object.assign({}, S, {_progs:pr}) : S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };

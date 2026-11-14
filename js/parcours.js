@@ -5,6 +5,15 @@
 const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
   pl_lean2:["planche-domination",0], pl_tuckP:["planche-domination",1], pl_tuckPu:["planche-domination",1], pl_tuckO:["planche-domination",2], pl_strBand:["planche-domination",5], pl_strBandL:["planche-domination",5], pl_strNar:["planche-domination",6], pl_half:["planche-domination",6], pl_fullBand:["planche-domination",6], pl_fullNeg:["planche-domination",6], pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
+// ton matériel : un banc et des briques de yoga changent la consigne de certaines figures et de certains exercices
+const EQ_NOTE = {
+  bench:{fd_pushInc:"Sur ton banc : la bonne hauteur pour commencer.", fd_dipsB:"Sur ton banc.", fd_pike:"Pieds sur ton banc.", pr_elev:"Pieds sur ton banc.", pr_extSup:"Mains sur le bord de ton banc pour commencer.",
+    epaules:"Mains sur ton banc.", pikepu:"Pieds sur ton banc pour plus de difficulté.", elevpress:"Pieds sur ton banc."},
+  blocks:{pr_lsit:"Mains sur deux briques : les talons passent plus facilement.", pr_stradL:"Mains sur deux briques.", pr_vsit:"Mains sur deux briques.", pr_vsitC:"Mains sur deux briques.", pr_halfSt:"Sur deux briques.",
+    pr_mannaP:"Mains sur deux briques, dos au mur.", pr_walk:"Mains sur deux briques si le sol est loin.", pr_float:"Mains sur deux briques si le sol est loin.", pr_stalPart:"Sur deux briques debout.", pr_stalder:"Sur deux briques debout.",
+    pliage:"Une brique sous les mains si le sol est loin.", ecartF:"Une brique sous le bassin.", ecartAP:"Une brique sous la cuisse avant.", demiEcart:"Une brique sous chaque main.", fente:"Une brique sous chaque main.",
+    pancake:"Une brique sous les mains au début.", pont:"Mains sur deux briques calées contre le mur pour commencer.", pikeAct:"Mains sur deux briques : plus de place pour lever les talons."}};
+const eqLine = k => { const E = S.equip || {}; return [E.bench && EQ_NOTE.bench[k], E.blocks && EQ_NOTE.blocks[k]].filter(Boolean).join(" "); };
 // étapes prévues sur parallettes : la variante sans matériel
 const PARA_ALT = {pr_elev:"mains sur deux piles de livres stables ou deux blocs de yoga, ou au sol doigts écartés.", pr_vsit:"au sol, mains à plat ou sur les poings, à côté des hanches.", pr_halfSt:"au sol, mains sur les poings ; descends moins bas.", pr_vsitC:"au sol, mains sur les poings ou sur deux blocs de yoga.", pr_extSup:"mains au sol derrière toi, doigts vers l’arrière, ou sur le bord d’un canapé.", pr_mannaP:"sur deux blocs de yoga ou deux piles de livres collées au mur.", pr_tuckUp:"deux chaises solides calées contre un mur, ou deux blocs de yoga hauts.", pr_stalPart:"sur deux blocs de yoga hauts.", pr_stalder:"sur deux blocs de yoga hauts ou deux chaises calées."};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pr_vsitC","pr_mannaP","pr_vsitH","pr_manna","pr_lsitHs","pr_lsitNeg","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","oa_strad30","oa_tuckflag"]);
@@ -88,7 +97,7 @@ function planFor(m){
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
-  { const pa = PARA_ALT[m.id]; if (pa && !(S.equip || {}).para) out.lines.unshift("Sans parallettes : " + pa); }
+  { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (eq) out.lines.unshift("Ton matériel : " + eq); else if (pa && !E.para) out.lines.unshift("Sans parallettes : " + pa); }
   if (SOUPLE.has(m.id)) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
     out.lines.push("La souplesse compte ici" + (R.length ? " : " + R.map(r => r.name.toLowerCase()).join(", ") : "") + ". Mesure-la dans Profil, Ma souplesse ; 5 minutes actives après la séance et les jours de récup la font avancer."); }
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
