@@ -512,7 +512,7 @@ const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd 
 let pzT = 0; const pzShift = () => { const n = Date.now(), d = sd && sd.paused ? n - pzT : 0; pzT = n; return d; };
 function setPause(on){ if (!sd || !sdTimer || !!sd.paused === !!on) return; sd.paused = !!on; pzT = Date.now(); $("sdClock").classList.toggle("paused", !!on); if (on) { hush(); toast("En pause. Dis « top » ou touche le bouton pour reprendre."); } else beep(880, 150); }
 // consigne longue : la première phrase, et « Plus » pour lire la suite
-function howShort(t){ const h = $("sdHow"); h.textContent = ""; const m = /^(.{25,}?[.:!?])\s/.exec(t); if (!m || t.length < 110) { h.textContent = t; return; }
+function howShort(t){ t = nbsp(t); const h = $("sdHow"); h.textContent = ""; const m = /^(.{25,}?[.:!?]) /.exec(t); if (!m || t.length < 110) { h.textContent = t; return; }
   h.append(m[1] + " "); const more = el("button","lnk inl","Plus"); more.onclick = () => { h.textContent = t; }; h.append(more); }
 const cdSec = () => Math.max(3, S.countdown || 0);   // toujours au moins 3 secondes pour se placer
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
@@ -536,12 +536,12 @@ function openSet(bi, si){
   const ck = $("sdClock"); ck.className = "clock";
   if (fx){
     const timed = s.dur != null;
-    $("sdS").textContent = (b.sets.length > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + "/" + b.sets.length + ", " : (bi+1) + "/" + day.blocks.length + ", ") + fixTxt(b, s, day.scale) + (b.pnf ? ", PNF" : "");
+    $("sdS").textContent = nbsp((b.sets.length > 1 ? (day.circuit ? "Tour " : "Série ") + (si+1) + "/" + b.sets.length + ", " : (bi+1) + "/" + day.blocks.length + ", ") + fixTxt(b, s, day.scale) + (b.pnf ? ", PNF" : ""));
     ck.style.display = timed ? "" : "none"; if (timed) ck.textContent = mmss(sRun(s, day.scale));
     $("sdReps").style.display = "none"; $("sdGo").style.display = ""; const essai = s.lab === "essai" && b.ms && MS[b.ms] && MS[b.ms].type === "check"; $("sdGo").textContent = timed ? "Démarrer" : essai ? "Réussi" : "Fait"; $("sdNo").hidden = !essai;
     $("sdHint").textContent = [b.pnf ? "PNF : contracte 10 s, relâche 5 s, puis gagne en amplitude." : "", b.note].filter(Boolean).join(" ");
   } else {
-    $("sdS").textContent = (s.max ? "Essai " : "Série ") + (si+1) + "/" + b.sets.length + (s.pct ? ", " + s.pct + " %" : "");
+    $("sdS").textContent = nbsp((s.max ? "Essai " : "Série ") + (si+1) + "/" + b.sets.length + (s.pct ? ", " + s.pct + " %" : ""));
     const hold = b.kind === "hold";
     ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";

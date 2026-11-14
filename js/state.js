@@ -32,12 +32,12 @@ function migrQuote(S){ if (S.migrQ) return; const q = x => String(x).replace(/(?
   S.migrQ = true; }
 // figures renommées : les noms enregistrés (historique, records, séance du jour) suivent
 const RENAMED = {"Tenues de formes, niveau 1":"Tenues de forme, niveau 1", "Changements de formes, niveau 1":"Changements de forme, niveau 1", "Straddle planche serrée":"Straddle planche, écart réduit", "Queda de rins":"Queda de rins (appui sur le coude)",
-  "Tuck planche ouvert":"Tuck planche ouverte", "De l’équerre à la planche, et retour en équilibre":"De l’équerre à la full planche et retour en équilibre", "Équerre, équilibre, un bras de chaque côté":"Équerre, équilibre, puis un bras de chaque côté", "Drapeaux jusqu’au sol":"Drapeaux jusqu’au sol", "Équilibre sur un bras, 10 s des deux côtés":"Équilibre sur un bras, des deux côtés"};
-function migrNames(S){ if (S.migrN3) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
+  "Tuck planche ouvert":"Tuck planche ouverte", "De l’équerre à la planche, et retour en équilibre":"De l’équerre à la full planche et retour en équilibre", "Équerre, équilibre, un bras de chaque côté":"Équerre, équilibre, puis un bras de chaque côté", "Drapeaux jusqu’au sol":"Drapeaux jusqu’au sol", "Équilibre sur un bras, 10 s des deux côtés":"Équilibre sur un bras, des deux côtés", "Drapeaux groupés, chaque côté":"Drapeaux groupés, de chaque côté"};
+function migrNames(S){ if (S.migrN4) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
   if (S.pg && S.pg.best) S.pg.best = Object.fromEntries(Object.entries(S.pg.best).map(([k, v]) => [q(k), v]));
   if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); });
-  S.migrN3 = true; }
+  S.migrN4 = true; }
 // les noms composés perdent leur point médian (« Planche inclinée, préparation ») : les noms enregistrés suivent
 function migrDot(S){ if (S.migrDot) return; const q = x => String(x).split(" · ").join(", ");
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
@@ -116,7 +116,7 @@ function hitTarget(id, side){
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
 // espaces insécables avant les unités et après « × » : « 15 s », « 12 rép. », « ≈ 5 semaines » ne se coupent jamais en fin de ligne
-const nbsp = t => String(t).replace(/(\d) (?=(?:s|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0").replace(/([ ’]à) (?=\d)/g, "$1\u00a0");
+const nbsp = t => String(t).replace(/(\d) (?=(?:s|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0").replace(/([ ’]à) (?=\d)/g, "$1\u00a0").replace(/(\d) ([×≈])/g, "$1\u00a0$2").replace(/« /g, "«\u00a0").replace(/ »/g, "\u00a0»");
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = typeof txt === "string" ? nbsp(txt) : txt; return e; };
 const ICON = {
   check:'<svg width="11" height="9" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4.5l3 3 6-6.5"/></svg>',
@@ -192,7 +192,7 @@ function stats(){
 }
 let toastT = null;
 function toast(msg){ const t = $("toast"), dl = [...document.querySelectorAll("dialog[open]")].pop(); (dl || document.body).append(t);   // au-dessus de la fenêtre ouverte (séance, fiche)
-  t.textContent = msg; t.classList.add("on"); if (dl && !dl._tb) { dl._tb = 1; dl.addEventListener("close", () => { if (dl.contains(t)) document.body.append(t); }); }   /* la fenêtre se ferme : le message reste visible */
+  t.textContent = nbsp(msg); t.classList.add("on"); if (dl && !dl._tb) { dl._tb = 1; dl.addEventListener("close", () => { if (dl.contains(t)) document.body.append(t); }); }   /* la fenêtre se ferme : le message reste visible */
   clearTimeout(toastT); toastT = setTimeout(()=>t.classList.remove("on"), 3600); beep(990, 180); }
 
 // ---------- Niveaux d’un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
