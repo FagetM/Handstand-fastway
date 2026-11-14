@@ -103,7 +103,7 @@ const TREE = [
     {id:"oa_oahsw", name:"Un bras, côté faible", en:"OAHS Weak Side – 5s", type:"hold", target:5, req:["oa_oahs"],
       desc:"5 s sur le bras le moins bon. Il reçoit autant d’essais que l’autre et passe en premier."},
     {id:"oa_oahs10", name:"Équilibre sur un bras, des deux côtés", en:"One Arm Handstand – 10s Both Sides", type:"hold", target:10, req:["oa_oahsw"],
-      desc:"10 secondes sur chaque bras, côté faible compris. Figure acquise."},
+      desc:"10 secondes sur chaque bras, côté faible compris."},
     {id:"oa_shTuck", name:"Un bras groupé", en:"One Arm Tuck – 5s Per Side", sub:"5 s de chaque côté", type:"hold", target:5, req:["oa_oahs10"],
       desc:"Sur un bras, les genoux reviennent vers la poitrine. Les jambes ne font plus contrepoids : le bassin se recale au-dessus de la main."},
     {id:"oa_shStrad", name:"Un bras jambes écartées", en:"One Arm Straddle – 5s Per Side", sub:"5 s de chaque côté", type:"hold", target:5, req:["oa_shTuck"],
@@ -236,7 +236,7 @@ const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
   {id:"both", name:"Le combo ultime : un bras, full planche, stalder, manna", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_tuckflag","oa_flaghoriz","pl_ppp","oa_wall","pr_pikeLift","pr_stradLift","pr_lsit","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pl_lean2","pl_tuckP","pl_tuck","oa_shrug","oa_shift","oa_sidehold","oa_flagfloor","pr_straddle","pl_tuckPu","pl_tuckO","pl_adv","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","pr_stradL","pr_vsit","pl_1leg","oa_lift","pr_negP","pr_pike","pl_strBand","pl_strBandL","pl_straddle","oa_oahs","oa_oahsw","pr_halfSt","pr_tuckUp","pr_stalPart","pr_stalder","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full","oa_oahs10","pr_lsitNeg","pr_lsitHs","oa_shTuck","pr_vsitC","pr_extSup","pl_strHs","oa_shStrad","pr_mannaP","pl_hsDown","oa_switch","oa_shFlag","pr_vsitH","pl_halfPress","pr_manna","pl_press","ul_c1","ul_c2","ul_c3","ul_c12","ul_full"]},
-  {id:"oahs", name:"Équilibre sur un bras, 5 s", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_tuckflag","oa_flaghoriz","oa_wall","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs","oa_oahsw","oa_oahs10"]},
+  {id:"oahs", name:"Équilibre sur un bras, des deux côtés", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_tuckflag","oa_flaghoriz","oa_wall","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs","oa_oahsw","oa_oahs10"]},
   {id:"planche", name:"Full planche, 10 s", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_ppp","pl_lean2","pl_tuckP","pl_tuck","pl_tuckPu","pl_tuckO","pl_adv","pl_1leg","pl_strBand","pl_strBandL","pl_straddle","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full"]},
   {id:"min", name:"Équilibre droit, 60 s", ms:[...P_FD,...P_BASE,"in_str40","in_str60"]},
   {id:"press", name:"Montée en force jambes serrées", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pr_pikeLift","pr_stradLift","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pr_lsit","pr_stradL","pr_straddle","pr_negP","pr_pike"]},

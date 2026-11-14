@@ -47,8 +47,8 @@ function planFor(m){
   if (FREE(m)) { const one = m.sec === "onearm" || SIDED.has(m.id), T0 = nextStep(m) || 0, n = one ? 8 : T0 >= 40 ? 8 : 15, rest = one ? 45 : Math.max(30, Math.min(60, T0));   // tenues longues : moins d’essais, plus de repos
     out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0, rest, sides:one};
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + T + " s";
-    out.short = n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu tant que c’est calme, " + rest + " s de repos. " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune tant que c’est calme, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
+    out.short = (one ? "Jusqu’à " : "") + n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu tant que c’est calme, " + rest + " s de repos. " + days + " séances par semaine.";
+    out.lines = [freq, "À chaque séance : " + (one ? "jusqu’à " : "") + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune tant que c’est calme, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
       "Le chrono bipe à " + T + " s : le palier est acquis dès qu’un essai l’atteint.", x.best > 0 ? "Ton record : " + fmt(m, x.best) + "." : "Pas encore de record : chaque essai compte.",
       "Arrête la séance quand les montées deviennent brouillonnes.", valTxt(m)];
     if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ".");
@@ -67,7 +67,7 @@ function planFor(m){
     const tries2 = work >= T ? 0 : tries; out.n = {sets, work, tries:tries2, T, hold, sides:SIDED.has(m.id)};
     // tentatives réellement données en séance : une seule pour la planche en répétitions ; par jambe ou par côté pour les figures de côté
     const nt = /^pl_/.test(m.id) && !hold ? Math.min(1, tries2) : tries2, ntSide = !SIDED.has(m.id) ? "" : /^pl_/.test(m.id) ? " par jambe" : " par côté", ntTxt = (nt > 1 ? nt + " tentatives" : "une tentative") + ntSide;
-    out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (nt ? ", puis " + ntTxt + " à " + (hold ? T + " s" : T + " rép.") : ""); out.short += (out.short.endsWith(".") ? " " : ". ") + days + " séances par semaine.";   /* pas de « rép.. » */
+    out.short = sets + " × " + (hold ? work + " s" + (/^pl_/.test(m.id) && SIDED.has(m.id) ? " par jambe" : "") : work + " rép.") + (nt ? ", puis " + ntTxt + " à " + (hold ? T + " s" : T + " rép.") : ""); out.short += (out.short.endsWith(".") ? " " : ". ") + days + " séances par semaine.";   /* pas de « rép.. » */
     out.lines = [freq,
       "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" + (/^pl_/.test(m.id) && SIDED.has(m.id) ? " par jambe" : "") : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (r => r < 60 ? r + " s" : Math.floor(r / 60) + " min" + (r % 60 ? " " + r % 60 + " s" : ""))(restOf(m)) + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
       (/^pl_/.test(m.id) ? (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", " + (SIDED.has(m.id) ? "90 s" : "3 min") + " de repos entre chacune. " : ". ") : "") + (hold ? "Une tenue à la cible" : "Une tentative réussie") + " ouvre le niveau suivant ; la validation suit la règle ci-dessous, car les tendons aussi doivent être prêts."
