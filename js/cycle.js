@@ -116,7 +116,7 @@ async function vPrune(){ try { const keep = new Set([cyc().start].concat((S.cycl
 function vPick(id, after){   // filmer ou choisir une vidéo pour une figure du test
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "video/*"; inp.hidden = true; document.body.append(inp);   // caméra ou photothèque, au choix du téléphone
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
-  window.addEventListener("focus", () => setTimeout(() => { if (!inp.files || !inp.files.length) inp.remove(); }, 1000), {once:true});   // sélecteur annulé : rien ne reste dans la page
+  window.addEventListener("focus", () => setTimeout(() => { if (!inp.files || !inp.files.length) inp.remove(); }, 5000), {once:true});   // sélecteur annulé : rien ne reste dans la page
   inp.onchange = async () => { const f = inp.files && inp.files[0]; inp.remove(); if (!f) return; if (f.size > 80e6) { toast("Vidéo trop lourde (plus de 80 Mo) : coupe-la autour de la tentative."); return; }
     try { await vPut(cyc().start, id, f); S.cyc.vids = Object.assign(S.cyc.vids || {}, {[id]:1}); save(); vPrune(); toast("Vidéo gardée dans ton carnet du cycle."); if (after) after(); } catch(e){ toast("Impossible de garder la vidéo sur ce téléphone."); } };
   inp.click();
