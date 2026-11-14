@@ -691,4 +691,4 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 label[for="eqKg"]{display:block;margin-top:12px}
 .dpill.on span{color:var(--txt)}
 .jn .rg circle{stroke:color-mix(in srgb,var(--mut) 45%,var(--line))}
-.etab .etm{white-space:nowrap}.jn .g{background:var(--bg);border-radius:6px;padding:2px 4px;margin-top:-2px}
+.etab .etm{white-space:nowrap}.jn .g{background:var(--bg);border-radius:6px;padding:2px 4px;margin-top:-4px}
