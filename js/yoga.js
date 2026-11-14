@@ -80,7 +80,7 @@ function renderSommet(){
 }
 // les trois grandes disciplines : leur figure maîtresse, leur nom en yoga, une ligne d’histoire
 const DISC = {
-  onearm:{fig:"oa_oahs10", yoga:[["Eka Hasta Vṛkṣāsana"], ", l’arbre sur une main."], h:"ATR, c’est l’appui tendu renversé. Sur un bras, c’est un numéro phare des équilibristes de cirque : la main corrige au bout des doigts."},
+  onearm:{fig:"oa_oahs10", yoga:[["Eka Hasta Vṛkṣāsana"], ", l’arbre sur une main."], h:"ATR, pour appui tendu renversé. Sur un bras, un numéro phare des équilibristes de cirque : la main corrige au bout des doigts."},
   planche:{fig:"pl_full", yoga:["pas de nom classique ; la plus proche est ", ["Mayūrāsana"], ", le paon."], h:"Le mot est français : le corps à l’horizontale sur des bras tendus, un grand élément de force de la gymnastique."},
   press:{fig:"pr_stalder", yoga:["de ", ["Prasārita Pādottānāsana"], " à ", ["Adho Mukha Vṛkṣāsana"], "."], h:"Monter en équilibre sans élan. La montée stalder emprunte son nom au gymnaste suisse Josef Stalder, champion olympique en 1948."},
 };
