@@ -87,7 +87,7 @@ function planFor(m){
 function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } save(); render(); showTab("today"); window.scrollTo(0, 0); }
 
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
-const HARD = [["onearm","ATR un bras"],["planche","Planche"],["press","Montée en ATR"]];   // les termes des gymnases français (ATR : appui tendu renversé)
+const HARD = [["onearm","Équilibre un bras"],["planche","Full planche"],["press","Équilibre en force"]];
 // un coffre s’ouvre quand les figures du chemin de l’étage sont validées (les bonus hors chemin ne comptent pas)
 function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>reqDone(m.id)); }
 // Coffres : un par étage, ouvert quand l’étage est terminé ; chacun débloque une tenue.

@@ -77,7 +77,7 @@ const TREE = [
       desc:"En équilibre, tu fléchis les bras jusqu’à approcher la tête du sol, puis tu repousses. C’est surtout un travail de force d’épaules.",
       yt:[["-sdV7YfO73Q","Tutoriel handstand push-up"]]},
   ], videos:[["Affiner à deux bras : conseils et astuces niveau intermédiaire","Intermediate handstand tips & tricks"],["Affiner à deux bras : souffrir avec les 7","Suffering with 7's"],["Affiner à deux bras : tu crois savoir tenir l’équilibre ?","So you think you can balance?"],["Affiner à deux bras : tête rentrée, regard vers les orteils","Head looking at toes"],["Affiner à deux bras : arguments pour la ligne droite","Arguments for a straight line"],["Affiner à deux bras : 10 conseils pour une ligne droite","10 tips for a straight line"],["Affiner à deux bras : l’alignement","Alignment"],["Un bras : les drapeaux comme préparation","Flagging as one arm handstand prep"]]},
-  {id:"onearm", name:"ATR un bras", en:"One Arm", ms:[
+  {id:"onearm", name:"Équilibre un bras", en:"One Arm", ms:[
     {id:"oa_wall", name:"Un bras dos au mur", en:"One Arm Wall Hold – 30s Per Side", sub:"30 s de chaque côté", type:"hold", target:30, req:["oa_flaghoriz","in_str60"],
       desc:"Dos au mur, jambes écartées : tu retires une main et tu tiens sur l’autre. Première vraie charge sur un bras, avec la sécurité du mur."},
     {id:"oa_shrug", name:"Haussements d’épaule à un bras", en:"One Arm Wall Shrugs – 8 Per Side", sub:"8 de chaque côté", type:"reps", target:8, req:["oa_wall"],
@@ -113,7 +113,7 @@ const TREE = [
     {id:"oa_shFlag", name:"Drapeau sur un bras", en:"One Arm Flag – 5s Per Side", sub:"5 s de chaque côté", type:"hold", target:5, req:["oa_shStrad"], alt:true,
       desc:"Sur un bras, les deux jambes partent du côté de la main libre : corps en drapeau. Le bassin et l’épaule compensent de l’autre côté."},
   ], videos:[["Mécanique de l’équilibre sur un bras","Mechanics of a one arm"],["Transfert de poids","Weight shifting"],["Appui sur le bout des doigts","Fingertip support"],["Tenter le tout pour le tout","Going for glory"],["Appui bras tendu","Straight arm support"],["Remonter le centre de gravité","Raising center of mass"],["10 conseils pour l’équilibre sur un bras","10 tips for the OAHS"]]},
-  {id:"press", name:"Montée en ATR", en:"Press", ms:[
+  {id:"press", name:"Équilibre en force", en:"Press", ms:[
     {id:"pr_pikeLift", name:"Élévations en pike", en:"Pike Compression Lifts – 10", type:"reps", target:10, req:[],
       desc:"Assis jambes serrées, mains près des genoux : décolle les talons 2 s, sans te pencher en arrière."},
     {id:"pr_stradLift", name:"Élévations jambes écartées", en:"Straddle Compression Lifts – 10", type:"reps", target:10, req:["pr_pikeLift"],
@@ -169,7 +169,7 @@ const TREE = [
     {id:"lo_qdr", name:"Queda de rins (appui sur le coude)", en:"QDR", type:"check", req:["lo_croc"],
       desc:"Figure venue de la capoeira : la hanche repose sur un coude, corps de côté, en appui bas sur les mains."},
   ], videos:[["Planche sur les coudes","Elbow lever"],["Crocodile","Croc"],["Queda de rins","QDR"]]},
-  {id:"planche", name:"Planche", en:"Planche", ms:[
+  {id:"planche", name:"Full planche", en:"Planche", ms:[
     {id:"pl_lean", name:"Planche lean", en:"Planche lean", type:"hold", target:30, req:["fd_push","fd_dips"],
       desc:"Position de pompe, bras verrouillés, épaules 10 à 15 cm devant les mains, omoplates écartées, pieds au sol."},
     {id:"pl_ppp", name:"Pompes pseudo planche", en:"Pseudo Planche Push-ups – 10", type:"reps", target:10, req:["pl_lean"],
