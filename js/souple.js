@@ -35,8 +35,7 @@ function romOpen(id, after){
   const r = ROMI[id], box = $("qkBody"); box.textContent = "";
   const art = el("div","plart"); art.append(romSp(r, 150)); box.append(art, el("div","lab", r.yoga || "Souplesse"), el("h2",null,r.name), el("p","mut", r.how + " Échauffé, sans rebond."));
   const cur = romLog(id).slice(-1)[0], pick = {}, keep = el("button","btn","Garder cette mesure"); keep.disabled = true;
-  const row = side => { const w = el("div","chips romch"); r.lv.forEach((t, k) => { const b = el("button","chip", t); b.setAttribute("aria-pressed","false");
-      b.onclick = () => { pick[side] = k; w.querySelectorAll(".chip").forEach((x, j) => { x.classList.toggle("on", j === k); x.setAttribute("aria-pressed", j === k); }); keep.disabled = r.sides ? pick.g == null || pick.d == null : false; }; w.append(b); }); return w; };
+  const row = side => chipRow(r.lv.map((t, k) => [k, t]), k => pick[side] === k, k => { pick[side] = k; keep.disabled = r.sides ? pick.g == null || pick.d == null : false; }, "romch");
   if (r.sides) box.append(el("div","lab","Jambe gauche devant"), row("g"), el("div","lab","Jambe droite devant"), row("d")); else box.append(row("v"));
   if (cur) box.append(el("p","mut","Dernière mesure, le " + new Date(cur.t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + " : " + (r.sides && cur.g != null ? "gauche « " + r.lv[cur.g] + " », droite « " + r.lv[cur.d] + " »" : "« " + r.lv[cur.v] + " »") + "."));
   keep.onclick = () => { const e = {t:Date.now(), v:r.sides ? Math.min(pick.g, pick.d) : pick.v}; if (r.sides) { e.g = pick.g; e.d = pick.d; }

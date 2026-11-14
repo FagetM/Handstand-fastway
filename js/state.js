@@ -128,6 +128,11 @@ const $ = id => document.getElementById(id);
 // espaces insécables avant les unités et après « × » : « 15 s », « 12 rép. », « ≈ 5 semaines » ne se coupent jamais en fin de ligne
 const nbsp = t => String(t).replace(/(\d) (?=(?:s|m|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0").replace(/ ([:;!?»])/g, "\u00a0$1").replace(/([ ’]à) (?=\d)/g, "$1\u00a0").replace(/(\d) ([×≈])/g, "$1\u00a0$2").replace(/« /g, "«\u00a0").replace(/ »/g, "\u00a0»");
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = typeof txt === "string" ? nbsp(txt) : txt; return e; };
+// une rangée de puces à choisir : opts [[valeur, libellé]], isOn(valeur) dit ce qui est coché, pick(valeur) agit ;
+// après chaque touche, toutes les puces se remettent d’accord avec isOn (choix unique ou multiple, peu importe)
+function chipRow(opts, isOn, pick, cls, label){ const row = el("div","chips" + (cls ? " " + cls : "")); if (label) row.setAttribute("aria-label", label);
+  const sync = () => row.querySelectorAll(".chip").forEach((c, i) => { const o = !!isOn(opts[i][0]); c.classList.toggle("on", o); c.setAttribute("aria-pressed", o); });
+  opts.forEach(([v, t]) => { const b = el("button","chip", t); b.onclick = () => { pick(v); sync(); }; row.append(b); }); sync(); return row; }
 const ICON = {
   flag:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 42V6"/><path d="M12 8c8-4 14 4 24 0v18c-10 4-16-4-24 0" fill="currentColor" fill-opacity=".18"/></svg>',
   check:'<svg width="11" height="9" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4.5l3 3 6-6.5"/></svg>',

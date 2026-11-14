@@ -22,18 +22,28 @@ L'arbre est décrit dans `js/data.js` (`TREE` et `GOALS`) : c'est là qu'on ajus
 
 Organisation du code (scripts classiques chargés dans l'ordre, sans étape de build) :
 
+Les scripts se chargent dans cet ordre et partagent un même espace global ; rien ne s’exécute au chargement avant `main.js`, qui lance l’app.
+
 | Fichier | Rôle |
 |---|---|
-| `index.html` | la page : structure des trois onglets et des fenêtres |
+| `index.html` | la page : structure des quatre onglets et des fenêtres |
 | `css/app.css` | l'apparence |
-| `js/data.js` | arbre des figures, fiches détaillées, schémas de posture |
-| `js/state.js` | sauvegarde sur l'appareil, outils, expérience, niveaux, badges |
-| `js/parcours.js` | plan par figure, chemin du parcours, coffres, estimation, carte rapide |
-| `js/sprites.js` | personnage 3D et animations des figures |
-| `js/views.js` | vestiaire, rendu des onglets, fiche d'une figure avec chrono |
+| `js/data.js` | arbre des figures (`TREE`), objectifs (`GOALS`), fiches détaillées, schémas de posture |
+| `js/state.js` | sauvegarde sur l'appareil, migrations, outils (`el`, `chipRow`), **le journal** (`idOfLog`, `logsOf`, `daysWhere`), validation, niveaux, badges |
+| `js/yoga.js` | noms yoga des figures, figures maîtresses, carte « Prochaine victoire » |
+| `js/parcours.js` | plan par figure (`planFor`), dates (`planCalc`), douleur, plateau, matériel (`EQ_NOTE`, `PARA_ALT`), chemin du parcours, fiche plein écran |
+| `js/sprites.js` | personnage 3D et animations des figures et des exercices |
+| `js/scene.js` | le décor aquarelle qui grandit avec le rang |
+| `js/cycle.js` | cycles de 4 semaines : semaine légère, jour de test, bilan, records, carnet vidéo |
+| `js/souple.js` | souplesse : repères mesurés, fin de séance active, séance douce |
+| `js/cerveau.js` | **la micro-intelligence** : capacité estimée, forme du jour, pente de progression, raison de chaque charge |
+| `js/views.js` | vestiaire, rendu des onglets, fiche chrono d'une figure |
 | `js/voice.js` | voix de la séance : choix de la voix française la plus naturelle, annonces |
-| `js/zen.js` | Maîtrise : postures tenues qui s'allongent à chaque séance, météo du corps, petites histoires |
-| `js/seance.js` | programmes, séance du jour, exercices, bilan, séance guidée |
+| `js/drills.js` | exercices d'accompagnement : bibliothèque, choix par figure, bloc prêt à jouer |
+| `js/seance.js` | programmes, séance du jour (`builtinBlocks`), séance guidée, fin de séance |
+| `js/bilan.js` | bilan de départ et profil : sécurité, objectif, matériel, âge, poids, fragilités, vérifications |
+| `js/zen.js` | Postures : échelles tenues qui s'allongent, souplesse douce, récup, météo du corps |
+| `js/voie.js` | la Voie : pensées, respirations, écoute du corps, carnet, transmettre |
 | `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
 
 À chaque nouvelle version, changer `CACHE` dans `sw.js` (et `SPV` dans `js/sprites.js` si une animation change).
