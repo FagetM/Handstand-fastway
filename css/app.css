@@ -763,4 +763,4 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 #scene .scene{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--tierc) 40%,transparent)}
 .vhead h2,.vpens .lab{color:var(--tierc)}
 .vpr:last-child:nth-child(odd){grid-column:1/-1}
-.fbpens{margin:0 0 14px;padding:8px 12px;border-left:3px solid var(--tierc);font-size:14px;color:var(--txt)}
+.fbpens{margin:0 0 16px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--tierc) 12%,transparent);font-size:14px;color:var(--txt)}
