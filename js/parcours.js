@@ -214,7 +214,7 @@ function journey(nextId){
       L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < kk ? "f" : "") + '" stroke-dasharray="' + (sg - gap).toFixed(1) + ' ' + (Cc - sg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*sg + gap/2)).toFixed(1) + '"/>'; });
       c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 72 : cur ? 104 : 92); c.append(sp);
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
-      b.append(c, el("span","n", m.name));
+      b.append(c, el("span","n", it.alt ? m.name.replace(/\s*\(.*\)\s*$/, "") : m.name));   /* bonus : le nom court, la précision reste dans la fiche */
       const nx = nextStep(m);
       b.append(el("span","g", x.done ? "" : lk ? (m.target ? goalTxt(m) : "") : L.length > 1 ? "Niveau " + kk + "/" + L.length + ", " + unitTxt(m, nx) : small ? "Bonus" : m.target ? goalTxt(m) : ""));
       b.onclick = () => quick(id); cv.append(b);

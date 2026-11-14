@@ -689,3 +689,4 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 .fx.wait .sp{opacity:.3}
 #quest .golink{display:block;margin-top:12px}#quest .golink::after{content:" ›"}
 label[for="eqKg"]{display:block;margin-top:12px}
+.dpill.on span{color:var(--txt)}
