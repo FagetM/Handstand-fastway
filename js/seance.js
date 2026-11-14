@@ -158,8 +158,8 @@ function builtinBlocks(){
 
   // fin de cycle : la séance de test (une fois), puis mobilité jusqu’au bilan
   const wristRest = pain && (PS.zones || [PS.zone]).includes("poignet"), cautT = S.caution && Date.now() - S.caution < 36 * 3600e3;
+  if (typeof cycTest === "function" && cycTest() && cycDay() < 28 && (S.cyc || {}).tested) return ["epaules","pike","pancake","hollow"].map(k => drillBlock(k, false));   // test fait : mobilité jusqu’au bilan
   if (typeof cycTest === "function" && cycTest() && cycDay() < 28 && !wristRest && !tired && !cautT && !needRest()) {
-    if ((S.cyc || {}).tested) return ["epaules","pike","pancake","hollow"].map(k => drillBlock(k, false));
     const caut = S.caution && Date.now() - S.caution < 36 * 3600e3, figs = []; let nF = 0, nO = 0;
     cycFigs(S.cyc.start).forEach(id => { const m = MS[id]; if (!m || figs.length >= 4 || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id) || (/^pl_/.test(id) && m.type === "reps")) return;
       const f = FORCE(id), o = /^oa_/.test(id); if ((f || o) && (PS.phase === 1 || PS.phase === 2 || caut)) return; if (f && nF >= 2) return; if (o && nO >= 1) return; if (f) nF++; if (o) nO++; figs.push(id); });
@@ -647,9 +647,9 @@ function saveSet(v){
     if (ok || all) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); if (!ok) { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } else toast("« " + MS[b.ms].name + " » confirmée."); } }
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
   // excentriques en full planche : des répétitions isolées ; ce qui compte, c’est le nombre de répétitions propres dans la séance
-  if (b.ms && ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(b.ms) && v >= 1) { const vals = wkGet(selDay); v = b.sets.reduce((n, _, i) => n + ((vals[sd.bi + "-" + i] || 0) >= 1 ? 1 : 0), 0); }
-  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms), l0 = lvlOf(MS[b.ms]); if (v > x.best) x.best = v; if (lvlOf(MS[b.ms]) > l0 && S.adapt) delete S.adapt[b.ms];   /* nouveau palier : la charge repart d’une base neutre */
-    if (v >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms, sd.si % 2); /* séries alternées : paires d’un côté, impaires de l’autre */ if (msg) toast(msg); else { sessVal = b.ms; toast("« " + MS[b.ms].name + " » validée."); const dy = S.bday && S.bday.blocks[sd.bi]; if (dy) dy.sets = dy.sets.filter((q, i) => i <= sd.si || wkGet(selDay)[sd.bi + "-" + i] != null); } }   /* validée : le reste de la figure est offert */
+  let cv = v; if (b.ms && ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(b.ms) && v >= 1) { const vals = wkGet(selDay); cv = b.sets.reduce((n, _, i) => n + ((vals[sd.bi + "-" + i] || 0) >= 1 ? 1 : 0), 0); }   // la valeur notée reste la répétition ; le compte sert au record et à la validation
+  if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms), l0 = lvlOf(MS[b.ms]); if (cv > x.best) x.best = cv; if (lvlOf(MS[b.ms]) > l0 && S.adapt) delete S.adapt[b.ms];   /* nouveau palier : la charge repart d’une base neutre */
+    if (cv >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms, sd.si % 2); /* séries alternées : paires d’un côté, impaires de l’autre */ if (msg) toast(msg); else { sessVal = b.ms; toast("« " + MS[b.ms].name + " » validée."); const dy = S.bday && S.bday.blocks[sd.bi]; if (dy) dy.sets = dy.sets.filter((q, i) => i <= sd.si || wkGet(selDay)[sd.bi + "-" + i] != null); } }   /* validée : le reste de la figure est offert */
     if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++;
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd’hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });

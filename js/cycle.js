@@ -15,7 +15,7 @@ function cyc(){
 // un thème par cycle : en un an, le tour des principes du yoga (yamas, niyamas) et de quelques sagesses voisines
 // p : débuts de pensées (voie.js) qui lui répondent ; q : la question de la semaine ; b : la question du bilan
 const THEMES = [
-  {n:"ahiṃsā", s:"ne pas nuire", p:["Ne pas nuire", "La souffrance à venir"], q:"Où as-tu été doux avec ton corps cette semaine ?", b:"Qu’as-tu compris de ahiṃsā, ne pas nuire, ce mois-ci ?"},
+  {n:"ahiṃsā", s:"ne pas nuire", p:["Ne pas nuire", "La souffrance à venir"], q:"Où as-tu été doux avec ton corps cette semaine ?", b:"Qu’as-tu compris d’ahiṃsā, ne pas nuire, ce mois-ci ?"},
   {n:"satya", s:"être vrai", p:["Être vrai", "Le corps ne ment pas"], q:"Qu’as-tu osé reconnaître de ton niveau réel ?", b:"Qu’as-tu compris de satya, être vrai, ce mois-ci ?"},
   {n:"santoṣa", s:"le contentement", p:["Du contentement", "L’égalité d’âme"], q:"Quelle séance t’a contenté, même imparfaite ?", b:"Qu’as-tu compris de santoṣa, le contentement, ce mois-ci ?"},
   {n:"tapas", s:"l’effort ardent", p:["Effort ardent", "Le karaté est comme l’eau"], q:"Où ton effort a-t-il été juste, ni trop ni trop peu ?", b:"Qu’as-tu compris de tapas, l’effort ardent, ce mois-ci ?"},
@@ -26,7 +26,7 @@ const THEMES = [
   {n:"sthira sukha", s:"stable et agréable", p:["La posture est stable", "Elle naît du relâchement"], q:"Où as-tu trouvé de l’aisance dans l’effort ?", b:"Où l’effort est-il devenu plus léger ce mois-ci ?"},
   {n:"le geste juste", s:"la Bhagavad Gītā", p:["Tu as droit à l’action", "Le yoga est l’habileté"], q:"Quel geste as-tu soigné sans regarder le chrono ?", b:"Qu’as-tu soigné ce mois-ci, sans attendre le résultat ?"},
   {n:"le repos", s:"récupérer aussi", p:["Pas de yoga pour qui mange", "Le jour sans entraînement"], q:"Comment as-tu récupéré cette semaine ?", b:"Comment ton repos a-t-il nourri ta pratique ce mois-ci ?"},
-  {n:"la gratitude", s:"le salut", p:["Le karaté commence et finit", "J’inspire, je calme"], q:"À qui dois-tu ce que tu sais faire ?", b:"Envers qui, ou quoi, as-tu ressenti de la gratitude ce mois-ci ?"},
+  {n:"la gratitude", s:"le salut au tapis", p:["Le karaté commence et finit", "J’inspire, je calme"], q:"À qui dois-tu ce que tu sais faire ?", b:"Envers qui, ou quoi, as-tu ressenti de la gratitude ce mois-ci ?"},
 ];
 const cycTheme = () => THEMES[(cycN() - 1) % THEMES.length];
 const cycDay = () => Math.floor((Date.now() - cyc().start) / 864e5);
@@ -46,9 +46,10 @@ function renderCycle(){
   if (d >= 28) { const c = el("div","cycard"); c.append(el("b",null,"Ton cycle est terminé"), el("p","mut","Le moment de regarder le chemin : tes records, ton intention, ce que tu as écrit.")); const b = el("button","btn","Faire le bilan"); b.onclick = cycBilan; c.append(b); box.append(c); }
   else if (cycTest() && C.tested) { const c = el("div","cycard"); c.append(el("b",null,"Test fait"), el("p","mut","Mobilité jusqu’à la fin du cycle, puis le bilan. Tu peux encore ajouter la vidéo d’une tentative."));
     cycFigs(C.start).forEach(id => { const fm = el("button","chip cyfilm", ((C.vids || {})[id] ? "Vidéo gardée : " : "Ajouter une vidéo : ") + MS[id].name); fm.onclick = () => vPick(id, renderCycle); c.append(fm); }); box.append(c); }
-  else if (cycTest()) { const figs = cycFigs(C.start); if (figs.length) { const c = el("div","cycard"); c.append(el("b",null,"Jour de test"), el("p","mut","Ta séance du jour est le test : échauffement, deux montées en charge, puis une tentative au maximum par figure. C’est ce qui recale tes dates."));
+  else if (cycTest()) { const figs = cycFigs(C.start); if (figs.length) { const c = el("div","cycard"); const held = (S.caution && Date.now() - S.caution < 36 * 3600e3) || painState().phase === 1 || moodToday() === "fatigue";
+      c.append(el("b",null, held ? "Test reporté" : "Jour de test"), el("p","mut", held ? "Pas aujourd’hui : ton corps demande du calme. Le test attendra un jour plus frais, avant la fin du cycle." : "Ta séance du jour est le test : échauffement, deux montées en charge, puis une tentative au maximum par figure. C’est ce qui recale tes dates."));
       figs.forEach(id => { const m = MS[id], x = el("button","cytest"), b = cycBest(id, C.start, Date.now()); x.append(el("span",null,m.name), el("span","mut","record du cycle : " + (b ? fmt(m, b) : "aucun"))); x.onclick = () => openMs(id);
-        const fm = el("button","chip cyfilm", (C.vids || {})[id] ? "Vidéo gardée, refaire" : "Filmer la tentative"); fm.setAttribute("aria-label", "Filmer la tentative : " + m.name); fm.onclick = () => vPick(id, renderCycle); c.append(x, fm); });
+        const ft = (C.vids || {})[id] ? "Vidéo gardée, refaire" : "Filmer la tentative", fm = el("button","chip cyfilm", ft); fm.setAttribute("aria-label", ft + " : " + m.name); fm.onclick = () => vPick(id, renderCycle); c.append(x, fm); });
       box.append(c); } }
 }
 function cycIntent(){
@@ -83,7 +84,7 @@ function cycBilan(){
   box.append(el("p","vq","Ton intention pour le cycle suivant")); const ni = el("input","cyin"); ni.placeholder = "Une phrase"; ni.value = C.intent || ""; ni.maxLength = 80; ni.setAttribute("aria-label","Intention du cycle suivant"); box.append(ni);
   const ok = el("button","btn cyok","Ouvrir le cycle suivant"); ok.onclick = () => {
     const refl = ta.value.trim(), n = cycN(); (S.cycles || (S.cycles = [])).push({start:C.start, end, intent:C.intent, best, refl, vids:C.vids});
-    if (refl) (S.jr || (S.jr = [])).push({t:end, q:"Bilan du cycle " + n + " : " + lc1(cycTheme().b), a:refl});
+    if (refl) (S.jr || (S.jr = [])).push({t:end, q:"Bilan du cycle " + n + " : " + lc1(TQ), a:refl});
     S.cyc = {start:end, intent:ni.value.trim()}; save(); vPrune(); $("qkDlg").close(); render(); toast("Cycle " + cycN() + " ouvert. Bonne route."); };
   box.append(ok);
   $("qkT").textContent = "Bilan du cycle"; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
@@ -101,8 +102,9 @@ function renderRecords(){
 }
 // ---------- Carnet vidéo du cycle : une tentative filmée par figure le jour du test, gardée sur le téléphone (IndexedDB) ----------
 // seuls les deux derniers cycles sont gardés : de quoi comparer, sans remplir la mémoire
-const VDB = () => new Promise((ok, ko) => { if (!window.indexedDB) return ko("indisponible"); const r = indexedDB.open("hs-videos", 1); r.onupgradeneeded = () => r.result.createObjectStore("v"); r.onsuccess = () => ok(r.result); r.onerror = () => ko(r.error); });
-const vTx = (mode, fn) => VDB().then(db => new Promise((ok, ko) => { const t = db.transaction("v", mode), st0 = t.objectStore("v"), out = fn(st0); t.oncomplete = () => ok(out && out.result !== undefined ? out.result : out); t.onerror = () => ko(t.error); }));
+let vdb = null;
+const VDB = () => vdb || (vdb = new Promise((ok, ko) => { if (!window.indexedDB) return ko("indisponible"); const r = indexedDB.open("hs-videos", 1); r.onupgradeneeded = () => r.result.createObjectStore("v"); r.onsuccess = () => ok(r.result); r.onerror = () => { vdb = null; ko(r.error); }; }));
+const vTx = (mode, fn) => VDB().then(db => new Promise((ok, ko) => { const t = db.transaction("v", mode), st0 = t.objectStore("v"), out = fn(st0); t.oncomplete = () => ok(out instanceof IDBRequest ? out.result : out); t.onerror = () => ko(t.error); t.onabort = () => ko(t.error); }));
 const vKey = (start, id) => start + "|" + id;
 const vPut = (start, id, blob) => vTx("readwrite", s => s.put(blob, vKey(start, id)));
 const vGet = (start, id) => vTx("readonly", s => s.get(vKey(start, id)));
@@ -110,8 +112,9 @@ const vKeys = () => vTx("readonly", s => s.getAllKeys());
 async function vPrune(){ try { const keep = new Set([cyc().start].concat((S.cycles || []).slice(-1).map(c => c.start))), ks = await vKeys();
   const old = ks.filter(k => !keep.has(+String(k).split("|")[0])); if (old.length) await vTx("readwrite", s => { old.forEach(k => s.delete(k)); }); } catch(e){} }
 function vPick(id, after){   // filmer ou choisir une vidéo pour une figure du test
-  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "video/*"; inp.setAttribute("capture", "environment");
-  inp.onchange = async () => { const f = inp.files && inp.files[0]; if (!f) return; if (f.size > 80e6) { toast("Vidéo trop lourde : garde une seule tentative, 30 secondes au plus."); return; }
+  const inp = document.createElement("input"); inp.type = "file"; inp.accept = "video/*"; inp.hidden = true; document.body.append(inp);   // caméra ou photothèque, au choix du téléphone
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+  inp.onchange = async () => { const f = inp.files && inp.files[0]; inp.remove(); if (!f) return; if (f.size > 80e6) { toast("Vidéo trop lourde (plus de 80 Mo) : coupe-la autour de la tentative."); return; }
     try { await vPut(cyc().start, id, f); S.cyc.vids = Object.assign(S.cyc.vids || {}, {[id]:1}); save(); vPrune(); toast("Vidéo gardée dans ton carnet du cycle."); if (after) after(); } catch(e){ toast("Impossible de garder la vidéo sur ce téléphone."); } };
   inp.click();
 }
