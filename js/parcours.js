@@ -68,11 +68,11 @@ function planFor(m){
   // équilibre libre : c’est une habileté, on la travaille en essais tenus jusqu’à la perte d’équilibre
   const cap = capEst(m.id), R = readyMemo(), variant = !!((S.dv || {})[m.id] && Date.now() - S.dv[m.id] < 7 * 864e5);
   // capacité déjà au-dessus du palier : on saute directement au palier qui la dépasse (plus de semaines « trop faciles »)
-  if (cap && T && cap.v >= T && !lightWeek(m.id)) T = L.find(v => v > cap.v) || L[L.length - 1];
+  if (cap && cap.v > 0 && T && cap.v >= T && !lightWeek(m.id)) T = L.find(v => v > cap.v) || L[L.length - 1];
   if (FREE(m) && lightWeek(m.id) && k > 0) T = L[k - 1];   // semaine plus légère : le palier précédent, pas de validation
   if (FREE(m)) { const one = m.sec === "onearm" || SIDED.has(m.id), T0 = nextStep(m) || 0, n = m.sec === "onearm" ? 10 : one ? 8 : T0 >= 40 ? 8 : 15, rest = one ? 45 : Math.max(30, Math.min(60, T0));   // tenues longues : moins d’essais, plus de repos
     out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0, rest, sides:one};
-    out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + T + " s";
+    out.head = "Plan pour le niveau " + (Math.max(k, L.indexOf(T)) + 1) + " sur " + L.length + " : " + T + " s";
     out.short = "Jusqu’à " + n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu tant que c’est calme, " + rest + " s de repos. " + days + " séances par semaine.";
     out.lines = [freq, "À chaque séance : jusqu’à " + n + " montées" + (one ? " par côté, en alternant gauche et droite (commence par ton côté faible)" : "") + ". Tiens chacune tant que c’est calme, sors proprement (roue ou retour sur les pieds), " + rest + " s de repos.",
       "Le chrono bipe à " + T + " s : le palier est acquis dès qu’un essai l’atteint.", x.best > 0 ? "Ton record : " + fmt(m, x.best) + "." : "Pas encore de record : chaque essai compte.",
@@ -87,10 +87,10 @@ function planFor(m){
     const hold = m.type === "hold", lo = hold ? Math.min(2, T) : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
     // charge adaptative : chaque séance règle un coefficient par figure (réussite, chutes, ressenti) ; une douleur récente allège
-    const fct = adaptOf(m.id) * Math.min(painRecent() ? 0.75 : 1, lightWeek(m.id) ? 0.7 : 1, variant ? 0.85 : 1) * R.r, B = cap ? cap.v : x.best;   /* B : ta capacité estimée, pas ton record de toujours */
+    const fct = adaptOf(m.id) * Math.min(painRecent() ? 0.75 : 1, lightWeek(m.id) ? 0.7 : 1, variant ? 0.85 : 1) * R.r, B = cap && cap.v > 0 ? cap.v : x.best;   /* B : ta capacité estimée, pas ton record de toujours */
     const work = oaReps ? (lightWeek(m.id) ? Math.max(1, T - 1) : T) : prSkill ? Math.min(2, T) : prReps ? 1 : Math.max(lo, Math.min(Math.round(T * 0.85), B > 0 ? Math.round(B * 0.6 * R.r) : 0),   /* jamais sous 60 % de la capacité */ Math.min(T, Math.min(Math.round(T * 0.85), Math.round(Math.min(Math.round(T * 0.8), B > 0 ? Math.round(B * 0.75) : Math.round(T * 0.5)) * fct)))),   /* le travail reste sous la cible */ u = v => hold ? v + " s" : v + " répétition" + (v > 1 ? "s" : "");
-    out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + u(T);
-    const tries2 = work >= T ? 0 : tries, tryT = cap && cap.v * 1.05 < T ? Math.max(work + (hold ? 1 : 0), Math.round(cap.v * 1.05)) : T;   /* tentatives : un peu au-dessus de ta capacité, jusqu’au palier */
+    out.head = "Plan pour le niveau " + (Math.max(k, L.indexOf(T)) + 1) + " sur " + L.length + " : " + u(T);
+    const tries2 = work >= T ? 0 : tries, tryT = cap && cap.v > 0 && cap.v * 1.05 < T && !(T === m.target && cap.v >= 0.85 * T) ? Math.max(work + (hold ? 1 : 0), Math.round(cap.v * 1.05)) : T;   /* tentatives : un peu au-dessus de ta capacité, jusqu’au palier */
     out.n = {sets:variant ? sets + 2 : sets, work, tries:tries2, T, tryT:Math.min(T, tryT), hold, sides:SIDED.has(m.id)}; out.why = whyLoad(m, cap, work, R, lightWeek(m.id) && !painRecent(), variant);
     // tentatives réellement données en séance : une seule pour la planche en répétitions ; par jambe ou par côté pour les figures de côté
     const nt = /^pl_/.test(m.id) && !hold ? Math.min(1, tries2) : tries2, ntSide = !SIDED.has(m.id) ? "" : /^pl_/.test(m.id) ? " par jambe" : " par côté", ntTxt = (nt > 1 ? nt + " tentatives" : "une tentative") + ntSide;

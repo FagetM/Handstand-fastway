@@ -3,10 +3,14 @@
 // Tout reste sur le téléphone ; chaque décision garde sa raison, en une ligne.
 
 // une entrée du journal → la figure concernée (en séance, les séries sont notées « pg:<nom> », « <nom>, test »…)
+// les nouvelles entrées portent l’identifiant (m) ; pour les anciennes, le nom — et quand deux figures partagent un nom
+// (« Équilibre droit » 40 s et 60 s), la première encore à travailler
 let N2I = null;
-const idOfLog = l => { if (MS[l.id]) return l.id; if (!N2I) { N2I = {}; Object.values(MS).forEach(m => { N2I[m.name] = m.id; }); }
-  const n = String(l.id).replace(/^pg:/, "").replace(/, (vérification|test|entretien|préparation)$/, ""); return N2I[n] || null; };
-const logsOf = (id, until) => S.log.filter(l => typeof l.v === "number" && (!until || l.t < until) && idOfLog(l) === id);
+const idOfLog = l => { if (l.m && MS[l.m]) return l.m; if (MS[l.id]) return l.id; if (!N2I) { N2I = {}; Object.values(MS).forEach(m => { (N2I[m.name] || (N2I[m.name] = [])).push(m.id); }); }
+  const c = N2I[String(l.id).replace(/^pg:/, "").replace(/, (vérification|test|entretien|préparation)$/, "")]; return !c ? null : c.length === 1 ? c[0] : c.find(i => !st(i).done) || c[c.length - 1]; };
+// index du journal par figure, refait une fois par enregistrement (pas une fois par figure)
+const logIdx = () => { const k = (window._sv || 0) + "|" + S.log.length; if (logIdx.k !== k) { const o = {}; S.log.forEach(l => { if (typeof l.v !== "number") return; const i = idOfLog(l); if (i) (o[i] || (o[i] = [])).push(l); }); logIdx.k = k; logIdx.v = o; } return logIdx.v; };
+const logsOf = (id, until) => { const L = logIdx()[id] || []; return until ? L.filter(l => l.t < until) : L; };
 
 // capacité estimée : la meilleure valeur récente de chaque jour, un peu dévaluée avec l’âge ; une série de travail arrêtée
 // à sa cible ne dit que « au moins la cible » (+10 %) ; après une coupure, la capacité redescend (environ 1,5 % par jour au-delà d’une semaine)
@@ -41,7 +45,7 @@ function trend(id){ const byDay = {}; logsOf(id).filter(l => Date.now() - l.t < 
 
 // la raison d’une charge, en une ligne
 function whyLoad(m, cap, work, R, light, variant){ const u = v => m.type === "hold" ? num(v) + " s" : v + " rép.";
-  const p = []; if (cap) p.push("capacité estimée " + u(cap.v) + (cap.off < 1 ? " (reprise, −" + Math.round((1 - cap.off) * 100) + " %)" : ""));
+  const p = []; if (cap && cap.v > 0) p.push("capacité estimée " + u(cap.v) + (cap.off < 1 ? " (reprise, −" + Math.round((1 - cap.off) * 100) + " %)" : ""));
   if (R && R.r < 1) p.push("forme du jour " + Math.round(R.r * 100) + " % : " + R.why.join(", "));
   if (light) p.push("semaine plus légère : progrès à l’arrêt depuis 2 semaines");
   if (variant) p.push("plateau : on change de stimulus, plus de séries un peu moins dures");

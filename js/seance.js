@@ -570,7 +570,7 @@ function endSession(){
   save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
-  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.04, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner
+  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.04, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient surtout des séries réussies ; « facile » ajoute un petit cran, « dur » freine
   ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
@@ -665,7 +665,7 @@ function saveFixed(v){
   const {b, s, day, si} = sd; sdStop();
   const val = v != null ? v : s.dur != null ? sDur(s, day.scale) : s.reps; storeSet(val);
   // chaque série faite entre dans l’historique, même à durée ou nombre fixes, et chaque essai réussi / pas encore
-  S.log.push(s.lab === "essai" ? {t:Date.now(), id:"pg:" + b.name, k:"try", v:val > 0, s:setRef()} : {t:Date.now(), id:"pg:" + b.name, k:s.dur != null ? "fix" : "reps", v:val, s:setRef()}); if (S.log.length > 6000) S.log = S.log.slice(-6000);
+  S.log.push(s.lab === "essai" ? {t:Date.now(), id:"pg:" + b.name, k:"try", v:val > 0, s:setRef()} : {t:Date.now(), id:"pg:" + b.name, k:s.dur != null ? "fix" : "reps", v:val, s:setRef(), m:b.ms || undefined}); if (S.log.length > 6000) S.log = S.log.slice(-6000);
   if (b.confirm && (S.confirm || []).includes(b.ms) && b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null)) {
     const okN = b.sets.filter((_,i)=>wkGet(selDay)[sd.bi + "-" + i] > 0).length; S.confirm = (S.confirm || []).filter(x=>x !== b.ms);
     if (okN >= 2) { confirmUp(b.ms); toast("« " + MS[b.ms].name + " » confirmée."); } else { st(b.ms).done = false; st(b.ms).best = 0; st(b.ms).b0 = null; unDeclare(b.ms); toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } }
@@ -730,7 +730,7 @@ function saveSet(v){
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd’hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });
         toast(num(v) + " s sur " + sd.tg + " : les séries suivantes visent " + ng + " s aujourd’hui. Propre avant long."); } } }
-  if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0, s:setRef(), g:s.goal || undefined, mx:s.max ? 1 : undefined}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 6000) S.log = S.log.slice(-6000);
+  if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0, s:setRef(), g:s.goal || undefined, mx:s.max ? 1 : undefined, m:b.ms || undefined}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 6000) S.log = S.log.slice(-6000);
   save(); render();
   const nx = nextSet();
   if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else closeEnd(); return; }
