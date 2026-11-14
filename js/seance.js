@@ -204,7 +204,7 @@ function builtinBlocks(){
   // vérifications du jour : d’abord les figures dont aucune autre déclarée ne dépend (les réussir confirme leurs prérequis),
   // celles de l’objectif en premier, la planche seulement si son plafond de jours le permet
   const Q = (tired || deload || PS.phase ? [] : S.confirm || []).filter(id => MS[id] && (fok || !FORCE(id)) && !(/^pl_/.test(id) && plancheDays() >= (EX === "pl" && !profHeavy() ? 3 : 2))), gset = new Set(goalOf().ms),
-    top = id => !Q.some(x => x !== id && reqsOf(x).has(id)), confIds = Q.slice().sort((a, b) => (top(b) - top(a)) || (gset.has(b) - gset.has(a))).slice(0, 2);
+    top = id => !Q.some(x => x !== id && reqsOf(x).has(id)), confIds = Q.slice().sort((a, b) => (SAFE.has(b) - SAFE.has(a)) || (top(b) - top(a)) || (gset.has(b) - gset.has(a)))   /* la sortie de secours se vérifie toujours en vrai, en premier */.slice(0, 2);
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = confIds.filter(id => FORCE(id)).length;   // une vérification de force compte dans le plafond de 2
   // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
   // celle travaillée il y a le plus longtemps passe en premier — aucune discipline n’étouffe les autres
@@ -226,7 +226,7 @@ function builtinBlocks(){
   if (fok && pickF && !fConf && !tired && nMs >= 3 && next.includes(pickF)) { const f2 = F.find(id => id !== pickF && !/^pl_/.test(id) && disc(id) !== disc(pickF) && late(id) > 1); if (f2) next = [next[0], f2, pickF]; }
   if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (confIds.some(c => /^pl_/.test(c)) || plancheDays() >= (EX === "pl" && !profHeavy() ? 3 : 2) || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d’ouvert aujourd’hui (un bras au repos, pas de force) : séance de mobilité plutôt qu’une page vide
-  if (!next.length && !(S.confirm || []).some(id => MS[id] && (fok || !FORCE(id)))) return soupleDay(PS);
+  if (!next.length && !confIds.length) return soupleDay(PS);
   // combo : un seul par jour, en tout début de séance (frais) ; ces jours-là, le travail sur un bras est écourté
   { const u = next.filter(id => /^ul_/.test(id)); if (u.length) next = [u[0]].concat(next.filter(id => !/^ul_/.test(id))); }
   const ulDay = next.some(id => /^ul_/.test(id));
@@ -516,7 +516,7 @@ let plSkip = new Set(), plMiss = {}, plN = 0;
 // tous les prérequis d’une figure, en remontant l’arbre
 const reqsOf = id => { const out = new Set(), go = x => (MS[x] && MS[x].req || []).forEach(r => { if (!out.has(r)) { out.add(r); go(r); } }); go(id); return out; };
 // vérification réussie : ses prérequis déclarés sont confirmés avec elle
-const confirmUp = id => { const R = reqsOf(id); S.confirm = (S.confirm || []).filter(x => x !== id && !R.has(x)); };
+const confirmUp = id => { const R = reqsOf(id); S.confirm = (S.confirm || []).filter(x => x !== id && (SAFE.has(x) || !R.has(x))); };
 function unDeclare(id){ const dep = (x, seen) => (MS[x].req || []).some(r => r === id || (!seen.has(r) && MS[r] && (seen.add(r), dep(r, seen))));
   (S.confirm || []).filter(x => x !== id && MS[x] && dep(x, new Set())).forEach(x => { const s = st(x); s.done = false; s.best = 0; s.b0 = null; }); S.confirm = (S.confirm || []).filter(x => x === id || !(MS[x] && dep(x, new Set()))); }
 function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box = $("plBody"); box.textContent = "";
@@ -525,12 +525,11 @@ function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box =
   const eqr = el("div","chips prow"), E = S.equip || (S.equip = {}); eqr.setAttribute("aria-label","Ton matériel");
   [["band","Élastiques"],["para","Parallettes"],["blocks","Briques de yoga"],["bench","Banc"],["rings","Anneaux"]].forEach(([k, t]) => { const b = el("button","chip" + (E[k] ? " on" : ""), t); b.setAttribute("aria-pressed", !!E[k]);
     b.onclick = () => { E[k] = !E[k]; b.classList.toggle("on", E[k]); b.setAttribute("aria-pressed", E[k]); const cb = $("eq" + k[0].toUpperCase() + k.slice(1)); if (cb) cb.checked = E[k]; save(); }; eqr.append(b); });
-  pf.append(el("div","lab","Ton matériel"), eqr);
   const gr = el("div","chips prow"); gr.setAttribute("aria-label","Ton objectif");
   [["both","Le combo"],["planche","Full planche"],["press","Équilibre en force"],["oahs","Un bras"],["min","Équilibre droit"]].forEach(([g, t]) => { const on = (S.goal || "both") === g, b = el("button","chip" + (on ? " on" : ""), t); b.setAttribute("aria-pressed", on);
     b.onclick = () => { S.goal = g === "both" ? null : g; save(); gr.querySelectorAll(".chip").forEach(c => { const o = c === b; c.classList.toggle("on", o); c.setAttribute("aria-pressed", o); }); const gs = $("goalSel"); if (gs) gs.value = g; }; gr.append(b); });
-  pf.prepend(el("div","lab","Ton objectif"), gr);
-  box.append(el("h2",null,"Avant de te renverser"), el("p",null, SAFE_TXT), el("h2",null,"Toi, en trois touches"), pf, el("p","mut","Ensuite, ce que tu sais déjà faire. L’app vérifiera en séance."), go); $("plDlg").showModal(); }
+  const wrap = el("div"); wrap.append(el("div","lab","Ton objectif"), gr, pf, el("div","lab","Ton matériel"), eqr);   // le profil se redessine seul, sans effacer objectif ni matériel
+  box.append(el("h2",null,"Avant de te renverser"), el("p",null, SAFE_TXT), el("h2",null,"Toi, en quelques touches"), wrap, el("p","mut","Ensuite, ce que tu sais déjà faire. L’app vérifiera en séance."), go); $("plDlg").showModal(); }
 const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
   const id = goalOf().ms.find(x=>!st(x).done && !msLocked(MS[x]) && !eqSkip(x) && !plSkip.has(x) && (plMiss[MS[x].sec] || 0) < 2), box = $("plBody"); box.textContent = "";
