@@ -687,7 +687,7 @@ export function mount(host, opts = {}){
 // ---------- Erreurs de technique : la posture tenue d'une figure, qui se dégrade puis se corrige ----------
 // clé « fx_<erreur>__<figure> » : bras pliés, dos creusé, dos rond, hanches qui tombent, genoux pliés, jambes écartées
 const FX = {
-  bras:  p => ({elbow:[-1.25, p.one ? (p.elbow || [0,0])[1] : -1.25]}),   // bien plié : l'erreur doit se voir en vignette
+  bras:  p => { const up = Math.abs(p.arm[0]) > 2.3, k = up ? -1.7 : -1.25; return {elbow:[k, p.one ? (p.elbow || [0,0])[1] : k]}; },   // bras au-dessus de la tête (équilibres, montées) : pli plus fort, sinon il ne se voit pas de profil   // bien plié : l'erreur doit se voir en vignette
   banane:p => ({arch:(p.arch || 0) - 0.55}),
   rond:  p => ({arch:(p.arch || 0) + 0.45}),
   hanches:p => ({hip:p.hip.map(h => h - 0.55)}),
@@ -701,5 +701,6 @@ export function faultScript(key){
   if (SCRIPTS[key]) return SCRIPTS[key]; const m = /^fx_([a-z]+)__(.+)$/.exec(key || ""); if (!m || !FX[m[1]]) return null;
   const sc = SCRIPTS[m[2]]; if (!sc) return null; const hold = sc.still || sc.s[sc.s.length - 1][0], base = POSES[hold]; if (!base) return null;
   const bad = key + "_p"; POSES[bad] = Object.assign({}, base, FX[m[1]](base));
-  return SCRIPTS[key] = {start:hold, wall:sc.wall, vest:sc.vest, yaw:sc.yaw, cut:true, s:[[hold,0.3,0.7],[bad,0.9,1.3],[hold,0.9,0.5]], still:bad};
+  const yw = sc.yaw != null ? sc.yaw : -1.15;   // vue de face : un coude plié ne se voit pas, on passe de profil
+  return SCRIPTS[key] = {start:hold, wall:sc.wall, vest:sc.vest, yaw:m[1] === "bras" && Math.abs(yw) < 0.8 ? -1.25 : sc.yaw, cut:true, s:[[hold,0.3,0.7],[bad,0.9,1.3],[hold,0.9,0.5]], still:bad};
 }
