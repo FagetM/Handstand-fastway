@@ -413,13 +413,9 @@ function planVis(m, pl, box){ const x = st(m.id);
     tiles.forEach(([a, b]) => { const t = el("div","ptile"); t.append(el("b",null,nbsp(a)), el("span",null,b)); tr.append(t); }); box.append(tr); }
   const key = pl.lines.filter(t => /^(Pourquoi|Ton matériel|Sans parallettes|Souplesse conseillée|La manna se compte|Figure acquise)/.test(t)), rest2 = pl.lines.filter(t => !key.includes(t));
   if (key.length) { const ul = el("ul","plan pkey"); key.forEach(t=>ul.append(el("li",null,t))); box.append(ul); }
+  if (pl.prog && PS[pl.prog[0]]) { const pid = pl.prog[0], st0 = pid === "planche-domination" ? pl.prog[1] : null, stp = st0 != null && PS[pid].steps[st0];
+    const pb = el("button","btn line","Programme associé : " + PS[pid].name + (stp ? ", " + stp.name : "")); pb.onclick = () => { $("qkDlg").close(); openProg(pid, st0); }; box.append(pb); }
   if (rest2.length) { const det = el("details","pdet"), sm = el("summary",null,"Le détail du plan"), ul = el("ul","plan"); rest2.forEach(t=>ul.append(el("li",null,t))); det.append(sm, ul); box.append(det); } }
-const vidKey = (s, v) => s.id + "|" + v[1];
-function openVids(sid){ const s = SEC[sid], box = $("vdBody"); $("vdT").textContent = "Vidéos, " + s.name; box.textContent = "";
-  s.videos.forEach(v=>{ const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vidKey(s,v)];
-    cb.onchange = () => { S.vid[vidKey(s,v)] = cb.checked; save(); render(); };
-    const tx = el("span"); tx.append(el("div",null,v[0]), el("div","orig","Titre d’origine : " + v[1])); l.append(cb, tx); box.append(l); });
-  $("vdDlg").showModal(); }
 const ringSvg = (frac, size, r, w, cls) => { const C = 2*Math.PI*r, c = size/2; return '<svg class="' + (cls || "") + '" viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" fill="none" aria-hidden="true"><circle cx="' + c + '" cy="' + c + '" r="' + r + '" stroke="var(--line)" stroke-width="' + w + '"/>' + (frac > 0 ? '<circle cx="' + c + '" cy="' + c + '" r="' + r + '" stroke="var(--acc)" stroke-width="' + w + '" stroke-linecap="round" transform="rotate(-90 ' + c + ' ' + c + ')" stroke-dasharray="' + (C*Math.min(1,frac)).toFixed(1) + ' ' + C.toFixed(1) + '"/>' : "") + '</svg>'; };
 const BFAM = [["Régularité",["first","st3","st7","st30"]],["Séances et volume",["se10","se50","s100","s1000"]],["Temps en appui et souplesse",["h10","h60","e10"]],["Étages du parcours",null,"sec_"],["Quêtes en cours",null,"goal_"]];
 const badgeReward = id => { const out = []; WARD.forEach(w=>w.items.forEach(it=>{ if (it[2] === "b:" + id) out.push(it[1]); })); if (id.startsWith("goal_")) out.push("Médaille"); return out; };

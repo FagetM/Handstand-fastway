@@ -56,7 +56,6 @@ $("gateForm").onsubmit = async e => {
 
 render();
 // ---------- Conseil du jour (affiché en haut du parcours) ----------
-function curMs(){ return MS[goalOf().ms.find(id=>!reqDone(id) && !msLocked(MS[id]))]; }
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n’est appliquée que si tu l’acceptes, jamais pendant une séance.
 let updating = false, reloaded = false;
