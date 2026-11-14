@@ -80,7 +80,7 @@ const ROUTE = [
   ["Continuer d’apprendre", "DEJEPS pour entraîner, formations avancées de yoga, et toujours des élèves pour t’apprendre."],
 ];
 // ---------- Rendu de l’onglet ----------
-const vForce = () => { const ta = document.querySelector("#voie .vta"); if (ta && !ta.value.trim()) ta.blur(); renderVoie(); };
+const vForce = () => { const ta = document.querySelector("#voie .vta"), keep = ta ? ta.value : ""; if (ta) { ta.value = ""; ta.blur(); } renderVoie(); const nt = document.querySelector("#voie .vta"); if (nt && keep) nt.value = keep; };   // redessine sans perdre la note en cours
 let vpK = 0;
 function renderVoie(){
   const box = $("voie"); if (!box) return;
@@ -119,9 +119,9 @@ function tmOpen(m, on){
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Transmettre"), el("h2",null,m.name)); box.append(hd);
   const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : "Au rang " + RANKS[m.r]), el("p",null, on ? m.act : "Elle s’ouvrira à ce rang. En attendant : " + lc1(m.act))); box.append(blk);
   if (on) { const q = el("p","vq",m.q), ta = el("textarea","vta"); ta.rows = 4; ta.value = done ? done.a : ""; ta.placeholder = "Deux ou trois phrases : ce que tu as fait, ce que tu en retiens."; ta.setAttribute("aria-label", m.q);
-    const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Écris au moins deux phrases : c’est là que tu apprends."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); renderVoie(); toast("Mission « " + m.name + " » faite."); };
+    const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Écris au moins deux phrases : c’est là que tu apprends."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); vForce(); toast("Mission « " + m.name + " » faite."); };
     box.append(q, ta, ok);
-    if (done) { const u = el("button","btn line vre","Retirer"); u.onclick = () => { delete S.tm[m.id]; save(); $("qkDlg").close(); renderVoie(); }; box.append(u); } }
+    if (done) { const u = el("button","btn line vre","Retirer"); u.onclick = () => { delete S.tm[m.id]; save(); $("qkDlg").close(); vForce(); }; box.append(u); } }
   $("qkT").textContent = m.name; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
 }
 // ---------- Lecteur de pratique guidée ----------
