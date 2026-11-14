@@ -2,7 +2,7 @@
 // puis un bilan (records, intention, carnet) avant d’ouvrir le cycle suivant. L’intention du cycle tient en une phrase.
 "use strict";
 const monday = t => { const d = new Date(t); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
-// le cycle part du lundi de la première séance ; sans bilan, il se clôt seul au bout de 5 semaines
+// le cycle part du lundi de la première séance si elle est récente, sinon de cette semaine ; sans bilan, il se clôt seul au bout de 5 semaines
 function cyc(){
   if (!Array.isArray(S.cycles)) delete S.cycles;   // données abîmées : on repart proprement plutôt que de bloquer l’écran
   if (!S.cyc || typeof S.cyc.start !== "number" || !isFinite(S.cyc.start)) { const t0 = S.log.length ? S.log[0].t : Date.now(); S.cyc = {start:monday(Date.now() - t0 < 21 * 864e5 ? t0 : Date.now()), intent:""}; save(); }   // un historique ancien commence son premier cycle cette semaine : ni cycles fantômes, ni bilan d’emblée
