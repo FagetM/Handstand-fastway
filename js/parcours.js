@@ -145,9 +145,9 @@ function openEta(){ const box = $("etaBody"), P = plan(), goal = "ul_full", w0 =
   box.append(el("div","lab","Pour arriver plus vite")); const lv = el("div","etl");
   const lever = (t, d, fn) => { const r = el(fn ? "button" : "div","etr lev"); r.append(el("span","etn", t), el("span","etd", d)); if (fn) r.onclick = fn; lv.append(r); };
   const k = keyFig(P, [goal]); if (k) lever("Figure clé : " + MS[k].name, "c’est elle qui fixe la date", () => { $("etaDlg").close(); goHere(k); });
-  [45, 60].filter(v => v > mins).forEach(v => { const w = plan({mins:v}).fin[goal]; if (w0 - w >= 4) lever("Séances de " + v + " min", gainTxt(w0 - w) + " de gagné, " + dateTxt(w), () => { S.mins = v; if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); openEta(); toast("Séances réglées sur " + v + " min."); }); });
+  [45, 60].filter(v => v > mins).forEach(v => { const w = plan({mins:v}).fin[goal]; if (w0 - w >= 4) lever("Séances de " + v + " min", gainTxt(w0 - w) + " gagnés, " + dateTxt(w), () => { S.mins = v; if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); openEta(); toast("Séances réglées sur " + v + " min."); }); });
   if (mins > 30) lever("Tu es à " + mins + " min", "planche et montées avancent ensemble");
-  if (td != null && td < 18) { const w = plan({days:20}).fin[goal]; if (w0 - w >= 4) lever("5 jours par semaine (tu es à " + td + " jours sur 28)", durTxt(w0 - w) + " de gagné, " + dateTxt(w)); }
+  if (td != null && td < 18) { const w = plan({days:20}).fin[goal]; if (w0 - w >= 4) lever("5 jours par semaine (tu es à " + td + " jours sur 28)", durTxt(w0 - w) + " gagnés, " + dateTxt(w)); }
   box.append(lv, el("p","mut etnote","Estimation prudente : elle part de repères habituels, puis de tes propres mesures dès que tu en as. Elle se recalcule à chaque séance. Pour les tendons, la planche reste à 2 jours par semaine.")); }
 const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
 // ---------- Le parcours : un seul chemin qui serpente, figure après figure ; il se divise en trois voies au niveau difficile.

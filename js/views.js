@@ -171,7 +171,7 @@ function render(){
     { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : arrête-toi et demande l’avis d’un professionnel de santé avant de reprendre.")); }
     // Maîtrise : on choisit sa séance de postures tenues (poignets, compression, ligne, contrôle, récup)
     if (P.zen) { const zw = el("div","srcs zchips"); ZEN.forEach((z, i) => { const b = el("button","src" + (pp().step === i ? " on" : ""), z.name); b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); });
-      const z = ZEN[pp().step] || ZEN[0]; nc.append(zw, el("div","zt2", z.when + ", " + zenTxt(z)));
+      const z = ZEN[pp().step] || ZEN[0]; nc.append(zw, el("div","zt2", z.when + ". " + zenTxt(z)));
       if (forceDays().has((() => { const x = new Date(); x.setDate(x.getDate() - 1); return dayKey(x); })()) && ["poignets","controle"].includes((ZEN[pp().step] || {}).id)) nc.append(el("p","zt2","Hier : force. Ligne ou Compression ménagent mieux les poignets aujourd’hui."));
     }
 
@@ -212,7 +212,7 @@ function render(){
     const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
     const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
     const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!reqDone(id) && !msLocked(MS[id])) || gms.find(id=>!reqDone(id)); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? ", " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : "Un bras, full planche et stalder : tout est validé."));
-    { const P = plan(), gw = P.fin.ul_full; if (gw) { const eb = el("button","etab"); eb.append(el("span",null,"Combo ultime : "), el("b",null, dateTxt(gw)), el("span","etm",", mes dates")); eb.onclick = () => { openEta(); $("etaDlg").showModal(); }; g.append(eb); } }
+    { const P = plan(), gw = P.fin.ul_full; if (gw) { const eb = el("button","etab"); eb.append(el("span",null,"Combo ultime : "), el("b",null, dateTxt(gw)), el("span",null,", "), el("span","etm","mes dates")); eb.onclick = () => { openEta(); $("etaDlg").showModal(); }; g.append(eb); } }
     c.append(fins, g);
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }

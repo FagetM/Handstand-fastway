@@ -145,8 +145,8 @@ const doneIn = ids => ids.filter(id=>reqDone(id)).length;   // les étapes à l�
 const mins = s => Math.floor(s/60);
 const BADGES = [
   {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},
-  {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou détente. Deux jours de repos de suite ne cassent rien.", max:3, cur:c=>c.streak},
-  {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou détente, repos permis entre deux.", max:7, cur:c=>c.streak},
+  {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou postures. Deux jours de repos de suite ne cassent rien.", max:3, cur:c=>c.streak},
+  {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou postures, repos permis entre deux.", max:7, cur:c=>c.streak},
   {id:"st30", g:"30 j", name:"Trente jours fidèles", desc:"Un mois à bouger, repos compris.", max:30, cur:c=>c.streak},
   {id:"st60", g:"60 j", name:"Deux mois fidèles", desc:"Deux mois à bouger, repos compris.", max:60, cur:c=>c.streak},
   {id:"st100", g:"100 j", name:"Cent jours fidèles", desc:"Cent jours à bouger, repos compris.", max:100, cur:c=>c.streak},
