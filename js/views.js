@@ -191,7 +191,7 @@ function render(){
       nc.append(list);
       // gilet lesté : s’il n’est pas là aujourd’hui, un toucher et les exercices lestés passent en version lente sans charge
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
-        v.append(el("b",null, noVest() ? "Sans gilet aujourd’hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Toucher si tu l’as finalement." : "Pas de gilet sous la main ? Toucher pour la version sans charge."));
+        v.append(el("b",null, noVest() ? "Sans gilet aujourd’hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Touche si tu l’as finalement." : "Pas de gilet sous la main ? Touche pour la version sans charge."));
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
       const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Séance faite. Voir mon parcours" : dn ? "Reprendre (" + dn + " / " + tot + ")" : (P.zen ? "Commencer" : "Démarrer") + " (" + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min)"); 
       bt.onclick = () => dn >= tot ? showTab("path") : startGuided(); nc.append(bt);
