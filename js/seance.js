@@ -556,9 +556,10 @@ function plStep(){
 function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
   { const d0 = new Date(); d0.setHours(0, 0, 0, 0); const rs = ids.map(id => { const c = capEst(id, d0.getTime()), L = logsOf(id).filter(l => l.t >= d0.getTime()); if (!c || !c.v || !L.length) return null;
-      const T = L.filter(l => !(l.g && !l.mx && l.v >= l.g * 0.95)); return T.length ? Math.max(...T.map(l => l.v)) / c.v : null; }).filter(r => r != null);   /* seules les vraies mesures (tentatives, séries ratées) disent la forme : une série arrêtée à sa cible ne dit rien */
-    const tot = ids.reduce((n, id) => n + sessRes[id].ok + sessRes[id].miss, 0), mi = ids.reduce((n, id) => n + sessRes[id].miss, 0);
-    if (rs.length || tot) { const pf = S.perf || (S.perf = []); if (pf.length && dayKey(pf[pf.length - 1].t) === dayKey(Date.now())) pf.pop(); pf.push({t:Date.now(), r:rs.length ? Math.round(rs.reduce((a, b) => a + b, 0) / rs.length * 100) / 100 : 1, miss:tot ? Math.round(mi / tot * 100) / 100 : 0}); if (S.perf.length > 60) S.perf = S.perf.slice(-60); } }
+      const T = L.filter(l => !(l.g && !l.mx && l.v >= l.g * 0.95)); return T.length ? Math.max(...T.map(l => l.v)) / c.v : null;   /* la forme se lit sur les vraies limites (tentatives, séries ratées) ; la réserve a son propre signal */ }).filter(r => r != null);   /* seules les vraies mesures (tentatives, séries ratées) disent la forme : une série arrêtée à sa cible ne dit rien */
+    const tot = ids.reduce((n, id) => n + sessRes[id].ok + sessRes[id].miss, 0), mi = ids.reduce((n, id) => n + sessRes[id].miss, 0),
+      RR = S.log.filter(l => l.t >= d0.getTime() && l.rir != null).map(l => l.rir), res = RR.length ? Math.round(RR.reduce((a, b) => a + b, 0) / RR.length * 100) / 100 : undefined;   /* réserve moyenne du jour */
+    if (rs.length || tot) { const pf = S.perf || (S.perf = []); if (pf.length && dayKey(pf[pf.length - 1].t) === dayKey(Date.now())) pf.pop(); pf.push({t:Date.now(), r:rs.length ? Math.round(rs.reduce((a, b) => a + b, 0) / rs.length * 100) / 100 : 1, miss:tot ? Math.round(mi / tot * 100) / 100 : 0, res}); if (S.perf.length > 60) S.perf = S.perf.slice(-60); } }
   const light = deloadWeek() || moodToday() === "fatigue" || painRecent();
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * (profHeavy() ? 1.03 : 1.05) : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
@@ -604,7 +605,7 @@ function nextSet(){
   else for (let b = 0; b < B.length; b++) for (let s = 0; s < B[b].sets.length; s++) if (vals[b + "-" + s] == null) return [b, s];
   return null;
 }
-function openSet(bi, si){
+function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
   sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdUndo").hidden = true; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === bi && ub.p === P.id + "|" + dayKey(nowS())); } oopsSync(); $("sdNote").hidden = true;
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
@@ -676,6 +677,12 @@ function saveFixed(v){
   if (nx && day.circuit && day.circuit.rest && nx[1] !== si) { startRest(day.circuit, nx, "Tour " + (si+1) + "/" + b.sets.length + " terminé"); return; }
   if (nx) openSet(nx[0], nx[1]); else closeEnd();
 }
+// la réserve : ce qu’il restait après une série de travail réussie (rien, un peu, beaucoup) ; la micro-intelligence s’en sert
+function resAsk(){ const box = $("sdRes"); if (!box) return; box.textContent = ""; const l = S.log[S.log.length - 1];
+  if (!l || !l.m || !l.g || l.mx || typeof l.v !== "number" || l.v < l.g * 0.95 || Date.now() - l.t > 120e3) { box.hidden = true; return; }
+  const row = el("div","chips"); [[0,"Rien"],[1,"Un peu"],[2,"Beaucoup"]].forEach(([k, t]) => { const b = el("button","chip" + (l.rir === k ? " on" : ""), t); b.setAttribute("aria-pressed", l.rir === k);
+    b.onclick = () => { l.rir = k; save(); row.querySelectorAll(".chip").forEach(c => { const o = c === b; c.classList.toggle("on", o); c.setAttribute("aria-pressed", o); }); }; row.append(b); });
+  box.append(el("div","mut","Il te restait ?"), row); box.hidden = false; }
 function startRest(r, nx, title){
   let end = Date.now() + r.rest*1000, done = false; const ck = $("sdClock");
   sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true; $("sdUndo").hidden = !undoList().length; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === sd.bi); } oopsSync();
@@ -684,6 +691,7 @@ function startRest(r, nx, title){
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance"; $("sdGo").disabled = true; setTimeout(() => { $("sdGo").disabled = false; }, 600);   /* un double appui sur « Enregistrer » ne saute pas le repos */
   const nb = nx && pDay(selDay).blocks[nx[0]];
   { const art = $("sdArt"); art.textContent = ""; if (nb) { if (nb.ms && MS[nb.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(nb.ms); sp.dataset.anim = nb.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(nb)) art.append(drSp(nb, 110)); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
+  resAsk();
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C’était la dernière série du jour.";
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C’était la dernière série.");
   let warned = r.rest < 25;

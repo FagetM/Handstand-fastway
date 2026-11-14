@@ -2,6 +2,8 @@
 // Comme un coach qui note tout dans son carnet : ta capacité réelle par figure, ta forme du jour, la pente de ta progression.
 // Tout reste sur le téléphone ; chaque décision garde sa raison, en une ligne.
 
+// réserve déclarée après une série arrêtée à sa cible : rien = la cible était ton maximum du jour, un peu +6 %, beaucoup +20 % ; sans réponse, +10 %
+const resK = l => l.rir === 0 ? 1 : l.rir === 1 ? 1.06 : l.rir === 2 ? 1.2 : 1.1;
 // une entrée du journal → la figure concernée (en séance, les séries sont notées « pg:<nom> », « <nom>, test »…)
 // les nouvelles entrées portent l’identifiant (m) ; pour les anciennes, le nom — et quand deux figures partagent un nom
 // (« Équilibre droit » 40 s et 60 s), la première encore à travailler
@@ -15,7 +17,7 @@ const logsOf = (id, until) => { const L = logIdx()[id] || []; return until ? L.f
 // capacité estimée : la meilleure valeur récente de chaque jour, un peu dévaluée avec l’âge ; une série de travail arrêtée
 // à sa cible ne dit que « au moins la cible » (+10 %) ; après une coupure, la capacité redescend (environ 1,5 % par jour au-delà d’une semaine)
 function capEst(id, until){ const now = until || Date.now(), L = logsOf(id, until).filter(l => now - l.t < 42 * 864e5); if (!L.length) return null;
-  const byDay = {}; L.forEach(l => { const d = dayKey(l.t), capped = l.g && !l.mx && l.v >= l.g * 0.95, v = capped ? l.v * 1.1 : l.v; if (!byDay[d] || v > byDay[d].v) byDay[d] = {v, t:l.t, c:capped}; });
+  const byDay = {}; L.forEach(l => { const d = dayKey(l.t), capped = l.g && !l.mx && l.v >= l.g * 0.95, v = capped ? l.v * resK(l) : l.v; if (!byDay[d] || v > byDay[d].v) byDay[d] = {v, t:l.t, c:capped}; });
   const days = Object.values(byDay).sort((a, b) => a.t - b.t), last = days[days.length - 1], gap = (now - last.t) / 864e5;
   const dv = days.slice(-3).map(d => d.v * (1 - Math.min(0.15, (now - d.t) / 864e5 * 0.005))).sort((a, b) => a - b);
   const best = dv.length >= 3 ? dv[1] : dv[dv.length - 1];   /* la médiane des 3 dernières séances : robuste au hasard, et une baisse se voit en 2 séances */
@@ -32,7 +34,9 @@ function readiness(){ let r = 1; const why = [], now = Date.now(), mood = typeof
   if (gap > 10) { r -= 0.12; why.push("reprise après " + Math.round(gap) + " jours"); }
   const ec = (S.ecl || []).filter(e => now - e.t < 36 * 3600e3).slice(-1)[0]; if (ec && Math.max(ec.poignet || 0, ec.coude || 0, ec.epaule || 0, ec.dos || 0) >= 3) { r -= 0.1; why.push("une gêne notée"); }
   const P = (S.perf || []).filter(p => now - p.t < 10 * 864e5).slice(-2); if (P.length >= 1) { const a = P.reduce((s, p) => s + p.r, 0) / P.length, lo = Math.min(...P.map(p => p.r)), ms = Math.max(...P.map(p => p.miss || 0));
-    if (a < 0.9 || lo < 0.82) { r -= 0.15; why.push("tes dernières séances sous ta capacité"); } else if (ms >= 0.4) { r -= 0.12; why.push("beaucoup de séries ratées la dernière fois"); } }
+    const H = (S.perf || []).filter(p => now - p.t < 28 * 864e5 && p.res != null), lastR = H.length ? H[H.length - 1].res : null, usual = H.length >= 4 ? H.slice(0, -1).reduce((s, p) => s + p.res, 0) / (H.length - 1) : null;
+    if (lastR != null && usual != null && usual - lastR >= 0.4 && now - H[H.length - 1].t < 4 * 864e5) { r -= 0.2; why.push("moins de réserve que d’habitude"); }   /* « rien » là où tu disais « un peu » : la fatigue avant l’échec */
+    else if (a < 0.9 || lo < 0.82) { r -= 0.15; why.push("tes dernières séances sous ta capacité"); } else if (ms >= 0.4) { r -= 0.15; why.push("beaucoup de séries ratées la dernière fois"); } }
   r = Math.max(0.6, Math.min(1.05, Math.round(r * 100) / 100)); return {r, why}; }
 const readyMemo = () => { const k = (window._sv || 0) + "|" + dayKey(Date.now()); if (readyMemo.k !== k) { readyMemo.k = k; readyMemo.v = readiness(); } return readyMemo.v; };
 
