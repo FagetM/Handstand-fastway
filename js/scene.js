@@ -22,6 +22,7 @@ function scTree(x, s, far){   // arbre : tronc effilé, couronne de lavis verts 
     + '<path d="M0-24Q-7-30-12-38M1-28Q7-33 12-40" fill="none" stroke="var(--wc-wood)" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>'
     + wash2(0, -52, 24, 20, g, .5) + wash2(-15, -42, 15, 13, g2, .45) + wash2(15, -42, 16, 13, g, .45) + wash2(2, -62, 13, 11, g2, .35) + '</g>';
 }
+const scMoon = () => wash("M334 14A10 10 0 1 0 334 34A13 13 0 0 1 334 14Z", "var(--wc-moon)", .85);   // croissant d’un seul trait de lavis
 function scene(i, fresh, sfx){
   const u = sfx || "t";   // identifiants de filtre propres à chaque décor (Aujourd’hui et Profil coexistent)
   scSeed = 7;   // mêmes taches à chaque affichage
@@ -35,9 +36,9 @@ function scene(i, fresh, sfx){
   // ciel : quelques lavis très dilués
   s += '<g filter="url(#wcs-' + u + ')">' + wash(blob(90, 26, 120, 30, 11), "var(--wc-sky)", .45) + wash(blob(280, 44, 130, 26, 11), "var(--wc-sky2)", .4) + (i >= 10 ? wash(blob(180, 30, 220, 40, 11), "var(--wc-night)", .5) : "") + '</g>';
   const tod = document.documentElement.dataset.tod || "jour";
-  if (i < 11) s += tod === "nuit" || i >= 10 ? wash(blob(300, 26, 9, 9, 8), "var(--raise)", .9) + '<circle cx="304" cy="23" r="7.5" fill="var(--scsky)"/>'
+  if (i < 11) s += tod === "nuit" || i >= 10 ? scMoon()
     : wash(blob(tod === "matin" ? 60 : tod === "soir" ? 304 : 290, tod === "jour" ? 28 : 60, 14, 14, 12, .06), "var(--sun)", .55) + wash(blob(tod === "matin" ? 61 : tod === "soir" ? 305 : 291, tod === "jour" ? 27 : 59, 10, 10, 12, .06), "var(--sun)", .45);
-  s += L(11, wash(blob(180, 36, 190, 12, 13), "var(--wc-sky2)", .45) + wash(blob(322, 24, 9, 9, 8), "var(--raise)", .9));
+  s += L(11, wash(blob(180, 36, 190, 12, 13), "var(--wc-sky2)", .45) + scMoon());
   s += L(9, wash(blob(70, 30, 30, 8), "var(--wc-cloud)", .8) + wash(blob(84, 25, 16, 7), "var(--wc-cloud)", .7) + wash(blob(270, 22, 28, 7), "var(--wc-cloud)", .75));
   s += L(8, wash("M-10 94L48 62Q60 54 72 64L104 82L160 44Q170 38 180 46L236 86L280 62Q292 56 304 64L370 88V110H-10Z", "var(--wc-hill)", .55) + wash("M0 96L70 76L130 90L200 70L270 92L360 80V100H0Z", "var(--wc-hill)", .35));
   s += L(7, scTree(80, .55, 1) + scTree(258, .62, 1) + scTree(304, .46, 1));
