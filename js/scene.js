@@ -71,8 +71,8 @@ function renderScene(Z){
   const prev = S.seenRank == null ? i : RANKS.indexOf(S.seenRank), seen = $("v-today").classList.contains("on") && !document.querySelector("dialog[open]"), up = prev >= 0 && i > prev && seen;
   if (up) { S.seenRank = Z.rank; S.rankUpT = Date.now(); save(); } else if (S.seenRank == null) { S.seenRank = Z.rank; save(); }
   // le décor (filtres coûteux) n’est redessiné que s’il change : rang, moment de la journée, thème, ou un rang qui pousse
-  const key = [i, document.documentElement.dataset.tod, document.documentElement.dataset.theme || "", up].join("|");
-  if (up || host.dataset.k !== key) { host.innerHTML = scene(i, up); host.dataset.k = up ? "" : key; }
+  const key = [i, document.documentElement.dataset.tod, document.documentElement.dataset.theme || ""].join("|");
+  if (up || host.dataset.k !== key) { host.innerHTML = scene(i, up); host.dataset.k = key; }
   const cap = $("sceneCap"); cap.textContent = "";
   if (S.rankUpT && Date.now() - S.rankUpT < 864e5 && S.seenRank === Z.rank) cap.append(el("b", null, "Nouveau rang : " + Z.rank), el("span", "mut", SC_NEW[i]));
   else cap.append(el("span", "mut", Z.rank + ", niveau " + Z.lvl + (i < RANKS.length - 1 ? ". Prochain rang : " + RANKS[i + 1] + "." : ".")));

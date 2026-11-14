@@ -810,3 +810,21 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .ecf{display:flex;flex-direction:column;gap:12px;margin:8px 0 16px;text-align:left}.ecr{display:grid;grid-template-columns:96px 1fr 28px;align-items:center;gap:8px;font-size:15px}.ecr input{width:100%;accent-color:var(--acc)}.ecr b{text-align:right}
 .mood button{min-width:0}
 .vpstage[hidden],.vpleft[hidden]{display:none}
+/* Aujourd’hui allégé : la pensée en une ligne, le cycle en une ligne, Démarrer toujours à portée */
+.pjour{display:block;margin:0 0 16px;padding:0 4px;background:none;box-shadow:none;border-radius:0;text-align:left}
+.pjour .lab{display:none}.pjour q{font:italic 500 15px/1.45 var(--disp)}.pjour .mut{display:none}
+.smlab{margin-top:8px;color:var(--goldtxt)!important}
+.next .btn.big{position:sticky;bottom:calc(76px + env(safe-area-inset-bottom));z-index:3}
+.cyline{display:flex;flex-direction:column;gap:2px;width:100%;margin:0 0 16px;padding:0 4px;text-align:left;font-size:14px;color:var(--mut)}
+.cyline .cyint{font-style:italic;color:var(--txt)}
+.cycard{margin:0 0 16px;padding:16px;border-radius:16px;background:color-mix(in srgb,var(--tierc) 12%,var(--raise));display:flex;flex-direction:column;gap:8px}
+.cycard b{font:700 17px/1.3 var(--disp)}.cycard .btn{margin-top:4px}
+.cytest{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);text-align:left;font-size:15px}
+.cyin{width:100%;min-height:44px;margin-top:12px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background-color:var(--raise);font-size:15px}
+.cysug{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 16px}
+.cyrec{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:15px}
+.recrow{display:grid;grid-template-columns:1fr 120px auto;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.recrow .recn{min-width:0}.recrow b{font-size:14px;white-space:nowrap}
+.smlab{display:flex;align-items:center;gap:4px}.smlab svg{flex:none}
+.cyrec{align-items:baseline}.cyrec b,.cytest .mut{white-space:nowrap}
+.cyline{margin-bottom:12px}

@@ -33,8 +33,8 @@ const PENSEES = [
   ["Le karaté commence et finit par le salut.", "Gichin Funakoshi, vingt préceptes, 1", "Ouvre et ferme ta séance par un instant de gratitude."],
   ["La forme d’abord, le volume ensuite.", "adage des salles de gym", "Une belle répétition vaut mieux que cinq tordues."],
   ["Le jour sans entraînement fait partie de l’entraînement.", "adage des entraîneurs", "Le repos est un choix actif, pas une faute."],
-  ["Ne pas nuire.", "Patañjali, Yoga Sūtra 2.35 (ahiṃsā)", "Ni aux autres, ni à toi : une séance qui abîme n’est pas une bonne séance."],
-  ["Être vrai.", "Patañjali, Yoga Sūtra 2.36 (satya)", "Dis honnêtement comment tu vas, à ton carnet comme à ton entourage."],
+  ["Ne pas nuire.", "d’après Patañjali, Yoga Sūtra 2.30 (ahiṃsā)", "Ni aux autres, ni à toi : une séance qui abîme n’est pas une bonne séance."],
+  ["Être vrai.", "d’après Patañjali, Yoga Sūtra 2.30 (satya)", "Dis honnêtement comment tu vas, à ton carnet comme à ton entourage."],
   ["J’inspire, je calme mon corps. J’expire, je souris.", "Thich Nhat Hanh, La paix, un art, une pratique (1991)", "À essayer aussi dans une file d’attente ou avant une conversation difficile."],
   ["Le corps ne ment pas.", "adage des danseurs, souvent prêté à Martha Graham", "Ce que tu ressens compte plus que ce que tu voulais ressentir."],
 ];
@@ -114,7 +114,7 @@ function renderVoie(){
   { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Un jour, enseigner le yoga et la gym. Les missions s’ouvrent avec ton rang : " + dn + " sur " + MISSIONS.length + " faites."));
     b.append(el("p","vlaw","En France, être payé pour enseigner la gym ou l’acrobatie demande un diplôme reconnu (BPJEPS, CQP…) et la carte professionnelle d’éducateur sportif. Le yoga n’a pas de diplôme d’État."));
     let lkN = 0;
-    MISSIONS.forEach(m => { const need = (m.needs || []).filter(n => !(S.tm || {})[n]), on = ri >= m.r && !need.length, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
+    MISSIONS.slice().sort((a, b) => a.r - b.r).forEach(m => { const need = (m.needs || []).filter(n => !(S.tm || {})[n]), on = ri >= m.r && !need.length, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
       const x = el("button","vmis" + (done ? " done" : on ? "" : " lk"));
       x.append(el("b",null,m.name), el("span","mut", done ? "Faite" : on ? "Ouverte" : ri >= m.r ? "Après « " + MISSIONS.find(o => o.id === need[0]).name + " »" : "Au rang " + RANKS[m.r])); x.onclick = () => tmOpen(m, on); b.append(x); });
     if (lkN > 2) b.append(el("p","mut", (lkN - 2) + " autres missions t’attendent plus loin."));
@@ -126,7 +126,8 @@ function renderVoie(){
 function tmOpen(m, on){
   const box = $("qkBody"), done = (S.tm || {})[m.id]; box.textContent = "";
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Transmettre"), el("h2",null,m.name)); box.append(hd);
-  const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : "Au rang " + RANKS[m.r]), el("p",null, on ? m.act : "Elle s’ouvrira à ce rang. En attendant : " + lc1(m.act))); box.append(blk);
+  const ri = Math.max(0, RANKS.indexOf(stats().rank)), need = (m.needs || []).filter(n => !(S.tm || {})[n]).map(n => "« " + MISSIONS.find(o => o.id === n).name + " »");
+  const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : ri >= m.r && need.length ? "Après " + need.join(" et ") : "Au rang " + RANKS[m.r]), el("p",null, on ? m.act : (ri >= m.r && need.length ? "Elle s’ouvrira quand ces missions seront faites. " : "Elle s’ouvrira à ce rang. ") + "En attendant : " + lc1(m.act))); box.append(blk);
   { const le = tmLecon(m); if (le) box.append(le); }
   if (on) { const q = el("p","vq",m.q), ta = el("textarea","vta"); ta.rows = 4; ta.value = done ? done.a : ""; ta.placeholder = "Deux ou trois phrases : ce que tu as fait, ce que tu en retiens."; ta.setAttribute("aria-label", m.q);
     const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Écris au moins deux phrases : c’est là que tu apprends."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); vForce(); toast("Mission « " + m.name + " » faite."); };

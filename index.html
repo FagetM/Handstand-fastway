@@ -34,6 +34,7 @@
     <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
     <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l’app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
     <figure class="scwrap" aria-live="polite"><div id="scene"></div><figcaption id="sceneCap"></figcaption></figure>
+    <div id="cycle"></div>
     <div class="ecoute" id="ecoute" hidden><div class="grow"><b>Écoute après la séance</b><span class="mut">4 minutes allongé : une note pour chaque articulation, un mot pour la séance.</span></div><button class="btn" id="ecGo">Commencer</button><button class="vdel" id="ecNo">Plus tard</button></div>
     <button class="sommet" id="sommet" hidden></button>
     <button class="pjour" id="pJour"></button>
@@ -72,6 +73,7 @@
         <div class="tile"><b class="disp" id="stDone">0</b><span>figures validées</span></div>
       </div>
     </div>
+    <div class="block" id="records"></div>
     <button class="btn line" id="histOpen" style="margin-top:16px;width:100%">Historique des séances</button>
     <div id="quest"></div>
     <h2 class="sect">Réglages</h2>
@@ -275,6 +277,7 @@
 <script src="js/parcours.js" defer></script>
 <script src="js/sprites.js" defer></script>
 <script src="js/scene.js" defer></script>
+<script src="js/cycle.js" defer></script>
 <script src="js/views.js" defer></script>
 <script src="js/voice.js" defer></script>
 <script src="js/seance.js" defer></script>

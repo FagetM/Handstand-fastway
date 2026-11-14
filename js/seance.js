@@ -134,7 +134,7 @@ function dlState(){ const now = Date.now(), key = dayKey(now) + "|" + S.log.leng
     let n = 0; days.forEach((t, q) => { n = q && t - days[q - 1] >= 7 * 864e5 ? 1 : n + 1; }); if (days.length && now - days[days.length - 1] >= 7 * 864e5) n = 0;
     if (n >= 16 && now - D.end >= 28 * 864e5) { D.start = now; r = "on"; } else if (D.end > S.t0 && now - D.end < 7 * 864e5) r = "after"; }
   dlMemo = [key, r]; return r; }
-const afterDeload = () => dlState() === "after", deloadWeek = () => dlState() === "on";
+const afterDeload = () => (S.cycles || []).length > 0 && cycDay() < 7, deloadWeek = () => cycLight();   // la semaine légère est la 4e du cycle (cycle.js)
 // retour après 7 jours sans séance : une séance de reprise à 70 %
 function comeback(){ const today = dayKey(Date.now()); for (let q = S.log.length - 1; q >= 0; q--) if (dayKey(S.log[q].t) !== today) return Date.now() - S.log[q].t >= 7 * 864e5; return false; }
 // durée estimée d’une séance (s) : travail + repos de chaque série
@@ -497,7 +497,7 @@ function feedback(kind){
   if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
   sessRes = {}; S.ecoute = Date.now(); save(); $("fbDlg").close(); render();   // juste après : l’invitation à écouter le corps, sur Aujourd’hui
   if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (window.A3 || typeof A3 !== "undefined") { try { A3.celebrate(); } catch(e){} } setTimeout(() => { toast("« " + MS[id].name + " » validée."); quick(id); }, 900); return; }
-  toast(kind === "easy" ? "Noté : la charge monte déjà avec tes séries réussies." : kind === "hard" ? "Noté : on réduit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().again ? "7 jours" : "3 jours") + " sans travail à un bras, ni planche, ni montées. La reprise se fera par paliers." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : consulte un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
+  toast(kind === "easy" ? "Noté : la charge monte déjà avec tes séries réussies." : kind === "hard" ? "Noté : on réduit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().days || 7) + " jours" + " sans travail à un bras, ni planche, ni montées. La reprise se fera par paliers." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : consulte un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
 }
 // Séance guidée : un seul toucher, puis l’app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas

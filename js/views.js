@@ -129,13 +129,14 @@ function render(){
   lastZ = Z; $("fitOpen").classList.toggle("new", !!S.newFit);
   renderScene(Z); $("lvRank").textContent = Z.rank;
   { const [c, src] = penseeDuJour(0), pj = $("pJour"); pj.textContent = ""; pj.append(el("span","lab","Pensée du jour"), el("q",null,c), el("span","mut",src)); pj.onclick = () => { vpK = 0; showTab("voie"); vForce(); window.scrollTo(0, 0); }; }
-  renderSommet(); renderVoie(); $("ecoute").hidden = !(S.ecoute && Date.now() - S.ecoute < 3 * 3600e3); $("lvNum").textContent = "Niveau " + Z.lvl;
+  renderCycle(); renderRecords(); renderSommet(); renderVoie(); $("ecoute").hidden = !(S.ecoute && Date.now() - S.ecoute < 3 * 3600e3); $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d’expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
   if (seen){ const nbs = Z.badges.filter(b=>b.ok && !seen.b.includes(b.id)), up = Z.lvl > seen.lvl;
     // tout ce qui vient d’être gagné, d’un coup : badges, niveau, et les tenues qui vont avec
     const gifts = nbs.flatMap(b => badgeReward(b.id)).concat(up ? WARD.flatMap(w => w.items.filter(it => typeof it[2] === "number" && it[2] > seen.lvl && it[2] <= Z.lvl).map(it => it[1])) : []);
-    const parts = []; if (nbs.length) parts.push((nbs.length > 1 ? "Badges : " : "Badge : ") + nbs.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + ", " + Z.rank);
+    const nbsT = nbs.filter(b => !(/^sec_/.test(b.id) && CHESTS[b.id.slice(4)]));   // l’étage terminé se fête une seule fois : au coffre, badge compris
+    const parts = []; if (nbsT.length) parts.push((nbsT.length > 1 ? "Badges : " : "Badge : ") + nbsT.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + ", " + Z.rank);
     if (parts.length) { toast(parts.join(". ") + (gifts.length ? ". Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
   { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
@@ -197,7 +198,7 @@ function render(){
         v.append(el("b",null, noVest() ? "Sans gilet aujourd’hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Touche si tu l’as finalement." : "Pas de gilet sous la main ? Touche pour la version sans charge."));
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
       const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Séance faite. Voir mon parcours" : dn ? "Reprendre (" + dn + " / " + tot + ")" : "Démarrer" + " (" + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min)"); 
-      bt.onclick = () => dn >= tot ? showTab("path") : startGuided(); nc.append(bt);
+      bt.onclick = () => { if (dn >= tot) { showTab("path"); return; } startGuided(); const it = (S.cyc || {}).intent; if (it && !dn) setTimeout(() => toast("Ton intention : " + it), 600); }; nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active, 8 min"), el("span",null,"Mobilité après l’effort.")); z.onclick = () => openZen("recup"); nc.append(z); }
       if (dn >= tot) nc.append(el("div","tmeta", daySummary()));
       // effacer le dernier enregistrement du jour (une erreur de saisie, une série notée deux fois)
@@ -452,7 +453,7 @@ function chestScene(sid, locked){ const C = CHESTS[sid]; if (!C) return; const [
   $("chestSec").textContent = "Coffre, " + (SEC[sid] ? SEC[sid].name : ""); $("chestName").textContent = name;
   const worn = fit()[slot] === id, w = $("chestWear");
   if (locked) { const cm = SEC[sid] ? SEC[sid].ms.filter(m => !m.alt) : [], left = cm.filter(m => !reqDone(m.id)); $("chestTxt").textContent = left.length ? "Encore " + left.length + (left.length > 1 ? " figures" : " figure") + " de l’étage : " + left.slice(0, 3).map(m => m.name).join(", ") + (left.length > 3 ? "…" : "") + "." : ""; w.textContent = "Essayer dans le vestiaire"; w.onclick = () => { $("chestDlg").close(); renderFit({f:Object.assign(fit(), {[slot]:id}), lab:"Aperçu : " + name + ", coffre « " + SEC[sid].name + " »"}); $("fitDlg").showModal(); }; }
-  else { $("chestTxt").textContent = worn ? "Tu la portes déjà." : "Nouveau dans ton vestiaire."; w.textContent = worn ? "Fermer" : "Enfiler"; w.onclick = () => { if (!worn) { S.fit = Object.assign(fit(), {[slot]:id}); delete S.newFit; save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); A3.celebrate(); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); toast(name + " : porté."); render(); } $("chestDlg").close(); }; }
+  else { $("chestTxt").textContent = (SEC[sid] ? "Étage terminé : badge « " + SEC[sid].name + " » gagné. " : "") + (worn ? "Tu la portes déjà." : "Nouveau dans ton vestiaire."); w.textContent = worn ? "Fermer" : "Enfiler"; w.onclick = () => { if (!worn) { S.fit = Object.assign(fit(), {[slot]:id}); delete S.newFit; save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); A3.celebrate(); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); toast(name + " : porté."); render(); } $("chestDlg").close(); }; }
   if (!$("chestDlg").open) { $("chestDlg").showModal(); w.focus({preventScroll:true}); w.blur(); }
   if (locked) { sc.classList.add("go"); sc.querySelector(".lid").style.animation = "none"; sc.querySelector(".rays").style.display = "none"; sc.querySelector(".gift").style.cssText = "opacity:.35;transform:none;filter:grayscale(1)"; return; }   // verrouillé : il tremble, sans s’ouvrir
   requestAnimationFrame(() => sc.classList.add("go")); setTimeout(() => { if (typeof beep === "function") { beep(660, 120); setTimeout(() => beep(990, 260), 140); } }, 1000); }

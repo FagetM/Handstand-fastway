@@ -18,8 +18,8 @@ $("theme").onchange = e => { S.theme = e.target.value; save(); location.reload()
 $("exp").onclick = () => { let pr = null; try { pr = JSON.parse(localStorage.getItem("hs-fastway-progs")); } catch(e){} $("io").value = JSON.stringify(pr ? Object.assign({}, S, {_progs:pr}) : S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
   try { const d = JSON.parse($("io").value); if (!d || !d.ms || typeof d.ms !== "object" || Array.isArray(d.ms) || !Array.isArray(d.log)) throw 0;
-    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { const pr = d._progs; delete d._progs; ["jr"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["cours"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["tm","sq"].forEach(k => { if (d[k] && (typeof d[k] !== "object" || Array.isArray(d[k]))) delete d[k]; });
-      S = Object.assign(blank(), d); [UKEY, UKEY + ".day", UKEY + ".blk"].forEach(k => localStorage.removeItem(k)); if (pr) localStorage.setItem("hs-fastway-progs", JSON.stringify(pr)); save(); alert("Sauvegarde importée."); location.reload(); } }
+    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { const pr = d._progs; delete d._progs; ["jr","painLog","ecl","fb"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["cours"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["tm","sq"].forEach(k => { if (d[k] && (typeof d[k] !== "object" || Array.isArray(d[k]))) delete d[k]; });
+      S = Object.assign(blank(), d); [UKEY, UKEY + ".day", UKEY + ".blk"].forEach(k => localStorage.removeItem(k)); if (pr && typeof pr === "object") localStorage.setItem("hs-fastway-progs", JSON.stringify(pr)); save(); alert("Sauvegarde importée."); location.reload(); } }
   catch(e){ alert("Sauvegarde illisible : colle le texte exporté tel quel."); }
 };
 $("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C’est définitif.")) { S = blank(); save(); location.reload(); } };   // le rechargement relance les migrations et réglages par défaut
