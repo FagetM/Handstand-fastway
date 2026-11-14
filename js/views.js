@@ -137,7 +137,7 @@ function render(){
     const gifts = nbs.flatMap(b => badgeReward(b.id)).concat(up ? WARD.flatMap(w => w.items.filter(it => typeof it[2] === "number" && it[2] > seen.lvl && it[2] <= Z.lvl).map(it => it[1])) : []);
     const nbsT = nbs.filter(b => !(/^sec_/.test(b.id) && CHESTS[b.id.slice(4)]));   // l’étage terminé se fête une seule fois : au coffre, badge compris
     const parts = []; if (nbsT.length) parts.push((nbsT.length > 1 ? "Badges : " : "Badge : ") + nbsT.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + ", " + Z.rank);
-    if (parts.length) { toast(parts.join(". ") + (gifts.length ? ". Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
+    if (parts.length && !(S.ex && S.ex.sober)) { toast(parts.join(". ") + (gifts.length ? ". Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
   { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste
@@ -168,7 +168,7 @@ function render(){
       nc.append(mw);
       if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd’hui : récup active, 8 min"), el("span",null,"Mobilité, ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
     if (P.builtin && !(dn && dn < tot) && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
-      [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
+      (S.ex && S.ex.on ? [15,30,45,60,90] : [15,30,45,60]).forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d’entraînement de suite. Mobilité et poignets aujourd’hui, la force revient demain."));
     if (P.builtin && deloadWeek() && !cycTest()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons récupèrent."));
     { const PS = painState(); if (PS.phase) nc.append(el("div","painnote", PS.phase === 1 ? (PS.zone === "poignet" ? "Poignets au repos encore " + PS.days + " j : pas d’appui sur les mains." : PS.zone === "epaule" || PS.zone === "coude" ? "Encore " + PS.days + " j sans travail à un bras, ni planche, ni montées." : "Séance allégée encore " + PS.days + " j.") : PS.phase === 2 ? "Reprise : 60 % de la charge, sans tentative à fond." : "Reprise : 80 % de la charge.")); }

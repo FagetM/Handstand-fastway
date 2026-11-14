@@ -9,6 +9,12 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const wa
   // en arrivant sur le parcours, on t’amène à ta position
   if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
+{ const X = () => S.ex || (S.ex = {}), sync = () => { $("exOn").checked = !!X().on; $("exPrio").value = X().prio || ""; $("exSober").checked = !!X().sober; $("exMore").hidden = !X().on; document.documentElement.toggleAttribute("data-sober", !!(X().on && X().sober)); };
+  // mode expert : éteint, on revient aux durées habituelles
+  $("exOn").onchange = e => { X().on = e.target.checked; if (!X().on && S.mins > 60) S.mins = 60; save(); sync(); render(); };
+  $("exPrio").onchange = e => { X().prio = e.target.value || null; save(); render(); };
+  $("exSober").onchange = e => { X().sober = e.target.checked; save(); sync(); render(); };
+  sync(); }
 $("theme").onchange = e => { S.theme = e.target.value; save(); location.reload(); };   // les personnages 3D reprennent leurs couleurs au rechargement
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n’est pas commencée
 { const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; else if (S.bday && S.bday.d === dayKey(Date.now())) toast("Séance déjà commencée : le changement vaudra dès demain."); save(); render(); };

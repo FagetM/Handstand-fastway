@@ -132,7 +132,7 @@ const TREE = [
       desc:"De l’équilibre aux pieds en 5 s, jambes serrées et tendues."},
     {id:"pr_pike", name:"Montée en force, jambes serrées", en:"Pike Press", type:"reps", target:2, req:["pr_negP"],
       desc:"La même montée, jambes tendues et jointes : le levier est plus long, donc plus dur."},
-    {id:"pr_lsit", name:"Équerre (L-sit) jambes serrées", en:"L-sit – 15s", type:"hold", target:15, req:["fd_dips"],
+    {id:"pr_lsit", name:"Équerre (L-sit) jambes serrées", en:"L-sit – 25s", type:"hold", target:25, req:["fd_dips"],
       desc:"Bras tendus, jambes serrées et tendues à l’horizontale, épaules basses. Le point de départ du passage à l’équilibre."},
     {id:"pr_stradL", name:"Équerre jambes écartées", en:"Straddle L-sit – 10s", type:"hold", target:10, req:["pr_lsit","pr_stradLift"],
       desc:"Sur parallettes ou au sol, bras tendus : jambes écartées tendues au-dessus du sol. C’est la position de départ du stalder."},

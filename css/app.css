@@ -859,3 +859,5 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 /* bilan de départ : saisie d’un nombre exact */
 .plx{display:flex;align-items:center;gap:8px;margin-top:10px}
 .plx input{width:8em;flex:none}
+/* mode expert, sobre : ni rang, ni niveau, ni vestiaire ; le décor reste */
+[data-sober] #lvRank,[data-sober] #lvNum,[data-sober] .hero .bar,[data-sober] #xpTxt,[data-sober] #fitOpen,[data-sober] #sceneCap{display:none}

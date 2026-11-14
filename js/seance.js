@@ -152,7 +152,7 @@ function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
-  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && (PS.zones || [PS.zone]).some(z => ["epaule","coude"].includes(z)), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
+  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && (PS.zones || [PS.zone]).some(z => ["epaule","coude"].includes(z)), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : mins < 90 ? 3 : 4, EX = S.ex && S.ex.on ? S.ex.prio : null;   // mode expert : 90 min et une discipline prioritaire
   const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease, comeback() ? 0.7 : 1), scale = deload ? 0.6 : Math.max(0.6, Math.min(1.5, mins / 30)) * red;   /* semaine légère : 60 % quel que soit le temps choisi */   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d’entraînement de suite
 
@@ -181,19 +181,19 @@ function builtinBlocks(){
   const cand = open.filter(id => !FORCE(id) && (oaOk || !/^oa_/.test(id))), heads = [], seen = new Set();
   cand.forEach(id => { const d = disc(id); if (!seen.has(d)) { seen.add(d); heads.push(id); } });
   // retard d’une figure = jours depuis son dernier travail, rapportés à son rythme cible (équilibre et un bras 3 j, compression et force 4 j)
-  const late = id => (Date.now() - (lastWorked(id) || Date.now() - 30 * 864e5)) / 864e5 / (/^(eq|oa)$/.test(disc(id)) ? 3 : 4);
+  const late = id => (Date.now() - (lastWorked(id) || Date.now() - 30 * 864e5)) / 864e5 / (/^(eq|oa)$/.test(disc(id)) ? 3 : disc(id) === "pr" ? 2.3 : 4) * (EX && disc(id) === EX ? 2 : 1);   /* montées : un geste, travaillé jusqu’à 3 fois par semaine ; la discipline prioritaire passe devant */
   // les plus en retard d’abord, une figure par discipline ; une figure laissée plus de 10 jours passe d’office, même si sa discipline est déjà servie
   const byLate = cand.slice().sort((a, b) => late(b) - late(a)); let nonF = []; { const got = new Set();
     byLate.forEach(id => { const d = disc(id), over = (Date.now() - lastWorked(id)) / 864e5 > 10 && lastWorked(id) > 0; if (!got.has(d) || over) { got.add(d); nonF.push(id); } });
     nonF = nonF.concat(byLate.filter(id => !nonF.includes(id))); }
   // force : la planche passe en priorité 2 jours sur 3 ; sinon la figure de force travaillée le moins récemment
-  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), npF = F.filter(id => !/^pl_/.test(id)), plOk = plancheDays() < 2 && plF[0], pickF = (plOk && (!npF.length || late(plF[0]) >= late(npF[0]) * 0.6) && plF[0]) || npF[0] || (plOk ? plF[0] : null) || F[0];   /* la planche garde la priorité, sauf quand une autre figure de force a pris trop de retard */   /* planche 2 jours sur les 7, les montées le 3e */   // la planche 3 jours sur 7, le reste de la force ensuite
+  const F = open.filter(FORCE).sort((a, b) => lastWorked(a) - lastWorked(b)), plF = F.filter(id => /^pl_/.test(id)), npF = F.filter(id => !/^pl_/.test(id)), plOk = plancheDays() < (EX === "pl" ? 3 : 2) && plF[0], pickF = (plOk && (!npF.length || late(plF[0]) >= late(npF[0]) * 0.6) && plF[0]) || npF[0] || (plOk ? plF[0] : null) || F[0];   /* la planche garde la priorité, sauf quand une autre figure de force a pris trop de retard */   /* planche 2 jours sur les 7, les montées le 3e */   // la planche 3 jours sur 7, le reste de la force ensuite
   let next;
   if (fok && pickF && !fConf && !tired) next = nMs === 1 ? (dn % 2 || !nonF.length ? [pickF] : [nonF[0]]) : nonF.slice(0, nMs - 1).concat([pickF]);
   else next = nonF.slice(0, nMs);
   // séance longue : une deuxième figure de force d’une autre famille, si elle attend depuis plus de 4 jours (2 par jour au plus)
   if (fok && pickF && !fConf && !tired && nMs >= 3 && next.includes(pickF)) { const f2 = F.find(id => id !== pickF && !/^pl_/.test(id) && disc(id) !== disc(pickF) && late(id) > 1); if (f2) next = [next[0], f2, pickF]; }
-  if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (plancheDays() >= 2 || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
+  if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (plancheDays() >= (EX === "pl" ? 3 : 2) || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d’ouvert aujourd’hui (un bras au repos, pas de force) : séance de mobilité plutôt qu’une page vide
   if (!next.length && !(S.confirm || []).some(id => MS[id] && (fok || !FORCE(id)))) return ["poignets","epaules","pike","pancake","hollow"].map(k=>drillBlock(k, false));
   // combo : un seul par jour, en tout début de séance (frais) ; ces jours-là, le travail sur un bras est écourté
