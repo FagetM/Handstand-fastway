@@ -81,7 +81,7 @@ function planFor(m){
         : (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", avec " + (SIDED.has(m.id) ? "90 s" : "2 minutes") + " de repos entre chacune." : ".") + " Réussie, elle fait passer le palier ; " : "Une série à la cible fait passer le palier ; ") + "au dernier palier, la règle de validation s’applique."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l’équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Cible : " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
-      ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? "Toujours 4 répétitions isolées, repos complet : la progression vient de la lenteur et de la propreté, pas du volume." : "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec " + (hold ? "des tenues plus longues." : "plus de répétitions par série."),
+      ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? "Toujours 4 répétitions isolées, repos complet : la progression vient de la lenteur et de la propreté, pas du volume." : "Quand tes séries restent propres, l’app augmente la charge d’elle-même, un peu après chaque séance réussie ; quand elles se dégradent, elle la baisse.",
       "Douleur au pli du coude, au poignet ou à l’avant de l’épaule : arrête la figure et signale-la. Si tu stagnes trois semaines, l’app allège cette figure une semaine."];
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");

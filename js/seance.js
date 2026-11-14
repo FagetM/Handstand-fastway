@@ -41,7 +41,7 @@ const DRILLS = {
   shift:{name:"Transferts de poids au mur", kind:"reps", sets:[3,6], how:"Dos au mur, jambes écartées : glisse le poids sur une main jusqu’à alléger l’autre, puis reviens au centre. Côté gauche, puis côté droit."},
   lean:{name:"Planche inclinée", kind:"hold", sets:[3,20], how:"Position de pompe, bras tendus, épaules loin devant les mains, omoplates écartées. Avance un peu plus à chaque série."},
   pseudo:{name:"Pompes mains aux hanches", kind:"reps", sets:[3,8], how:"Pompes avec les mains à hauteur des hanches, doigts vers l’extérieur : les épaules passent loin devant les mains."},
-  frog:{name:"Grenouille", kind:"hold", sets:[3,15], how:"Accroupi, mains au sol, genoux posés sur les coudes : bascule vers l’avant jusqu’à décoller les pieds."},
+  frog:{name:"Grenouille", kind:"hold", sets:[3,10], how:"Accroupi, mains au sol, genoux posés sur les coudes : bascule vers l’avant jusqu’à décoller les pieds. Les premières fois, un coussin devant le visage, et des tenues courtes."},
   oawall:{name:"Tenue un bras dos au mur", kind:"hold", sets:[3,20], sides:1, how:"Dos au mur, jambes écartées : transfère le poids sur une main, retire l’autre et tiens. Épaule poussée vers l’oreille, bassin au-dessus de la main. Côté faible d’abord."},
   oashrug:{name:"Haussements d’épaule à un bras", kind:"reps", sets:[3,8], sides:1, how:"En appui à un bras au mur, bras verrouillé : laisse l’épaule descendre puis repousse-la vers l’oreille. La force de base de l’équilibre sur un bras."},
   tuckflag:{name:"Drapeaux groupés pulsés", kind:"reps", sets:[3,6], how:"En équilibre, genoux groupés : incline-les sur le côté en petits rebonds contrôlés, puis tiens 3 s la position la plus basse. Change de côté."},
@@ -55,7 +55,7 @@ const DRILLS = {
   protrac:{name:"Pompes d’omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s’arrondit à chaque poussée."},
   pikepulse:{name:"Pulsations en pike", kind:"reps", sets:[3,15], how:"Assis jambes serrées tendues, mains près des chevilles, dos rond : décolle les talons et fais de petites pulsations sans reposer."},
   appuiArr:{name:"Appui arrière sur parallettes", kind:"hold", sets:[3,20], rest:45, how:"Mains derrière le bassin, doigts vers l’arrière, bras tendus, bassin levé, épaules basses et ouvertes."},
-  mannaLift:{name:"Bassin qui recule depuis l’équerre", kind:"reps", sets:[3,5], rest:60, how:"En équerre groupée sur parallettes, pousse le bassin devant les mains et reviens, 2 s à chaque fois. Bras tendus."},
+  mannaLift:{name:"Bassin qui avance depuis l’équerre", kind:"reps", sets:[3,5], rest:60, how:"En équerre groupée sur parallettes, pousse le bassin devant les mains et reviens, 2 s à chaque fois. Bras tendus."},
   extEp:{name:"Épaules en extension", kind:"hold", sets:[3,30], rest:30, how:"Assis, mains au sol derrière toi doigts vers l’arrière (ou sur un banc) : avance le bassin, ouvre la poitrine, bras tendus. Sans douleur à l’avant de l’épaule."},
   tirage:{name:"Tirage à l’élastique", kind:"reps", sets:[3,12], rest:40, eq:"band", how:"Élastique à l’ancrage de porte : tire les coudes en arrière, serre les omoplates 1 s, reviens en 3 s."},
   rotext:{name:"Rotation externe d’épaule", kind:"reps", sets:[2,15], rest:30, eq:"band", sides:true, how:"Coude au corps à 90°, écarte la main vers l’extérieur contre l’élastique, lentement."},
@@ -463,24 +463,31 @@ $("pgFile").onchange = async e => {
 // Étirement à durée imposée : compte à rebours, changement de côté, puis enchaînement sur le suivant.
 let sd = null, sdTimer = null, sdWake = null, AUTO = false, sessRes = {};
 // Bilan de départ : on parcourt les figures dans l’ordre ; tu dis ce que tu sais faire, l’app valide et se place au bon jalon.
-let plSkip = new Set(), plMiss = 0, plN = 0;
-function startPlacement(){ plSkip = new Set(); plMiss = 0; plN = 0; plStep(); $("plDlg").showModal(); }
+let plSkip = new Set(), plMiss = {}, plN = 0;
+// d’abord la sécurité, puis les questions ; un « pas du tout » deux fois dans une même voie et on passe à la suivante
+function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box = $("plBody"); box.textContent = "";
+  const go = el("button","btn","J’ai lu, on y va"); go.onclick = plStep;
+  box.append(el("h2",null,"Avant de te renverser"), el("p",null, SAFE_TXT), el("p","mut","Ensuite, quelques questions sur ce que tu sais déjà faire. Réponds honnêtement : l’app vérifiera en séance."), go); $("plDlg").showModal(); }
 const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
-  const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x)), box = $("plBody"); box.textContent = "";
-  if (!id || plMiss >= 3) { S.placed = true; save(); render();
+  const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x) && (plMiss[MS[x].sec] || 0) < 2), box = $("plBody"); box.textContent = "";
+  if (!id) { S.placed = true; save(); render();
     const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? (plN <= 3 ? "En " + plN + " question" + (plN > 1 ? "s" : "") + " : tu démarres par « " + SEC[MS[nx].sec].name + " ». " : "") + "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tout est validé."));
+    if ((S.confirm || []).length) box.append(el("p","mut","Les figures de force, d’équilibre à un bras et de souplesse que tu as déclarées seront vérifiées en séance, deux à la fois. Si l’une ne passe pas, elle revient simplement dans ton parcours."));
     const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
   box.append(el("div","lab", "Question " + (++plN) + ", " + SEC[m.sec].name), el("h2",null, m.name), art);
   if (m.desc) box.append(el("p","mut", m.desc));
   const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); if (SAFE.has(id) || FORCE(id) || m.sec === "onearm") (S.confirm || (S.confirm = [])).push(id); save(); plStep(); };
-  const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } plSkip.add(id); plMiss++; save(); plStep(); };
+  const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } else plMiss[m.sec] = (plMiss[m.sec] || 0) + 1; plSkip.add(id); save(); plStep(); };
+  const exact = (unit) => { const r = el("form","plx"), i = el("input"); i.type = "number"; i.min = "0"; i.inputMode = "numeric"; i.placeholder = "autre"; i.setAttribute("aria-label","Nombre exact en " + unit);
+    const b = el("button","chip","Valider"); b.type = "submit"; r.onsubmit = (e) => { e.preventDefault(); const v = Math.max(0, Math.round(+i.value || 0)); if (!i.value) return; v >= (m.target || 1) ? yes() : no(v); };
+    r.append(i, el("span","mut",unit), b); return r; };
   const q = el("div","plq");
   if (m.type === "hold") { q.append(el("div","mut","Combien de temps tiens-tu cette figure ?"));
     const row = el("div","chips"); [["Pas du tout",0]].concat(L.slice(0, -1).map(v=>["≈ " + v + " s", v])).forEach(([lab,v])=>{ const b = el("button","chip",lab); b.onclick = () => no(v); row.append(b); });
-    const ok = el("button","chip", m.target + " s ou plus"); ok.onclick = yes; row.append(ok); q.append(row); }
-  else { q.append(el("div","mut","Sais-tu le faire proprement ?")); const row = el("div","chips"), y = el("button","chip on","Oui"), n = el("button","chip","Pas encore"); y.onclick = yes; n.onclick = () => no(0); row.append(y, n); q.append(row); }
+    const ok = el("button","chip", m.target + " s ou plus"); ok.onclick = yes; row.append(ok); q.append(row, exact("secondes")); }
+  else { q.append(el("div","mut","Sais-tu le faire proprement ?")); const row = el("div","chips"), y = el("button","chip on","Oui"), n = el("button","chip","Pas encore"); y.onclick = yes; n.onclick = () => no(0); row.append(y, n); q.append(row); if (m.type === "reps" && m.target > 1) q.append(exact("répétitions")); }
   box.append(q);
 }
 // Fin de séance : la charge de chaque figure s’ajuste aux séries réussies ou ratées, puis à ton ressenti.

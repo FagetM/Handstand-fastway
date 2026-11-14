@@ -856,3 +856,6 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .cyfilm{align-self:flex-start;margin:4px 0 8px}
 .vrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.vfig{margin:0}.vfig video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:12px;background:var(--line)}.vfig figcaption{font-size:12px;margin-top:4px;text-align:center}
 .vfig video{object-fit:contain}
+/* bilan de départ : saisie d’un nombre exact */
+.plx{display:flex;align-items:center;gap:8px;margin-top:10px}
+.plx input{width:8em;flex:none}
