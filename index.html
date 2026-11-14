@@ -6,7 +6,7 @@
 <meta name="theme-color" content="#1e1f24" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f7f3ec" media="(prefers-color-scheme: light)">
 <meta name="robots" content="noindex">
-<script>try { const t = (JSON.parse(localStorage.getItem("hs-fastway-v1") || "{}") || {}).theme; if (t === "light" || t === "dark") { document.documentElement.dataset.theme = t; document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.media = "all"; m.content = t === "dark" ? "#1e1f24" : "#f7f3ec"; }); } } catch (e) {}</script>
+<script>try { const t = (JSON.parse(localStorage.getItem("hs-fastway-v1") || "{}") || {}).theme || "light";   /* claires par défaut */ if (t === "light" || t === "dark") { document.documentElement.dataset.theme = t; document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.media = "all"; m.content = t === "dark" ? "#1e1f24" : "#f7f3ec"; }); } } catch (e) {}</script>
 <title>Gymnastic Yoga</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -73,7 +73,7 @@
     <div class="block">
       <h2>Apparence</h2>
       <label class="mut" for="theme">Couleurs de l’app</label>
-      <select id="theme"><option value="">Comme le téléphone</option><option value="light">Claires (sable)</option><option value="dark">Sombres</option></select>
+      <select id="theme"><option value="light">Claires (sable)</option><option value="dark">Sombres</option><option value="auto">Comme le téléphone</option></select>
     </div>
     <div class="block">
       <h2>Mon matériel</h2>

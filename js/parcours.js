@@ -119,7 +119,7 @@ function sqOpen(q){
   box.append(blk);
   if (on) { const row = el("div","btns");
     if (dn) { row.append(el("p","mut","Réussie le " + new Date(dn).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ".")); const u = el("button","btn line","Retirer le tampon"); u.onclick = () => { delete sqDone()[q.id]; save(); $("qkDlg").close(); render(); }; row.append(u); }
-    else { const b = el("button","btn","C’est fait"); b.onclick = () => { sqDone()[q.id] = Date.now(); save(); $("qkDlg").close(); render(); const n = Object.keys(sqDone()).length; toast(n === 8 && !(S.bgot || []).includes("sq8") ? "Huitième tampon : badge « Chemins de traverse »." : "Tampon posé : " + n + " sur " + SQ.length + "."); }; row.append(b); }
+    else { const b = el("button","btn","C’est fait"); b.onclick = () => { const had = (S.bgot || []).includes("sq8"); sqDone()[q.id] = Date.now(); save(); $("qkDlg").close(); render(); const n = Object.keys(sqDone()).length; if (!(n >= 8 && !had)) toast("Tampon posé : " + n + " sur " + SQ.length + "."); };   /* le 8e : c’est l’annonce du badge qui parle */ row.append(b); }
     box.append(row); }
   box.append(el("p","mut sqnote","Pour le plaisir : les quêtes annexes ne changent ni tes séances ni tes dates."));
   $("qkT").textContent = q.name; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled"); qd.onscroll = null;
