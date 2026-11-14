@@ -244,7 +244,7 @@ const GOALS = [
 ];
 // Photos (dossier photos/, en .webp) : seules celles listées ici sont affichées ; les emplacements vides ne montrent rien.
 // accueil · etage-<étage> (bandeau de chaque étage du parcours) · but-<figure> (fiche des grands buts)
-const PHOTOS = new Set([]);
+const PHOTOS = new Set(["accueil","etage-base","etage-starter","etage-b1","etage-b2","etage-onearm","etage-low","etage-planche","etage-ultime","but-oa_oahs"]);
 const photo = n => PHOTOS.has(n) ? new URL("photos/" + n + ".webp", document.baseURI).href : null;   /* adresse complète : une url() dans une variable CSS se lirait depuis css/ */
 const SEC = Object.fromEntries(TREE.map(s=>[s.id,s]));
 const MS = {}; TREE.forEach(s=>s.ms.forEach(m=>{MS[m.id]=m; m.sec=s.id;}));

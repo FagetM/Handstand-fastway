@@ -158,7 +158,9 @@ function journey(nextId){
   const eCls = (doneA, idB, lkB) => doneA && (idB ? st(idB).done : false) ? "on" : doneA && !lkB ? "go" : "";
   const sign = (title, sid, sub) => { const ms = (sid === "hard" ? HARD.flatMap(h=>SEC[h[0]].ms) : SEC[sid].ms).filter(m=>!m.alt), dn = ms.filter(m=>reqDone(m.id)).length,
       state = ms.filter(m=>!m.alt).every(m=>reqDone(m.id)) ? "done" : ms.some(m=>!reqDone(m.id) && !msLocked(m)) ? "cur" : "lk";
-    items.push({k:"b", y, title, sid, sub, dn, tot:ms.length, state, n:++n}); y += SH; };
+    const ph = photo("etage-" + sid), phH = ph ? Math.round(phW() / 1.6) + 10 : 0;   // photo de l'étage au-dessus du panneau : le chemin se décale d'autant
+    items.push({k:"b", y, title, sid, sub, dn, tot:ms.length, state, n:++n, ph, phH}); y += SH + phH; };
+  const phW = () => { const t = $("tree"), w = t && t.getBoundingClientRect().width; return w > 100 ? w : Math.min(innerWidth, 640) - 40; };
   const node = (id, x, small) => { pos[id] = [x, y + 40, small]; items.push({k:"n", id}); };
   const chest = (sid, x, lane) => { const done = sid === "hard" ? false : chestOpen(SEC[sid]); pos["chest_" + sid] = [x, y + 34]; items.push({k:"c", sid, x, y, done, lane}); };
   const step = (id, small) => { const x = X[k++ % X.length]; node(id, x, small); if (prev) seg(pos[prev], pos[id], eCls(prev.startsWith("chest_") ? chestDone(prev) : st(prev).done, id, msLocked(MS[id]) && !st(id).done)); prev = id; y += RH; };
@@ -185,7 +187,7 @@ function journey(nextId){
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
     if (it.k === "b"){ const b = el("div","sign " + it.state + (it.sid === "hard" ? " hard" : "")); b.style.top = it.y + "px";
-      { const ph = photo("etage-" + it.sid); if (ph) { b.classList.add("ph"); b.style.setProperty("--ph", 'url("' + ph + '")'); } }
+      if (it.ph) { b.classList.add("ph"); const im = el("img","sph"); im.src = it.ph; im.alt = ""; im.loading = "lazy"; im.style.height = (it.phH - 10) + "px"; b.append(im); }
       const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.sid === "low" ? "+" : String(it.n);
       const g = el("div","grow"); g.append(el("div","sname", it.title), el("div","mut", it.sub));
       b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); cv.append(b); }

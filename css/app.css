@@ -598,7 +598,7 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .twk span[role=button]{cursor:pointer}
 
 /* photos */
-.sign.ph{background-image:linear-gradient(90deg,var(--raise) 38%,color-mix(in srgb,var(--raise) 35%,transparent)),var(--ph);background-size:cover;background-position:right center}
+.sign.ph{padding-top:0;overflow:hidden}.sign .sph{display:block;flex:0 0 calc(100% + 24px);margin:0 -12px 0;width:calc(100% + 24px);object-fit:cover;object-position:right center}
 .qkph{margin:0 0 14px;position:relative}.qkph img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:16px}
 .qkph figcaption{position:absolute;left:12px;bottom:10px;padding:4px 10px;border-radius:999px;background:rgb(0 0 0 / .55);color:#fff;font-size:12.5px;font-weight:600}
 #gate.ph{background:linear-gradient(rgb(20 20 24 / .55),rgb(20 20 24 / .85)),var(--ph) center/cover;color:#f3eee6}
