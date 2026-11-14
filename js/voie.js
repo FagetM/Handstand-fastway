@@ -140,3 +140,5 @@ function vpStop(){ if (vp) vp.run = false; clearInterval(vpTick.h); if (vp && vp
 $("vpGo").onclick = () => { if (!vp) return; if (vp.run) { vpStop(); return; } if (vp.i >= vp.steps.length) { vpOpen(vp.p); } vp.run = true; vp.last = Date.now(); $("vpGo").textContent = "Pause"; clearInterval(vpTick.h); vpTick.h = setInterval(vpTick, 200); vpTick(); };
 $("vpX").onclick = () => $("vpDlg").close();
 $("vpDlg").addEventListener("close", () => { vpStop(); try { speechSynthesis.cancel(); } catch(e){} });
+$("ecGo").onclick = () => { S.ecoute = 0; save(); $("ecoute").hidden = true; vpOpen(PRATIQUES.find(p => p.id === "ecoute")); };
+$("ecNo").onclick = () => { S.ecoute = 0; save(); $("ecoute").hidden = true; };

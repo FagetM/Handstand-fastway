@@ -759,3 +759,4 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .vptxt{position:relative;max-width:260px;margin:0;font:600 17px/1.4 var(--disp)}
 .vpleft{font-size:20px;margin:4px 0 16px;color:var(--mut)}
 @media (prefers-reduced-motion:reduce){.vpring{transition:none}}
+.ecoute{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 16px;padding:16px;border-radius:16px;background:color-mix(in srgb,var(--leaf) 16%,var(--raise));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--leaf) 40%,transparent)}.ecoute[hidden]{display:none}.ecoute .grow{display:flex;flex-direction:column;gap:2px;min-width:200px}.ecoute .btn{width:auto;min-height:40px;padding:8px 20px}.ecoute .vdel{position:static}
