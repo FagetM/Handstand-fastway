@@ -4,9 +4,9 @@
 const zh = (name, dur, how, x) => Object.assign({name, how, kind:"hold", sets:[{dur}]}, x || {});
 const zr = (name, n, reps, how) => ({name, how, kind:"reps", sets:Array.from({length:n}, () => ({reps}))});
 const zn = (n, name, dur, how, x) => Object.assign(zh(name, dur, how, x), {sets:Array.from({length:n}, () => ({dur})), work:true});
-// Maîtrise : l'esprit gymnaste-yogi. Chaque séance est une échelle de paliers verrouillés : on n'en saute aucun.
-// Dans un palier, les tenues de travail (work) s'allongent quand la séance est propre avec de la marge ; le palier se valide
-// quand elles ont atteint leur plafond (up secondes de plus) et que deux séances propres, à 48 h d'écart au moins, le confirment.
+// Maîtrise : l’esprit gymnaste-yogi. Chaque séance est une échelle de paliers verrouillés : on n’en saute aucun.
+// Dans un palier, les tenues de travail (work) s’allongent quand la séance est propre avec de la marge ; le palier se valide
+// quand elles ont atteint leur plafond (up secondes de plus) et que deux séances propres, à 48 h d’écart au moins, le confirment.
 const W = {
   bascules:zh("Bascules à quatre pattes", 60, "Mains à plat, doigts écartés : avance et recule les épaules au-dessus des mains, lentement."),
   doigts:d => zn(3, "Appui sur le bout des doigts", d, "Genoux au sol, mains en griffe, paumes décollées. Pousse dans les doigts."),
@@ -17,26 +17,26 @@ const W = {
   talons:n => zr("Levées de talons en pike", 3, n, "Assis jambes tendues, mains près des genoux : décolle les talons sans te pencher en arrière."),
   lgroup:d => zn(4, "L-sit groupé", d, "Mains au sol ou sur parallettes, bras tendus : décolle les fesses, genoux à la poitrine."),
   lone:d => zn(3, "L-sit une jambe tendue", d, "L-sit groupé, puis tends une jambe devant toi. Alterne la jambe à chaque série."),
-  lsit:d => zn(3, "L-sit", d, "Jambes tendues et serrées à l'horizontale, épaules abaissées, bras verrouillés."),
-  cuil:d => zn(3, "Cuillère creuse", d, "Sur le dos, bas du dos plaqué, bras et jambes tendus décollés. La ligne de l'équilibre."),
+  lsit:d => zn(3, "L-sit", d, "Jambes tendues et serrées à l’horizontale, épaules abaissées, bras verrouillés."),
+  cuil:d => zn(3, "Cuillère creuse", d, "Sur le dos, bas du dos plaqué, bras et jambes tendus décollés. La ligne de l’équilibre."),
   ecart:zn(2, "Écart facial actif", 30, "Assis jambes écartées, dos plat : penche-toi en avant et soulève les talons par moments."),
   chiot:zh("Posture du chiot", 60, "À genoux, bras tendus loin devant, poitrine vers le sol : ouvre les épaules."),
   chien:d => zn(3, "Chien tête en bas actif", d, "Pousse le sol, épaules aux oreilles, talons vers le sol. Les bras dans la ligne du dos."),
   murEp:d => zn(3, "Épaules au mur", d, "Dos au mur (ou allongé sur le dos) : bras tendus au-dessus de la tête, mains au mur, côtes rentrées."),
-  omoP:n => zr("Pompes d'omoplates en pike", 2, n, "En V inversé, bras tendus : laisse descendre puis repousse avec les épaules seulement."),
+  omoP:n => zr("Pompes d’omoplates en pike", 2, n, "En V inversé, bras tendus : laisse descendre puis repousse avec les épaules seulement."),
   creux:d => zn(3, "Gainage creux", d, "Position de pompe, dos légèrement arrondi, fesses serrées. Pousse le sol."),
   pikeBox:d => zn(3, "Appui tendu en pike, pieds sur une caisse", d, "Pieds sur une chaise, bassin au-dessus des épaules, bras tendus aux oreilles. Pousse le sol."),
   dosMur:d => zn(3, "Équilibre dos au mur", d, "Talons contre le mur, mains à 20 cm : corps droit, épaules ouvertes, regard entre les mains."),
-  corbeau:d => zn(4, "Corbeau", d, "Genoux sur l'arrière des bras, regard devant : bascule jusqu'à décoller les pieds. Tiens, sans à-coup."),
+  corbeau:d => zn(4, "Corbeau", d, "Genoux sur l’arrière des bras, regard devant : bascule jusqu’à décoller les pieds. Tiens, sans à-coup."),
   corbeauT:d => zn(4, "Corbeau bras tendus", d, "Genoux haut sur les bras tendus, épaules devant les mains, dos rond. Immobile."),
   latérale:d => zh("Planche latérale", d, "Sur une main, corps aligné, hanche haute. Le bras libre tendu vers le ciel.", {sides:1}),
   chat:d => zn(3, "Chaturanga tenu", d, "Descends à mi-pompe, coudes contre le corps, épaules devant les mains. Tiens."),
   pseudo:d => zn(3, "Pseudo-planche", d, "Position de pompe, mains au niveau des hanches, épaules loin devant, bras verrouillés. Tiens."),
   transi:n => zr("Planche vers chien, au ralenti", 2, n, "De la planche au chien tête en bas en 4 secondes, puis retour en 4 secondes."),
-  guerrier:zh("Guerrier III", 30, "Sur une jambe, corps et jambe arrière à l'horizontale, bras devant. Immobile.", {sides:1}),
+  guerrier:zh("Guerrier III", 30, "Sur une jambe, corps et jambe arrière à l’horizontale, bras devant. Immobile.", {sides:1}),
 };
 const ZEN = [
-  {id:"poignets", name:"Poignets solides", min:9, when:"Avant l'équilibre ou la planche : des poignets qui encaissent", tiers:[
+  {id:"poignets", name:"Poignets solides", min:9, when:"Avant l’équilibre ou la planche : des poignets qui encaissent", tiers:[
     {name:"Doigts 3 × 15 s → 25 s", up:10, blocks:[W.bascules, W.doigts(15), W.lean(20), W.dos, W.ppoig(10)]},
     {name:"Doigts 3 × 20 s, planche inclinée 3 × 30 s", up:10, blocks:[W.bascules, W.doigts(20), W.lean(30), W.dos, W.ppoig(12)]},
     {name:"Planche inclinée sur les doigts 3 × 15 s", up:10, blocks:[W.bascules, W.leanD(15), W.lean(30), W.dos, W.ppoig(15)]}]},
@@ -57,12 +57,12 @@ const ZEN = [
     {name:"Corbeau bras tendus 4 × 20 s", up:10, blocks:[W.corbeauT(20), W.pseudo(20), W.chat(20)]}]},
   {id:"recup", name:"Récup active", min:8, when:"Après la séance ou un jour léger : on récupère en bougeant", free:true, tiers:[
     {name:"Mobilité libre", up:0, blocks:[zh("Étirement des avant-bras", 60, "À genoux, doigts vers toi, recule doucement les épaules. Puis dos des mains."),
-      zh("Enfant bras longs", 60, "Fesses vers les talons, bras allongés loin devant : les épaules s'étirent."),
+      zh("Enfant bras longs", 60, "Fesses vers les talons, bras allongés loin devant : les épaules s’étirent."),
       zh("Pigeon", 45, "Jambe avant pliée devant toi, jambe arrière allongée : laisse descendre les hanches.", {sides:1}),
       zh("Chien tête en bas", 45, "Pédale doucement avec les talons, pousse le sol."),
-      zh("Torsion couchée", 30, "Genoux d'un côté, épaules au sol.", {sides:1})]}]},
+      zh("Torsion couchée", 30, "Genoux d’un côté, épaules au sol.", {sides:1})]}]},
 ];
-// état d'une échelle : palier, nombre de crans gagnés (un cran = +2 s sur une tenue courte, +5 s sinon), séances propres au plafond (dates)
+// état d’une échelle : palier, nombre de crans gagnés (un cran = +2 s sur une tenue courte, +5 s sinon), séances propres au plafond (dates)
 const zst = id => { const all = S.zst || (S.zst = {}); return all[id] || (all[id] = {tier:0, add:0, ok:[]}); };
 const zTier = z => z.tiers[Math.min(zst(z.id).tier, z.tiers.length - 1)];
 const zStep = d => d <= 15 ? 2 : 5;   // +2 s sur les tenues courtes, +5 s sinon
@@ -76,9 +76,9 @@ function zenP(){
 document.querySelectorAll("#zfDlg [data-zk]").forEach(b => b.onclick = () => zenRate(b.dataset.zk));
 const zenIdx = id => Math.max(0, ZEN.findIndex(z => z.id === id));
 function openZen(id){ pg().cur = "detente"; pickP(); pp().step = zenIdx(id); save(); render(); showTab("today"); window.scrollTo(0, 0); }
-const zenTxt = z => z.free ? "toujours accessible" : "Palier " + (zst(z.id).tier + 1) + "/" + z.tiers.length + " · " + zTier(z).name + (zst(z.id).fin ? " · échelle terminée" : "");
-// fin d'une séance de Maîtrise : la forme décide. Propre avec de la marge : on allonge (au plafond, ça compte pour valider le palier).
-// Juste : on garde. Ça s'affaisse ou ça tire : on revient un cran en arrière. Fatigué·e : la séance compte, sans faire progresser.
+const zenTxt = z => z.free ? "toujours accessible" : "Palier " + (zst(z.id).tier + 1) + "/" + z.tiers.length + ", " + zTier(z).name + (zst(z.id).fin ? ", échelle terminée" : "");
+// fin d’une séance de Maîtrise : la forme décide. Propre avec de la marge : on allonge (au plafond, ça compte pour valider le palier).
+// Juste : on garde. Ça s’affaisse ou ça tire : on revient un cran en arrière. Fatigué·e : la séance compte, sans faire progresser.
 function zenRate(k){
   const z = ZEN[pp().step]; $("zfDlg").close(); if (!z) return;
   const x = zst(z.id), t = zTier(z), now = Date.now();
@@ -86,36 +86,36 @@ function zenRate(k){
   const cap = Math.max(1, ...t.blocks.filter(b => b.work).map(b => Math.ceil(t.up / zStep(b.sets[0].dur))));
   let msg = "Séance enregistrée.";
   if (z.free) msg = "Récup faite : ton corps te remercie.";
-  else if (k === "bad") { x.add = Math.max(0, x.add - 1); x.ok = []; msg = "On revient un cran en arrière : la forme d'abord."; }
+  else if (k === "bad") { x.add = Math.max(0, x.add - 1); x.ok = []; msg = "On revient un cran en arrière : la forme d’abord."; }
   else if (k === "ok") msg = "On garde les mêmes temps : la régularité fait le travail.";
-  else if (moodToday() === "fatigue") msg = "Séance comptée. Aujourd'hui fatigué·e : on ne progresse pas, on entretient.";
+  else if (moodToday() === "fatigue") msg = "Séance comptée. Aujourd’hui fatigué·e : on ne progresse pas, on entretient.";
   else if (k === "top") {
-    if (x.add < cap) { x.add++; msg = "Propre et avec de la marge : les tenues s'allongent la prochaine fois."; }
+    if (x.add < cap) { x.add++; msg = "Propre et avec de la marge : les tenues s’allongent la prochaine fois."; }
     else { if (!x.ok.length || now - x.ok[x.ok.length - 1] >= 48 * 3600e3) x.ok.push(now);
-      if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s'ouvre."; say("Palier validé. Bravo.", true); }
+      if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s’ouvre."; say("Palier validé. Bravo.", true); }
       else if (x.ok.length >= 2) { x.fin = true; x.ok = x.ok.slice(-2); msg = "Dernier palier maîtrisé. Garde-le en entretien."; }
       else msg = "Au plafond du palier, propre : encore une séance comme ça, dans 2 jours ou plus, pour le valider."; } }
-  if (!z.free && (z.id === "poignets" || z.id === "controle")) { const zw = S.zw || (S.zw = []), d = dayKey(Date.now()); if (!zw.includes(d)) zw.push(d); if (zw.length > 60) zw.shift(); }   // jour d'appui sur les mains : compte dans la charge des poignets
+  if (!z.free && (z.id === "poignets" || z.id === "controle")) { const zw = S.zw || (S.zw = []), d = dayKey(Date.now()); if (!zw.includes(d)) zw.push(d); if (zw.length > 60) zw.shift(); }   // jour d’appui sur les mains : compte dans la charge des poignets
   if (!z.free && ((z.id === "poignets" && x.tier >= 2) || (z.id === "controle" && x.tier >= 2) || (z.id === "compression" && x.tier >= 3))) { const zf = S.zf || (S.zf = []), d = dayKey(Date.now()); if (!zf.includes(d)) zf.push(d); if (zf.length > 60) zf.shift(); }
   save(); render(); toast(msg);
 }
 // Météo du corps : trois secondes avant la séance pour écouter comment on va. Elle règle la séance du jour.
-const MOODS = [["top","En forme","☀️"],["calme","Tranquille","🌤️"],["fatigue","Fatigué·e","🌧️"],["raide","Raide","🌬️"]];
+const MOODS = [["top","En forme",""],["calme","Tranquille",""],["fatigue","Fatigué·e",""],["raide","Raide",""]];
 const moodToday = () => S.mood && S.mood.d === dayKey(Date.now()) ? S.mood.k : null;
 function setMood(k){ S.mood = {d:dayKey(Date.now()), k}; if (S.bday && S.bday.d === dayKey(Date.now()) && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render();
-  toast(k === "fatigue" ? "Merci de l'avoir dit. Séance plus courte aujourd'hui, sans tentative à fond." : k === "raide" ? "On ajoute un peu de mobilité en début de séance." : k === "calme" ? "Séance normale, à ton rythme." : "Belle énergie : profite, sans forcer."); }
+  toast(k === "fatigue" ? "Merci de l’avoir dit. Séance plus courte aujourd’hui, sans tentative à fond." : k === "raide" ? "On ajoute un peu de mobilité en début de séance." : k === "calme" ? "Séance normale, à ton rythme." : "Belle énergie : profite, sans forcer."); }
 
 // Petites histoires : racontées par le personnage dans le conseil du jour, une par jour.
 const STORIES = [
-  "À 19 ans, je comptais mes secondes à l'envers. Une coach m'a demandé : « Et ta respiration ? » Elle était bloquée. Le jour où j'ai expiré, j'ai tenu deux fois plus longtemps.",
-  "Mon plus bel équilibre, je l'ai fait un dimanche matin sur la plage, sans chrono et sans objectif. Juste le sable chaud sous les mains.",
-  "Un vieux maître de cirque me disait : « Le sol te porte, tu n'as pas à le combattre. » Depuis, je pousse le sol comme on caresse un chat.",
-  "La première fois que j'ai tenu cinq secondes, je ne l'ai pas su : je souriais trop pour regarder le chrono.",
-  "J'ai passé un hiver entier sans progresser. Au printemps, tout est venu d'un coup. Le corps travaillait en silence.",
-  "Mes poignets m'ont appris la patience. Cinq minutes d'échauffement, c'est le prix d'un équilibre sans douleur.",
-  "Le jour où j'ai arrêté de vouloir réussir, j'ai commencé à sentir. Et c'est en sentant que j'ai réussi.",
-  "Une chute, c'est juste le sol qui te dit bonjour. Roue, sourire, et on remonte.",
+  "À 19 ans, je comptais mes secondes à l’envers. Une coach m’a demandé : « Et ta respiration ? » Elle était bloquée. Le jour où j’ai expiré, j’ai tenu deux fois plus longtemps.",
+  "Mon plus bel équilibre, je l’ai fait un dimanche matin sur la plage, sans chrono et sans objectif. Juste le sable chaud sous les mains.",
+  "Un vieux maître de cirque me disait : « Le sol te porte, tu n’as pas à le combattre. » Depuis, je pousse le sol comme on caresse un chat.",
+  "La première fois que j’ai tenu cinq secondes, je ne l’ai pas su : je souriais trop pour regarder le chrono.",
+  "J’ai passé un hiver entier sans progresser. Au printemps, tout est venu d’un coup. Le corps travaillait en silence.",
+  "Mes poignets m’ont appris la patience. Cinq minutes d’échauffement, c’est le prix d’un équilibre sans douleur.",
+  "Le jour où j’ai arrêté de vouloir réussir, j’ai commencé à sentir. Et c’est en sentant que j’ai réussi.",
+  "Une chute, c’est juste le sol qui te dit bonjour. Roue, sourire, et on remonte.",
   "Les jours de fatigue, je fais juste de la récup active. Le lendemain, mon équilibre est toujours meilleur. Toujours.",
-  "Avant chaque montée, je prends une respiration. Pas pour me concentrer : pour me rappeler que j'aime ça.",
+  "Avant chaque montée, je prends une respiration. Pas pour me concentrer : pour me rappeler que j’aime ça.",
 ];
 const storyOfDay = () => STORIES[Math.floor(Date.now() / 864e5) % STORIES.length];

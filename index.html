@@ -20,7 +20,7 @@
 <body class="locked">
 <div id="gate"><form id="gateForm">
   <div class="wm">Gymnastic <span>Yoga</span></div>
-  <div class="mut" id="gateMsg">Code d'accès</div>
+  <div class="mut" id="gateMsg">Code d’accès</div>
   <input id="gateCode" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" aria-label="Code d'accès">
   <button class="btn" type="submit">Ouvrir</button>
 </form></div>
@@ -30,8 +30,8 @@
 <main>
   <section id="v-today" class="view on">
     <div class="appbar" id="updBar" hidden><span class="grow">Une nouvelle version est prête.</span><button id="updGo">Mettre à jour</button></div>
-    <div class="appbar" id="insBar" hidden><span class="grow">Installe l'app sur ton téléphone : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
-    <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l'app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
+    <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app sur ton téléphone : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
+    <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l’app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
     <div class="next" id="nextCard"></div>
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
     <div id="sess"></div>
@@ -74,12 +74,12 @@
       <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="eqBand"><span>Élastiques</span></label>
       <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="eqPara"><span>Parallettes</span></label>
       <label class="mut" for="eqKg">Lest (gilet, haltères)</label>
-      <select id="eqKg"><option value="0">Aucun</option><option value="5">Jusqu'à 5 kg</option><option value="10">Jusqu'à 10 kg</option><option value="20">Jusqu'à 20 kg</option></select>
+      <select id="eqKg"><option value="0">Aucun</option><option value="5">Jusqu’à 5 kg</option><option value="10">Jusqu’à 10 kg</option><option value="20">Jusqu’à 20 kg</option></select>
     </div>
     <div class="block" id="vcBlock">
       <h2>Commandes à la voix</h2>
       <label class="vid" style="border:0;font-size:15px"><input type="checkbox" id="vcOn"><span>Piloter le chrono à la voix pendant la séance</span></label>
-      <div class="mut" id="vcHelp" style="margin-top:8px">« Top » démarre ou reprend, « stop » arrête, « pause » fige le chrono, « recommence » efface un faux départ. Le micro n'écoute que pendant la séance.</div>
+      <div class="mut" id="vcHelp" style="margin-top:8px">« Top » démarre ou reprend, « stop » arrête, « pause » fige le chrono, « recommence » efface un faux départ. Le micro n’écoute que pendant la séance.</div>
     </div>
     <div class="block" id="voiceBlock">
       <h2>Voix</h2>
@@ -100,7 +100,7 @@
 </main>
 
 <nav class="tabs">
-  <button data-v="today" class="on"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>Aujourd'hui</span></button>
+  <button data-v="today" class="on"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>Aujourd’hui</span></button>
   <button data-v="path"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 17c5 0 2-6 7-6s1-4 1-4" stroke-dasharray="2 2.6"/></svg><span>Parcours</span></button>
   <button data-v="me"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg><span>Profil</span></button>
 </nav>
@@ -133,7 +133,7 @@
 
 <dialog id="vdDlg">
   <div style="display:flex;gap:12px;align-items:flex-start">
-    <div class="grow"><div class="lab">Programme d'origine</div><h2 id="vdT" style="margin-top:6px"></h2></div>
+    <div class="grow"><div class="lab">Programme d’origine</div><h2 id="vdT" style="margin-top:6px"></h2></div>
     <button class="x" id="vdX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button>
   </div>
   <div class="mut" style="margin:6px 0 10px">Coche les vidéos que tu as vues.</div>
@@ -151,17 +151,17 @@
 </dialog>
 
 <dialog id="zfDlg">
-  <div class="lab">Postures · fin de séance</div>
+  <div class="lab">Postures, fin de séance</div>
   <h2 style="margin:6px 0 4px">Et la forme ?</h2>
-  <p class="mut" style="margin:0 0 14px">C'est la qualité qui fait avancer le palier, pas le chrono.</p>
+  <p class="mut" style="margin:0 0 14px">C’est la qualité qui fait avancer le palier, pas le chrono.</p>
   <div class="fbg">
     <button data-zk="top"><b>Propre</b><span>Avec de la marge : on allonge</span></button>
     <button data-zk="ok"><b>Juste</b><span>Propre mais à la limite : on garde</span></button>
-    <button data-zk="bad" class="pain"><b>Ça s'affaisse</b><span>Ou ça tire : un cran en arrière</span></button>
+    <button data-zk="bad" class="pain"><b>Ça s’affaisse</b><span>Ou ça tire : un cran en arrière</span></button>
   </div>
 </dialog>
 <dialog id="fbDlg" tabindex="-1">
-  <div class="lab">Séance terminée · merci d'être venu·e</div>
+  <div class="lab">Séance terminée, merci d’être venu·e</div>
   <h2 style="margin:6px 0 4px">Comment tu te sens ?</h2>
   <p class="mut" style="margin:0 0 14px">Pas de bonne réponse : ton ressenti règle la prochaine séance.</p>
   <input type="hidden" id="fbIds">

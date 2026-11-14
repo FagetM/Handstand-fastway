@@ -1,4 +1,4 @@
-// Personnage 3D et animations des figures (bandes d'images calculées puis gardées sur l'appareil).
+// Personnage 3D et animations des figures (bandes d’images calculées puis gardées sur l’appareil).
 "use strict";
 // ---------- Personnage 3D (chargé à la demande ; la silhouette 2D reste en secours) ----------
 const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"hs_straddle", oa_flagfloor:"hs_flag", oa_finger3:"oahs", oa_finger2:"oahs", oa_finger1:"oahs", oa_oahsw:"oahs", pl_lean2:"pl_lean", pl_tuckP:"pl_tuck", pl_tuckPu:"pl_tuck", pl_tuckO:"pl_adv", pl_strBand:"pl_straddle", pl_strBandL:"pl_straddle", pl_strNar:"pl_straddle", pl_half:"pl_full", pl_fullBand:"pl_full", pl_fullNeg:"pl_full", pr_pikeLift:"stand", pr_stradLift:"stand", pr_wallNeg:"hs_spress", pr_elevLow:"hs_spress", pr_negP:"pk1", pr_vsit:"hs_stal0", pr_halfSt:"hs_stal1", pr_tuckUp:"hs_tuck", pr_stalPart:"hs_stal1", pr_lsitNeg:"lsit1", fd_plank:"pl_lean", fd_roue:"hs_straddle", fd_push:"pl_lean", fd_c2w:"hs", fd_dips:"sup_up", st_bail30:"hs", st_split:"hs_split", st_bailc2w:"hs", b1_free5:"hs_straddle", b2_str15:"hs",
@@ -9,21 +9,21 @@ const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"hs_straddle
   lo_frog:"crow", lo_elbow:"lever", lo_croc:"lever", lo_qdr:"lever"};
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
-// Chaque figure est rendue image par image dans une bande d'images, puis animée en boucle. Tant qu'elle n'est pas prête, on montre une image fixe.
+// Chaque figure est rendue image par image dans une bande d’images, puis animée en boucle. Tant qu’elle n’est pas prête, on montre une image fixe.
 const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
 const animOn = () => true;
-// exercices d'accompagnement qui ont leur animation (dr_<clé>)
+// exercices d’accompagnement qui ont leur animation (dr_<clé>)
 const DR_ANIM = {hollow:"dr_hollow", tirage:"dr_tirage", rotext:"dr_rotext", extpoig:"dr_extpoig", c2w:"fd_c2w", lean:"pl_lean", pseudo:"pl_ppp", frog:"lo_frog", oawall:"oa_wall", oashrug:"oa_shrug", tuckflag:"oa_tuckflag", bandpl:"pl_strBand", lsitpara:"pr_lsit", dipsW:"fd_dips", pushW:"fd_push", appuiArr:"pr_extSup", stradlift:"pr_stradLift", elevpress:"pr_elev", shift:"oa_shift", pikepulse:"pr_pikeLift",
   poignets:"z_bascules", epaules:"z_chiot", omoplates:"fd_c2w", toepull:"st_split", kickup:"b2_str15", doigts:"in_str40", pike:"pr_pikeLift", pancake:"z_pancake", biceps:"dr_biceps", tuck2strad:"dr_t2s", protrac:"dr_protrac", mannaLift:"pr_mannaP", extEp:"dr_extEp", stalneg:"pr_halfSt", pikepu:"z_pikepu"};
-// postures (séances « Postures ») : l'animation se retrouve par le nom de la posture
+// postures (séances « Postures ») : l’animation se retrouve par le nom de la posture
 const ZN_ANIM = {"Bascules à quatre pattes":"z_bascules", "Appui sur le bout des doigts":"z_fing", "Planche inclinée":"pl_lean", "Planche inclinée sur les doigts":"pl_lean", "Appui sur le dos des mains":"z_dos", "Pompes de poignets":"z_ppoig",
   "Levées de talons en pike":"pr_pikeLift", "L-sit groupé":"z_lgroup", "L-sit une jambe tendue":"z_lone", "L-sit":"pr_lsit", "Cuillère creuse":"dr_hollow", "Écart facial actif":"z_pancake", "Équerre écartée":"pr_stradL", "Posture du chiot":"z_chiot",
-  "Chien tête en bas actif":"z_dog", "Épaules au mur":"z_murEp", "Pompes d'omoplates en pike":"z_omoP", "Gainage creux":"z_creux", "Appui tendu en pike, pieds sur une caisse":"z_dog", "Équilibre dos au mur":"z_dosMur", "Corbeau":"lo_frog", "Corbeau bras tendus":"z_crowT",
+  "Chien tête en bas actif":"z_dog", "Épaules au mur":"z_murEp", "Pompes d’omoplates en pike":"z_omoP", "Gainage creux":"z_creux", "Appui tendu en pike, pieds sur une caisse":"z_dog", "Équilibre dos au mur":"z_dosMur", "Corbeau":"lo_frog", "Corbeau bras tendus":"z_crowT",
   "Planche latérale":"z_side", "Chaturanga tenu":"z_chat", "Pseudo-planche":"pl_lean", "Planche vers chien, au ralenti":"z_transi", "Guerrier III":"z_war", "Étirement des avant-bras":"z_avbras", "Enfant bras longs":"z_enfant", "Pigeon":"z_pigeon", "Chien tête en bas":"z_dogP", "Torsion couchée":"z_twist"};
 // exercices lestés : le personnage porte le gilet, sauf en version sans charge
 const blockAnim = b => b.dk ? ((b.dk === "dipsW" || b.dk === "pushW") && b.name === DRILLS[b.dk].name ? "dr_" + b.dk : DR_ANIM[b.dk]) : ZN_ANIM[b.name];
 const drSp = (b, size) => { const an = blockAnim(b), sp = el("span","sp"); sp.dataset.pose = poseId(an) || "stand"; sp.dataset.anim = an; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
-// images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n'en a pas, la plus proche
+// images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n’en a pas, la plus proche
 const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
 const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs", hs_oatuck:"oahs", hs_oastrad:"oahs", hs_oaflag:"oahs", vsitC:"crow", mannaP:"crow", manna:"crow", vsitH:"crow", revSup:"stand", pl_halfL:"pl_full", hs_pl45:"pl_full", pl_s45:"pl_straddle"};
 const stillOf = p => STILLS.has(p) ? p : STILL_NEAR[p] || (p.startsWith("hs") ? "hs" : p.startsWith("pl_") ? "pl_lean" : "stand");
@@ -37,11 +37,11 @@ function sprPaint(sp, size){
   sp.style.animation = "spr " + (R.n / SPF).toFixed(2) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / SPF).toFixed(2) + "s";
   if (sprIO && !sp._io) { sp._io = 1; sprIO.observe(sp); }
 }
-// seuls les personnages visibles à l'écran sont animés : le reste est en pause, pour ménager le téléphone
+// seuls les personnages visibles à l’écran sont animés : le reste est en pause, pour ménager le téléphone
 const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { const sp = e.target; if (e.isIntersecting) { if (sp._off) { sp._off = 0; sprPaint(sp, +sp.dataset.size || 64); } sp.style.animationPlayState = "running"; }
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
-// Les animations calculées sont conservées sur l'appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
+// Les animations calculées sont conservées sur l’appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
 const SPV = "38-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
@@ -58,11 +58,11 @@ async function sprStore(key, id, blob, n, hold){
 async function buildSprites(force){
   if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra,F.face]); if (key === sprKey && !force) return;
   const changed = sprKey && sprKey !== key; sprKey = key; const job = ++sprJob;
-  if (changed && sprW) { sprW.terminate(); sprW = null; sprWok = null; }   // un calcul en cours avec l'ancienne tenue est abandonné
+  if (changed && sprW) { sprW.terminate(); sprW = null; sprWok = null; }   // un calcul en cours avec l’ancienne tenue est abandonné
   if (changed) Object.keys(SPR).forEach(id=>{ const u = SPR[id].url; delete SPR[id]; setTimeout(()=>URL.revokeObjectURL(u), 2000); });
   if (await sprRestore(key)) sprRepaint();
   if (job !== sprJob) return;
-  // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l'écran
+  // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l’écran
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
   const fxIds = Object.keys(MS).map(faultKey).filter(Boolean); fxIds.forEach(k => sprMod.faultScript && sprMod.faultScript(k));
@@ -110,6 +110,6 @@ async function sprViaWorker(ids, F, key, job){
   }
   return true;
 }
-// pendant qu'on fait défiler ou qu'on touche l'écran, le calcul des animations attend
+// pendant qu’on fait défiler ou qu’on touche l’écran, le calcul des animations attend
 let sprTouch = 0; ["scroll","touchstart","touchmove","pointerdown"].forEach(ev=>window.addEventListener(ev, () => { sprTouch = Date.now(); }, {passive:true}));
 const sprBusy = () => Date.now() - sprTouch < 700 || !!document.querySelector("dialog[open]");
