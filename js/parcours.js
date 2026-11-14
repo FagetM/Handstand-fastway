@@ -136,7 +136,7 @@ const gainTxt = wk => wk < 9 ? Math.max(1, Math.round(wk)) + " semaine" + (Math.
 // la figure qui fixe la date du but : on remonte le chemin le plus long jusqu’à une figure ouverte aujourd’hui
 function keyFig(P, ids){ let id = ids.reduce((a, b) => (P.fin[b] || 0) > (P.fin[a] || 0) ? b : a, ids[0]), n = 0; while (id && P.start[id] > 0 && P.by[id] && n++ < 200) id = P.by[id]; return id && !st(id).done ? id : null; }
 // fenêtre « Mes dates » : les grandes étapes, puis ce qui ferait gagner du temps
-const STEPS = [["in_str60","Équilibre droit, 60 s"],["pr_straddle","Montée en force écart"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
+const STEPS = [["in_str60","Équilibre droit, 60 s"],["pr_straddle","Montée en force jambes écartées"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre sur un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
 function openEta(){ const box = $("etaBody"), P = plan(), goal = "ul_full", w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";
   const tl = el("div","etl"); STEPS.filter(([id]) => MS[id]).sort((a, b) => (P.fin[a[0]] || 0) - (P.fin[b[0]] || 0)).forEach(([id, name]) => { const r = el("div","etr" + (st(id).done ? " ok" : id === goal ? " goal" : ""));
     r.append(el("span","etn", name), el("span","etd", st(id).done ? "Validé" : dateTxt(P.fin[id]))); tl.append(r); }); box.append(tl);

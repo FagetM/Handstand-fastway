@@ -554,7 +554,7 @@ function openSet(bi, si){
   if (!$("sd").open) $("sd").showModal();
   say(setSay(b, s, si, fx, tg, day));
   if (AUTO) { const timed = fx ? s.dur != null : b.kind === "hold";
-    if (timed) { if (!fx) $("sdHint").textContent = s.auto ? "Tiens " + tg + unit(b) + " : l’arrêt est automatique. Touche le bouton si tu chutes avant." : "Tentative : tiens le plus longtemps possible, puis touche Stop." + (tg ? " Cible : " + tg + unit(b).replace(/\.$/, "") + "." : ""); autoGo("idle", voiceOn() && !S.countdown ? 2600 : 900); } }
+    if (timed) { if (!fx) $("sdHint").textContent = s.auto ? "Tiens " + tg + unit(b) + " : l’arrêt est automatique. Touche le bouton si tu chutes avant." : "Tiens le plus longtemps possible, puis touche Stop." + (tg ? " Cible : " + tg + unit(b).replace(/\.$/, "") + "." : ""); autoGo("idle", voiceOn() && !S.countdown ? 2600 : 900); } }
 }
 // ce que la voix annonce à l’ouverture d’une série : le nom, la série, la cible
 function setSay(b, s, si, fx, tg, day){

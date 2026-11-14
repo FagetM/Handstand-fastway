@@ -101,7 +101,7 @@ nav.tabs{z-index:5;position:fixed;left:0;right:0;bottom:0;background:var(--bg);b
 nav.tabs button{flex:1;max-width:200px;min-height:56px;color:var(--mut);font:600 14px/1 var(--disp);letter-spacing:.02em;text-transform:none;box-shadow:inset 0 2px 0 transparent}
 nav.tabs button.on{color:var(--txt);box-shadow:inset 0 2px 0 var(--acc)}
 .view{display:none}.view.on{display:block}
-.block{padding:24px 0;border-bottom:1px solid var(--line)}
+.block{padding:20px 16px;margin-top:12px;border-radius:16px;background:var(--raise)}   /* une carte de réglage a sa marge intérieure */
 .block h2{margin-bottom:8px}
 .log{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:12px 0;border-top:1px solid var(--line);font-size:15px}
 .log .v{font:600 20px/1 var(--disp);font-variant-numeric:tabular-nums;white-space:nowrap}
