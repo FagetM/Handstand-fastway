@@ -119,6 +119,7 @@ const $ = id => document.getElementById(id);
 const nbsp = t => String(t).replace(/(\d) (?=(?:s|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0").replace(/([ ’]à) (?=\d)/g, "$1\u00a0").replace(/(\d) ([×≈])/g, "$1\u00a0$2").replace(/« /g, "«\u00a0").replace(/ »/g, "\u00a0»");
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = typeof txt === "string" ? nbsp(txt) : txt; return e; };
 const ICON = {
+  flag:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 42V6"/><path d="M12 8c8-4 14 4 24 0v18c-10 4-16-4-24 0" fill="currentColor" fill-opacity=".18"/></svg>',
   check:'<svg width="11" height="9" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4.5l3 3 6-6.5"/></svg>',
   lock:'<svg width="9" height="11" fill="none" stroke="currentColor" stroke-width="1.3"><rect x=".7" y="4.7" width="7.6" height="5.6" rx="1"/><path d="M2.5 4.5V3a2 2 0 014 0v1.5"/></svg>',
   chev:'<svg width="8" height="12" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 1l5 5-5 5"/></svg>',
@@ -172,6 +173,7 @@ const BADGES = [
   {id:"h600", g:"10 h", name:"Dix heures en appui", desc:"Cumuler dix heures de maintien chronométré.", max:36000, cur:c=>c.hold, t:1},
   {id:"e10", g:"Souple", name:"Dix séances d’étirements", desc:"Terminer dix séances d’étirements.", max:10, cur:c=>c.stretch},
   ...TREE.filter(s=>s.ms.length).map((s,i)=>({id:"sec_" + s.id, g:String(i+1).padStart(2,"0"), name:s.name, desc:"Valider toutes les figures de la branche « " + s.name + " ».", max:s.ms.filter(m=>!m.alt).length, cur:()=>doneIn(s.ms.filter(m=>!m.alt).map(m=>m.id))})),
+  {id:"sq8", g:"Traverse", name:"Chemins de traverse", desc:"Réussir 8 quêtes annexes du parcours.", max:8, cur:()=>Object.keys(S.sq || {}).length},
   ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
 ];
 function stats(){
@@ -186,7 +188,7 @@ function stats(){
   const got = S.bgot || (S.bgot = (S.seen && S.seen.b || []).slice());   // un badge gagné le reste, même si de nouvelles figures s’ajoutent à sa branche
   const badges = BADGES.map(b=>{ const cur = Math.min(b.max, b.cur(ctx)), ok = cur >= b.max || got.includes(b.id); if (ok && !got.includes(b.id)) got.push(b.id); return Object.assign({}, b, {cur:ok ? b.max : cur, ok}); });
   const nodeXp = Object.values(MS).reduce((n,m)=>n + Math.round(100 * lvlOf(m) / lvls(m).length), 0);
-  const xp = nodeXp + 2*c.sets + 2*tries + 40*badges.filter(b=>b.ok).length;
+  const xp = nodeXp + 2*c.sets + 2*tries + 40*badges.filter(b=>b.ok).length + 10*Object.keys(S.sq || {}).length;   /* quête annexe : 10 points */
   let lvl = 1; while (xp >= xpFor(lvl)) lvl++;
   return {streak, done, xp, lvl, badges, lo:lvl > 1 ? xpFor(lvl-1) : 0, hi:xpFor(lvl), rank:RANKS[lvl <= 16 ? Math.floor((lvl-1)/2) : Math.min(RANKS.length-1, 8 + Math.floor((lvl-17)/6))]};   /* après la forêt, un rang tous les 6 niveaux */
 }

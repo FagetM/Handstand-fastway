@@ -10,7 +10,7 @@ const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"hs_straddle
 let A3 = null, a3want = null, a3tried = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
 // Chaque figure est rendue image par image dans une bande d’images, puis animée en boucle. Tant qu’elle n’est pas prête, on montre une image fixe.
-const SPR = {}, SPN = 96, SPF = 8; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
+const SPR = {}, SPN = 192, SPF = 8, COLS = 12; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
 const animOn = () => true;
 // exercices d’accompagnement qui ont leur animation (dr_<clé>)
 const DR_ANIM = {hollow:"dr_hollow", tirage:"dr_tirage", rotext:"dr_rotext", extpoig:"dr_extpoig", c2w:"fd_c2w", lean:"pl_lean", pseudo:"pl_ppp", frog:"lo_frog", oawall:"oa_wall", oashrug:"oa_shrug", tuckflag:"oa_tuckflag", bandpl:"pl_strBand", lsitpara:"pr_lsit", dipsW:"fd_dips", pushW:"fd_push", appuiArr:"pr_extSup", stradlift:"pr_stradLift", elevpress:"pr_elev", shift:"oa_shift", pikepulse:"pr_pikeLift",
@@ -33,23 +33,32 @@ function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
   if (!R) { sp.style.backgroundImage = 'url("anim/still_' + stillOf(pose) + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
   { const w = sp.closest(".fx.wait"); if (w) w.classList.remove("wait"); }
-  sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
+  const c = Math.min(R.n, COLS); sp.style.animation = "none";
+  sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (c * size) + "px " + (Math.ceil(R.n / c) * size) + "px";
   // still : on montre la posture tenue de la figure, sans boucle (nœuds du parcours)
-  if (!animOn() || sp.dataset.still) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
-  sp.style.backgroundPosition = "0 0"; sp.style.setProperty("--end", (-R.n * size) + "px");
-  sp.style.animation = "spr " + (R.n / SPF).toFixed(2) + "s steps(" + R.n + ") infinite"; sp.style.animationDelay = (-Math.random() * R.n / SPF).toFixed(2) + "s";
+  if (!animOn() || sp.dataset.still) { sprLive.delete(sp); sprAt(sp, R.hold, size, c); return; }
+  sp._f = Math.floor(Math.random() * R.n); sprAt(sp, sp._f, size, c); sprLive.add(sp); sprTick();
   if (sprIO && !sp._io) { sp._io = 1; sprIO.observe(sp); }
 }
+// planche en grille (COLS images par ligne) : une seule horloge fait avancer les personnages visibles, image par image
+const sprLive = new Set(); let sprClock = 0;
+function sprAt(sp, f, size, c){ sp.style.backgroundPosition = (-(f % c) * size) + "px " + (-Math.floor(f / c) * size) + "px"; }
+function sprTick(){ if (sprClock) return; sprClock = setInterval(() => {
+  if (document.hidden) return;
+  sprLive.forEach(sp => { const R = SPR[sp.dataset.anim]; if (!sp.isConnected || !R) { sprLive.delete(sp); return; } if (sp._pause) return;
+    sp._f = (sp._f + 1) % R.n; sprAt(sp, sp._f, +sp.dataset.size || 64, Math.min(R.n, COLS)); });
+  if (!sprLive.size) { clearInterval(sprClock); sprClock = 0; } }, 1000 / SPF); }
 // seuls les personnages visibles à l’écran sont animés : le reste est en pause, pour ménager le téléphone
-const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { const sp = e.target; if (e.isIntersecting) { if (sp._off) { sp._off = 0; sprPaint(sp, +sp.dataset.size || 64); } sp.style.animationPlayState = "running"; }
-  else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
+const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.forEach(e => { const sp = e.target; if (e.isIntersecting) { if (sp._off) { sp._off = 0; sprPaint(sp, +sp.dataset.size || 64); } sp._pause = 0; }
+  else { sp._pause = 1; if (SPR[sp.dataset.anim]) { sp._off = 1; sprLive.delete(sp); sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l’appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "42-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "43-" + SPN + "-" + SPF + "-g" + COLS, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){
-  const meta = sprMeta(); if (meta.key !== key || meta.v !== SPV || !window.caches) return 0;
+  const meta = sprMeta(); if (window.caches && meta.v && meta.v !== SPV) { try { await caches.delete(SPC); localStorage.removeItem(SPM); } catch(e){} return 0; }   /* anciennes planches (autre format) : on libère la place */
+  if (meta.key !== key || meta.v !== SPV || !window.caches) return 0;
   let n = 0; try { const c = await caches.open(SPC);
     for (const id of Object.keys(meta.items || {})) { if (SPR[id]) continue; const r = await c.match("spr/" + id); if (!r) continue; const bl = await r.blob(); SPR[id] = {url:URL.createObjectURL(bl), n:meta.items[id].n, hold:meta.items[id].hold}; n++; }
   } catch(e){} return n;
@@ -79,14 +88,14 @@ async function buildSprites(force){
   for (const id of ids){
     if (job !== sprJob) return; const sc = sprMod.SCRIPTS[id];
     while (document.hidden || sprBusy()) { await new Promise(r=>setTimeout(r, 400)); if (job !== sprJob) return; }
-    const sheet = document.createElement("canvas"); sheet.width = MAXF * SPN; sheet.height = SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1, g = 0;
+    const sheet = document.createElement("canvas"); sheet.width = COLS * SPN; sheet.height = Math.ceil(MAXF / COLS) * SPN; const cx = sheet.getContext("2d"); let n = 0, hold = -1, g = 0;
     const stillAt = sc.still || sc.s[sc.s.length - 1][0];
-    const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, n * SPN, 0, SPN, SPN); n++; } };
+    const snap = () => { if (n < MAXF) { A.step(dt); if (hold < 0 && A.holding() && A.at() === stillAt) hold = n; cx.drawImage(A.canvas, (n % COLS) * SPN, Math.floor(n / COLS) * SPN, SPN, SPN); n++; } };
     A.vest(sc.vest); A.wall(sc.wall || 0); A.view(sc.yaw != null ? sc.yaw : -1.15); A.jump(sc.start || "stand"); A.set({pose:sc.start || "stand", fit:F, level:6}); snap(); snap();
     A.play(sc.s, !sc.cut);
     do { snap(); g++; if (g % 4 === 0) { await idle(); if (job !== sprJob) return; } } while (A.moving() && g < MAXF);
     if (!sc.cut) snap(); if (hold < 0) hold = Math.floor(n / 2);
-    const out = document.createElement("canvas"); out.width = n * SPN; out.height = SPN; out.getContext("2d").drawImage(sheet, 0, 0);
+    const out = document.createElement("canvas"); out.width = Math.min(n, COLS) * SPN; out.height = Math.ceil(n / COLS) * SPN; out.getContext("2d").drawImage(sheet, 0, 0); sheet.width = sheet.height = 0;
     const blob = await new Promise(r => out.toBlob(r, "image/webp", 0.84)); if (job !== sprJob || !blob) return;
     SPR[id] = {url:URL.createObjectURL(blob), n, hold}; sprRepaint(id); sprStore(key, id, blob, n, hold); await idle();
   }
@@ -106,7 +115,7 @@ async function sprViaWorker(ids, F, key, job){
   for (const id of ids){
     if (job !== sprJob) return true;
     const r = await new Promise(res => { const to = setTimeout(() => res({error:"timeout"}), 30000);
-      w.onmessage = e => { if (e.data && e.data.id === id) { clearTimeout(to); res(e.data); } }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:144}); });
+      w.onmessage = e => { if (e.data && e.data.id === id) { clearTimeout(to); res(e.data); } }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:144, COLS}); });
     if (job !== sprJob) return true;
     if (r.error || !r.blob) { if (Object.keys(SPR).length === 0) { sprWok = false; w.terminate(); sprW = null; return false; } continue; }
     SPR[id] = {url:URL.createObjectURL(r.blob), n:r.n, hold:r.hold}; sprRepaint(id); sprStore(key, id, r.blob, r.n, r.hold);
