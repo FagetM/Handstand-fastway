@@ -65,12 +65,12 @@ function renderSommet(){
   const anc = new Set(), walk = i => (MS[i].req || []).forEach(r => { if (MS[r] && !anc.has(r)) { anc.add(r); walk(r); } }); walk(id);
   const done = [...anc].filter(r => reqDone(r)).length, tot = anc.size || 1, pct = Math.round(done / tot * 100), y = yogaOf(id);
   box.hidden = false;
-  const art = el("div","smart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 88); art.append(sp);
+  const art = el("span","smart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 88); art.append(sp);
   const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr);
-  const g = el("div","grow"); g.append(el("div","lab","Ton prochain sommet"), el("b","smn", m.name));
+  const g = el("span","grow"); g.append(el("span","lab","Ton prochain sommet"), el("b","smn", m.name));
   if (y) g.append(el("span","smy", y[0] + (y[1] ? ", " + y[1] : "")));
-  const bar = el("div","smbar"), i = el("span"); i.style.width = pct + "%"; bar.append(i);
-  g.append(bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + (P.fin[id] ? ", " + dateTxt(P.fin[id]) : "")));
+  const bar = el("span","smbar"), i = el("span"); i.style.width = pct + "%"; bar.append(i);
+  g.append(bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + "."), P.fin[id] ? el("span","mut","Sommet en vue : " + dateTxt(P.fin[id]) + ".") : "");
   box.append(art, g); box.onclick = () => { showTab("path"); goHere(id); setTimeout(() => quick(id), 500); };
   box.setAttribute("aria-label", "Ton prochain sommet : " + m.name + ", " + pct + " % du chemin");
 }
