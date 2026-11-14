@@ -11,12 +11,18 @@ const TREE = [
       desc:"Position de pompe, bras tendus, corps aligné de la tête aux talons. C’est la ligne du corps que tu garderas tête en bas."},
     {id:"fd_roue", name:"Roue au sol", en:"Cartwheel", type:"check", req:[],
       desc:"La roue, sur un sol dégagé. C’est ta sortie de secours : quand l’équilibre part, tu tournes sur le côté et tu retombes sur les pieds."},
-    {id:"fd_push", name:"Pompes", en:"Push-ups", type:"reps", target:20, req:["fd_plank"],
+    {id:"fd_pushInc", name:"Pompes inclinées", en:"Incline push-ups", type:"reps", target:15, req:["fd_plank"],
+      desc:"Mains sur une table ou un banc solide, corps gainé : 15 pompes propres. Plus l’appui est bas, plus c’est dur ; descends d’un cran quand 15 passent."},
+    {id:"fd_pike", name:"Pike, pieds sur une chaise", en:"Box pike hold", type:"hold", target:30, req:["fd_plank"],
+      desc:"Pieds sur une chaise, mains au sol, bassin au-dessus des épaules : la tête en bas pour la première fois, sans risque de tomber."},
+    {id:"fd_push", name:"Pompes", en:"Push-ups", type:"reps", target:20, req:["fd_pushInc"],
       desc:"20 pompes propres d’affilée, corps gainé, poitrine jusqu’au poing. La force de base pour les épaules et la planche."},
-    {id:"fd_c2w", name:"Poitrine face au mur", en:"Chest To Wall Hold", type:"hold", target:30, req:["fd_plank"],
+    {id:"fd_c2w", name:"Poitrine face au mur", en:"Chest To Wall Hold", type:"hold", target:30, req:["fd_pike"],
       desc:"Face au sol, pieds contre le mur, tu montes les pieds le long du mur jusqu’à la verticale, poitrine face au mur. Tenir 30 s donne l’endurance d’épaules pour la suite."},
-    {id:"fd_dips", name:"Dips", en:"Dips", type:"reps", target:10, req:["fd_push"],
-      desc:"10 dips, bras jusqu’à 90° : aux barres parallèles, ou entre deux chaises solides calées contre un mur. Avec les pompes, c’est le prérequis de la planche."},
+    {id:"fd_dipsB", name:"Dips sur banc", en:"Bench dips", type:"reps", target:15, req:["fd_pushInc"],
+      desc:"Mains sur un banc derrière toi, genoux pliés, pieds au sol : descends jusqu’à 90° aux coudes, épaules basses. Prépare les épaules aux vrais dips."},
+    {id:"fd_dips", name:"Dips", en:"Dips", type:"reps", target:10, req:["fd_push","fd_dipsB"],
+      desc:"10 dips, bras jusqu’à 90°, aux barres parallèles (parc, salle) ou sur l’angle d’un plan de travail solide. Avec les pompes, c’est le prérequis de la planche."},
   ], videos:[]},
   {id:"starter", name:"Départ", en:"Starter", ms:[
     {id:"st_bail30", name:"Sortie en roue, à 30 cm du mur", en:"Cartwheel Bail – 30cm From Wall", type:"check", req:["fd_roue","fd_c2w"],
@@ -82,7 +88,7 @@ const TREE = [
       desc:"Dos au mur, jambes écartées : tu retires une main et tu tiens sur l’autre. Première vraie charge sur un bras, avec la sécurité du mur."},
     {id:"oa_shrug", name:"Haussements d’épaule à un bras", en:"One Arm Wall Shrugs – 8 Per Side", sub:"8 de chaque côté", type:"reps", target:8, req:["oa_wall"],
       desc:"Au mur sur un bras, l’épaule descend puis remonte vers l’oreille. La force de base sur un bras."},
-    {id:"oa_shift", name:"Transfert de poids", en:"Weight Shifting – 5x Per Side", sub:"5 fois de chaque côté", type:"reps", target:5, req:["in_str60","in_toes7","oa_shrug"],
+    {id:"oa_shift", name:"Transfert de poids", en:"Weight Shifting – 5x Per Side", sub:"5 fois de chaque côté", type:"reps", target:5, req:["in_str60","oa_shrug"],
       desc:"Tu fais passer le poids d’une main sur l’autre, puis tu reviens, sans casser la ligne."},
     {id:"oa_sidehold", name:"Tenue décalée sur une main", en:"Weight Shift Hold – 20s Per Side", sub:"20 s de chaque côté", type:"hold", target:20, req:["oa_shift"],
       desc:"Bassin décalé et abaissé côté appui. L’autre main reste à plat mais presque vide."},
@@ -118,7 +124,7 @@ const TREE = [
       desc:"Assis jambes serrées, mains à mi-cuisse : décolle les talons 2 s, sans te pencher en arrière."},
     {id:"pr_stradLift", name:"Élévations jambes écartées", en:"Straddle Compression Lifts – 10", type:"reps", target:10, req:["pr_pikeLift"],
       desc:"En écart, mains devant le bassin : lève les deux jambes tendues, tiens 2 s."},
-    {id:"pr_wallNeg", name:"Descentes face au mur", en:"Wall-Facing Straddle Negatives – 5", type:"reps", target:5, req:["b2_str15","pr_pikeLift"],
+    {id:"pr_wallNeg", name:"Descentes face au mur", en:"Wall-Facing Straddle Negatives – 5", type:"reps", target:5, req:["b2_str15"],
       desc:"Poitrine face au mur, décolle les pieds en écart et descends en 5 s."},
     {id:"pr_negS", name:"Descentes lentes de la montée", en:"Straddle Press Negatives – 3", sub:"3 descentes de 5 s", type:"reps", target:3, req:["pr_wallNeg","pr_stradLift"],
       desc:"Depuis l’équilibre jambes écartées, tu redescends en 5 secondes jusqu’aux pieds, sans les laisser tomber. La montée jambes écartées à l’envers : c’est par là qu’on l’apprend."},
@@ -205,7 +211,7 @@ const TREE = [
     {id:"pl_fullBand", name:"Full planche à l’élastique", en:"Band full planche – 10s", type:"hold", target:10, req:["pl_half"],
       desc:"Élastique léger aux hanches, jambes serrées, corps d’un bloc."},
     {id:"pl_fullNeg", name:"Négatives de full planche", en:"Full planche negatives – 4", type:"reps", target:4, req:["pl_fullBand"],
-      desc:"Entre en straddle, resserre les jambes, puis freine 3 à 5 s la descente des hanches jusqu’au lean."},
+      desc:"Entre en full planche depuis la straddle, puis freine 3 s en rouvrant les jambes vers la straddle, sans laisser tomber les hanches."},
     {id:"pl_full", name:"Full planche", en:"Full planche", type:"hold", target:10, req:["pl_fullNeg"],
       desc:"Corps à l’horizontale, jambes tendues et serrées, bras tendus."},
     {id:"pl_strHs", name:"De la straddle planche à l’équilibre", en:"Straddle Planche to Handstand – 2", type:"reps", target:2, req:["pl_straddle","pr_straddle"],
@@ -231,7 +237,7 @@ const TREE = [
   ], videos:[]},
   {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l’équilibre","The undisputed fastest way to learn to handstand"]]},
 ];
-const P_FD = ["fd_plank","fd_roue","fd_c2w","fd_push","fd_dips"];
+const P_FD = ["fd_plank","fd_roue","fd_pike","fd_c2w","fd_pushInc","fd_push","fd_dipsB","fd_dips"];
 const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 const GOALS = [
@@ -296,7 +302,7 @@ const DETAILS = {
   pr_pike:{how:["Même principe, mains posées devant les pieds joints.","Avance davantage les épaules.","Les jambes, tendues et serrées, montent par l’avant."],cue:["Ventre contre les cuisses au départ."],err:"Écarter les jambes en cours de montée.",ok:"2 montées jambes serrées et tendues."},
   pr_negS:{how:["Monte en équilibre jambes écartées.","Avance les épaules et laisse le bassin descendre derrière, jambes écartées tendues.","Compte 5 secondes jusqu’aux pieds, pose-les sans bruit."],cue:["Épaules devant les mains tout du long.","Les jambes restent larges et actives."],err:"Plier les bras pour freiner : c’est l’épaule qui travaille, pas le coude.",ok:"3 descentes de 5 s, pieds posés sans bruit."},
   pr_stradL:{how:["Assis jambes écartées tendues, mains entre les jambes (sur parallettes c’est plus facile).","Pousse le sol, abaisse les épaules et décolle les fesses et les talons."],cue:["Bras verrouillés, épaules basses.","Pointes tendues, genoux tendus."],err:"Se pencher en arrière : le buste reste au-dessus des mains.",ok:"10 s, fesses et talons décollés."},
-  pr_lsit:{how:["Mains au sol ou sur parallettes à côté des hanches, bras tendus.","Pousse le sol, abaisse les épaules, décolle fesses et talons, jambes serrées tendues."],cue:["Genoux verrouillés, pointes tendues.","Épaules loin des oreilles."],err:"Laisser les jambes tomber sous l’horizontale ou plier les genoux.",ok:"15 s, jambes à l’horizontale."},
+  pr_lsit:{how:["Mains au sol ou sur parallettes à côté des hanches, bras tendus.","Pousse le sol, abaisse les épaules, décolle fesses et talons, jambes serrées tendues."],cue:["Genoux verrouillés, pointes tendues.","Épaules loin des oreilles."],err:"Laisser les jambes tomber sous l’horizontale ou plier les genoux.",ok:"25 s, jambes à l’horizontale."},
   pr_lsitHs:{how:["Depuis l’équerre, avance les épaules au-dessus des mains et arrondis le dos.","Le bassin monte derrière, les jambes serrées passent sous puis au-dessus de la ligne des épaules (forte compression).","Termine comme une montée en force jambes serrées, et ouvre jusqu’à l’équilibre."],cue:["Les pieds ne touchent jamais le sol.","Compression maximale : genoux près du visage."],err:"Donner un coup de reins : le passage doit être lent et continu.",ok:"Une montée complète et lente, de l’équerre à l’équilibre."},
   pr_elev:{how:["Mains sur les parallettes, pieds sur une chaise derrière toi, jambes écartées.","Avance les épaules loin devant les mains, arrondis le dos, laisse le bassin monter.","Les pieds quittent la chaise sans saut, et tu montes jusqu’à l’équilibre (dos au mur au début si besoin)."],cue:["Épaules devant, bras verrouillés.","Pousse le sol, ne saute pas."],err:"Donner une impulsion avec les pieds : la chaise sert à commencer plus haut, pas à sauter.",ok:"3 montées propres, sans impulsion."},
   oa_tuckflag:{how:["Genoux groupés, incline-les sur le côté.","Le bassin suit, le poids va sur une main."],cue:["Bras tendus."],err:"Vriller le bassin.",ok:"5 s par côté."},

@@ -164,6 +164,7 @@ export const SCRIPTS = {
   fd_push:   {s:[["squat",0.45,0],["c2w_0",0.5,0.4],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.15],["pu_down",0.55,0.05],["c2w_0",0.5,0.6]], still:"pu_down"},
   fd_roue:   {cut:true, yaw:-0.15, s:[["stand",0.2,0.2],...UP,["hs_straddle",0.45,0.2],["hs_cw1",0.45,0],["hs_cw2",0.45,0.3],["hs_cw3",0.5,0.2]], still:"hs_straddle"},
   fd_dips:   {wall:"bars", yaw:-0.6, s:[["stand",0.3,0.1],["crouch",0.4,0],["sup_up",0.5,0.4],["sup_dn",0.7,0.1],["sup_up",0.6,0.2],["sup_dn",0.7,0.1],["sup_up",0.6,0.6]], still:"sup_up"},
+  fd_pike:   {cut:true, s:[["squat",0.45,0],["c2w_0",0.5,0.3],["z_dog",0.8,3.0],["c2w_0",0.8,0.2]], still:"z_dog"},
   fd_c2w:    {wall:-1, s:[["squat",0.45,0.1],["c2w_0",0.45,0.2],["c2w_1",1.0,0.2],["c2w_2",1.2,0.2],["hs",1.5,1.6],["c2w_2",1.4,0],["c2w_1",1.2,0],["c2w_0",1.0,0.2]], still:"hs"},
   me:        {s:[["stand",0.3,1.2],["cheer",0.5,0.7],["stand",0.5,0.4],["cheer",0.5,0.7],["stand",0.5,0.8]], still:"stand"},
   pl_lean:   {s:[["squat",0.45,0],["pl_lean",0.5,2.2]]},

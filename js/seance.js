@@ -45,7 +45,7 @@ const DRILLS = {
   oawall:{name:"Tenue un bras dos au mur", kind:"hold", sets:[3,20], sides:1, how:"Dos au mur, jambes écartées : transfère le poids sur une main, retire l’autre et tiens. Épaule poussée vers l’oreille, bassin au-dessus de la main. Côté faible d’abord."},
   oashrug:{name:"Haussements d’épaule à un bras", kind:"reps", sets:[3,8], sides:1, how:"En appui à un bras au mur, bras verrouillé : laisse l’épaule descendre puis repousse-la vers l’oreille. La force de base de l’équilibre sur un bras."},
   tuckflag:{name:"Drapeaux groupés pulsés", kind:"reps", sets:[3,6], how:"En équilibre, genoux groupés : incline-les sur le côté en petits rebonds contrôlés, puis tiens 3 s la position la plus basse. Change de côté."},
-  biceps:{name:"Renforcement du biceps bras tendu", kind:"reps", sets:[3,12], rest:45, how:"Curl bras presque tendu à l’élastique, lent : prépare le tendon du biceps et le coude au travail bras tendus."},
+  biceps:{name:"Renforcement du biceps bras tendu", kind:"reps", sets:[3,12], rest:45, how:"Curl bras presque tendu, à l’élastique, avec un haltère léger ou un sac un peu lesté, lent : prépare le tendon du biceps et le coude au travail bras tendus."},
   tuck2strad:{name:"Extensions tuck vers straddle", kind:"reps", sets:[4,3], how:"Depuis l’advanced tuck, ouvre les jambes en straddle 2 s puis reviens, sans laisser tomber les hanches."},
   // avec du matériel (réglages › Mon matériel)
   bandpl:{name:"Planche à l’élastique", kind:"hold", sets:[4,10], rest:150, how:"Élastique en boucle sous les hanches, fixé en hauteur par un ancrage de porte (porte fermée à clé) : tiens la position de l’étape suivante, bras verrouillés, omoplates écartées.", eq:"band"},
@@ -78,12 +78,14 @@ const DRILLS = {
   ecartAP:{name:"Grand écart antéro-postérieur sur blocs", kind:"hold", sets:[1,60], sides:1, how:"Un bloc sous la cuisse avant, bassin de face : descends seulement tant que c’est confortable. Jamais de rebond."},
   pont:{name:"Pont progressif", kind:"hold", sets:[3,20], hands:1, how:"Après les épaules en extension : pont sur les mains, bras tendus, épaules au-dessus des poignets. Débutant : mains sur un banc ou descentes le long du mur. Mal au bas du dos : stop."},
   poignetsExt:{name:"Poignets en extension", kind:"hold", sets:[2,30], hands:1, how:"À genoux, paumes à plat, doigts vers l’avant : avance les épaules au-delà des mains, sans douleur, et respire."},
+  ruades:{name:"Ruades", kind:"reps", sets:[3,6], rest:45, how:"Mains au sol, petits sauts jambes groupées pour amener les hanches au-dessus des épaules, puis retour doux. On apprend à monter sans peur, avant la montée en fente."},
+  rowTable:{name:"Tirage sous une table", kind:"reps", sets:[3,10], rest:45, how:"Allongé sous une table solide, mains au bord, corps gainé : tire la poitrine vers la table, serre les omoplates, redescends lentement."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l’air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
 function drillsFor(m){
   const s = m.sec, id = m.id, out = [];
   if (s === "base") out.push("hollow","frog");
-  else if (s === "starter") out.push("hollow","epaules","frog");
+  else if (s === "starter") out.push("ruades","hollow","epaules");
   else if (s === "b1") out.push("c2w","toepull","hollow");
   else if (s === "b2") out.push("c2w","kickup","doigts","hollow");
   else if (s === "inter") out.push(/7|toes/.test(id) ? "pike" : "doigts", /7/.test(id) ? "pancake" : "kickup", "omoplates");
@@ -93,7 +95,7 @@ function drillsFor(m){
   if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
   if (s === "press") out.push("pikepulse","stradlift","pancake","omoplates");   // l’appui penché reste réservé aux jours de planche
   if (id === "pr_straddle") out.unshift("elevpress");
-  if (/^pr_(manna|vsitH|extSup)/.test(id)) { out.splice(0, out.length, "extEp", "appuiArr", "mannaLift", "pancake"); }   // la manna, c’est d’abord des épaules en extension
+  if (/^pr_(manna|vsitH|extSup)/.test(id)) { out.splice(0, out.length, "extEp", "appuiArr", "mannaLift", "biceps", "pancake"); }   // la manna, c’est d’abord des épaules en extension
   if (s === "ultime") out.push("doigts","extEp","omoplates");
   if (id === "pr_stalder" || id === "pr_lsitHs") { out.unshift("stalneg"); if ((S.equip || {}).para) out.unshift("lsitpara"); }
   else if (s === "low") out.push("frog","omoplates");
@@ -162,7 +164,7 @@ function fitTime(blocks, mins){
 // repos entre séries de planche : il augmente avec la difficulté
 // repos entre les séries de travail d’une figure : la séance l’applique, le plan de la fiche l’annonce
 const restOf = m => { const pr = /^pl_/.test(m.id); return pr ? (PL_REST[m.id] || 150) : /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id) ? (/Neg|negS|halfSt/.test(m.id) ? 120 : 150) : /Lift$/.test(m.id) ? 45 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75; };
-const PL_REST = {pl_strHs:240, pl_hsDown:210, pl_halfPress:240, pl_press:240, pl_fullNeg:240, pl_lean2:90, pl_tuckP:120, pl_tuckPu:120, pl_tuckO:120, pl_strBand:150, pl_strBandL:150, pl_strNar:180, pl_half:180, pl_fullBand:180, pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:150, pl_frog:150, pl_1leg:150, pl_straddle:180, pl_full:180, pl_pike:150};
+const PL_REST = {pl_strHs:240, pl_hsDown:210, pl_halfPress:240, pl_press:240, pl_fullNeg:240, pl_lean2:90, pl_tuckP:120, pl_tuckPu:120, pl_tuckO:120, pl_strBand:240, pl_strBandL:240, pl_strNar:240, pl_half:240, pl_fullBand:240, pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:240, pl_frog:240, pl_1leg:240, pl_straddle:240, pl_full:300, pl_pike:240};   /* dès l’advanced tuck : 4 à 5 min, comme dans les programmes de planche */
 function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
@@ -225,7 +227,7 @@ function builtinBlocks(){
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
     if (pl.sides) base.note = /^pl_/.test(id) ? "Alterne la jambe à chaque série (séries paires d’une jambe, impaires de l’autre) : les deux doivent tenir la cible." : "Alterne le côté à chaque série (séries paires d’un côté, impaires de l’autre) : les deux doivent tenir la cible.";
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 180 : 120, max:true})))}); });
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 240 : 120, max:true})))}); });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = (tired || deload || PS.phase ? [] : S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + ", vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l’essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
@@ -246,7 +248,7 @@ function builtinBlocks(){
   const prep = []; if (next.some(id => /^pr_(manna|vsitH|extSup)|^ul_c3|^ul_full/.test(id))) prep.push(prepB("extEp", 2));
   if (next.some(id => /^pl_/.test(id))) prep.push(prepB("lean", 2, 15), prepB("biceps", 1));
   // antagonistes, les jours de force : tirage et, en alternance, rotateurs externes ou extenseurs du poignet (à l’élastique)
-  const anta = (S.equip || {}).band && next.some(FORCE) && !pain ? ["tirage", dn % 2 ? "rotext" : "extpoig"].map(k => { const b = drillBlock(k, mins <= 30); b.keep = true; return b; }) : [];
+  const anta = next.some(FORCE) && !pain ? ((S.equip || {}).band ? ["tirage", dn % 2 ? "rotext" : "extpoig"] : ["rowTable"])   /* sans élastique : le tirage se fait sous une table */.map(k => { const b = drillBlock(k, mins <= 30); b.keep = true; return b; }) : [];
   // entretien : une figure validée laissée plus de 10 jours revient pour 2 essais à 70 % (l’équilibre droit, puis la plus récente de chaque discipline)
   const keepUp = []; if (!pain && !tired && !deload && PS.phase !== 2) { const pool = ["in_str60"].concat(["onearm","planche","press"].map(sid => SEC[sid].ms.filter(m => st(m.id).done && m.type === "hold" && !SIDED.has(m.id) && !m.alt).map(m => m.id).pop())).filter(id => id && st(id).done && !next.includes(id));
     const lastK = id => { const n = "pg:" + MS[id].name; for (let q = S.log.length - 1; q >= 0; q--) { const l = S.log[q]; if (l.id === id || l.id === n || l.id === n + ", entretien") return l.t; } return 0; };
@@ -494,7 +496,7 @@ function plStep(){
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
   box.append(el("div","lab", "Question " + (++plN) + ", " + SEC[m.sec].name), el("h2",null, m.name), art);
   if (m.desc) box.append(el("p","mut", m.desc));
-  const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); if (SAFE.has(id) || FORCE(id) || m.sec === "onearm") (S.confirm || (S.confirm = [])).push(id); save(); plStep(); };
+  const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); if (SAFE.has(id) || FORCE(id) || m.sec === "onearm" || (["b1","b2","inter"].includes(m.sec) && m.type === "hold")) (S.confirm || (S.confirm = [])).push(id); save(); plStep(); };
   const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } else plMiss[m.sec] = (plMiss[m.sec] || 0) + 1; plSkip.add(id); save(); plStep(); };
   const exact = (unit) => { const r = el("form","plx"), i = el("input"); i.type = "number"; i.min = "0"; i.inputMode = "numeric"; i.placeholder = "autre"; i.setAttribute("aria-label","Nombre exact en " + unit);
     const b = el("button","chip","Valider"); b.type = "submit"; r.onsubmit = (e) => { e.preventDefault(); const v = Math.max(0, Math.round(+i.value || 0)); if (!i.value) return; v >= (m.target || 1) ? yes() : no(v); };
