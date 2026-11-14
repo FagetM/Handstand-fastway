@@ -252,7 +252,6 @@ function builtinBlocks(){
   const conf = confIds.map(id=>{ const m = MS[id], base = {name:m.name + ", vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l’essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
     return m.type === "check" ? Object.assign(base, {kind:"reps", sets:Array.from({length:3}, ()=>({reps:1, lab:"essai", rest:45}))})
       : Object.assign(base, {kind:m.type, sets:Array.from({length:2}, ()=>({goal:m.target, rest:m.type === "hold" ? 120 : 90, max:true}))}); });
-  if (!next.length && !conf.length) return blocks;
   const lists = next.slice().sort((a, b) => (FORCE(b) ? 1 : 0) - (FORCE(a) ? 1 : 0)).map(id => drillsFor(MS[id]).filter(k => !(k === "oawall" && next.includes("oa_wall")))), dr = [];
   if (next.some(id => /^pl_/.test(id)) && (fok || !next.some(FORCE))) dr.push("biceps");   // le tendon du biceps se prépare dès qu’on travaille la planche
   for (let r = 0; r < 6; r++) lists.forEach(l => { const k0 = l[r], k = k0 && frag("hyper") ? ({pancake:"ecartAct", epaules:"epAct"})[k0] || k0 : k0; if (k && !dr.includes(k)) dr.push(k); });   // hyperlaxe : la version active
