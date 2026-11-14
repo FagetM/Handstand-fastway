@@ -301,7 +301,7 @@ ul.plan li{margin:8px 0}
 .sign .md{flex:none;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font:600 16px/1 var(--disp);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
 .sign.done .md{background:var(--txt);color:var(--bg);box-shadow:none}
 .sign.cur{box-shadow:inset 0 0 0 2px var(--acc)}.sign.cur .md{box-shadow:inset 0 0 0 2.5px var(--acc);color:var(--acc)}
-.sign.lk{opacity:.75}
+.sign.lk>*{opacity:.75}   /* le panneau reste opaque : le tracé ne se voit pas au travers */
 .sign .sname{font-size:19px}
 .sign .mut{font-size:12px;line-height:1.25;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .sign .cnt{font:600 16px/1 var(--disp);color:var(--mut)}
@@ -681,7 +681,7 @@ dialog:focus-visible{outline:none}
 body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:translate(-50%,140%)}body>#toast.on{transform:translate(-50%,0)}
 
 /* libellés des figures lisibles par-dessus le tracé, et au-dessus des tuiles bonus voisines */
-.jn .n{background:var(--bg);border-radius:6px;padding:0 4px}.jn:not(.alt){z-index:2}.jn.alt{width:104px}
+.jn .n{background:var(--bg);border-radius:6px;padding:2px 4px}.jn:not(.alt){z-index:2}.jn.alt{width:104px}
 
 .chest.open .cl{color:var(--goldtxt)}
 .sign .mut{-webkit-line-clamp:2}
@@ -691,4 +691,4 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 label[for="eqKg"]{display:block;margin-top:12px}
 .dpill.on span{color:var(--txt)}
 .jn .rg circle{stroke:color-mix(in srgb,var(--mut) 45%,var(--line))}
-.etab .etm{white-space:nowrap}.jn .g{background:var(--bg);border-radius:6px;padding:0 4px}
+.etab .etm{white-space:nowrap}.jn .g{background:var(--bg);border-radius:6px;padding:2px 4px}

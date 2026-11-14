@@ -56,7 +56,7 @@ function planFor(m){
   if (m.type === "check"){
     out.n = {sets, check:true};
     out.head = "Plan pour réussir cette figure"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + sets + " essais ; " + (/^ul_/.test(m.id) ? "une réussite par séance compte, il en faut sur 3 séances espacées de 2 jours." : "3 réussites dans une même séance comptent, il en faut sur 2 séances."), (FORCE(m.id) ? "Les autres jours : repos des épaules et des coudes, pas d’essai à froid." : "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste."), "Quand le geste se dégrade, fais une pause.", "À chaque réussite propre, touche « Je l’ai réussi »."];
+    out.lines = [freq, "À chaque séance : " + sets + " essais ; " + (/^ul_/.test(m.id) ? "une réussite par séance compte, il en faut sur 3 séances espacées d’au moins 2 jours, sur 10 jours au moins." : "3 réussites dans une même séance comptent, il en faut sur 2 séances."), (FORCE(m.id) ? "Les autres jours : repos des épaules et des coudes, pas d’essai à froid." : "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste."), "Quand le geste se dégrade, fais une pause.", "À chaque réussite propre, touche « Je l’ai réussi »."];
   } else {
     const hold = m.type === "hold", lo = hold ? Math.min(2, T) : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
