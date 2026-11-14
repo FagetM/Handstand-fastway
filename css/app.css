@@ -826,3 +826,17 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .recrow .recn{min-width:0}.recrow b{font-size:14px;white-space:nowrap}
 .smlab{display:flex;align-items:center;gap:4px;margin-top:8px;color:var(--goldtxt)!important}.smlab svg{flex:none}
 .cytest .mut{white-space:nowrap}.cyok{margin-top:16px}
+/* les trois grandes disciplines : des cartes couronnées, plus une présentation de celle qui est affichée */
+.dsel{flex-direction:column;gap:12px}
+.drow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dsel .dpill{gap:4px;padding:16px 4px 12px;border-radius:20px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line),var(--shadow)}
+.dsel .dpill.on{background:color-mix(in srgb,var(--gold) 14%,var(--raise));box-shadow:inset 0 0 0 2px var(--gold),var(--shadow)}
+.dmed{position:relative;display:grid;place-items:center;width:72px;height:72px;margin-bottom:8px;border-radius:50%;background:var(--bg);isolation:isolate}
+.dmed .laurel{width:104px;height:104px}
+.dsel .dpill b{font:700 14px/1.2 var(--disp);text-align:center}
+.dbar{display:block;width:72%;height:4px;border-radius:2px;background:var(--line);overflow:hidden}.dbar span{display:block;height:100%;background:var(--gold)}
+.dsel .dpill .dcnt{font-size:12px;color:var(--mut)}
+.dintro{padding:16px;border-radius:16px;background:color-mix(in srgb,var(--gold) 9%,var(--raise));font-size:14px;line-height:1.45}
+.dintro .dyoga{color:var(--goldtxt);font-weight:600}.dintro .dyoga i{font-weight:700}
+.dintro p{margin:4px 0 0}
+.dhead{font:700 18px/1.2 var(--disp);color:var(--goldtxt);text-align:center;margin-bottom:4px}

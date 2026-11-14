@@ -78,3 +78,9 @@ function renderSommet(){
   box.append(art, g); box.onclick = () => { showTab("path"); goHere(aid); setTimeout(() => quick(aid), 500); };
   box.setAttribute("aria-label", "Ton prochain sommet : " + m.name + ", " + pct + " % du chemin");
 }
+// les trois grandes disciplines : leur figure maîtresse, leur nom en yoga, une ligne d’histoire
+const DISC = {
+  onearm:{fig:"oa_oahs10", yoga:["Eka Hasta Vṛkṣāsana", "l’arbre sur une main"], h:"Le numéro roi des équilibristes de cirque : tout le corps posé sur une seule main, qui corrige au bout des doigts."},
+  planche:{fig:"pl_full", yoga:["Mayūrāsana", "le paon, sa plus proche cousine"], h:"Le mot est français et a fait le tour du monde : le corps à l’horizontale, porté par des bras tendus, l’un des grands éléments de force de la gymnastique."},
+  press:{fig:"pr_stalder", yoga:["d’Upaviṣṭa Koṇāsana à Adho Mukha Vṛkṣāsana", "de l’angle ouvert à l’arbre tourné vers le bas"], h:"Monter en équilibre sans élan, par la seule force et la souplesse. Le stalder doit son nom au gymnaste suisse Josef Stalder, champion olympique en 1948."},
+};

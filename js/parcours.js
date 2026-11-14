@@ -214,7 +214,7 @@ function journey(nextId){
       sign("Figures au sol", "low", "Hors parcours, pour varier : la première est ouverte dès le départ.");
       prev = null; SEC.low.ms.forEach(m=>step(m.id));
       { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
-      prev = pv; items.push({k:"d", y}); y += 92; prev = null; }
+      prev = pv; items.push({k:"d", y}); y += 380; prev = null; }   // les trois disciplines, en cartes, puis leur présentation
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, "");
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
@@ -240,9 +240,15 @@ function journey(nextId){
       b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); cv.append(b); }
     else if (it.k === "l"){ const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
     else if (it.k === "d"){ const d = el("div","dsel"); d.style.top = it.y + "px";
-      HARD.forEach(([sid, name]) => { const ms = SEC[sid].ms.filter(m=>!m.alt), dn = ms.filter(m=>reqDone(m.id)).length, here = ms.some(m=>m.id === nextId);
-        const b = el("button","dpill d-" + sid + (sid === jd ? " on" : "")); b.append(el("b",null,name), el("span",null, dn + "/" + ms.length + (here ? ", toi" : "")));
-        b.setAttribute("aria-pressed", sid === jd); b.onclick = () => { S.jdisc = sid; save(); render(); const t = document.querySelector(".dsel"); if (t) t.scrollIntoView({block:"start"}); }; d.append(b); });
+      const row = el("div","drow"); d.append(el("div","dhead","Trois grandes voies"), row);
+      HARD.forEach(([sid, name]) => { const ms = SEC[sid].ms.filter(m=>!m.alt), dn = ms.filter(m=>reqDone(m.id)).length, here = ms.some(m=>m.id === nextId), D = DISC[sid];
+        const b = el("button","dpill d-" + sid + (sid === jd ? " on" : "")), md = el("span","dmed"), sp = el("span","sp"); sp.dataset.pose = poseId(D.fig); sp.dataset.anim = D.fig; sp.dataset.lk = ""; sprPaint(sp, 64); md.append(sp);
+        const wr = el("span","laurel"); wr.innerHTML = laurel(); md.prepend(wr);
+        const bar = el("span","dbar"), i = el("span"); i.style.width = Math.round(dn / ms.length * 100) + "%"; bar.append(i);
+        b.append(md, el("b",null,name), bar, el("span","dcnt", dn + " sur " + ms.length + (here ? ", toi" : "")));
+        b.setAttribute("aria-pressed", sid === jd); b.setAttribute("aria-label", name + ", " + dn + " figures sur " + ms.length + (sid === jd ? ", affichée" : ""));
+        b.onclick = () => { S.jdisc = sid; save(); render(); const t = document.querySelector(".dsel"); if (t) t.scrollIntoView({block:"start"}); }; row.append(b); });
+      { const D = DISC[jd], it2 = el("div","dintro"); it2.append(el("div","dyoga", "En yoga : "), el("p",null,D.h)); it2.firstChild.append(el("i",null,D.yoga[0]), D.yoga[1] ? ", " + D.yoga[1] : ""); d.append(it2); }
       cv.append(d); }
     else if (it.k === "q"){ const q = it.q, on = reqDone(q.req), dn = !!sqDone()[q.id], b = el("button","sq" + (dn ? " done" : on ? " open" : " lk"));
       b.style.left = it.x + "%"; b.style.top = (it.y - 40) + "px"; b.setAttribute("aria-label", "Quête annexe : " + q.name + (dn ? ", réussie" : on ? ", ouverte" : ", après " + MS[q.req].name));
