@@ -5,7 +5,7 @@
 const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
   pl_lean2:["planche-domination",0], pl_tuckP:["planche-domination",1], pl_tuckPu:["planche-domination",1], pl_tuckO:["planche-domination",2], pl_strBand:["planche-domination",5], pl_strBandL:["planche-domination",5], pl_strNar:["planche-domination",6], pl_half:["planche-domination",6], pl_fullBand:["planche-domination",6], pl_fullNeg:["planche-domination",6], pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
-const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pr_vsitC","pr_mannaP","pr_vsitH","pr_manna","pr_lsitHs","pr_lsitNeg","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","st_split"]);
+const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pr_vsitC","pr_mannaP","pr_vsitH","pr_manna","pr_lsitHs","pr_lsitNeg","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 // Douleur : chaque signalement est daté par zone. Éviction de 3 jours (7 si la même zone revient en 3 semaines),
 // puis reprise par paliers : une semaine à 60 % sans tentative à fond, une semaine à 80 %.
@@ -86,7 +86,8 @@ function planFor(m){
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
-  if (SOUPLE.has(m.id)) out.lines.push("Ajoute deux séances d’étirements par semaine (programme Étirements) : la souplesse compte ici.");
+  if (SOUPLE.has(m.id)) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
+    out.lines.push("La souplesse compte ici" + (R.length ? " : " + R.map(r => r.name.toLowerCase()).join(", ") : "") + ". Mesure-la dans Profil, Ma souplesse ; 5 minutes actives après la séance et les jours de récup la font avancer."); }
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
   return out;
 }

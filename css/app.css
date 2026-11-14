@@ -857,7 +857,15 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .vrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.vfig{margin:0}.vfig video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:12px;background:var(--line)}.vfig figcaption{font-size:12px;margin-top:4px;text-align:center}
 .vfig video{object-fit:contain}
 /* bilan de départ : saisie d’un nombre exact */
-.plx{display:flex;align-items:center;gap:8px;margin-top:10px}
+.plx{display:flex;align-items:center;gap:8px;margin-top:12px}
 .plx input{width:8em;flex:none}
 /* mode expert, sobre : ni rang, ni niveau, ni vestiaire ; le décor reste */
 [data-sober] #lvRank,[data-sober] #lvNum,[data-sober] .hero .bar,[data-sober] #xpTxt,[data-sober] #fitOpen,[data-sober] #sceneCap{display:none}
+/* Ma souplesse : un repère par ligne, ses paliers en points */
+.romrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;min-height:48px}
+.romrow:first-of-type{border-top:0}
+.romn{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.romdots{display:flex;gap:4px;flex:none}
+.romdots i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--acc);opacity:.55}
+.romdots i.on{background:var(--acc);opacity:1}
+.romch{margin:8px 0 16px}

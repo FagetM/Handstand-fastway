@@ -1,0 +1,75 @@
+// ---------- Souplesse : une couche d’accompagnement, mesurée ----------
+// Sept repères d’amplitude, notés par paliers (pas de règle à sortir : on choisit la phrase qui décrit la position).
+// Ils ne prennent jamais la place d’une figure : 5 min actives en fin de séance, et les jours de récup deviennent « Souplesse douce ».
+const ROM = [
+  {id:"pike", name:"Pliage en pike", yoga:"Paścimottānāsana", how:"Assis jambes serrées et tendues, genoux verrouillés, dos long : penche-toi depuis les hanches.",
+    lv:["Mains aux tibias","Mains aux chevilles","Paumes à plat à côté des pieds","Avant-bras au sol","Poitrine sur les cuisses"], act:"pikeAct", pas:["pliage"], for:["press","manna"]},
+  {id:"pancake", name:"Écart penché", yoga:"Upaviṣṭha Koṇāsana", how:"Assis jambes écartées au plus large, genoux vers le plafond, dos plat : penche-toi vers l’avant.",
+    lv:["Mains devant les genoux","Mains à 30 cm devant le bassin","Avant-bras au sol","Coudes au sol, loin devant","Poitrine au sol"], act:"ecartAct", pas:["pancake"], for:["press","planche","onearm"]},
+  {id:"middle", name:"Grand écart facial", yoga:"Samakoṇāsana", how:"Jambes écartées de face, pointes vers le plafond, un bloc ou un coussin sous le bassin : descends sans forcer.",
+    lv:["Bassin à plus de 30 cm du sol","Bassin à 30 cm","Bassin à 15 cm","Presque au sol","Au sol"], act:"cavalier", pas:["ecartF"], split:true, for:["press","planche"]},
+  {id:"front", name:"Grand écart antéro-postérieur", yoga:"Hanumanāsana", how:"Bassin de face, genou arrière posé, un bloc sous la cuisse avant : descends des deux côtés.", sides:true,
+    lv:["Bassin à plus de 30 cm du sol","Bassin à 30 cm","Bassin à 15 cm","Presque au sol","Au sol"], act:"jambesMur", pas:["demiEcart","fente","ecartAP"], split:true, for:[]},
+  {id:"epaules", name:"Épaules au-dessus de la tête", yoga:"Uttāna Śiśosana", how:"Allongé sur le dos, genoux pliés, bas du dos et côtes plaqués : monte les bras tendus au-dessus de la tête.",
+    lv:["Poignets à 20 cm du sol","Poignets à 10 cm","Poignets au sol, côtes basses"], act:"epAct", pas:["epaules"], for:["onearm","b1","b2","inter","ultime"]},
+  {id:"pont", name:"Pont", yoga:"Ūrdhva Dhanurāsana", how:"Pont sur les mains, bras tendus, épaules au-dessus des poignets : rapproche les mains des talons.",
+    lv:["Pont bras pliés","Pont bras tendus","Mains à 40 cm des talons","Mains à 20 cm","Mains aux talons"], act:"epAct", pas:["pont","extEp"], back:true, hands:true, for:["manna","ultime"]},
+  {id:"poignets", name:"Poignets en extension", yoga:"", how:"À genoux, paumes à plat, doigts vers l’avant, bras tendus : avance les épaules au-delà des mains sans décoller les paumes.",
+    lv:["Épaules au-dessus des mains","Épaules 5 cm devant","Épaules 10 cm devant","Épaules 15 cm devant"], act:"poignetsAct", pas:["poignetsExt"], hands:true, for:["planche","onearm","low"]},
+];
+const ROMI = Object.fromEntries(ROM.map(r => [r.id, r]));
+const romLog = id => ((S.rom || {})[id] || []);
+const romLv = (id, until) => { const L = romLog(id).filter(e => !until || e.t < until); return L.length ? L[L.length - 1].v : -1; };
+// le repère le plus en retard : jamais mesuré compte comme le premier palier, puis la part du chemin faite
+const romWeak = pool => pool.slice().sort((a, b) => Math.max(0, romLv(a.id)) / (a.lv.length - 1) - Math.max(0, romLv(b.id)) / (b.lv.length - 1));
+// la mesure du cycle : un repère différent à chaque cycle, toujours après l’échauffement, dans le même ordre
+const romOfCycle = () => ROM[(cycN() - 1) % ROM.length];
+
+function romOpen(id, after){
+  const r = ROMI[id], box = $("qkBody"); box.textContent = "";
+  const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab", r.yoga ? "Souplesse, " + r.yoga : "Souplesse"), el("h2",null,r.name)); box.append(hd);
+  box.append(el("p",null,r.how), el("p","mut","Mesure après 5 minutes d’échauffement, toujours dans le même ordre, sans rebond. Choisis la phrase qui décrit ta position, sans forcer pour gagner un palier."));
+  const cur = romLog(id).slice(-1)[0], pick = {}, keep = el("button","btn","Garder cette mesure"); keep.disabled = true;
+  const row = side => { const w = el("div","chips romch"); r.lv.forEach((t, k) => { const b = el("button","chip", t); b.setAttribute("aria-pressed","false");
+      b.onclick = () => { pick[side] = k; w.querySelectorAll(".chip").forEach((x, j) => { x.classList.toggle("on", j === k); x.setAttribute("aria-pressed", j === k); }); keep.disabled = r.sides ? pick.g == null || pick.d == null : false; }; w.append(b); }); return w; };
+  if (r.sides) box.append(el("div","lab","Jambe gauche devant"), row("g"), el("div","lab","Jambe droite devant"), row("d")); else box.append(row("v"));
+  if (cur) box.append(el("p","mut","Dernière mesure, le " + new Date(cur.t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + " : " + (r.sides && cur.g != null ? "gauche « " + r.lv[cur.g] + " », droite « " + r.lv[cur.d] + " »" : "« " + r.lv[cur.v] + " »") + "."));
+  keep.onclick = () => { const e = {t:Date.now(), v:r.sides ? Math.min(pick.g, pick.d) : pick.v}; if (r.sides) { e.g = pick.g; e.d = pick.d; }
+    const R = S.rom || (S.rom = {}); (R[id] || (R[id] = [])).push(e); if (R[id].length > 40) R[id].shift(); save(); $("qkDlg").close(); toast("Mesure gardée."); (after || renderSouple)(); };
+  box.append(keep);
+  $("qkT").textContent = "Mesure de souplesse"; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
+}
+// Profil : les repères, leur palier et le nom en yoga
+function renderSouple(){
+  const box = $("souple"); if (!box) return; box.textContent = "";
+  box.append(el("h2",null,"Ma souplesse"), el("p","mut","Des repères mesurés, pas des figures : 5 minutes actives après chaque séance, une séance douce les jours de récup, une mesure au test de chaque cycle."));
+  ROM.forEach(r => { const k = romLv(r.id), b = el("button","romrow"), dots = el("span","romdots");
+    r.lv.forEach((_, j) => dots.append(el("i", j <= k ? "on" : ""))); dots.setAttribute("aria-hidden","true");
+    const tx = el("span","romn"); tx.append(el("b",null,r.name), el("span","mut", k < 0 ? "Pas encore mesuré" : r.lv[k] + (r.yoga ? ", " + r.yoga : "")));
+    b.append(tx, dots); b.setAttribute("aria-label", r.name + (k < 0 ? ", pas encore mesuré" : ", palier " + (k + 1) + " sur " + r.lv.length + " : " + r.lv[k]) + ". Mesurer"); b.onclick = () => romOpen(r.id); box.append(b); });
+}
+// Bilan du cycle : ce qui a bougé depuis la mesure d’avant
+function romBilan(start){
+  const rows = ROM.map(r => { const a = romLv(r.id, start), L = romLog(r.id).filter(e => e.t >= start), b = L.length ? L[L.length - 1].v : null; return b == null ? null : [r, a, b]; }).filter(Boolean);
+  if (!rows.length) return null; const sc = el("section"); sc.append(el("h3",null,"Ta souplesse"));
+  rows.forEach(([r, a, b]) => { const x = el("div","cyrec"); x.append(el("span",null,r.name), el("b",null, r.lv[b] + (a < 0 ? "" : b > a ? ", un palier de plus" : b === a ? ", stable" : ", un peu moins"))); sc.append(x); });
+  return sc;
+}
+// zones au repos qui ferment un repère : poignets (appui sur les mains), cuisses et aine (grands écarts), bas du dos (pont)
+const romOk = (r, zones) => !(r.hands && zones.includes("poignet")) && !(r.split && zones.includes("jambe")) && !(r.back && zones.includes("dos"));
+// les 5 minutes actives de fin de séance : le repère le plus en retard parmi ceux que demandent les figures du jour
+function romActive(ids, PS){
+  const secs = new Set(ids.map(id => MS[id] && MS[id].sec)), manna = ids.some(id => /^pr_(manna|vsitH|extSup|mannaP)/.test(id)), zones = PS.phase === 1 ? (PS.zones || [PS.zone]) : [];
+  const ok = ROM.filter(r => romOk(r, zones)), pool = ok.filter(r => r.for.some(s => secs.has(s) || (s === "manna" && manna)));
+  const r = romWeak(pool.length ? pool : ok)[0]; if (!r || !DRILLS[r.act]) return null;
+  const b = drillBlock(r.act, false); b.name += ", souplesse active"; b.keep = true; b.note = "Souplesse active : soulever et tenir l’amplitude que tu sais déjà atteindre. Jamais jusqu’à l’échec."; return b;
+}
+// Souplesse douce, environ 20 minutes : deux repères en retard, leurs étirements tenus (PNF quand c’est indiqué), puis le travail actif
+function soupleDay(PS){
+  const zones = PS && PS.phase === 1 ? (PS.zones || [PS.zone]) : [], y = new Date(); y.setDate(y.getDate() - 1);
+  const noSplit = S.lastSplit === dayKey(y) || zones.includes("jambe");   // grands écarts : jamais deux jours de suite
+  const pick = romWeak(ROM.filter(r => romOk(r, zones) && !(r.split && noSplit))).slice(0, 2);
+  if (pick.some(r => r.split)) S.lastSplit = dayKey(Date.now());   // gardé au prochain enregistrement (pas de save ici : la séance du jour est en train de se composer)
+  const ks = [...new Set(pick.flatMap(r => r.pas.concat(r.act)))].filter(k => DRILLS[k] && !(zones.includes("poignet") && DRILLS[k].hands));
+  return [Object.assign(drillBlock("miseEnRoute", false), {keep:true, name:"Mise en route, avant la souplesse douce"})].concat(ks.map(k => { const b = drillBlock(k, false); b.keep = true; return b; }), [drillBlock("hollow", false)]);
+}

@@ -47,13 +47,16 @@ function renderCycle(){
   line.onclick = () => cycIntent(); box.append(line);
   if (d >= 28) { const c = el("div","cycard"); c.append(el("b",null,"Ton cycle est terminé"), el("p","mut","Le moment de regarder le chemin : tes records, ton intention, ce que tu as écrit.")); const b = el("button","btn","Faire le bilan"); b.onclick = cycBilan; c.append(b); box.append(c); }
   else if (cycTest() && C.tested) { const c = el("div","cycard"); c.append(el("b",null,"Test fait"), el("p","mut","Mobilité jusqu’à la fin du cycle, puis le bilan. Tu peux encore ajouter la vidéo d’une tentative."));
-    cycFigs(C.start).forEach(id => { const fm = el("button","chip cyfilm", ((C.vids || {})[id] ? "Vidéo gardée : " : "Ajouter une vidéo : ") + MS[id].name); fm.onclick = () => vPick(id, renderCycle); c.append(fm); }); box.append(c); }
+    cycFigs(C.start).forEach(id => { const fm = el("button","chip cyfilm", ((C.vids || {})[id] ? "Vidéo gardée : " : "Ajouter une vidéo : ") + MS[id].name); fm.onclick = () => vPick(id, renderCycle); c.append(fm); }); romTest(c); box.append(c); }
   else if (cycTest()) { const figs = cycFigs(C.start); if (figs.length) { const c = el("div","cycard"); const held = cycTestHeld();
       c.append(el("b",null, held ? "Test reporté" : "Jour de test"), el("p","mut", held ? "Pas aujourd’hui : ton corps demande du calme. Le test attendra un jour plus frais, avant la fin du cycle." : "Ta séance du jour est le test : échauffement, deux montées en charge, puis une tentative au maximum par figure. C’est ce qui recale tes dates."));
       figs.forEach(id => { const m = MS[id], x = el("button","cytest"), b = cycBest(id, C.start, Date.now()); x.append(el("span",null,m.name), el("span","mut","record du cycle : " + (b ? fmt(m, b) : "aucun"))); x.onclick = () => openMs(id);
         const ft = (C.vids || {})[id] ? "Vidéo gardée, refaire" : "Filmer la tentative", fm = el("button","chip cyfilm", ft); fm.setAttribute("aria-label", ft + " : " + m.name); fm.onclick = () => vPick(id, renderCycle); c.append(x, fm); });
-      box.append(c); } }
+      if (!held) romTest(c); box.append(c); } }
 }
+// la mesure de souplesse du cycle : un repère différent à chaque cycle, après l’échauffement du test
+function romTest(c){ const r = romOfCycle(), done = romLog(r.id).some(e => e.t >= cyc().start), x = el("button","cytest");
+  x.append(el("span",null,"Souplesse : " + r.name), el("span","mut", done ? "mesurée ce cycle, " + r.lv[romLv(r.id)].toLowerCase() : "à mesurer après l’échauffement")); x.onclick = () => romOpen(r.id, () => { renderCycle(); renderSouple(); }); c.append(x); }
 function cycIntent(){
   const box = $("qkBody"), C = cyc(); box.textContent = "";
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Cycle " + cycN()), el("h2",null,"Ton intention")); box.append(hd);
@@ -75,6 +78,7 @@ function cycBilan(){
       vids.forEach(id => { if (!MS[id]) return; const row = el("div","vrow"); sc.append(el("p","mut",MS[id].name), row);
         const sa = el("div"), sb = el("div"); row.append(sa, sb);   // deux emplacements fixes : l’ordre reste le même quel que soit le temps de lecture
         if (prev && (prev.vids || {})[id]) vShow(sa, prev.start, id, "Cycle précédent"); vShow(sb, C.start, id, "Ce cycle"); }); s.append(sc); box.append(s); } }
+  { const sc = romBilan(C.start); if (sc) { const s = el("div","qkinfo"); s.append(sc); box.append(s); } }
   if (C.intent) box.append(el("p","vq","Ton intention : « " + C.intent + " »"));
   { const E = (S.ecl || []).filter(e => e.t >= C.start), half = C.start + 14 * 864e5, avg = (L, z) => L.length ? Math.round(L.reduce((a, e) => a + (e[z] || 0), 0) / L.length * 10) / 10 : null;
     if (E.length >= 2) { const s = el("div","qkinfo"), sc = el("section"); sc.append(el("h3",null,"Ton corps, au fil du cycle"));
