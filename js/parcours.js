@@ -221,7 +221,7 @@ function journey(nextId){
   { const s = SEC.ultime; sign(s.name, "ultime", "Tout enchaîner, sans poser les pieds."); prev = null; s.ms.forEach(m=>step(m.id)); y += 30; }
   // quêtes annexes : dans le creux du virage, à hauteur de leur figure ; jamais sur un bonus, un coffre ou ton personnage
   SQ.forEach(q => { const p = pos[q.req]; if (!p) return; const nx = X[(X.indexOf(p[0]) + 1) % X.length];
-    const qx = p[0] > 50 ? 16 : p[0] < 50 ? 84 : nx > 50 ? 16 : 84, me = q.req === nextId ? [p[0] >= 50 ? p[0] - 30 : p[0] + 30, p[1]] : null;
+    const qx = p[0] > 50 ? 14 : p[0] < 50 ? 86 : nx > 50 ? 14 : 86, me = q.req === nextId ? [p[0] >= 50 ? p[0] - 30 : p[0] + 30, p[1]] : null;
     const busy = yy => Object.entries(pos).some(([k, o]) => k !== q.req && (o[2] || k.startsWith("chest_") || !MS[k]) && Math.abs(o[1] - yy) < 120 && Math.abs(o[0] - qx) < 30)
       || items.some(o => o.k === "q" && Math.abs(o.y - yy) < 150) || (me && Math.abs(me[0] - qx) < 30 && Math.abs(me[1] - yy) < 120)
       || Object.entries(pos).some(([k, o]) => k !== q.req && MS[k] && !o[2] && Math.abs(o[1] - yy) < 90 && Math.abs(o[0] - qx) < 34);
