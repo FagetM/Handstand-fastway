@@ -24,7 +24,7 @@ const YOGA = {
   pr_extSup:["Pūrvottānāsana", "l’étirement intense de l’est", "l’est, c’est le devant du corps"],
   pl_tuck:["Lolāsana", "le pendentif", "une petite sœur : le pendentif se fait jambes croisées"],
   pl_full:[null, "pas de nom classique", "la posture la plus proche est Mayūrāsana, le paon, mais elle prend appui sur les coudes"],
-  pr_straddle:["Prasārita Pādottānāsana → Adho Mukha Vṛkṣāsana", "de la pince jambes écartées, debout, à l’arbre tourné vers le bas"],
+  pr_straddle:["de Prasārita Pādottānāsana à Adho Mukha Vṛkṣāsana", "de la pince jambes écartées, debout, à l’arbre tourné vers le bas"],
   pr_pike:["de Paścimottānāsana à Adho Mukha Vṛkṣāsana", "de la pince à l’arbre tourné vers le bas"],
 };
 // figures maîtresses : le sommet de chaque chemin

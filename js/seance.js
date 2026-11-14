@@ -152,24 +152,25 @@ function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
-  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && ["epaule","coude"].includes(PS.zone), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
+  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && (PS.zones || [PS.zone]).some(z => ["epaule","coude"].includes(z)), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
   const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease, comeback() ? 0.7 : 1), scale = deload ? 0.6 : Math.max(0.6, Math.min(1.5, mins / 30)) * red;   /* semaine légère : 60 % quel que soit le temps choisi */   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d’entraînement de suite
 
   // fin de cycle : la séance de test (une fois), puis mobilité jusqu’au bilan
-  if (typeof cycTest === "function" && cycTest() && cycDay() < 28) {
+  const wristRest = pain && (PS.zones || [PS.zone]).includes("poignet"), cautT = S.caution && Date.now() - S.caution < 36 * 3600e3;
+  if (typeof cycTest === "function" && cycTest() && cycDay() < 28 && !wristRest && !tired && !cautT && !needRest()) {
     if ((S.cyc || {}).tested) return ["epaules","pike","pancake","hollow"].map(k => drillBlock(k, false));
     const caut = S.caution && Date.now() - S.caution < 36 * 3600e3, figs = []; let nF = 0, nO = 0;
     cycFigs(S.cyc.start).forEach(id => { const m = MS[id]; if (!m || figs.length >= 4 || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id) || (/^pl_/.test(id) && m.type === "reps")) return;
       const f = FORCE(id), o = /^oa_/.test(id); if ((f || o) && (PS.phase === 1 || PS.phase === 2 || caut)) return; if (f && nF >= 2) return; if (o && nO >= 1) return; if (f) nF++; if (o) nO++; figs.push(id); });
     if (figs.length) {
       const blocks = figs.map(id => { const m = MS[id], b = cycBest(id, S.cyc.start, Date.now()) || st(id).best || nextStep(m) || m.target || 5, g = k => Math.max(1, Math.round(b * k));
-        return {name:m.name + ", test", ms:id, kind:m.type === "reps" ? "reps" : "hold", test:true, note:"Deux montées en charge, puis une seule tentative au maximum, bien reposé.",
+        return {name:m.name + ", test", ms:id, kind:m.type === "reps" ? "reps" : "hold", test:true, note:"Deux montées en charge, puis une seule tentative au maximum, après un repos complet.",
           sets:[{goal:g(0.5), rest:90, auto:true}, {goal:g(0.75), rest:150, auto:true}, {goal:Math.max(b, nextStep(m) || b), rest:180, max:true}]}; });
       return [Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", false)].concat(blocks);
     } }
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
-  if (pain && PS.zone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
+  if (pain && (PS.zones || [PS.zone]).includes("poignet")) return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return ["poignets","epaules","hollow","pancake"].map(k=>drillBlock(k, false));
   const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band) && !(armPain && (/^(oa_|pl_|pr_|ul_)/.test(id) || id === "in_hspu"))), fok = forceOk() && !armPain;   /* épaule ou coude : ni un bras, ni planche, ni montées pendant l’éviction */
   // choix du jour : l’équilibre (une habileté) et, les jours de force, une place réservée à la force
@@ -489,7 +490,7 @@ function endSession(){
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * 1.05 : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
-  { const dd = (typeof pDay === "function" && P) ? pDay(todayIdx()) : null; if (dd && dd.blocks && dd.blocks.some(b => b.test) && S.cyc) { S.cyc.tested = dayKey(Date.now()); toast("Test fait : le bilan t’attend à la fin du cycle."); } }   // le test compte une seule fois
+  { const dd = (typeof pDay === "function" && P) ? pDay(todayIdx()) : null; if (dd && dd.blocks && dd.blocks.some(b => b.test && sessRes[b.ms]) && S.cyc) { S.cyc.tested = dayKey(Date.now()); toast("Test fait : le bilan t’attend à la fin du cycle."); } }   // le test compte une seule fois
   save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
@@ -645,6 +646,8 @@ function saveSet(v){
   if (b.confirm && MS[b.ms] && (S.confirm || []).includes(b.ms)) { const vals = wkGet(selDay), hits = b.sets.map((_,i)=>vals[sd.bi + "-" + i] >= MS[b.ms].target), ok = SIDED.has(b.ms) ? hits.some((h,i)=>h && i % 2 === 0) && hits.some((h,i)=>h && i % 2 === 1) : v >= MS[b.ms].target, all = b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null);
     if (ok || all) { S.confirm = (S.confirm || []).filter(x=>x !== b.ms); if (!ok) { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } else toast("« " + MS[b.ms].name + " » confirmée."); } }
   const old = pg().best[b.name] || 0, pr = v > old; if (pr) pg().best[b.name] = v;
+  // excentriques en full planche : des répétitions isolées ; ce qui compte, c’est le nombre de répétitions propres dans la séance
+  if (b.ms && ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(b.ms) && v >= 1) { const vals = wkGet(selDay); v = b.sets.reduce((n, _, i) => n + ((vals[sd.bi + "-" + i] || 0) >= 1 ? 1 : 0), 0); }
   if (b.ms && MS[b.ms] && MS[b.ms].type === b.kind) { const x = st(b.ms), l0 = lvlOf(MS[b.ms]); if (v > x.best) x.best = v; if (lvlOf(MS[b.ms]) > l0 && S.adapt) delete S.adapt[b.ms];   /* nouveau palier : la charge repart d’une base neutre */
     if (v >= MS[b.ms].target && !x.done) { const msg = hitTarget(b.ms, sd.si % 2); /* séries alternées : paires d’un côté, impaires de l’autre */ if (msg) toast(msg); else { sessVal = b.ms; toast("« " + MS[b.ms].name + " » validée."); const dy = S.bday && S.bday.blocks[sd.bi]; if (dy) dy.sets = dy.sets.filter((q, i) => i <= sd.si || wkGet(selDay)[sd.bi + "-" + i] != null); } }   /* validée : le reste de la figure est offert */
     if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++;

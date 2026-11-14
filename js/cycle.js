@@ -9,7 +9,7 @@ function cyc(){
   while (Date.now() - S.cyc.start >= 35 * 864e5) { const C = S.cyc, end = C.start + 28 * 864e5, best = {}; cycFigs(C.start, end).forEach(id => { best[id] = cycBest(id, C.start, end); });
     const worked = S.log.some(l => l.t >= C.start && l.t < end);
     if (worked) (S.cycles || (S.cycles = [])).push({start:C.start, end, intent:C.intent, best, refl:""});   // un cycle sans séance ne compte pas
-    S.cyc = {start:worked ? end : monday(Date.now()), intent:C.intent}; S._cs = 1; }   // le suivant commence là où l’autre finit
+    S.cyc = {start:worked && Date.now() - end < 21 * 864e5 ? end : monday(Date.now()), intent:C.intent};   /* après une longue absence : un cycle neuf cette semaine */ S._cs = 1; }   // le suivant commence là où l’autre finit
   if (S._cs) { delete S._cs; save(); }
   return S.cyc; }
 const cycDay = () => Math.floor((Date.now() - cyc().start) / 864e5);

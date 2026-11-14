@@ -16,7 +16,8 @@ function painState(){ const L = painLog(); if (!L.length) return {phase:0, ease:
     return d < ev ? {phase:1, ease:0.6, zone:last.zone, days:Math.ceil((ev - d) / 864e5), again} : d < ev + 7 * 864e5 ? {phase:2, ease:0.6, zone:last.zone} : d < ev + 14 * 864e5 ? {phase:3, ease:0.8, zone:last.zone} : {phase:0, ease:1, zone:null}; };
   const lastBy = {}; L.forEach(p => { lastBy[p.zone] = p; });
   const rk = s => s.phase === 0 ? 9 : s.phase;   // phase 1 la plus stricte
-  return Object.values(lastBy).map(one).sort((a, b) => rk(a) - rk(b) || (b.days || 0) - (a.days || 0))[0]; }
+  const all = Object.values(lastBy).map(one), top = Object.assign({}, all.sort((a, b) => rk(a) - rk(b) || (b.days || 0) - (a.days || 0))[0]);
+  top.zones = all.filter(x => x.phase === 1).map(x => x.zone); return top; }   // zones : toutes celles encore au repos
 const painRecent = () => painState().phase === 1;
 // habiletés d’équilibre (y compris sur un bras) : des essais tenus jusqu’à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
@@ -46,7 +47,7 @@ function planFor(m){
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l’équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
   const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = (/^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id)) || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id),   /* les excentriques en full planche chargent le tendon du biceps : 4 × 1, repos complet */   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", days = /^pl_/.test(m.id) ? 2 : /^pr_/.test(m.id) ? 2 : force ? 3 : m.sec === "onearm" ? 4 : 5,   /* comme les plafonds de la séance : 3 jours de force par semaine au plus, 4 jours un bras */
-    sets = /^ul_/.test(m.id) ? 4 : oaReps ? 6 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
+    sets = /^ul_/.test(m.id) ? 4 : oaReps ? 6 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
   const freq = days + " séances par semaine" + (force ? " : un jour de repos entre deux, la force se construit pendant la récupération." : " : c’est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c’est une habileté, on la travaille en essais tenus jusqu’à la perte d’équilibre
   if (FREE(m) && lightWeek(m.id) && k > 0) T = L[k - 1];   // semaine plus légère : le palier précédent, pas de validation
@@ -318,7 +319,7 @@ function quick(id){
   { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), y[0] ? el("b",null,y[0]) : "", y[1] ? el("span",null,(y[0] ? ", " : "") + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
   if (mst) { art.classList.add("mst"); const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr); }   // la figure maîtresse garde sa couronne dans sa fiche
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? ((pw => pw > 52 ? "Un sommet lointain : chaque étape avant elle compte." : "Verrouillée pour l’instant" + (pw > 0 ? ", ouverture estimée : " + dateTxt(pw) : ""))(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + ", " + dateTxt(w) : ""));   /* loin du but : on montre l’écart au prochain niveau, pas une date qui recule */
+  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? ((pw => pw > 52 ? "Un sommet lointain : chaque étape qui y mène compte." : "Verrouillée pour l’instant" + (pw > 0 ? ", ouverture estimée : " + dateTxt(pw) : ""))(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + ", " + dateTxt(w) : ""));   /* loin du but : on montre l’écart au prochain niveau, pas une date qui recule */
   // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
   const req = (m.req || []).filter(r=>MS[r]);
   let qkTree = null;

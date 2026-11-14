@@ -99,7 +99,7 @@ function renderVoie(){
   { const [c, src, tap] = penseeDuJour(vpK), b = el("div","block vpens"); b.append(el("div","lab","Pensée du jour"), el("blockquote",null,"« " + c + " »"), el("div","mut vsrc", src), el("p","vtap","Sur le tapis : " + lc1(tap)));
     const n = el("button","btn line","Une autre pensée"); n.onclick = () => { vpK++; vForce(); }; b.append(n); box.append(b); }
   // respirer et écouter
-  { const b = el("div","block vsafe"); b.append(el("h2",null,"Avant de te renverser"), el("p",null,"Tête en bas, demande l’avis d’un médecin si tu as une tension artérielle mal contrôlée, un glaucome, un décollement de rétine, ou des soucis de nuque. Engourdissement, fourmillements, gonflement ou douleur la nuit : arrête et consulte.")); box.append(b); }
+  { const b = el("div","block vsafe"); b.append(el("h2",null,"Avant de te renverser"), el("p",null,"Avant de passer tête en bas, demande l’avis d’un médecin si tu as une tension artérielle mal contrôlée, un glaucome, un décollement de rétine, ou des soucis de nuque. Engourdissement, fourmillements, gonflement ou douleur la nuit : arrête et consulte.")); box.append(b); }
   { const b = el("div","block"); b.append(el("h2",null,"Respirer, écouter"), el("p","mut","Des pratiques courtes, à faire avant, après, ou à la place d’une séance."));
     const g = el("div","vprl"); PRATIQUES.forEach(p => { const x = el("button","vpr"); x.append(el("b",null,p.name), el("span","mut",p.dur)); x.onclick = () => vpOpen(p); g.append(x); }); b.append(g); box.append(b); }
   // le carnet
@@ -253,7 +253,7 @@ const ZONES = [["poignet","Poignets"],["coude","Coudes"],["epaule","Épaules"],[
 function ecouteForm(){
   const f = el("div","ecf"), val = {}; f.append(el("p","vq","Tes notes de gêne, de 0 à 10"));
   ZONES.forEach(([z, n]) => { const r = el("label","ecr"), v = el("b",null,"0"), inp = el("input"); inp.type = "range"; inp.min = 0; inp.max = 10; inp.value = 0; inp.setAttribute("aria-label", n + ", gêne de 0 à 10");
-    inp.oninput = () => { v.textContent = inp.value; val[z] = +inp.value; r.classList.toggle("hi", +inp.value >= 5); }; val[z] = 0; r.append(el("span",null,n), inp, v); f.append(r); });
+    inp.oninput = () => { v.textContent = inp.value; val[z] = +inp.value; r.classList.toggle("hi", +inp.value > 5); }; val[z] = 0; r.append(el("span",null,n), inp, v); f.append(r); });
   const ok = el("button","btn","Garder mes notes"); ok.onclick = () => {
     (S.ecl || (S.ecl = [])).push(Object.assign({t:Date.now()}, val)); if (S.ecl.length > 120) S.ecl.shift();
     const mx = Math.max(...Object.values(val)), top = Object.keys(val).find(z => val[z] === mx);

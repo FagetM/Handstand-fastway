@@ -204,7 +204,7 @@ const TREE = [
       desc:"Jambes serrées, genoux pliés environ à 90°, hanches tendues."},
     {id:"pl_fullBand", name:"Full planche à l’élastique", en:"Band full planche – 10s", type:"hold", target:10, req:["pl_half"],
       desc:"Élastique léger aux hanches, jambes serrées, corps d’un bloc."},
-    {id:"pl_fullNeg", name:"Négatives de full planche", en:"Full planche negatives – 5", type:"reps", target:5, req:["pl_fullBand"],
+    {id:"pl_fullNeg", name:"Négatives de full planche", en:"Full planche negatives – 5", type:"reps", target:4, req:["pl_fullBand"],
       desc:"Entre en straddle, resserre les jambes, puis freine 3 à 5 s la descente des hanches jusqu’au lean."},
     {id:"pl_full", name:"Full planche", en:"Full planche", type:"hold", target:10, req:["pl_fullNeg"],
       desc:"Corps à l’horizontale, jambes tendues et serrées, bras tendus."},
