@@ -137,7 +137,7 @@ function render(){
     const gifts = nbs.flatMap(b => badgeReward(b.id)).concat(up ? WARD.flatMap(w => w.items.filter(it => typeof it[2] === "number" && it[2] > seen.lvl && it[2] <= Z.lvl).map(it => it[1])) : []);
     const nbsT = nbs.filter(b => !(/^sec_/.test(b.id) && CHESTS[b.id.slice(4)]));   // l’étage terminé se fête une seule fois : au coffre, badge compris
     const parts = []; if (nbsT.length) parts.push((nbsT.length > 1 ? "Badges : " : "Badge : ") + nbsT.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + ", " + Z.rank);
-    if (parts.length && !(S.ex && S.ex.sober)) { (($("sd") && $("sd").open) ? (m => { window._lateToast = m; }) : toast)(parts.join(". ") + (gifts.length ? ". Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
+    if (parts.length && !(S.ex && S.ex.sober)) { (($("sd") && $("sd").open) ? (m => { window._lateToast = m; }) : toast)(parts.join(". ") + (gifts.length ? ". Vestiaire : +" + gifts.length : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
   { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste

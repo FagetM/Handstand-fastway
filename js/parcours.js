@@ -109,9 +109,9 @@ function planFor(m){
   if (m.type !== "check") out.lines.push(valTxt(m));
   if (out.why) out.lines.unshift(out.why);
   { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (pa && !E.para && !E.blocks) out.lines.unshift("Sans parallettes : " + pa); if (eq) out.lines.unshift("Ton matériel : " + eq); }   /* avec des briques, la consigne du matériel suffit */
-  if (/^pr_(mannaP|vsitH|manna)$/.test(m.id)) out.lines.push("La manna se compte en années, pas en semaines : chaque étape propre est déjà une victoire.");
-  { const R = (ROM_FOR[m.id] || []).map(([r, k]) => { const x = ROMI[r], cur = romLv(r); return x.name.toLowerCase() + " : « " + x.lv[k].toLowerCase() + " »" + (cur >= k ? ", c’est fait" : cur < 0 ? ", pas encore mesuré" : ", toi : « " + x.lv[cur].toLowerCase() + " »"); });
-    if (R.length) out.lines.push("Souplesse conseillée, " + R.join(" ; ") + "."); }
+  if (/^pr_(mannaP|vsitH|manna)$/.test(m.id)) out.lines.push("La manna se compte en années : chaque étape est une victoire.");
+  { const R = (ROM_FOR[m.id] || []).map(([r, k]) => { const x = ROMI[r]; return x.name + " : " + x.lv[k].toLowerCase() + (romLv(r) >= k ? " ✓" : ""); });
+    if (R.length) out.lines.push("Souplesse conseillée : " + R.join(" · ")); }
   if (SOUPLE.has(m.id) && !ROM_FOR[m.id]) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
     out.lines.push("La souplesse compte ici" + (R.length ? " : " + R.map(r => r.name.toLowerCase()).join(", ") : "") + ". Mesure-la dans Profil, Ma souplesse ; 5 minutes actives après la séance et les jours de récup la font avancer."); }
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
@@ -246,6 +246,9 @@ function journey(nextId){
   const chest = (sid, x, lane) => { const done = sid === "hard" ? false : chestOpen(SEC[sid]); pos["chest_" + sid] = [x, y + 34]; items.push({k:"c", sid, x, y, done, lane}); };
   const step = (id, small) => { const x = X[k++ % X.length]; node(id, x, small); if (prev) seg(pos[prev], pos[id], eCls(prev.startsWith("chest_") ? chestDone(prev) : st(prev).done, id, msLocked(MS[id]) && !st(id).done)); prev = id; y += RH; };
   const chestDone = cid => chestOpen(SEC[cid.slice(6)]);
+  // étages repliés : finis, ou fermés au-delà du prochain (sauf celui où tu es, ou ceux que tu as dépliés) ; le parcours tient en quelques écrans
+  let lkSeen = 0; const folded = (sid, ms) => { const it0 = items[items.length - 1], open = (S.jopen || {})[sid] || ms.some(m => m.id === nextId);
+    const f = !open && (it0.state === "done" || (it0.state === "lk" && lkSeen++ > 0)); if (f) { it0.fold = true; y += 8 - it0.phH; it0.ph = null; it0.phH = 0; }   /* replié : sans sa photo */ else if (it0.state !== "done") it0.unfold = !!(S.jopen || {})[sid]; return f; };
   // le tronc commun : une figure par ligne, dans l’ordre du parcours
   // un seul chemin qui serpente, étage après étage ; les trois disciplines difficiles ont chacune le leur (plus de lignes droites)
   // disciplines difficiles : une seule affichée à la fois (sélecteur), celle de ta prochaine figure par défaut
@@ -254,16 +257,20 @@ function journey(nextId){
     if (sid === jd) { const pv = prev;
       // les figures au sol, à part, avant les disciplines difficiles : le sommet (le combo) reste tout en bas
       sign("Figures au sol", "low", "Hors parcours, pour varier : la première est ouverte dès le départ.");
-      prev = null; SEC.low.ms.forEach(m=>step(m.id));
-      { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
+      prev = null; if (!folded("low", SEC.low.ms)) { SEC.low.ms.forEach(m=>step(m.id));
+      { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; } }
       prev = pv; items.push({k:"d", y}); y += 400; prev = null; }   // les trois disciplines, en cartes, puis leur présentation
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
-    sign(s.name, sid, "");
-    s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
+    sign(s.name, sid, ""); if (folded(sid, s.ms)) { prev = null; return; }
+    { const L = s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)), opened = (S.jopen || {})[sid]; let lkN = 0, cut = -1;
+      // dans l’étage en cours : les figures ouvertes, puis 3 fermées ; le reste derrière « + N figures »
+      L.forEach((m, i) => { if (cut < 0 && !st(m.id).done && msLocked(m) && m.id !== nextId && ++lkN > 3 && !opened) cut = i; });
+      (cut < 0 ? L : L.slice(0, cut)).forEach(m=>step(m.id));
+      if (cut >= 0) { items.push({k:"m", sid, n:L.length - cut, y:y - RH / 2 + 10}); y += 30; } }
     s.ms.filter(m=>m.alt).forEach((m, i)=>{ const x = X[(k - 1 - i + 99 * X.length) % X.length] >= 50 ? 22 : 78; pos[m.id] = [x, y - RH + 40 - i * RH, true];   /* plusieurs bonus : un par rangée, jamais superposés */ items.push({k:"n", id:m.id, alt:true}); y += 0; });
     const x = X[k++ % X.length]; chest(sid, x); seg(pos[prev], pos["chest_" + sid], st(prev).done ? (chestOpen(s) ? "on" : "go") : ""); prev = "chest_" + sid; y += RH - 10; });
   // le sommet : le combo ultime, qui réunit les trois disciplines
-  { const s = SEC.ultime; sign(s.name, "ultime", "Tout enchaîner, sans poser les pieds."); prev = null; s.ms.forEach(m=>step(m.id)); y += 30; }
+  { const s = SEC.ultime; sign(s.name, "ultime", "Tout enchaîner, sans poser les pieds."); prev = null; if (!folded("ultime", s.ms) && !(items[items.length - 1].state === "lk" && !(S.jopen || {}).ultime && (items[items.length - 1].fold = true))) s.ms.forEach(m=>step(m.id));   /* le sommet, fermé : replié lui aussi */ y += 30; }
   // quêtes annexes : dans le creux du virage, à hauteur de leur figure ; jamais sur un bonus, un coffre ou ton personnage
   SQ.forEach(q => { const p = pos[q.req]; if (!p) return; const nx = X[(X.indexOf(p[0]) + 1) % X.length];
     const qx = p[0] > 50 ? 14 : p[0] < 50 ? 86 : nx > 50 ? 14 : 86, me = q.req === nextId ? [p[0] >= 50 ? p[0] - 30 : p[0] + 30, p[1]] : null;
@@ -275,11 +282,13 @@ function journey(nextId){
   const H = y, cv = el("div","jr-c"); cv.style.height = H + "px";
   cv.innerHTML = '<svg class="jr-e" viewBox="0 0 100 ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + edges + '</svg>';
   items.forEach(it=>{
-    if (it.k === "b"){ const b = el("div","sign " + it.state + (it.sid === "hard" ? " hard" : "")); b.style.top = it.y + "px";
+    if (it.k === "b"){ const b = el(it.fold || it.unfold || (S.jopen || {})[it.sid] ? "button" : "div","sign " + it.state + (it.sid === "hard" ? " hard" : "") + (it.fold ? " fold" : "")); b.style.top = it.y + "px";
+      if (b.tagName === "BUTTON") { b.setAttribute("aria-expanded", !it.fold); b.onclick = () => { const o = S.jopen || (S.jopen = {}); o[it.sid] = !!it.fold; save(); render(); }; }
       if (it.ph) { b.classList.add("ph"); const im = el("img","sph"); im.src = it.ph; im.alt = ""; im.loading = "lazy"; im.style.height = (it.phH - 10) + "px"; b.append(im); }
       const md = el("span","md"); if (it.state === "done") md.innerHTML = ICON.check; else if (it.state === "lk") md.innerHTML = ICON.lock; else md.textContent = it.sid === "low" ? "+" : String(it.n);
       const g = el("div","grow"); g.append(el("div","sname", it.title), el("div","mut", it.sub));
-      b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); cv.append(b); }
+      b.append(md, g, el("span","cnt", it.dn + "/" + it.tot)); if (b.tagName === "BUTTON") b.append(el("span","chev", it.fold ? "▸" : "▾")); cv.append(b); }
+    else if (it.k === "m"){ const b = el("button","jmore", "+ " + it.n + " figures plus loin"); b.style.top = it.y + "px"; b.onclick = () => { (S.jopen || (S.jopen = {}))[it.sid] = true; save(); render(); }; cv.append(b); }
     else if (it.k === "l"){ const l = el("div","jr-l" + (it.open ? " open" : "")); l.style.top = it.y + "px"; l.style.left = it.x + "%"; l.append(el("div","sname",it.name), el("div","mut", it.open ? "Voie ouverte" : "Après : " + it.after)); cv.append(l); }
     else if (it.k === "d"){ const d = el("div","dsel"); d.style.top = it.y + "px";
       const row = el("div","drow"); d.append(el("div","dhead","Trois grandes voies"), row);
@@ -387,7 +396,7 @@ function quick(id){
   const D = DETAILS[id] || {}, info = el("div","qkinfo"), fold = (title, node) => { const s = el("section"); s.append(el("h3",null,title), node); info.append(s); };
   { const t = el("div"), steps = el("details","qsteps"), sb = el("div"); steps.append(el("summary",null,"Les étapes, pas à pas"), sb);   /* l’animation montre le geste ; les mots, pour qui les veut */
     if (m.desc && !(D.how && D.how.length)) sb.append(el("p",null,m.desc)); if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); sb.append(ol); }
-    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (sb.childElementCount) t.append(steps); if (D.err) t.append(el("p",null,"À éviter : " + lc1(D.err)));   /* toujours avec son libellé : seule, la phrase se lirait comme une consigne */   /* la carte animée porte déjà « À éviter » */
+    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (sb.childElementCount) t.append(steps); if (D.err && !faultOf(id)) t.append(el("p",null,"À éviter : " + lc1(D.err)));   /* l’animation « à éviter » le montre déjà */   /* toujours avec son libellé : seule, la phrase se lirait comme une consigne */   /* la carte animée porte déjà « À éviter » */
     // l’erreur la plus visible, montrée : à gauche la bonne posture, à droite la même qui se dégrade
     { const f = faultOf(id); if (f) { const cmp = el("div","fxcmp"), card = (cls, lab, anim, still) => { const c = el("div","fx " + cls), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = anim; sp.dataset.lk = ""; if (still) sp.dataset.still = 1; sprPaint(sp, 108); c.append(sp, el("b",null, lab)); if (!still && !SPR[anim]) c.classList.add("wait"); return c; };   /* l’erreur pas encore calculée : estompée, pour ne pas montrer deux fois la même pose */
       cmp.append(card("ok", "À faire", id, true), card("ko", "À éviter : " + f.label, faultKey(id), false)); t.prepend(cmp);
