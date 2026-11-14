@@ -266,22 +266,12 @@ function openMs(id){
   cur = id; const m = MS[id];
   $("dT").textContent = m.name + (m.target ? ", " + goalTxt(m) : "");
   $("dS").textContent = [SEC[m.sec].name, m.sub].filter(Boolean).join(", ");
-  $("dEn").textContent = m.en && m.en !== m.name ? "Nom d’origine : " + m.en : "";
   $("dDesc").textContent = m.desc || "";
   const fg = $("dFig"); fg.textContent = "";
   { const pz = poseId(id);
     if (SPR[id]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
     else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() && STILLS.has(pz) ? "demo_" : "still_") + stillOf(pz) + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
     else { const f2 = figure(id); if (f2) fg.append(f2); } }
-  const dd = $("dMore"); dd.textContent = ""; const D = DETAILS[id];
-  if (D){
-    const part = (title, items, ordered) => { if (!items || !items.length) return;
-      dd.append(el("h3",null,title)); const list = el(ordered ? "ol" : "ul"); items.forEach(t=>list.append(el("li",null,t))); dd.append(list); };
-    part("Comment faire", D.how, true);
-    part("Repères", D.cue);
-    part("Erreur fréquente", D.err ? [D.err] : null);
-    part("Validé quand", D.ok ? [D.ok] : null);
-  }
   const dv = $("dVid"); dv.textContent = "";
   (m.img||[]).forEach(src=>{ const im = el("img","ph"); im.src = src; im.alt = "Exemple : " + m.name; im.loading = "lazy"; dv.append(im); });
   (m.yt||[]).forEach(([vid,title])=>{
@@ -296,23 +286,9 @@ function openMs(id){
   resetClock(); fillDlg(); $("dlg").showModal(); $("dlg").scrollTop = 0;
 }
 function fillDlg(){
-  const m = MS[cur], x = st(cur), lk = !x.done && msLocked(m);
+  const m = MS[cur], x = st(cur);
   $("toggle").textContent = x.done ? "Retirer la validation" : "Réussi aujourd’hui"; $("toggle").hidden = !x.done && m.type !== "check";   // tenues et répétitions : seule la mesure valide
   $("toggle").className = "btn" + (!x.done && m.type === "check" ? "" : " line");
-  const parts = [];
-  if (m.type !== "check") parts.push(x.best ? "Record : " + fmt(m,x.best) : "Aucun essai enregistré");
-  { const L = lvls(m), k = lvlOf(m), nx = nextStep(m); if (L.length > 1) parts.push("Niveau " + k + " sur " + L.length + (nx ? ", niveau suivant : " + unitTxt(m, nx) : "")); }
-  if (x.done) parts.push("Jalon validé");
-  if (lk) parts.push("Recommandé après : " + missing(m));
-  $("dBest").textContent = parts.join(". ") + ".";
-  { const dp = $("dPlan"), L = lvls(m), k = lvlOf(m), pl = planFor(m); dp.textContent = "";
-    if (L.length > 1){ dp.append(el("h3",null,"Les niveaux")); const ld = el("div","ladder");
-      L.forEach((v,i)=>{ const r = el("div","lv" + (i < k ? " ok" : i === k ? " now" : "")); r.append(el("span","b", i < k ? "" : String(i+1)), el("span","grow","Niveau " + (i+1) + (i === L.length - 1 ? ", jalon validé" : "")), el("span","v", unitTxt(m, v))); if (i < k) r.firstChild.innerHTML = ICON.check; ld.append(r); });
-      dp.append(ld); }
-    dp.append(el("h3",null,pl.head));
-    planVis(m, pl, dp);
-    if (pl.prog) { const pb = el("button","btn line","Programme associé : " + PS[pl.prog[0]].name + (PS[pl.prog[0]].steps[pl.prog[1]] && pl.prog[0] === "planche-domination" ? ", " + PS[pl.prog[0]].steps[pl.prog[1]].name : "")); pb.onclick = () => { $("dlg").close(); openProg(pl.prog[0], pl.prog[0] === "planche-domination" ? pl.prog[1] : null); }; dp.append(pb); }
-  }
   const dl = $("dLog"); dl.textContent = "";
   S.log.filter(l=>l.id===cur).slice(-5).reverse().forEach(l=>dl.append(logRow(l,false)));
 }

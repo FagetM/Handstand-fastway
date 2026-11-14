@@ -128,22 +128,19 @@ const drillBlock = (k, pain) => { const d = DRILLS[k];
   return {name:k === "lsitpara" && !E.para ? "L-sit sur briques de yoga" : d2.name, kind:d.kind, how, dk:k, pnf:d.pnf ? true : undefined, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined} : {reps:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined})}; };
 // jours où une figure de force a été travaillée (planche, montées, pompes, dips)
 // dernier jour où une figure a été travaillée (0 si jamais)
-function lastWorked(id){ const m = MS[id]; for (let i = S.log.length - 1; i >= 0; i--) { const l = S.log[i]; if (l.id === id || l.id === "pg:" + m.name || l.id === "pg:" + m.name + ", vérification") return l.t; } return 0; }
+function lastWorked(id){ for (let i = S.log.length - 1; i >= 0; i--) if (idOfLog(S.log[i], true) === id) return S.log[i].t; return 0; }
 // jours où l’on a travaillé sur un bras : 4 par semaine au plus, jamais 3 de suite (épaule et poignet d’appui)
-function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name)), d = new Set(S.log.filter(l => names.has(l.id) || (MS[l.id] && MS[l.id].sec === "onearm")).map(l => dayKey(l.t)));
-  const ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
+function onearmOk(){ const d = daysWhere((l, i) => i && MS[i].sec === "onearm" && !SFX_STRICT.test(l.id));
   if (d.has(ago(1)) && d.has(ago(2))) return false; let n = 0; for (let k = 1; k <= 6; k++) if (d.has(ago(k))) n++; return n < 4 || d.has(ago(0)); }
 // trois jours d’entraînement de suite : le lendemain, on récupère (mobilité, poignets)
-function plancheDays(){ const names = new Set(SEC.planche.ms.flatMap(m => ["pg:" + m.name, "pg:" + m.name + ", vérification"])), since = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - 6); return x.getTime(); })(), today = dayKey(Date.now());
-  return new Set(S.log.filter(l => l.t >= since && dayKey(l.t) !== today && (names.has(l.id) || /^pl_/.test(l.id) || /^pg:Planche/i.test(l.id))).map(l => dayKey(l.t))).size; }
+function plancheDays(){ const since = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - 6); return x.getTime(); })(), d = daysWhere((l, i) => (i && /^pl_/.test(i)) || /^pg:Planche/i.test(l.id), since);
+  d.delete(dayKey(Date.now())); return d.size; }   // les programmes « Planche… » comptent aussi
 // jours avec appui sur les mains sur les 6 derniers jours
 // (les figures seulement : échauffement, postures et souplesse ne comptent pas)
-function handDays(){ const out = new Set(), names = new Set(Object.values(MS).flatMap(m => ["pg:" + m.name, "pg:" + m.name + ", vérification"])); for (let i = 1; i <= 6; i++) { const x = new Date(); x.setDate(x.getDate() - i); out.add(dayKey(x)); }
-  return new Set(S.log.filter(l => (MS[l.id] || names.has(l.id)) && out.has(dayKey(l.t))).map(l => dayKey(l.t)).concat((S.zw || []).filter(d => out.has(d)))).size; }
-function needRest(){ const names = new Set(Object.values(MS).flatMap(m => ["pg:" + m.name, "pg:" + m.name + ", vérification"])), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t)).concat(S.zw || [])), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
+function handDays(){ const out = new Set([1, 2, 3, 4, 5, 6].map(ago)), d = daysWhere((l, i) => !!i); (S.zw || []).forEach(x => d.add(x)); return [...d].filter(x => out.has(x)).length; }
+function needRest(){ const days = daysWhere((l, i) => !!i); (S.zw || []).forEach(x => days.add(x));
   return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
-function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + ", vérification"] = m.id; });
-  const out = new Set(S.log.filter(l=>FORCE(MS[l.id] ? l.id : byName[l.id] || "") || /^pg:Planche/i.test(l.id)).map(l=>dayKey(l.t))); (S.zf || []).forEach(d => out.add(d)); return out; }
+function forceDays(){ const out = daysWhere((l, i) => (i && FORCE(i)) || /^pg:Planche/i.test(l.id)); (S.zf || []).forEach(d => out.add(d)); return out; }
 function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate() - 1); if (fd.has(dayKey(d))) return false;
   let n = 0; for (let i = 1; i <= 6; i++) { const x = new Date(); x.setDate(x.getDate() - i); if (fd.has(dayKey(x))) n++; }   // sur 7 jours glissants, pas du lundi au dimanche
   return n < 3 || fd.has(dayKey(Date.now())); }

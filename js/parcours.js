@@ -41,7 +41,7 @@ const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lift1","pr_walk","pr_float",
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check" || (m.target && st(id).best >= m.target)) return null;   // cible déjà tenue : il reste à valider, pas un plateau
   const since = Date.now() - 60 * 864e5, byDay = {};   /* les 6 dernières séances de la figure (3 contre 3), sur 2 mois au plus */
-  S.log.filter(l => l.t >= since && (l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").forEach(l => { const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
+  logsOf(id).filter(l => l.t >= since && !SFX_ALL.test(l.id)).forEach(l => { const d = dayKey(l.t); byDay[d] = Math.max(byDay[d] || 0, l.v); });
   const days = Object.keys(byDay).sort((a, b) => dk(a) - dk(b)).slice(-6); if (days.length < 6 || hitInfo(id).days) return null;
   const tr = trend(id); if (!tr || tr.span < 14 || tr.pct >= 1) return null;   /* la pente sur 8 séances : moins de 1 % par semaine sur 2 semaines, c’est un plateau */
   const fbs = (S.fb || []).filter(f => f.t >= since), hard = fbs.filter(f => f.k === "hard" || f.k === "pain").length;
@@ -162,11 +162,11 @@ function sqOpen(q){
 // Estimation, à ton rythme : semaines pour atteindre la cible d’une figure (d’après tes progrès enregistrés, sinon une estimation prudente)
 function eta(m){
   const x = st(m.id); if (x.done || !m.target || m.type === "check") return null; const T = m.target;
-  const logs = S.log.filter(l=>(l.id === m.id || l.id === "pg:" + m.name) && typeof l.v === "number"); let wk = null;
+  const logs = logsOf(m.id).filter(l => !SFX_ALL.test(l.id)); let wk = null;
   if (logs.length >= 2) { const days = (Date.now() - logs[0].t) / 864e5, gain = x.best - logs[0].v; if (days >= 3 && gain > 0) wk = (T - x.best) / (gain / (days / 7)); }
   if (wk == null) wk = 1 + 4 * (1 - Math.min(1, x.best / T));
   const V = valRule(m.id), left = Math.max(0, V.n - hitInfo(m.id).days), since = Date.now() - 28 * 864e5;
-  const perWk = Math.max(1, new Set(S.log.filter(l => l.t >= since && (l.id === m.id || l.id === "pg:" + m.name)).map(l => dayKey(l.t))).size / 4);
+  const perWk = Math.max(1, daysWhere((l, i) => i === m.id && !SFX_STRICT.test(l.id), since).size / 4);
   const hd = (S.hit && S.hit[m.id] && S.hit[m.id].days) || [], spanLeft = Math.max(0, V.span - (hd.length ? dayDiff(dayKey(Date.now()), hd[0]) : 0));
   wk = Math.max(wk, spanLeft / 7, left / perWk);   // on ne peut pas valider plus vite que la règle
   return Math.max(1, Math.min(52, Math.round(wk)));
@@ -415,7 +415,6 @@ function planVis(m, pl, box){ const x = st(m.id);
   if (key.length) { const ul = el("ul","plan pkey"); key.forEach(t=>ul.append(el("li",null,t))); box.append(ul); }
   if (rest2.length) { const det = el("details","pdet"), sm = el("summary",null,"Le détail du plan"), ul = el("ul","plan"); rest2.forEach(t=>ul.append(el("li",null,t))); det.append(sm, ul); box.append(det); } }
 const vidKey = (s, v) => s.id + "|" + v[1];
-function vidChip(sid){ const s = SEC[sid], b = el("button","vchip"); b.append(el("span",null,"Vidéos du programme"), el("b",null, s.videos.filter(v=>S.vid[vidKey(s,v)]).length + "/" + s.videos.length)); b.onclick = e => { e.stopPropagation(); openVids(sid); }; return b; }
 function openVids(sid){ const s = SEC[sid], box = $("vdBody"); $("vdT").textContent = "Vidéos, " + s.name; box.textContent = "";
   s.videos.forEach(v=>{ const l = el("label","vid"), cb = el("input"); cb.type = "checkbox"; cb.checked = !!S.vid[vidKey(s,v)];
     cb.onchange = () => { S.vid[vidKey(s,v)] = cb.checked; save(); render(); };

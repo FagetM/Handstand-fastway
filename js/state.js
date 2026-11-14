@@ -140,6 +140,22 @@ const fmt = (m, v) => m.type === "hold" ? num(v) + "\u00a0s" : v + "\u00a0rép."
 const goalTxt = m => m.type === "hold" ? m.target + "\u00a0s" : m.type === "reps" ? "×\u00a0" + m.target : "";
 
 // étapes à l’élastique : sans élastique déclaré, elles ne bloquent pas le parcours
+// ---------- Le journal : à quelle figure appartient une entrée ----------
+// Une entrée est notée par son identifiant (fiche), par « pg:<nom> » (séance), avec parfois un suffixe (« , vérification », « , test »…).
+// Les nouvelles entrées portent aussi l’identifiant (m). Deux figures au même nom (« Équilibre droit » 40 s et 60 s) : la première encore à travailler.
+// strict : seulement le nom nu ou « , vérification » (le travail de la figure elle-même, pas un test ni un entretien)
+let N2I = null;
+const SFX_ALL = /, (vérification|test|entretien|préparation)$/, SFX_STRICT = /, vérification$/;
+function idOfLog(l, strict){ if (strict && /, (test|entretien|préparation)$/.test(l.id)) return null; if (l.m && MS[l.m]) return l.m; if (MS[l.id]) return l.id; if (!N2I) { N2I = {}; Object.values(MS).forEach(m => { (N2I[m.name] || (N2I[m.name] = [])).push(m.id); }); }
+  const raw = String(l.id); if (!raw.startsWith("pg:")) return null; const n = raw.slice(3).replace(strict ? SFX_STRICT : SFX_ALL, ""), c = N2I[n];
+  return !c ? null : c.length === 1 ? c[0] : c.find(i => !st(i).done) || c[c.length - 1]; }
+// index par figure des entrées chiffrées, refait une fois par enregistrement (pas une fois par figure)
+const logIdx = () => { const k = (window._sv || 0) + "|" + S.log.length; if (logIdx.k !== k) { const o = {}; S.log.forEach(l => { if (typeof l.v !== "number") return; const i = idOfLog(l); if (i) (o[i] || (o[i] = [])).push(l); }); logIdx.k = k; logIdx.v = o; } return logIdx.v; };
+const logsOf = (id, until) => { const L = logIdx()[id] || []; return until ? L.filter(l => l.t < until) : L; };
+// jours (clés) où une entrée répond au test, sur les entrées du travail de figure (strict)
+const daysWhere = (test, since) => new Set(S.log.filter(l => (!since || l.t >= since) && test(l, idOfLog(l, true))).map(l => dayKey(l.t)));
+const ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
+
 const BAND_STEPS = new Set(["pl_strBand","pl_strBandL","pl_fullBand"]), NOBAND_STEPS = new Set(["pl_strElev","pl_t2s","pl_fullElev"]);
 const eqSkip = r => (BAND_STEPS.has(r) && !(S.equip || {}).band) || (NOBAND_STEPS.has(r) && !!(S.equip || {}).band);   // l’autre chemin, selon ton matériel
 const reqDone = r => st(r).done || eqSkip(r);
