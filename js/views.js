@@ -158,7 +158,7 @@ function render(){
       c.onclick = () => { if (lock) { toast("« " + all[id].name + " » s’ouvre après : " + lock); return; } pg().cur = id; save(); render(); }; chips.append(c); }); nc.append(chips);
     // météo du corps : comment tu te sens aujourd’hui ? (règle la séance d’équilibre)
     if (P.builtin && dn && dn < tot) { const md = MOODS.find(x => x[0] === moodToday()); delete S.moodEdit; nc.append(el("div","moodset", (S.mins || 30) + " min" + (md ? ", " + md[1] : "") + ", séance en cours")); }   /* séance commencée : on ne change plus la durée ni l’humeur */
-    else if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = (S.mins || 30) + " min, " + md[1] + ", changer"; mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
+    else if (P.builtin && moodToday() && !S.moodEdit) { const mk = moodToday(), md = MOODS.find(x => x[0] === mk), mb = el("button","moodset"); mb.textContent = nbsp((S.mins || 30) + " min, " + md[1] + ", changer"); mb.onclick = () => { S.moodEdit = 1; render(); }; nc.append(mb); }
     else if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Aujourd’hui, je suis…"));
       MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); b.append(el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => { delete S.moodEdit; setMood(k); }; mw.append(b); });
       nc.append(mw);
@@ -205,7 +205,7 @@ function render(){
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
     DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); if (did) { c.setAttribute("role","button"); c.setAttribute("aria-label", DAYN[i] + " : voir ce que tu as fait"); c.onclick = () => { histN = 30; openHist(dayKey(dd)); }; } wk.append(c); });
     nc.append(wk);
-    { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; b.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), el("span","mut","(" + (g.wk <= 1 ? "cette semaine" : "dans ≈ " + gainTxt(g.wk)) + ")")); b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
+    { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; { const tx = el("span","gtx"); tx.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), " ", el("span","mut","(" + (g.wk <= 1 ? "cette semaine" : "dans ≈ " + gainTxt(g.wk)) + ")")); b.append(tx); } b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
   }
 
   { const pt = $("pathTop"), gms = GOALS[0].ms, dn = doneIn(gms); pt.textContent = "";
