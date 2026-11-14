@@ -204,7 +204,7 @@ function journey(nextId){
       // il manque peu : le coffre frémit et montre le compte de l’étage
       const cm = SEC[it.sid] ? SEC[it.sid].ms.filter(m => !m.alt) : [], cd = cm.filter(m => reqDone(m.id)).length; if (!it.done && cm.length && cm.length - cd <= 1) c.classList.add("near");
       c.onclick = () => chestScene(it.sid, !it.done);
-      c.append(el("span","cl", it.done ? C[2] : "Coffre")); if (!it.done && cm.length) c.append(el("span","cn", cd + " / " + cm.length)); cv.append(c); }
+      c.append(el("span","cl", it.done ? C[2] : "Coffre")); if (!it.done && cm.length) c.append(el("span","cn", cd + "/" + cm.length)); cv.append(c); }
     else { const id = it.id, m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), kk = lvlOf(m), cur = id === nextId, small = it.alt;
       const b = el("button","jn d-" + m.sec + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
       b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 48 : cur ? 64 : 58)) + "px";   // centre du rond sur le chemin
@@ -315,7 +315,7 @@ function renderQuest(S0, nextId){
     box.append(el("div","lab bfam",name)); const grid = el("div","badges");
     list.forEach(b=>{ const x = el("button","bdg" + (b.ok ? "" : " off")); x.setAttribute("aria-label", b.name + ", " + (b.ok ? "obtenu" : b.cur + " sur " + b.max));
       const m = el("span","m"); m.innerHTML = ringSvg(b.ok ? 0 : b.cur / b.max, 76, 35, 4, "rg"); m.append(el("span","gl", b.id.startsWith("goal_") && !b.ok ? b.cur + "/" + b.max : b.g));   /* une quête montre son avancement, pas son étiquette */ if (b.ok) m.append(icon("check","ck"));
-      x.append(m, el("span","bn", b.name), el("span","bc", b.ok ? "Obtenu" : b.id.startsWith("goal_") ? "" : b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max));
+      x.append(m, el("span","bn", b.name), el("span","bc", b.ok ? "Obtenu" : b.id.startsWith("goal_") ? "" : b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + "/" + b.max));
       x.onclick = () => { $("bdG").textContent = b.g; $("bdT").textContent = b.name; $("bdD").textContent = b.desc; $("bdBar").style.width = (b.cur / b.max * 100) + "%";
         $("bdC").textContent = b.ok ? "Obtenu" : (b.t ? mins(b.cur) + " / " + mins(b.max) + " min" : b.cur + " / " + b.max);
         const rw = badgeReward(b.id); $("bdR").textContent = "Récompense : 40 points d’expérience" + (rw.length ? ", tenue : " + rw.join(", ") : ""); $("bdDlg").showModal(); };
