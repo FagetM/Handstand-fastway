@@ -237,7 +237,7 @@ const FAULTS = [["bras", /(plier|plie|pliés?) (les |le |du )?(bras|coudes?)(?! 
 // cas où le texte trompe la détection (sens du mouvement, erreur d’un seul côté) : on choisit à la main, ou on ne montre rien
 const FX_ID = {oa_shTuck:["banane","dos creusé"], oa_strad30:["banane","dos creusé"], pr_lsit:["jambes","jambes qui tombent"], oa_shStrad:null, lo_elbow:null,
   fd_plank:["banane","bassin qui tombe"], pl_tuck:["bas","hanches qui tombent"], pl_tuckO:["bas","hanches qui tombent"], pl_full:["bas","hanches sous la ligne"],
-  pr_straddle:["bras","bras pliés"], pr_pike:["bras","bras pliés"], pr_manna:["bras","bras pliés"], oa_oahs:["bras","bras d’appui plié"], oa_oahs10:["bras","bras d’appui plié"], pr_vsitC:["buste","buste qui bascule"], pr_stradL:["buste","buste qui bascule"]};
+  pr_straddle:["bras","bras pliés"], pr_pike:["ecart","jambes écartées"], pr_stalder:["jambes","pieds qui frottent le sol"],   /* bras repliés contre le buste : un coude plié ne se lit pas, on montre l’autre erreur citée */ pr_manna:["bras","bras pliés"], oa_oahs:["bras","bras d’appui plié"], oa_oahs10:["bras","bras d’appui plié"], pr_vsitC:["buste","buste qui bascule"], pr_stradL:["buste","buste qui bascule"]};
 function faultOf(id){ if (id in FX_ID) return FX_ID[id] && {t:FX_ID[id][0], label:FX_ID[id][1]}; const e = (DETAILS[id] || {}).err; if (!e) return null; let best = null;
   FAULTS.forEach(([t, re, label]) => { const m = re.exec(e); if (m && (!best || m.index < best.i)) best = {t, label, i:m.index}; }); return best; }
 const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + id : null; };
