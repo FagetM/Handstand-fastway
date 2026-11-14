@@ -33,7 +33,7 @@ function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[i
 function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
 // la règle de validation, en clair (même règle que hitTarget)
 function valTxt(m){ const V = valRule(m.id); return "Validation : la cible tenue sur " + V.n + " séances" + (V.gap > 1 ? ", espacées d’au moins " + V.gap + " jours" : ", jours différents") + (V.span ? ", sur " + V.span + " jours au moins" : "")
-  + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? ", avec 2 tentatives sur 3 à la cible à chaque fois" : "") + "."; }
+  + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? (SIDED.has(m.id) ? ", avec 3 tentatives à la cible de chaque jambe à chaque fois" : ", avec 2 tentatives sur 3 à la cible à chaque fois") : "") + "."; }
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), out = {head:"", lines:[], short:"", n:null}; let T = nextStep(m);
   if (x.done) { out.head = "Figure maîtrisée"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Figure acquise. Reviens-y une ou deux fois par semaine pour l’entretenir, en échauffement des jalons suivants."]; return out; }
@@ -261,7 +261,7 @@ function quick(id){
     if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
     else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d’abord." : "Valide-la d’abord.") + " Tu peux quand même essayer."));
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? "Semaine plus légère en cours sur cette figure, puis on repart." : "Elle sera allégée une semaine à sa prochaine séance."))); bar(Math.min(1, x.best / (m.target || 1))); }
-    else if (hi.days) { blk.append(el("b",null, hi.days + " séance validée sur " + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / valRule(id).n); }
+    else if (hi.days) { blk.append(el("b",null, hi.days + (hi.days > 1 ? " séances validées sur " : " séance validée sur ") + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / valRule(id).n); }
     else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + ", cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép.") + "." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(x.best / m.target); }
     else blk.append(el("b",null,"Pour valider"), el("p",null, D0.ok || (m.target ? goalTxt(m) + ", sur 2 séances." : "Réussie sur 2 séances.")));
     top.after(blk); }
