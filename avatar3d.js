@@ -297,6 +297,21 @@ Object.assign(POSES, {
   dr_bicB:  DR({pitch:0, arm:[-0.95,-0.95], elbow:[-0.3,-0.3], point:0}),                                                     // bras presque tendus, levés devant
   dr_sit2:  DR({pitch:-0.45, arch:-0.1, arm:[1.0,1.0], hip:[-1.15,-1.15], knee:[0.9,0.9], point:0}),                           // assis, mains loin derrière : épaules en extension
   dr_leanR: DR({pitch:1.225, arch:0.25, arm:[-0.85,-0.85], armZ:[0,0], hip:[-0.08,-0.08], head:-0.4, point:0}),                // planche inclinée, dos arrondi
+  // souplesse : pliage, grands écarts, fente, cavalier, levées de jambe, pont
+  f_pike0:  DR({pitch:0.1, arm:[-0.6,-0.6], hip:[-1.67,-1.67], point:0}),                                                     // assis jambes serrées tendues
+  f_pike1:  DR({pitch:1.2, arch:0.15, arm:[-2.5,-2.5], hip:[-2.77,-2.77], head:0.1, point:0}),                                // pliage, buste sur les cuisses
+  f_pikeL:  DR({pitch:0.35, arch:0.25, arm:[-0.55,-0.55], armZ:[0.3,0.3], hip:[-2.15,-2.15], point:0}),                       // pliage actif : les talons décollent
+  f_panL:   DR({pitch:0.85, arch:0.15, arm:[-2.3,-2.3], hip:[-2.42,-2.05], hipZ:[0.85,0.85], head:0.2, point:0}),             // écart penché, une jambe décolle
+  f_mid0:   DR({pitch:0.05, arm:[-0.35,-0.35], armZ:[0.55,0.55], hip:[0,0], hipZ:[1.0,1.0], point:0}),                        // debout, jambes très écartées
+  f_mid:    DR({pitch:0.05, arm:[-0.35,-0.35], armZ:[0.55,0.55], hip:[0,0], hipZ:[1.52,1.52], point:0}),                      // grand écart facial
+  f_front:  DR({pitch:0, arm:[-0.2,-0.2], armZ:[0.45,0.45], hip:[-1.57,1.5], point:0}),                                       // grand écart antéro-postérieur
+  f_half:   DR({pitch:0.85, arch:0.1, arm:[-0.9,-0.9], armZ:[0.3,0.3], hip:[-1.9,-0.85], knee:[0,1.57], point:0}),            // demi grand écart, genou arrière au sol
+  f_lunge:  DR({pitch:0, arm:[-3.0,-3.0], armZ:[0.05,0.05], hip:[-1.45,0.5], knee:[1.45,1.07], point:0}),                     // fente basse, bras au ciel
+  f_horse:  DR({pitch:0.1, arm:[-1.5,-1.5], armZ:[0.1,0.1], hip:[-1.35,-1.35], hipZ:[0.95,0.95], knee:[1.6,1.6]}),             // squat cavalier
+  f_legF:   DR({pitch:0, arm:[0.08,0.08], armZ:[0.13,1.2], hip:[-1.4,0], point:0}),                                           // jambe levée devant
+  f_legS:   DR({pitch:0, arm:[0.08,0.08], armZ:[0.13,1.2], hip:[0,0], hipZ:[1.1,0.05], point:0}),                             // jambe levée sur le côté
+  f_bridge0:DR({pitch:-1.57, arm:[0.3,0.3], armZ:[0.15,0.15], hip:[-0.9,-0.9], knee:[1.9,1.9], point:0}),                     // allongé, genoux pliés
+  f_bridge: DR({pitch:-1.8, arch:-0.8, arm:[-2.8,-2.8], armZ:[0.1,0.1], hip:[0.7,0.7], knee:[1.9,1.9], head:0.5, point:0}),   // pont bras tendus
 });
 const LP = (a, b, n, ta, tb) => Array.from({length:n}, () => [[a, ta || 0.6, 0.3], [b, tb || 0.6, 0.5]]).flat();
 Object.assign(SCRIPTS, {
@@ -328,6 +343,16 @@ Object.assign(SCRIPTS, {
   dr_extEp:  {cut:true, s:[["crouch",0.45,0],["dr_sit",0.5,0.4],...LP("dr_sit2","dr_sit",2,1.0,0.9)], still:"dr_sit2"},
   dr_protrac:{cut:true, s:[["squat",0.45,0],["pl_lean",0.5,0.3],...LP("dr_leanR","pl_lean",4,0.5,0.5)], still:"dr_leanR"},
   dr_t2s:    {cut:true, s:[["squat",0.45,0],["pl_adv",0.6,0.5],...LP("pl_straddle","pl_adv",2,0.8,0.8)], still:"pl_straddle"},
+  z_pliage:  {cut:true, yaw:-1.0, s:[["crouch",0.4,0],["f_pike0",0.5,0.5],["f_pike1",1.1,2.6],["f_pike0",0.9,0.4]], still:"f_pike1"},
+  z_ecartAct:{cut:true, yaw:-0.55, s:[["crouch",0.4,0],["z_pan0",0.5,0.3],["z_pan1",0.9,0.5],...LP("f_panL","z_pan1",3,0.6,0.5)], still:"f_panL"},
+  z_midsplit:{cut:true, yaw:0, s:[["stand",0.3,0.2],["f_mid0",0.7,0.4],["f_mid",1.3,2.6],["f_mid0",1.0,0.3]], still:"f_mid"},
+  z_frontsplit:{cut:true, yaw:-1.0, s:[["stand",0.3,0.1],["f_lunge",0.7,0.3],["f_half",0.8,0.5],["f_front",1.3,2.6],["f_half",1.0,0.3]], still:"f_front"},
+  z_half:    {cut:true, yaw:-1.0, s:[["stand",0.3,0.1],["f_lunge",0.7,0.3],["f_half",0.9,3.0],["f_lunge",0.8,0.2]], still:"f_half"},
+  z_lunge:   {cut:true, yaw:-1.0, s:[["stand",0.3,0.2],["f_lunge",0.9,3.0],["stand",0.8,0.2]], still:"f_lunge"},
+  z_horse:   {cut:true, yaw:-0.3, s:[["stand",0.3,0.2],["f_horse",1.2,2.8],["stand",0.9,0.2]], still:"f_horse"},
+  z_legs:    {cut:true, wall:-1, yaw:-0.7, s:[["stand",0.3,0.2],...LP("f_legF","stand",2,0.7,0.4),...LP("f_legS","stand",2,0.7,0.4)], still:"f_legF"},
+  z_bridge:  {cut:true, yaw:-1.0, s:[["crouch",0.4,0],["dr_sit",0.5,0.1],["f_bridge0",0.6,0.4],["f_bridge",1.1,2.6],["f_bridge0",1.0,0.3]], still:"f_bridge"},
+  z_poigF:   {cut:true, s:[["crouch",0.4,0],["z_quad",0.5,0.4],...LP("z_quadF","z_quad",2,1.0,0.6)], still:"z_quadF"},
 });
 const KEYS = ["point","hands","one","spin","arch","twist","pitch","roll","head","arm0","arm1","armZ0","armZ1","elbow0","elbow1","hip0","hip1","hipZ0","hipZ1","hipY0","hipY1","knee0","knee1","armY0","armY1","wr0","wr1"];
 const flat = name => { const p = POSES[name] || POSES.stand, n = POSES[name] ? name : "stand", e = p.elbow || [0, 0];
