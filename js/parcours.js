@@ -44,7 +44,7 @@ function planFor(m){
   const freq = days + " séances par semaine" + (force ? " : un jour de repos entre deux, la force se construit pendant la récupération." : " : c’est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c’est une habileté, on la travaille en essais tenus jusqu’à la perte d’équilibre
   if (FREE(m) && lightWeek(m.id) && k > 0) T = L[k - 1];   // semaine plus légère : le palier précédent, pas de validation
-  if (FREE(m)) { const one = m.sec === "onearm" || SIDED.has(m.id), T0 = nextStep(m) || 0, n = one ? 10 : T0 >= 40 ? 8 : 15, rest = one ? 45 : Math.max(30, Math.min(60, T0));   // tenues longues : moins d’essais, plus de repos
+  if (FREE(m)) { const one = m.sec === "onearm" || SIDED.has(m.id), T0 = nextStep(m) || 0, n = one ? 8 : T0 >= 40 ? 8 : 15, rest = one ? 45 : Math.max(30, Math.min(60, T0));   // tenues longues : moins d’essais, plus de repos
     out.n = {sets:n, attempts:true, T, hold:true, work:T, tries:0, rest, sides:one};
     out.head = "Plan pour le niveau " + (k + 1) + " sur " + L.length + " : " + T + " s";
     out.short = n + " essais" + (one ? " par côté, en alternant" : "") + ", chacun tenu tant que c’est calme, " + rest + " s de repos. " + days + " séances par semaine.";
@@ -56,7 +56,7 @@ function planFor(m){
   if (m.type === "check"){
     out.n = {sets, check:true};
     out.head = "Plan pour réussir cette figure"; out.short = sets + " essais par séance, " + days + " séances par semaine.";
-    out.lines = [freq, "À chaque séance : " + sets + " essais ; " + (/^ul_/.test(m.id) ? "une réussite par séance compte, il en faut sur 3 séances espacées d’au moins 2 jours, sur 10 jours au moins." : "3 réussites dans une même séance comptent, il en faut sur 2 séances."), (FORCE(m.id) ? "Les autres jours : repos des épaules et des coudes, pas d’essai à froid." : "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste."), "Quand le geste se dégrade, fais une pause.", "À chaque réussite propre, touche « Je l’ai réussi »."];
+    out.lines = [freq, "À chaque séance : " + sets + " essais ; " + (/^ul_/.test(m.id) ? "une réussite par séance compte, il en faut sur 3 séances espacées d’au moins 2 jours, sur 10 jours au moins." : "3 réussites dans une même séance comptent, il en faut sur 2 séances."), (FORCE(m.id) ? "Les autres jours : repos des épaules et des coudes, pas d’essai à froid." : "Les autres jours, 2 ou 3 essais à froid dans la journée entretiennent le geste."), "Quand le geste se dégrade, fais une pause.", "À chaque réussite propre, touche « Réussi aujourd’hui »."];
   } else {
     const hold = m.type === "hold", lo = hold ? Math.min(2, T) : 1;
     // charge de travail : les trois quarts du record quand il existe, sinon la moitié de la cible ; jamais plus de 80 % de la cible
@@ -69,7 +69,7 @@ function planFor(m){
     const nt = /^pl_/.test(m.id) && !hold ? Math.min(1, tries2) : tries2, ntSide = !SIDED.has(m.id) ? "" : /^pl_/.test(m.id) ? " par jambe" : " par côté", ntTxt = (nt > 1 ? nt + " tentatives" : "une tentative") + ntSide;
     out.short = sets + " × " + (hold ? work + " s" : work + " rép.") + (nt ? ", puis " + ntTxt + " à " + (hold ? T + " s" : T + " rép.") : ""); out.short += (out.short.endsWith(".") ? " " : ". ") + days + " séances par semaine.";   /* pas de « rép.. » */
     out.lines = [freq,
-      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" + (/^pl_/.test(m.id) && SIDED.has(m.id) ? " par jambe" : "") : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (force ? "2 à 3 min" : "60 à 90 s") + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
+      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" + (/^pl_/.test(m.id) && SIDED.has(m.id) ? " par jambe" : "") : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (r => r < 60 ? r + " s" : Math.floor(r / 60) + " min" + (r % 60 ? " " + r % 60 + " s" : ""))(restOf(m)) + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
       (/^pl_/.test(m.id) ? (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", " + (SIDED.has(m.id) ? "90 s" : "3 min") + " de repos entre chacune. " : ". ") : "") + (hold ? "Une tenue à la cible" : "Une tentative réussie") + " ouvre le niveau suivant ; la validation suit la règle ci-dessous, car les tendons aussi doivent être prêts."
         : (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", avec " + (SIDED.has(m.id) ? "90 s" : "2 minutes") + " de repos entre chacune." : ".") + " Réussie, elle fait passer le palier ; " : "Une série à la cible fait passer le palier ; ") + "au dernier palier, la règle de validation s’applique."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l’équilibre sans fatiguer.",
@@ -244,6 +244,7 @@ const FX_ID = {oa_shTuck:["banane","dos creusé"], oa_strad30:["banane","dos cre
 function faultOf(id){ if (id in FX_ID) return FX_ID[id] && {t:FX_ID[id][0], label:FX_ID[id][1]}; const e = (DETAILS[id] || {}).err; if (!e) return null; let best = null;
   FAULTS.forEach(([t, re, label]) => { const m = re.exec(e); if (m && (!best || m.index < best.i)) best = {t, label, i:m.index}; }); return best; }
 const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + id : null; };
+const lc1 = t => t.charAt(0).toLowerCase() + t.slice(1);   // minuscule après les deux-points
 function quick(id){
   const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 120); art.append(sp);
@@ -264,8 +265,8 @@ function quick(id){
     if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
     else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d’abord." : "Valide-la d’abord.") + " Tu peux quand même essayer."));
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? "Semaine plus légère en cours sur cette figure, puis on repart." : "Elle sera allégée une semaine à sa prochaine séance."))); bar(Math.min(1, x.best / (m.target || 1))); }
-    else if (hi.days) { blk.append(el("b",null, hi.days + (hi.days > 1 ? " séances validées sur " : " séance validée sur ") + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(hi.days / valRule(id).n); }
-    else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + ", cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép.") + "." + (D0.err ? " À surveiller : " + D0.err : ""))); bar(x.best / m.target); }
+    else if (hi.days) { blk.append(el("b",null, hi.days + (hi.days > 1 ? " séances validées sur " : " séance validée sur ") + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + lc1(D0.err) : ""))); bar(hi.days / valRule(id).n); }
+    else if (x.best > 0 && m.target) { blk.append(el("b",null,"Record " + fmt(m, x.best) + ", cible " + goalTxt(m)), el("p",null,"Il reste " + (m.type === "hold" ? num(Math.max(0, m.target - x.best)) + " s" : Math.max(0, m.target - x.best) + " rép") + "." + (D0.err ? " À surveiller : " + lc1(D0.err) : ""))); bar(x.best / m.target); }
     else blk.append(el("b",null,"Pour valider"), el("p",null, D0.ok || (m.target ? goalTxt(m) + ", sur 2 séances." : "Réussie sur 2 séances.")));
     top.after(blk); }
   { // historique : meilleur temps de chaque jour d’entraînement sur cette figure
@@ -283,7 +284,7 @@ function quick(id){
   // le détail reste replié : la carte montre d’abord l’essentiel (prérequis, ce qui bloque, les deux boutons)
   const D = DETAILS[id] || {}, info = el("div","qkinfo"), fold = (title, node) => { const d = el("details","qkd"), sm = el("summary"); sm.textContent = title; d.append(sm, node); info.append(d); };
   { const t = el("div"); if (m.desc && !(D.how && D.how.length)) t.append(el("p",null,m.desc));   /* les étapes disent déjà tout : pas de paragraphe qui les répète */ if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); t.append(ol); }
-    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (D.err && !faultOf(id)) t.append(el("p",null,"À éviter : " + D.err.charAt(0).toLowerCase() + D.err.slice(1))); else if (D.err) t.append(el("p","mut", D.err));   /* la carte animée porte déjà « À éviter » */
+    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (D.err) t.append(el("p",null,"À éviter : " + lc1(D.err)));   /* toujours avec son libellé : seule, la phrase se lirait comme une consigne */   /* la carte animée porte déjà « À éviter » */
     // l’erreur la plus visible, montrée : à gauche la bonne posture, à droite la même qui se dégrade
     { const f = faultOf(id); if (f) { const cmp = el("div","fxcmp"), card = (cls, lab, anim, still) => { const c = el("div","fx " + cls), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = anim; sp.dataset.lk = ""; if (still) sp.dataset.still = 1; sprPaint(sp, 108); c.append(sp, el("b",null, lab)); if (!still && !SPR[anim]) c.classList.add("wait"); return c; };   /* l’erreur pas encore calculée : estompée, pour ne pas montrer deux fois la même pose */
       cmp.append(card("ok", "À faire", id, true), card("ko", "À éviter : " + f.label, faultKey(id), false)); t.prepend(cmp);
