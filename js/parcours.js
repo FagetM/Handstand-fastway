@@ -33,7 +33,7 @@ function lightWeek(id){ if (deloadWeek()) return false; const d = (S.dl || {})[i
 function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
 // la règle de validation, en clair (même règle que hitTarget)
 function valTxt(m){ const V = valRule(m.id); return "Validation : la cible tenue sur " + V.n + " séances" + (V.gap > 1 ? ", espacées d’au moins " + V.gap + " jours" : ", jours différents") + (V.span ? ", sur " + V.span + " jours au moins" : "")
-  + (SIDED.has(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? (SIDED.has(m.id) ? ", avec 3 tentatives à la cible de chaque jambe à chaque fois" : ", avec 2 tentatives sur 3 à la cible à chaque fois") : "") + "."; }
+  + (SIDED.has(m.id) && !/^pl_/.test(m.id) ? ", des deux côtés" : "") + (/^pl_/.test(m.id) && m.type === "hold" ? (SIDED.has(m.id) ? ", avec 3 tentatives à la cible de chaque jambe à chaque fois" : ", avec 2 tentatives sur 3 à la cible à chaque fois") : "") + "."; }
 function planFor(m){
   const x = st(m.id), L = lvls(m), k = lvlOf(m), out = {head:"", lines:[], short:"", n:null}; let T = nextStep(m);
   if (x.done) { out.head = "Figure maîtrisée"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Figure acquise. Reviens-y une ou deux fois par semaine pour l’entretenir, en échauffement des jalons suivants."]; return out; }
