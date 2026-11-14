@@ -15,6 +15,8 @@ $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
   $("exPrio").onchange = e => { X().prio = e.target.value || null; save(); render(); };
   $("exSober").onchange = e => { X().sober = e.target.checked; save(); sync(); render(); };
   sync(); }
+$("goalSel").value = S.goal || "both"; $("goalSel").onchange = e => { S.goal = e.target.value === "both" ? null : e.target.value; save(); render(); toast("Objectif : " + goalOf().name + "."); };
+profForm($("profBox"));
 $("theme").onchange = e => { S.theme = e.target.value; save(); location.reload(); };   // les personnages 3D reprennent leurs couleurs au rechargement
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n’est pas commencée
 { const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; else if (S.bday && S.bday.d === dayKey(Date.now())) toast("Séance déjà commencée : le changement vaudra dès demain."); save(); render(); };
@@ -49,7 +51,7 @@ $("gateForm").onsubmit = async e => {
 
 render();
 // ---------- Conseil du jour (affiché en haut du parcours) ----------
-function curMs(){ return MS[GOALS[0].ms.find(id=>!reqDone(id) && !msLocked(MS[id]))]; }
+function curMs(){ return MS[goalOf().ms.find(id=>!reqDone(id) && !msLocked(MS[id]))]; }
 function tipOfDay(){
   const m = curMs(), days = [...new Set(S.log.map(l=>dayKey(l.t)))], today = dayKey(Date.now()), trained = days.includes(today);
   const lastT = S.log.length ? S.log[S.log.length - 1].t : 0, gap = lastT ? Math.floor((Date.now() - lastT) / 864e5) : null;

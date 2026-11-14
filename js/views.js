@@ -114,7 +114,7 @@ function setAvatar(s){
 // ---------- Rendu ----------
 function render(){
   window._bb = null;
-  const ids = GOALS[0].ms;
+  const ids = goalOf().ms;
   const Z = stats(), weekAgo = Date.now() - 7*864e5;
   $("stStreak").textContent = Z.streak;
   $("stWeek").textContent = new Set(S.log.filter(l=>l.t>weekAgo).map(l=>dayKey(l.t))).size;
@@ -212,11 +212,11 @@ function render(){
     { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; { const tx = el("span","gtx"); tx.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), " ", el("span","mut","(" + (g.wk <= 1 ? "cette semaine" : "dans ≈ " + gainTxt(g.wk)) + ")")); b.append(tx); } b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
   }
 
-  { const pt = $("pathTop"), gms = GOALS[0].ms, dn = doneIn(gms); pt.textContent = "";
-    const c = el("div","ptop"), fins = el("div","fins"); ["oa_oahs","pl_full"].forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
+  { const pt = $("pathTop"), gms = goalOf().ms, dn = doneIn(gms); pt.textContent = "";
+    const c = el("div","ptop"), fins = el("div","fins"); (({planche:["pl_full"], press:["pr_stalder","pr_manna"], oahs:["oa_oahs10"], min:["in_str60"]})[S.goal] || ["oa_oahs","pl_full"]).forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
     const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
-    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!reqDone(id) && !msLocked(MS[id])) || gms.find(id=>!reqDone(id)); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? ", " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : "Combo ultime : tout est validé."));
-    { const P = plan(), gw = P.fin.ul_full; if (gw) { const eb = el("button","etab"); eb.append(el("span",null,"Combo ultime : "), el("b",null, dateTxt(gw)), el("span",null,", "), el("span","etm","mes dates")); eb.onclick = () => { openEta(); $("etaDlg").showModal(); }; g.append(eb); } }
+    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!reqDone(id) && !msLocked(MS[id])) || gms.find(id=>!reqDone(id)); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? ", " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : goalShort() + " : tout est validé."));
+    { const P = plan(), gw = planWk(P, [goalTop()]); if (gw) { const eb = el("button","etab"); eb.append(el("span",null, goalShort() + " : "), el("b",null, dateTxt(gw)), el("span",null,", "), el("span","etm","mes dates")); eb.onclick = () => { openEta(); $("etaDlg").showModal(); }; g.append(eb); } }
     c.append(fins, g);
     if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
@@ -241,7 +241,7 @@ function logRow(l, withName){
 // ce que la séance du jour a apporté, en une ligne qui reste sur la carte
 function daySummary(){ const d = dayKey(Date.now()), H = S.hit || {}, tl = S.log.filter(l => dayKey(l.t) === d);
   const val = Object.keys(H).find(id => MS[id] && st(id).done && (H[id].days || []).slice(-1)[0] === d);
-  if (val) return "« " + MS[val].name + " » validée, " + doneIn(GOALS[0].ms) + "/" + GOALS[0].ms.length;
+  if (val) return "« " + MS[val].name + " » validée, " + doneIn(goalOf().ms) + "/" + goalOf().ms.length;
   const part = Object.keys(H).find(id => MS[id] && !st(id).done && (H[id].days || []).slice(-1)[0] === d);
   if (part) return MS[part].name + " : séance validée " + H[part].days.length + "/" + valRule(part).n;
   const pr = tl.filter(l => l.pr).pop(); if (pr) return "Record : " + num(pr.v) + (pr.k === "hold" ? " s" : " rép.") + ", " + pr.id.replace(/^pg:/, "");

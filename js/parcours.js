@@ -5,6 +5,8 @@
 const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-domination",1], pl_adv:["planche-domination",2], pl_frog:["planche-domination",3],
   pl_lean2:["planche-domination",0], pl_tuckP:["planche-domination",1], pl_tuckPu:["planche-domination",1], pl_tuckO:["planche-domination",2], pl_strBand:["planche-domination",5], pl_strBandL:["planche-domination",5], pl_strNar:["planche-domination",6], pl_half:["planche-domination",6], pl_fullBand:["planche-domination",6], pl_fullNeg:["planche-domination",6], pl_1leg:["planche-domination",4], pl_pike:["planche-domination",4], pl_straddle:["planche-domination",5], pl_full:["planche-domination",6],
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
+// étapes prévues sur parallettes : la variante sans matériel
+const PARA_ALT = {pr_elev:"mains sur deux piles de livres stables ou deux blocs de yoga, ou au sol doigts écartés.", pr_vsit:"au sol, mains à plat ou sur les poings, à côté des hanches.", pr_halfSt:"au sol, mains sur les poings ; descends moins bas.", pr_vsitC:"au sol, mains sur les poings ou sur deux blocs de yoga.", pr_extSup:"mains au sol derrière toi, doigts vers l’arrière, ou sur le bord d’un canapé.", pr_mannaP:"sur deux blocs de yoga ou deux piles de livres collées au mur.", pr_tuckUp:"deux chaises solides calées contre un mur, ou deux blocs de yoga hauts.", pr_stalPart:"sur deux blocs de yoga hauts.", pr_stalder:"sur deux blocs de yoga hauts ou deux chaises calées."};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pr_vsitC","pr_mannaP","pr_vsitH","pr_manna","pr_lsitHs","pr_lsitNeg","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","oa_strad30","oa_tuckflag"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 // Douleur : chaque signalement est daté par zone. Éviction de 3 jours (7 si la même zone revient en 3 semaines),
@@ -21,7 +23,7 @@ function painState(){ const L = painLog(); if (!L.length) return {phase:0, ease:
 const painRecent = () => painState().phase === 1;
 // habiletés d’équilibre (y compris sur un bras) : des essais tenus jusqu’à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
-const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit","pr_vsitC","pr_extSup"].includes(id)) || /^ul_/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
+const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_walk","pr_float","pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit","pr_vsitC","pr_extSup"].includes(id)) || /^ul_/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check" || (m.target && st(id).best >= m.target)) return null;   // cible déjà tenue : il reste à valider, pas un plateau
@@ -46,7 +48,7 @@ function planFor(m){
   if (x.done) { out.head = "Figure maîtrisée"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Figure acquise. Reviens-y une ou deux fois par semaine pour l’entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l’équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = (/^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id)) || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id),   /* les excentriques en full planche chargent le tendon du biceps : 4 × 1, repos complet */   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", prSkill = prReps && /^pr_/.test(m.id) && !/Neg|halfSt/.test(m.id),   /* les descentes restent en 4 × 1 */ days = /^pl_/.test(m.id) ? (S.ex && S.ex.on && S.ex.prio === "pl" ? 3 : 2) : prSkill ? 3 : /^pr_/.test(m.id) ? 2 : force ? 3 : m.sec === "onearm" ? 4 : 5,   /* comme les plafonds de la séance : 3 jours de force par semaine au plus, 4 jours un bras */
+  const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = (/^pr_/.test(m.id) && m.type === "reps" && !/Lift$|^pr_(walk|float)$/.test(m.id)) || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id),   /* les excentriques en full planche chargent le tendon du biceps : 4 × 1, repos complet */   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", prSkill = prReps && /^pr_/.test(m.id) && !/Neg|halfSt/.test(m.id),   /* les descentes restent en 4 × 1 */ days = /^pr_(walk|float)$/.test(m.id) ? 4 : /^pl_/.test(m.id) ? (S.goal === "planche" || (S.ex && S.ex.on && S.ex.prio === "pl") ? 3 : 2) : prSkill ? 3 : /^pr_/.test(m.id) ? 2 : force ? 3 : m.sec === "onearm" ? 4 : 5,   /* comme les plafonds de la séance : 3 jours de force par semaine au plus, 4 jours un bras */
     sets = /^ul_/.test(m.id) ? 4 : oaReps ? 6 : prSkill ? 5 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
   const freq = (prSkill ? "Jusqu’à " : "") + days + " séances par semaine" + (prSkill ? " : la montée est un geste technique, des séries courtes et fréquentes, toujours fraîches." : force ? " : un jour de repos entre deux, la force se construit pendant la récupération." : " : c’est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c’est une habileté, on la travaille en essais tenus jusqu’à la perte d’équilibre
@@ -86,6 +88,7 @@ function planFor(m){
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
+  { const pa = PARA_ALT[m.id]; if (pa && !(S.equip || {}).para) out.lines.unshift("Sans parallettes : " + pa); }
   if (SOUPLE.has(m.id)) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
     out.lines.push("La souplesse compte ici" + (R.length ? " : " + R.map(r => r.name.toLowerCase()).join(", ") : "") + ". Mesure-la dans Profil, Ma souplesse ; 5 minutes actives après la séance et les jours de récup la font avancer."); }
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
@@ -147,7 +150,7 @@ function eta(m){
 }
 // ---------- Dates estimées : un calendrier prudent de tout le chemin, recalculé à chaque séance ----------
 // semaines habituelles par figure, pour quelqu’un de régulier (5 jours par semaine) ; tes propres mesures remplacent ces repères dès qu’elles existent
-const DEFW = {fd_pushInc:3, fd_dipsB:3, fd_pike:2, b1_free5:4, b2_str15:6, in_holds:4, in_changes:4, in_tuck:3, in_str40:6, in_str60:8, in_7s:4, in_7d:4, in_toes:4, in_toes7:4,
+const DEFW = {pr_walk:2, pr_float:3, pr_wallPress:3, pr_1leg:4, fd_pushInc:3, fd_dipsB:3, fd_pike:2, b1_free5:4, b2_str15:6, in_holds:4, in_changes:4, in_tuck:3, in_str40:6, in_str60:8, in_7s:4, in_7d:4, in_toes:4, in_toes7:4,
   oa_strad30:4, oa_tuckflag:4, oa_flaghoriz:5, oa_flagfloor:5, oa_wall:6, oa_shrug:4, oa_shift:6, oa_sidehold:6, oa_finger:3, oa_finger3:3, oa_finger2:3, oa_finger1:4, oa_strarm:6, oa_lift:8, oa_oahs:20, oa_oahsw:12, oa_oahs10:16, oa_shTuck:8, oa_shStrad:8, oa_switch:10,
   pr_pikeLift:3, pr_stradLift:3, pr_wallNeg:3, pr_negS:4, pr_elev:4, pr_elevLow:4, pr_straddle:8, pr_negP:5, pr_pike:10, pr_lsit:3, pr_stradL:4, pr_vsit:8, pr_halfSt:6, pr_tuckUp:6, pr_stalPart:8, pr_stalder:14, pr_lsitNeg:6, pr_lsitHs:10, pr_vsitC:6, pr_extSup:4, pr_mannaP:12, pr_vsitH:20, pr_manna:40,
   lo_elbow:3, lo_croc:6, lo_qdr:6, pl_lean:3, pl_ppp:4, pl_lean2:4, pl_tuckP:5, pl_tuck:6, pl_tuckPu:6, pl_tuckO:8, pl_adv:12, pl_1leg:10, pl_strBand:8, pl_strBandL:8, pl_straddle:20, pl_strNar:12, pl_half:16, pl_fullBand:10, pl_fullNeg:10, pl_full:26, pl_strHs:10, pl_hsDown:10, pl_halfPress:20, pl_press:40,
@@ -161,8 +164,10 @@ function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t 
 function pace(){ let a = 0, d = 0, n = 0; Object.values(MS).forEach(m => { const x = st(m.id); if (x.done && x.dt && x.t0 && DEFW[m.id]) { a += Math.max(1, (x.dt - x.t0) / (7 * 864e5)); d += DEFW[m.id]; n++; } });
   return {n, k:n >= 3 ? Math.max(0.6, Math.min(1.4, 1 + (a / d - 1) * Math.min(1, n / 8))) : 1}; }   /* peu de figures : on ne s’emballe pas, l’effet grandit avec les preuves */
 // le plan complet ne se recalcule que si quelque chose a été enregistré (ou le jour a changé)
-const planKey = () => (window._sv || 0) + "|" + S.log.length + "|" + dayKey(Date.now());
+const planKey = () => JSON.stringify(S.prof || {}) + (window._sv || 0) + "|" + S.log.length + "|" + dayKey(Date.now());
 function plan(o){ if (!o) { const k = planKey(); if (plan.k !== k) { plan.k = k; plan.v = planCalc(); } return plan.v; } return planCalc(o); }
+// profil : plus de 50 ans ou plus de 90 kg, la force avance moins vite (l’équilibre, à moitié moins)
+const profK = lane => { const p = S.prof || {}, a = p.age === ">50" ? 1.35 : p.age === "35-50" ? 1.15 : 1, w = p.poids === ">90" ? 1.3 : p.poids === "70-90" ? 1.1 : 1; return lane === "ba" ? 1 + (a * w - 1) * 0.5 : a * w; };
 function planCalc(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.days != null ? o.days : trainDays();
   const fq = td == null ? 1 : Math.max(0.9, Math.min(2.5, 20 / Math.max(4, td)));
   // 30 min : une seule figure de force par séance, planche et montées se partagent la place ; 45 min et plus : les deux avancent
@@ -170,11 +175,14 @@ function planCalc(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.d
   const pk = pace().k, fin = {}, start = {}, by = {}, free = {ba:0, pl:0, pr:0, ul:0}, last = {}, todo = [];
   Object.values(MS).forEach(m => { if (st(m.id).done) fin[m.id] = 0; else if (m.alt) fin[m.id] = null; else todo.push(m); });
   const W = m => { const x = st(m.id), has = S.log.filter(l => l.id === m.id && typeof l.v === "number").length >= 2, e = has && !msLocked(m) ? eta(m) : null;
-    if (e != null) return e; const d = DEFW[m.id] || 2, part = m.target && x.best ? Math.min(0.7, 0.7 * x.best / m.target) : 0; return Math.max(1, d * (1 - part) * kf[laneOf(m)] * fq * pk); };
+    if (e != null) return e; const d = DEFW[m.id] || 2, part = m.target && x.best ? Math.min(0.7, 0.7 * x.best / m.target) : 0; return Math.max(1, d * (1 - part) * kf[laneOf(m)] * fq * pk * profK(laneOf(m))); };
   while (todo.length) { let bi = -1, br = 0, bt = Infinity, bw = null;
     todo.forEach((m, i) => { let r = 0, w = null; for (const q of m.req || []) { if (!(q in fin)) return; if ((fin[q] || 0) > r) { r = fin[q]; w = q; } } const t = Math.max(r, free[laneOf(m)]); if (t < bt) { bt = t; br = r; bi = i; bw = w; } });   /* à départ égal, l’ordre du parcours */
     if (bi < 0) break; const m = todo.splice(bi, 1)[0], L = laneOf(m), t0 = Math.max(br, free[L]); by[m.id] = free[L] > br ? last[L] : bw; start[m.id] = t0; fin[m.id] = t0 + W(m); free[L] = fin[m.id]; last[L] = m.id; }
   return {fin, start, by}; }
+// le sommet de l’objectif choisi
+const goalTop = () => ({planche:"pl_full", press:"pr_manna", oahs:"oa_oahs10", min:"in_str60"})[S.goal] || "ul_full";
+const goalShort = () => ({planche:"Full planche", press:"Équilibre en force", oahs:"Un bras", min:"Équilibre droit"})[S.goal] || "Combo ultime";
 const planWk = (P, ids) => ids.reduce((n, id) => Math.max(n, P.fin[id] || 0), 0);
 const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 // une date lisible : le jour quand c’est proche, le mois quand c’est loin (une estimation à un an n’a pas de jour)
@@ -186,7 +194,7 @@ function keyFig(P, ids){ let id = ids.reduce((a, b) => (P.fin[b] || 0) > (P.fin[
 const STEPS = [["in_str60","Équilibre droit, 60 s"],["pr_straddle","Montée en force jambes écartées"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre sur un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
 // au-delà d’un an, une fourchette plutôt qu’une date précise : le chemin est long, il ne doit pas décourager
 function rangeTxt(w){ if (!w) return ""; if (w <= 52) return dateTxt(w); const y = k => new Date(Date.now() + w * k * 7 * 864e5).getFullYear(), a = y(0.8), b = y(1.25); return a === b ? dateTxt(w) : "entre " + a + " et " + b; }
-function openEta(){ const box = $("etaBody"), P = plan(), goal = "ul_full", w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";
+function openEta(){ const box = $("etaBody"), P = plan(), goal = goalTop(), w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";
   const tl = el("div","etl"); STEPS.filter(([id]) => MS[id]).sort((a, b) => (P.fin[a[0]] || 0) - (P.fin[b[0]] || 0)).forEach(([id, name]) => { const r = el("div","etr" + (st(id).done ? " ok" : id === goal ? " goal" : ""));
     r.append(el("span","etn", name), el("span","etd", st(id).done ? "Validé" : rangeTxt(P.fin[id]))); tl.append(r); }); box.append(tl);
   if (!w0) return;

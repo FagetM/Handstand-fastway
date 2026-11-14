@@ -870,3 +870,4 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .romdots i.on{background:var(--acc);opacity:1}
 .romch{margin:8px 0 16px}
 .romrow .sp{position:relative;flex:none;border-radius:12px;background-color:var(--raise)}
+.prow{margin:4px 0 12px}

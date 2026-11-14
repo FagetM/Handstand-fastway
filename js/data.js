@@ -126,13 +126,21 @@ const TREE = [
       desc:"En écart, mains devant le bassin : lève les deux jambes tendues, tiens 2 s."},
     {id:"pr_wallNeg", name:"Descentes face au mur", en:"Wall-Facing Straddle Negatives – 5", type:"reps", target:5, req:["b2_str15"],
       desc:"Poitrine face au mur, décolle les pieds en écart et descends en 5 s."},
+    {id:"pr_walk", name:"Marche vers la montée", en:"Press walk with toe taps", sub:"6 fois", type:"reps", target:6, req:["b2_str15"],
+      desc:"Debout jambes écartées, mains au sol : marche les mains vers l’avant en avançant les épaules, jusqu’à ce que les pieds deviennent légers, puis tape le sol du bout des pieds."},
+    {id:"pr_float", name:"Décollages depuis la pince", en:"Floating from a standing fold", sub:"5 décollages de 2 s", type:"reps", target:5, req:["pr_walk"],
+      desc:"Pince debout jambes écartées, mains au sol près des pieds : penche les épaules devant les doigts jusqu’à ce que les pieds décollent tout seuls, et tiens 2 s."},
     {id:"pr_negS", name:"Descentes lentes de la montée", en:"Straddle Press Negatives – 3", sub:"3 descentes de 5 s", type:"reps", target:3, req:["pr_wallNeg","pr_stradLift"],
       desc:"Depuis l’équilibre jambes écartées, tu redescends en 5 secondes jusqu’aux pieds, sans les laisser tomber. La montée jambes écartées à l’envers : c’est par là qu’on l’apprend."},
-    {id:"pr_elev", name:"Montée pieds surélevés", en:"Elevated Straddle Press – 3", sub:"3 montées, pieds sur une chaise", type:"reps", target:3, req:["pr_negS"],
+    {id:"pr_wallPress", name:"Montée dos au mur", en:"Wall-assisted press", sub:"3 montées", type:"reps", target:3, req:["pr_float","pr_negS"],
+      desc:"Dos au mur, mains à 30 cm de lui : le bassin s’appuie au mur et glisse vers le haut pendant que les jambes montent. Le mur porte une partie du poids."},
+    {id:"pr_1leg", name:"Montée sur une jambe", en:"Single-leg press", sub:"3 de chaque côté", type:"reps", target:3, req:["pr_wallPress"],
+      desc:"Une jambe pousse le sol juste un peu, l’autre monte tendue : tu montes en équilibre avec une aide minimale, puis tu réduis la poussée."},
+    {id:"pr_elev", name:"Montée pieds surélevés", en:"Elevated Straddle Press – 3", sub:"3 montées, pieds sur une chaise", type:"reps", target:3, req:["pr_negS","pr_float"],
       desc:"Mains sur les parallettes, pieds sur une chaise, jambes écartées : les épaules avancent et le bassin monte jusqu’à l’équilibre. Le départ plus haut facilite la montée."},
-    {id:"pr_elevLow", name:"Montée pieds sur une marche", en:"Low-Elevated Straddle Press – 3", type:"reps", target:3, req:["pr_elev"],
+    {id:"pr_elevLow", name:"Montée pieds sur une marche", en:"Low-Elevated Straddle Press – 3", type:"reps", target:3, req:["pr_elev","pr_wallPress"],
       desc:"Pieds sur une marche de 15 à 20 cm, aucune impulsion."},
-    {id:"pr_straddle", name:"Montée en force, jambes écartées", en:"Straddle Press", type:"reps", target:3, req:["pr_elevLow"],
+    {id:"pr_straddle", name:"Montée en force, jambes écartées", en:"Straddle Press", type:"reps", target:3, req:["pr_elevLow","pr_1leg"],
       desc:"Mains au sol, bras tendus, jambes écartées : tu montes en équilibre sans élan, en avançant les épaules pour soulever le bassin."},
     {id:"pr_negP", name:"Descentes jambes serrées", en:"Pike Press Negatives – 3", type:"reps", target:3, req:["pr_straddle","pr_pikeLift"],
       desc:"De l’équilibre aux pieds en 5 s, jambes serrées et tendues."},
@@ -240,12 +248,14 @@ const TREE = [
 const P_FD = ["fd_plank","fd_roue","fd_pike","fd_c2w","fd_pushInc","fd_push","fd_dipsB","fd_dips"];
 const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
+// l’objectif principal choisi (Réglages) : ses figures composent les séances ; le combo par défaut
+const goalOf = () => GOALS.find(g => g.id === S.goal) || GOALS[0];
 const GOALS = [
-  {id:"both", name:"Le combo ultime : un bras, full planche, stalder, manna", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_tuckflag","oa_flaghoriz","pl_ppp","oa_wall","pr_pikeLift","pr_stradLift","pr_lsit","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pl_lean2","pl_tuckP","pl_tuck","oa_shrug","oa_shift","oa_sidehold","oa_flagfloor","pr_straddle","pl_tuckPu","pl_tuckO","pl_adv","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","pr_stradL","pr_vsit","pl_1leg","oa_lift","pr_negP","pr_pike","pl_strBand","pl_strBandL","pl_straddle","oa_oahs","oa_oahsw","pr_halfSt","pr_tuckUp","pr_stalPart","pr_stalder","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full","oa_oahs10","pr_lsitNeg","pr_lsitHs","oa_shTuck","pr_vsitC","pr_extSup","pl_strHs","oa_shStrad","pr_mannaP","pl_hsDown","oa_switch","oa_shFlag","pr_vsitH","pl_halfPress","pr_manna","pl_press","ul_c1","ul_c2","ul_c3","ul_c12","ul_full"]},
+  {id:"both", name:"Le combo ultime : un bras, full planche, stalder, manna", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_tuckflag","oa_flaghoriz","pl_ppp","oa_wall","pr_pikeLift","pr_stradLift","pr_lsit","pr_wallNeg","pr_walk","pr_float","pr_negS","pr_wallPress","pr_1leg","pr_elev","pr_elevLow","pl_lean2","pl_tuckP","pl_tuck","oa_shrug","oa_shift","oa_sidehold","oa_flagfloor","pr_straddle","pl_tuckPu","pl_tuckO","pl_adv","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","pr_stradL","pr_vsit","pl_1leg","oa_lift","pr_negP","pr_pike","pl_strBand","pl_strBandL","pl_straddle","oa_oahs","oa_oahsw","pr_halfSt","pr_tuckUp","pr_stalPart","pr_stalder","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full","oa_oahs10","pr_lsitNeg","pr_lsitHs","oa_shTuck","pr_vsitC","pr_extSup","pl_strHs","oa_shStrad","pr_mannaP","pl_hsDown","oa_switch","oa_shFlag","pr_vsitH","pl_halfPress","pr_manna","pl_press","ul_c1","ul_c2","ul_c3","ul_c12","ul_full"]},
   {id:"oahs", name:"Équilibre sur un bras, des deux côtés", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_tuckflag","oa_flaghoriz","oa_wall","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs","oa_oahsw","oa_oahs10"]},
   {id:"planche", name:"Full planche, 10 s", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_ppp","pl_lean2","pl_tuckP","pl_tuck","pl_tuckPu","pl_tuckO","pl_adv","pl_1leg","pl_strBand","pl_strBandL","pl_straddle","pl_strNar","pl_half","pl_fullBand","pl_fullNeg","pl_full"]},
   {id:"min", name:"Équilibre droit, 60 s", ms:[...P_FD,...P_BASE,"in_str40","in_str60"]},
-  {id:"press", name:"Montée en force jambes serrées", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pr_pikeLift","pr_stradLift","pr_wallNeg","pr_negS","pr_elev","pr_elevLow","pr_lsit","pr_stradL","pr_straddle","pr_negP","pr_pike"]},
+  {id:"press", name:"Équilibre en force : montées, stalder, manna", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d",...TREE.find(x => x.id === "press").ms.map(m => m.id)]},
   {id:"all", name:"Tout l’arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
 ];
 // Photos (dossier photos/, en .webp) : seules celles listées ici sont affichées ; les emplacements vides ne montrent rien.
@@ -325,6 +335,10 @@ const DETAILS = {
   pr_pikeLift:{how:["Jambes serrées tendues, mains à plat à mi-cuisse.","Dos rond, lève les talons 2 s."],cue:["Rotule tirée vers le haut."],err:"Se pencher en arrière.",ok:"10 élévations."},
   pr_stradLift:{how:["Écart large, mains devant le bassin.","Lève les deux pieds, 2 s."],cue:["Pointes tendues."],err:"Plier les genoux.",ok:"10 élévations."},
   pr_vsit:{how:["Équerre écartée sur parallettes.","Avance les épaules, monte les pieds au-dessus des hanches."],cue:["Bras verrouillés."],err:"Basculer le buste en arrière.",ok:"5 s, pieds au-dessus des hanches."},
+  pr_walk:{how:["Debout jambes écartées, mains au sol devant les pieds.","Marche les mains vers l’avant, épaules qui passent devant les doigts, jusqu’à ce que les pieds s’allègent.","Tape le sol du bout des pieds, puis reviens."],cue:["Les épaules avancent, le bassin monte."],err:"Plier les bras pour aller plus loin.",ok:"6 allers-retours propres."},
+  pr_float:{how:["Pince debout jambes écartées, mains au sol près des pieds, doigts écartés.","Avance les épaules devant les doigts jusqu’à ce que les pieds décollent sans sauter."],cue:["Pas de saut : c’est le poids qui bascule."],err:"Sauter pour décoller.",ok:"5 décollages de 2 s."},
+  pr_wallPress:{how:["Dos au mur, mains à 30 cm du mur, jambes écartées.","Épaules devant, le bassin touche le mur et glisse vers le haut, les jambes suivent jusqu’à l’équilibre."],cue:["Le mur guide, les épaules travaillent."],err:"Pousser fort avec les pieds.",ok:"3 montées sans élan."},
+  pr_1leg:{how:["Mains au sol, une jambe tendue en l’air, l’autre pied au sol.","Pousse le sol juste assez avec le pied d’appui et monte en équilibre, épaules devant."],cue:["La poussée diminue de semaine en semaine."],err:"Donner un coup de pied.",ok:"3 montées de chaque côté."},
   pr_wallNeg:{how:["Équilibre poitrine face au mur.","Ouvre les jambes, épaules devant, descends."],cue:["Compression dès que les pieds quittent le mur."],err:"Plier les bras.",ok:"5 descentes de 5 s."},
   pr_elevLow:{how:["Comme la montée pieds sur une chaise, mais pieds sur une marche."],cue:["Le bassin monte, pas les pieds."],err:"Sauter.",ok:"3 montées propres."},
   pr_negP:{how:["Équilibre, ferme les jambes en pike.","Épaules devant, dos rond, descends."],cue:["Ventre vers les cuisses."],err:"Ouvrir les jambes.",ok:"3 descentes de 5 s."},

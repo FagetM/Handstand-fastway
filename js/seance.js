@@ -169,7 +169,7 @@ function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
-  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && (PS.zones || [PS.zone]).some(z => ["epaule","coude"].includes(z)), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : mins < 90 ? 3 : 4, EX = S.ex && S.ex.on ? S.ex.prio : null;   // mode expert : 90 min et une discipline prioritaire
+  const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && (PS.zones || [PS.zone]).some(z => ["epaule","coude"].includes(z)), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : mins < 90 ? 3 : 4, EX = ({planche:"pl", press:"pr", oahs:"oa"})[S.goal] || (S.ex && S.ex.on ? S.ex.prio : null);   // mode expert : 90 min et une discipline prioritaire
   const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease, comeback() ? 0.7 : 1), scale = deload ? 0.6 : Math.max(0.6, Math.min(1.5, mins / 30)) * red;   /* semaine légère : 60 % quel que soit le temps choisi */   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d’entraînement de suite
 
@@ -189,7 +189,7 @@ function builtinBlocks(){
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && (PS.zones || [PS.zone]).includes("poignet")) return soupleDay(PS);
   if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return soupleDay(PS);
-  const open = GOALS[0].ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band) && !(armPain && (/^(oa_|pl_|pr_|ul_)/.test(id) || id === "in_hspu"))), fok = forceOk() && !armPain;   /* épaule ou coude : ni un bras, ni planche, ni montées pendant l’éviction */
+  const open = goalOf().ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band) && !(armPain && (/^(oa_|pl_|pr_|ul_)/.test(id) || id === "in_hspu"))), fok = forceOk() && !armPain;   /* épaule ou coude : ni un bras, ni planche, ni montées pendant l’éviction */
   // choix du jour : l’équilibre (une habileté) et, les jours de force, une place réservée à la force
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
   // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
@@ -218,13 +218,14 @@ function builtinBlocks(){
   const ulDay = next.some(id => /^ul_/.test(id));
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
-  const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
+  const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:(DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc) + (PARA_ALT[id] && !(S.equip || {}).para ? " Sans parallettes : " + PARA_ALT[id] : ""), ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const ecc = ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id), plR = /^pl_/.test(id) && m.type === "reps", sets = ecc ? 4 : plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)),   /* excentriques en full planche : 4 × 1, jamais plus */
       tries = ecc || pain || PS.phase === 2 || (PS.phase === 3 && (PS.zone === "coude" || PS.zone === "epaule") && FORCE(id)) || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 12 : 16, sets * 2) : Math.min(pl.sets, sets)}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:/^ul_/.test(id) ? "Une réussite par séance suffit : il en faut sur 3 séances, à 2 jours d’écart au moins, sur 10 jours au moins." : "Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
+    if (frag("poignet") && /^(pl_|pr_|oa_|lo_)/.test(id)) base.note = "Poignets fragiles : sur parallettes, blocs ou poings fermés.";
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
     if (pl.sides) base.note = /^pl_/.test(id) ? "Alterne la jambe à chaque série (séries paires d’une jambe, impaires de l’autre) : les deux doivent tenir la cible." : "Alterne le côté à chaque série (séries paires d’un côté, impaires de l’autre) : les deux doivent tenir la cible.";
     return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 240 : 120, max:true})))}); });
@@ -246,7 +247,7 @@ function builtinBlocks(){
   // préparation ciblée, juste après les poignets et jamais coupée : épaules en extension avant la manna, biceps et appui penché avant la planche
   const prepB = (k, n, v) => { const b = drillBlock(k, false); b.sets = b.sets.slice(0, n); if (v) b.sets.forEach(s => { if (s.dur) s.dur = v; }); b.keep = true; b.name += ", préparation"; return b; };
   const prep = []; if (next.some(id => /^pr_(manna|vsitH|extSup)|^ul_c3|^ul_full/.test(id))) prep.push(prepB("extEp", 2));
-  if (next.some(id => /^pl_/.test(id))) prep.push(prepB("lean", 2, 15), prepB("biceps", 1));
+  if (next.some(id => /^pl_/.test(id))) prep.push(prepB("lean", 2, 15), prepB("biceps", frag("biceps") || frag("coude") ? 2 : 1));
   // antagonistes, les jours de force : tirage et, en alternance, rotateurs externes ou extenseurs du poignet (à l’élastique)
   const anta = next.some(FORCE) && !pain ? ((S.equip || {}).band ? ["tirage", dn % 2 ? "rotext" : "extpoig"] : ["rowTable"])   /* sans élastique : le tirage se fait sous une table */.map(k => { const b = drillBlock(k, mins <= 30); b.keep = true; return b; }) : [];
   // entretien : une figure validée laissée plus de 10 jours revient pour 2 essais à 70 % (l’équilibre droit, puis la plus récente de chaque discipline)
@@ -255,7 +256,7 @@ function builtinBlocks(){
     const id = pool.filter(id => Date.now() - lastK(id) > 10 * 864e5).sort((a, b) => lastK(a) - lastK(b))[0];
     if (id) { const m = MS[id]; keepUp.push({name:m.name + ", entretien", kind:"hold", how:"Figure acquise : deux essais calmes pour l’entretenir. " + m.desc, keep:true, sets:Array.from({length:2}, () => ({dur:Math.max(3, Math.round(m.target * 0.7)), rest:60}))}); } }
   const BAD = armPain ? new Set(["lean","pseudo","dipsW","pushW","bandpl","oawall","oashrug","appuiArr","extEp","protrac","biceps"]) : new Set();
-  return fitTime([Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, conf, blocks, drs.filter(k => !BAD.has(k) && !prep.some(p => p.dk === k)).map(k=>drillBlock(k, pain || deload)), anta, mob, [romActive(next, PS)].filter(Boolean)), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
+  return fitTime([Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", (pain || wristDone) && !frag("poignet"))].concat(prep, keepUp, conf, blocks, drs.filter(k => !BAD.has(k) && !prep.some(p => p.dk === k)).map(k=>drillBlock(k, pain || deload)), anta, mob, [romActive(next, PS)].filter(Boolean)), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -481,11 +482,22 @@ $("pgFile").onchange = async e => {
 // Étirement à durée imposée : compte à rebours, changement de côté, puis enchaînement sur le suivant.
 let sd = null, sdTimer = null, sdWake = null, AUTO = false, sessRes = {};
 // Bilan de départ : on parcourt les figures dans l’ordre ; tu dis ce que tu sais faire, l’app valide et se place au bon jalon.
+// Profil en trois touches : il allonge les dates (âge, poids) et ajoute des protections (poignets, coudes, biceps)
+const PROF = [["age","Âge",[["<35","Moins de 35 ans"],["35-50","35 à 50 ans"],[">50","Plus de 50 ans"]]],["poids","Poids",[["<70","Moins de 70 kg"],["70-90","70 à 90 kg"],[">90","Plus de 90 kg"]]]];
+const FRAG = [["poignet","Poignets"],["coude","Coudes"],["biceps","Biceps"],["epaule","Épaules"]];
+const frag = z => ((S.prof || {}).frag || []).includes(z);
+function profForm(box, after){ if (!box) return; box.textContent = ""; const P = S.prof || (S.prof = {});
+  PROF.forEach(([k, lab, opts]) => { const row = el("div","chips prow"); row.setAttribute("role","group"); row.setAttribute("aria-label", lab);
+    opts.forEach(([v, t]) => { const b = el("button","chip" + (P[k] === v ? " on" : ""), t); b.setAttribute("aria-pressed", P[k] === v); b.onclick = () => { P[k] = v; save(); profForm(box, after); }; row.append(b); }); box.append(el("div","lab",lab), row); });
+  const row = el("div","chips prow"); row.setAttribute("aria-label","Fragilités");
+  FRAG.forEach(([z, t]) => { const on = frag(z), b = el("button","chip" + (on ? " on" : ""), t); b.setAttribute("aria-pressed", on); b.onclick = () => { P.frag = on ? (P.frag || []).filter(x => x !== z) : (P.frag || []).concat(z); save(); profForm(box, after); }; row.append(b); });
+  box.append(el("div","lab","Déjà fragile, ou déjà blessé"), row); if (after) after(); }
 let plSkip = new Set(), plMiss = {}, plN = 0;
 // d’abord la sécurité, puis les questions ; un « pas du tout » deux fois dans une même voie et on passe à la suivante
 function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box = $("plBody"); box.textContent = "";
   const go = el("button","btn","J’ai lu, on y va"); go.onclick = plStep;
-  box.append(el("h2",null,"Avant de te renverser"), el("p",null, SAFE_TXT), el("p","mut","Ensuite, quelques questions sur ce que tu sais déjà faire. Réponds honnêtement : l’app vérifiera en séance."), go); $("plDlg").showModal(); }
+  const pf = el("div"); profForm(pf);
+  box.append(el("h2",null,"Avant de te renverser"), el("p",null, SAFE_TXT), el("h2",null,"Toi, en trois touches"), pf, el("p","mut","Ensuite, ce que tu sais déjà faire. L’app vérifiera en séance."), go); $("plDlg").showModal(); }
 const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
   const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x) && (plMiss[MS[x].sec] || 0) < 2), box = $("plBody"); box.textContent = "";
