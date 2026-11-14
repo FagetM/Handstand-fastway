@@ -214,7 +214,7 @@ function journey(nextId){
       sign("Figures au sol", "low", "Hors parcours, pour varier : la première est ouverte dès le départ.");
       prev = null; SEC.low.ms.forEach(m=>step(m.id));
       { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
-      prev = pv; items.push({k:"d", y}); y += 380; prev = null; }   // les trois disciplines, en cartes, puis leur présentation
+      prev = pv; items.push({k:"d", y}); y += 400; prev = null; }   // les trois disciplines, en cartes, puis leur présentation
     const d = m => dep[m.id] != null ? dep[m.id] : (dep[m.id] = 1 + Math.max(-1, ...(m.req||[]).filter(r=>ids.has(r)).map(r=>d(MS[r]))));
     sign(s.name, sid, "");
     s.ms.filter(m=>!m.alt).sort((a,b)=>d(a) - d(b)).forEach(m=>step(m.id));
@@ -246,9 +246,9 @@ function journey(nextId){
         const wr = el("span","laurel"); wr.innerHTML = laurel(); md.prepend(wr);
         const bar = el("span","dbar"), i = el("span"); i.style.width = Math.round(dn / ms.length * 100) + "%"; bar.append(i);
         b.append(md, el("b",null,name), bar, el("span","dcnt", dn + " sur " + ms.length + (here ? ", toi" : "")));
-        b.setAttribute("aria-pressed", sid === jd); b.setAttribute("aria-label", name + ", " + dn + " figures sur " + ms.length + (sid === jd ? ", affichée" : ""));
+        b.setAttribute("aria-pressed", sid === jd); b.setAttribute("aria-label", name + ", " + dn + " figures sur " + ms.length + (here ? ", ta position" : ""));
         b.onclick = () => { S.jdisc = sid; save(); render(); const t = document.querySelector(".dsel"); if (t) t.scrollIntoView({block:"start"}); }; row.append(b); });
-      { const D = DISC[jd], it2 = el("div","dintro"); it2.append(el("div","dyoga", "En yoga : "), el("p",null,D.h)); it2.firstChild.append(el("i",null,D.yoga[0]), D.yoga[1] ? ", " + D.yoga[1] : ""); d.append(it2); }
+      { const D = DISC[jd], it2 = el("div","dintro"), yl = el("div","dyoga", "En yoga : "); D.yoga.forEach(p => yl.append(Array.isArray(p) ? el("i",null,p[0]) : p)); it2.append(yl, el("p",null,D.h)); d.append(it2); }
       cv.append(d); }
     else if (it.k === "q"){ const q = it.q, on = reqDone(q.req), dn = !!sqDone()[q.id], b = el("button","sq" + (dn ? " done" : on ? " open" : " lk"));
       b.style.left = it.x + "%"; b.style.top = (it.y - 40) + "px"; b.setAttribute("aria-label", "Quête annexe : " + q.name + (dn ? ", réussie" : on ? ", ouverte" : ", après " + MS[q.req].name));

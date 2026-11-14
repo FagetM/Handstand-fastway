@@ -80,7 +80,7 @@ function renderSommet(){
 }
 // les trois grandes disciplines : leur figure maîtresse, leur nom en yoga, une ligne d’histoire
 const DISC = {
-  onearm:{fig:"oa_oahs10", yoga:["Eka Hasta Vṛkṣāsana", "l’arbre sur une main"], h:"Le numéro roi des équilibristes de cirque : tout le corps posé sur une seule main, qui corrige au bout des doigts."},
-  planche:{fig:"pl_full", yoga:["Mayūrāsana", "le paon, sa plus proche cousine"], h:"Le mot est français et a fait le tour du monde : le corps à l’horizontale, porté par des bras tendus, l’un des grands éléments de force de la gymnastique."},
-  press:{fig:"pr_stalder", yoga:["d’Upaviṣṭa Koṇāsana à Adho Mukha Vṛkṣāsana", "de l’angle ouvert à l’arbre tourné vers le bas"], h:"Monter en équilibre sans élan, par la seule force et la souplesse. Le stalder doit son nom au gymnaste suisse Josef Stalder, champion olympique en 1948."},
+  onearm:{fig:"oa_oahs10", yoga:[["Eka Hasta Vṛkṣāsana"], ", l’arbre sur une main."], h:"Un numéro phare des équilibristes de cirque : tout le corps sur une main, qui corrige au bout des doigts."},
+  planche:{fig:"pl_full", yoga:["pas de nom classique ; la plus proche est ", ["Mayūrāsana"], ", le paon."], h:"Le mot est français : le corps à l’horizontale sur des bras tendus, un grand élément de force de la gymnastique."},
+  press:{fig:"pr_stalder", yoga:["de ", ["Prasārita Pādottānāsana"], " à ", ["Adho Mukha Vṛkṣāsana"], "."], h:"Monter en équilibre sans élan. La montée stalder emprunte son nom au gymnaste suisse Josef Stalder, champion olympique en 1948."},
 };

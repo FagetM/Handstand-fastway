@@ -840,3 +840,4 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .dintro .dyoga{color:var(--goldtxt);font-weight:600}.dintro .dyoga i{font-weight:700}
 .dintro p{margin:4px 0 0}
 .dhead{font:700 18px/1.2 var(--disp);color:var(--goldtxt);text-align:center;margin-bottom:4px}
+.dsel .dpill b{display:flex;align-items:center;justify-content:center;min-height:2.5em}
