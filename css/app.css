@@ -852,3 +852,6 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .scmini{display:none}
 .qkart.mst{overflow:visible;isolation:isolate}.qkart.mst .sp{clip-path:circle(50% at 50% 50%)}.qkart.mst .laurel{width:276px;height:276px}
 .qkart.mst{margin-bottom:28px;margin-top:20px}
+.cyline .cyth{color:var(--tierc);font-weight:600}
+.cyfilm{align-self:flex-start;margin:4px 0 8px}
+.vrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px}.vfig{margin:0}.vfig video{display:block;width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:12px;background:var(--line)}.vfig figcaption{font-size:12px;margin-top:4px;text-align:center}

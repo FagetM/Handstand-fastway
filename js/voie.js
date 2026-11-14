@@ -39,7 +39,9 @@ const PENSEES = [
   ["Le corps ne ment pas.", "adage des danseurs, souvent prêté à Martha Graham", "Ce que tu ressens compte plus que ce que tu voulais ressentir."],
 ];
 const dayN = () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
-const penseeDuJour = k => PENSEES[((dayN() + (k || 0)) % PENSEES.length + PENSEES.length) % PENSEES.length];
+// un jour sur deux, la pensée vient du thème du cycle ; sinon, le tour de toutes les pensées
+const penseeDuJour = k => { const i = dayN() + (k || 0), T = typeof cycTheme === "function" ? cycTheme() : null, pool = T ? PENSEES.filter(p => T.p.some(x => p[0].startsWith(x))) : [];
+  return pool.length && i % 2 === 0 ? pool[(i / 2) % pool.length] : PENSEES[(i % PENSEES.length + PENSEES.length) % PENSEES.length]; };
 // Pratiques guidées : phases de souffle (in, out) ou étapes de texte, avec leur durée en secondes
 const breath = (pat, n) => Array.from({length:n}, () => pat).flat();
 const PRATIQUES = [
@@ -79,6 +81,10 @@ const MISSIONS = [
   {id:"tm_voie", r:9, name:"Choisir sa formation", act:"Compare deux voies : BPJEPS Activités gymniques, formation de yoga de 200 heures, ou CQP ALS (gym d’entretien seulement). Coût, financement CPF, dates des tests.", q:"Laquelle correspond à ton projet dans deux ans, et pourquoi ?"},
   {id:"tm_pro", r:10, name:"Prêt à enseigner", act:"Prépare ton dossier : diplôme, déclaration d’éducateur sportif (carte professionnelle), assurance responsabilité civile professionnelle, tarifs.", q:"Que te manque-t-il encore pour être en règle ?"},
 ];
+// les missions s’ouvrent dans l’ordre, chacune après la précédente (et ses prérequis) : apprendre à transmettre ne dépend pas des points gagnés
+const MORD = MISSIONS.slice().sort((a, b) => a.r - b.r);
+function tmNeed(m){ const k = MORD.indexOf(m), prev = k > 0 ? MORD[k - 1] : null, out = (m.needs || []).filter(n => !(S.tm || {})[n]);
+  if (prev && !(S.tm || {})[prev.id] && !out.includes(prev.id)) out.unshift(prev.id); return out; }
 const ROUTE = [
   ["Les bases", "PSC (une journée) et certificat médical : demandés à l’entrée de toutes les formations."],
   ["Encadrer bénévolement", "En club FFGym, avec les diplômes fédéraux d’animateur puis de moniteur. Ils permettent d’encadrer bénévolement, pas d’être payé."],
@@ -104,7 +110,7 @@ function renderVoie(){
     const g = el("div","vprl"); PRATIQUES.forEach(p => { const x = el("button","vpr"); x.append(el("b",null,p.name), el("span","mut",p.dur)); x.onclick = () => vpOpen(p); g.append(x); }); b.append(g); box.append(b); }
   // le carnet
   { const trained = S.log.some(l => dayKey(l.t) === dayKey(Date.now())), QS = trained ? QUESTIONS : QUESTIONS_REPOS, ec = (S.ecl || []).slice(-1)[0], sore = ec && dayKey(ec.t) === dayKey(Date.now()) && Math.max(ec.poignet || 0, ec.coude || 0, ec.epaule || 0, ec.dos || 0) >= 3,
-      it = (S.cyc || {}).intent, q = sore ? "Quelle gêne vas-tu surveiller demain ?" : it && dayN() % 7 === 0 ? "Ton intention « " + it + " » : où l’as-tu sentie cette semaine ?" : QS[dayN() % QS.length], b = el("div","block"); b.append(el("h2",null,"Carnet"), el("p",null,q));
+      it = (S.cyc || {}).intent, q = sore ? "Quelle gêne vas-tu surveiller demain ?" : it && dayN() % 7 === 0 ? "Ton intention « " + it + " » : où l’as-tu sentie cette semaine ?" : typeof cycTheme === "function" && dayN() % 7 === 3 ? cycTheme().q : QS[dayN() % QS.length], b = el("div","block"); b.append(el("h2",null,"Carnet"), el("p",null,q));
     const ta = el("textarea","vta"); ta.rows = 3; ta.placeholder = "Quelques mots suffisent."; ta.setAttribute("aria-label", q);
     const ok = el("button","btn","Garder dans le carnet"); ok.onclick = () => { const a = ta.value.trim(); if (!a) return; (S.jr || (S.jr = [])).push({t:Date.now(), q, a}); save(); ta.value = ""; ta.blur(); toast("Gardé dans ton carnet."); renderVoie(); };
     b.append(ta, ok);
@@ -113,12 +119,12 @@ function renderVoie(){
       const x = el("button","vdel","Effacer"); x.setAttribute("aria-label","Effacer cette note"); x.onclick = () => { S.jr = S.jr.filter(o => o !== e); save(); vForce(); }; d.append(x); b.append(d); });
     box.append(b); }
   // transmettre
-  { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Un jour, enseigner le yoga et la gym. Les missions s’ouvrent avec ton rang : " + dn + " sur " + MISSIONS.length + " faites."));
+  { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Un jour, enseigner le yoga et la gym. Les missions s’ouvrent l’une après l’autre : " + dn + " sur " + MISSIONS.length + " faites."));
     b.append(el("p","vlaw","En France, être payé pour enseigner la gym ou l’acrobatie demande un diplôme reconnu (BPJEPS, CQP…) et la carte professionnelle d’éducateur sportif. Le yoga n’a pas de diplôme d’État."));
     let lkN = 0;
-    MISSIONS.slice().sort((a, b) => a.r - b.r).forEach(m => { const need = (m.needs || []).filter(n => !(S.tm || {})[n]), on = ri >= m.r && !need.length, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
+    MORD.forEach(m => { const need = tmNeed(m), on = !need.length, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
       const x = el("button","vmis" + (done ? " done" : on ? "" : " lk"));
-      x.append(el("b",null,m.name), el("span","mut", done ? "Faite" : on ? "Ouverte" : ri >= m.r ? "Après « " + MISSIONS.find(o => o.id === need[0]).name + " »" : "Au rang " + RANKS[m.r])); x.onclick = () => tmOpen(m, on); b.append(x); });
+      x.append(el("b",null,m.name), el("span","mut", done ? "Faite" : on ? "Ouverte" : "Après « " + MISSIONS.find(o => o.id === need[0]).name + " »")); x.onclick = () => tmOpen(m, on); b.append(x); });
     if (lkN > 2) b.append(el("p","mut", (lkN - 2) + " autres missions t’attendent plus loin."));
     b.append(el("h3",null,"La route, en France"));
     const ol = el("ol","vroute"); ROUTE.forEach(([t, d]) => { const li = el("li"); li.append(el("b",null,t), el("span",null,d)); ol.append(li); }); b.append(ol);
@@ -128,8 +134,8 @@ function renderVoie(){
 function tmOpen(m, on){
   const box = $("qkBody"), done = (S.tm || {})[m.id]; box.textContent = "";
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Transmettre"), el("h2",null,m.name)); box.append(hd);
-  const ri = Math.max(0, RANKS.indexOf(stats().rank)), need = (m.needs || []).filter(n => !(S.tm || {})[n]).map(n => "« " + MISSIONS.find(o => o.id === n).name + " »");
-  const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : ri >= m.r && need.length ? "Après " + need.join(" et ") : "Au rang " + RANKS[m.r]), el("p",null, on ? m.act : (ri >= m.r && need.length ? "Elle s’ouvrira quand ces missions seront faites. " : "Elle s’ouvrira à ce rang. ") + "En attendant : " + lc1(m.act))); box.append(blk);
+  const need = tmNeed(m).map(n => "« " + MISSIONS.find(o => o.id === n).name + " »");
+  const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : "Après " + need.join(" et ")), el("p",null, on ? m.act : (need.length > 1 ? "Elle s’ouvrira quand ces missions seront faites. " : "Elle s’ouvrira quand cette mission sera faite. ") + "En attendant : " + lc1(m.act))); box.append(blk);
   { const le = tmLecon(m); if (le) box.append(le); }
   if (on) { const q = el("p","vq",m.q), ta = el("textarea","vta"); ta.rows = 4; ta.value = done ? done.a : ""; ta.placeholder = "Deux ou trois phrases : ce que tu as fait, ce que tu en retiens."; ta.setAttribute("aria-label", m.q);
     const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Deux phrases, pour t’en souvenir."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); vForce(); toast("Mission « " + m.name + " » faite."); };
