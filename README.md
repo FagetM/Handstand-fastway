@@ -39,3 +39,7 @@ Organisation du code (scripts classiques chargés dans l'ordre, sans étape de b
 À chaque nouvelle version, changer `CACHE` dans `sw.js` (et `SPV` dans `js/sprites.js` si une animation change).
 
 L'app ne contient aucun contenu du programme d'origine (vidéos, textes) : uniquement des noms de jalons pour le suivi personnel.
+
+## Images à générer
+
+Les prompts Gemini des photos manquantes et des aquarelles du décor sont dans [tools/prompts-images.md](tools/prompts-images.md).
