@@ -539,7 +539,7 @@ function openSet(bi, si){
     $("sdReps").style.display = "none"; $("sdGo").style.display = ""; const essai = s.lab === "essai" && b.ms && MS[b.ms] && MS[b.ms].type === "check"; $("sdGo").textContent = timed ? "Démarrer" : essai ? "Réussi" : "Fait"; $("sdNo").hidden = !essai;
     $("sdHint").textContent = [b.pnf ? "PNF : contracte 10 s, relâche 5 s, puis gagne en amplitude." : "", b.note].filter(Boolean).join(" ");
   } else {
-    $("sdS").textContent = "Série " + (si+1) + "/" + b.sets.length + (s.pct ? ", " + s.pct + " %" : "");
+    $("sdS").textContent = (s.max ? "Essai " : "Série ") + (si+1) + "/" + b.sets.length + (s.pct ? ", " + s.pct + " %" : "");
     const hold = b.kind === "hold";
     ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
