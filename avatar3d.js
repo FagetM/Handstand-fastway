@@ -687,7 +687,7 @@ export function mount(host, opts = {}){
 // ---------- Erreurs de technique : la posture tenue d'une figure, qui se dégrade puis se corrige ----------
 // clé « fx_<erreur>__<figure> » : bras pliés, dos creusé, dos rond, hanches qui tombent, genoux pliés, jambes écartées
 const FX = {
-  bras:  p => ({elbow:[-0.85, p.one ? (p.elbow || [0,0])[1] : -0.85]}),
+  bras:  p => ({elbow:[-1.25, p.one ? (p.elbow || [0,0])[1] : -1.25]}),   // bien plié : l'erreur doit se voir en vignette
   banane:p => ({arch:(p.arch || 0) - 0.55}),
   rond:  p => ({arch:(p.arch || 0) + 0.45}),
   hanches:p => ({hip:p.hip.map(h => h - 0.55)}),
