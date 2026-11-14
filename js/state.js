@@ -30,13 +30,20 @@ function migrQuote(S){ if (S.migrQ) return; const q = x => String(x).replace(/(?
   if (S.pg && S.pg.best) S.pg.best = Object.fromEntries(Object.entries(S.pg.best).map(([k, v]) => [q(k), v]));
   if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); if (b.how) b.how = q(b.how); });
   S.migrQ = true; }
+// figures renommées : les noms enregistrés (historique, records, séance du jour) suivent
+const RENAMED = {"Tenues de formes, niveau 1":"Tenues de forme, niveau 1", "Changements de formes, niveau 1":"Changements de forme, niveau 1", "Straddle planche serrée":"Straddle planche, écart réduit", "Queda de rins":"Queda de rins (appui sur le coude)"};
+function migrNames(S){ if (S.migrN1) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
+  (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
+  if (S.pg && S.pg.best) S.pg.best = Object.fromEntries(Object.entries(S.pg.best).map(([k, v]) => [q(k), v]));
+  if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); });
+  S.migrN1 = true; }
 // les noms composés perdent leur point médian (« Planche inclinée, préparation ») : les noms enregistrés suivent
 function migrDot(S){ if (S.migrDot) return; const q = x => String(x).split(" · ").join(", ");
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
   if (S.pg && S.pg.best) S.pg.best = Object.fromEntries(Object.entries(S.pg.best).map(([k, v]) => [q(k), v]));
   if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); });
   S.migrDot = true; }
-migrQuote(S); migrDot(S);
+migrQuote(S); migrDot(S); migrNames(S);
 if (!S.equip) S.equip = {band:true, para:true, kg:10};
 if (!S.migrFd) { if (S.ms.st_bail30 && S.ms.st_bail30.done) ["fd_plank","fd_roue","fd_c2w"].forEach(id=>{ S.ms[id] = {best:Math.max(MS[id].target || 0, 0), done:true}; }); S.migrFd = true; }   // le détail de la séance est replié à chaque ouverture
 // Effacer ce qu’on vient de faire : avant chaque enregistrement, une photo de l’état est gardée (les 4 dernières du jour).
@@ -55,7 +62,7 @@ function pushUndo(label, at){ if (Date.now() - undoT < 400) return; undoT = Date
   const a = undoList(); a.push(snap); while (a.length > 3) a.shift();
   try { localStorage.setItem(UKEY, JSON.stringify(a)); } catch(e){ try { localStorage.setItem(UKEY, JSON.stringify(a.slice(-1))); } catch(_){ localStorage.removeItem(UKEY); } } }
 // revenir à une photo : tout ce qui a été enregistré après disparaît, les photos plus récentes avec
-function undoTo(u){ if (!u) return null; try { S = Object.assign(blank(), JSON.parse(u.s)); S.sessOpen = false; migrQuote(S); migrDot(S); } catch(e){ return null; }
+function undoTo(u){ if (!u) return null; try { S = Object.assign(blank(), JSON.parse(u.s)); S.sessOpen = false; migrQuote(S); migrDot(S); migrNames(S); } catch(e){ return null; }
   try { localStorage.setItem(UKEY, JSON.stringify(undoList().filter(x => x.t < u.t))); } catch(e){}
   ["day","blk"].forEach(k => { const x = ukGet(k); if (x && x.t >= u.t) ukSet(k, null); });
   lastZ = null; save(); return u; }
