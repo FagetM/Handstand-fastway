@@ -102,7 +102,7 @@ function vcStart(){ if (!vcOn() || vcRec) return; vcWant = true;
     r.onend = () => { vcRec = null; vcMic(); if (vcWant && $("sd").open && !document.hidden) setTimeout(vcStart, 250); };
     r.start(); vcRec = r; vcMic(); } catch(e){ vcRec = null; } }
 function vcStop(){ vcWant = false; if (vcRec) { try { vcRec.abort(); } catch(e){} vcRec = null; } vcMic(); }
-function vcMic(){ const m = $("sdMic"); if (!m) return; m.hidden = !vcOn(); m.textContent = vcRec ? "Micro à l'écoute : top, stop, pause, recommence" : "Micro en attente…"; }
+function vcMic(){ const m = $("sdMic"); if (!m) return; m.hidden = !vcOn(); m.textContent = vcRec ? "Micro à l’écoute : top, stop, pause, recommence" : "Micro en attente…"; }
 if (!SR) { $("vcOn").disabled = true; $("vcHelp").textContent = "Ce navigateur ne sait pas écouter les commandes à la voix (elles fonctionnent dans Chrome sur Android)."; }
 else { $("vcOn").checked = !!S.vcmd; $("vcOn").onchange = e => { S.vcmd = e.target.checked; save(); if (S.vcmd) toast("Au prochain chrono, autorise le micro. Dis « top », « stop », « pause » ou « recommence »."); else vcStop(); }; }
 // le micro suit la fenêtre de séance : ouvert avec elle, coupé à la fermeture ou quand l'app passe en arrière-plan

@@ -90,7 +90,7 @@ function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days ||
 // figure « réussi / pas réussi » : 3 réussites le même jour = une séance validée (en séance ou depuis la fiche)
 function chkHit(id){ if (!MS[id] || MS[id].type !== "check" || st(id).done) return;
   const c = S.chk || (S.chk = {}), d = nowD(), r = c[id] && c[id].d === d ? c[id] : (c[id] = {d, n:0}), need = /^ul_/.test(id) ? 1 : 3; r.n++;   // un combo : une réussite par séance suffit
-  if (r.n === need) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée."); } else if (r.n < need) toast("Réussi (" + r.n + "/" + need + " aujourd’hui)"); }
+  if (r.n === need) { const msg = hitTarget(id); toast(msg || "« " + MS[id].name + " » validée."); } else if (r.n < need) toast("Réussi (" + r.n + "/" + need + " aujourd’hui)."); }
 function hitTarget(id, side){
   const all = S.hit || (S.hit = {}), d = nowD(), need = hitNeed(id);
   const h = all[id] || (all[id] = {d, n:0, days:[]}); h.days = h.days || []; if (h.d !== d) { h.d = d; h.n = 0; h.sd = []; h.sc = {}; }

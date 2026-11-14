@@ -27,7 +27,7 @@ const builtinOf = blocks => { const day = {type:"train", blocks};
 // ---------- Exercices d’accompagnement : ce qui prépare chaque figure, en plus de la figure elle-même ----------
 // sets : [séries, durée en s] (tenue) ou [séries, répétitions] (reps). Repères généraux d’entraînement.
 const DRILLS = {
-  poignets:{name:"Préparation des poignets", kind:"hold", sets:[1,300], how:"5 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, sur le bout des doigts, puis 2 × 10 pompes poignets (on se soulève sur les doigts). Les poignets portent tout ton poids : ne la saute jamais."},
+  poignets:{name:"Préparation des poignets", kind:"hold", sets:[1,300], how:"5 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, sur le bout des doigts, puis 2 × 10 pompes poignets (soulève-toi sur les doigts). Les poignets portent tout ton poids : ne la saute jamais."},
   hollow:{name:"Gainage en cuillère", kind:"hold", sets:[3,25], how:"Sur le dos, bas du dos plaqué au sol, bras tendus derrière la tête, jambes tendues décollées. C’est la ligne du corps en équilibre."},
   epaules:{name:"Ouverture des épaules", kind:"hold", sets:[2,40], how:"À genoux, mains sur une chaise ou un banc, laisse descendre la poitrine vers le sol, bras tendus. Les bras doivent pouvoir s’aligner avec le corps."},
   omoplates:{name:"Pompes d’omoplates en équilibre au mur", kind:"reps", sets:[3,8], how:"Poitrine face au mur, bras tendus : laisse le corps descendre de quelques centimètres en relâchant les épaules, puis repousse le sol vers les oreilles."},
@@ -585,7 +585,7 @@ function saveFixed(v){
   S.log.push(s.lab === "essai" ? {t:Date.now(), id:"pg:" + b.name, k:"try", v:val > 0, s:setRef()} : {t:Date.now(), id:"pg:" + b.name, k:s.dur != null ? "fix" : "reps", v:val, s:setRef()}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   if (b.confirm && (S.confirm || []).includes(b.ms) && b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null)) {
     const okN = b.sets.filter((_,i)=>wkGet(selDay)[sd.bi + "-" + i] > 0).length; S.confirm = (S.confirm || []).filter(x=>x !== b.ms);
-    if (okN >= 2) toast("« " + MS[b.ms].name + " » confirmée"); else { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } }
+    if (okN >= 2) toast("« " + MS[b.ms].name + " » confirmée."); else { st(b.ms).done = false; toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } }
   const nx = nextSet();
   if (nx && AUTO && s.rest && nx[0] === sd.bi) { save(); render(); startRest(s, nx, v === 0 ? "Pas encore : l’essai compte quand même" : "Fait"); return; }
   if (!nx) S.log.push({t:Date.now(), id:"pg:" + P.name + (day.name ? ", " + day.name : ""), k:"check", v:true, pr:false});

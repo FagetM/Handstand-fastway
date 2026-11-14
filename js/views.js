@@ -6,10 +6,10 @@ const WARD = [
   {slot:"hair", name:"Coiffure", items:[["none","Rasés"],["short","Courts"],["bun","Chignon"],["tail","Queue de cheval"]]},
   {slot:"hairc", name:"Couleur des cheveux", items:[["brown","Bruns"],["black","Noirs"],["blond","Blonds"],["red","Roux"],["grey","Gris"]]},
   {slot:"top", name:"Haut", items:[["none","Torse nu"],["tank_k","Débardeur noir"],["tee_w","T-shirt blanc"],["tank_w","Débardeur blanc",2],["tee_g","T-shirt gris",2],["tee_k","T-shirt noir",3],
-    ["tee_o","T-shirt orange",5],["tank_o","Débardeur orange",6],["tee_b","T-shirt bleu",7],["ls_k","Manches longues noir",9],["tee_v","T-shirt vert",10],["ls_w","Manches longues blanc",11],
+    ["tee_o","T-shirt orange",5],["tank_o","Débardeur orange",6],["tee_b","T-shirt bleu",7],["ls_k","Manches longues noires",9],["tee_v","T-shirt vert",10],["ls_w","Manches longues blanches",11],
     ["tee_y","T-shirt jaune","b:st7"],["tee_r","T-shirt rouge","b:s100"],["tee_p","T-shirt violet","b:e10"],["ls_n","Manches longues marine","b:se10"],
-    ["tee_x","T-shirt rose","m:in_holds"],["tank_v","Débardeur vert","m:pl_lean"],["ls_v","Manches longues vert","m:pl_half"],["tank_r","Débardeur rouge","b:h180"],["ls_r","Manches longues rouge","m:oa_switch"],["tank_p","Débardeur violet","b:se200"],["ls_p","Manches longues violet","b:se400"],["tank_y","Débardeur jaune","m:pl_press"],
-    ["tee_n","T-shirt marine","l:oa_oahs10:1"],["tank_n","Débardeur marine",15],["ls_x","Manches longues rose",18],["tank_x","Débardeur rose",39],["ls_y","Manches longues jaune",42]]},
+    ["tee_x","T-shirt rose","m:in_holds"],["tank_v","Débardeur vert","m:pl_lean"],["ls_v","Manches longues vertes","m:pl_half"],["tank_r","Débardeur rouge","b:h180"],["ls_r","Manches longues rouges","m:oa_switch"],["tank_p","Débardeur violet","b:se200"],["ls_p","Manches longues violettes","b:se400"],["tank_y","Débardeur jaune","m:pl_press"],
+    ["tee_n","T-shirt marine","l:oa_oahs10:1"],["tank_n","Débardeur marine",15],["ls_x","Manches longues roses",18],["tank_x","Débardeur rose",39],["ls_y","Manches longues jaunes",42]]},
   {slot:"bottom", name:"Bas", items:[["short_k","Short noir"],["short_g","Short gris",2],["short_o","Short orange",4],["short_b","Short bleu",5],["pants_k","Pantalon noir",6],["pants_g","Pantalon gris",8],
     ["pants_n","Pantalon marine",10],["short_v","Short vert","b:st3"],["short_r","Short rouge","b:h10"],["pants_w","Pantalon blanc","b:st30"],
     ["short_x","Short rose","m:in_7s"],["short_y","Short jaune","m:pr_lsit"],["pants_o","Pantalon orange","m:oa_wall"],["pants_r","Pantalon rouge","b:se100"],["pants_p","Pantalon violet","m:pr_manna"],["pants_x","Pantalon rose","b:h600"],["pants_y","Pantalon jaune",21]]},
@@ -193,7 +193,7 @@ function render(){
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());
         v.append(el("b",null, noVest() ? "Sans gilet aujourd’hui" : "Gilet lesté prévu"), el("span",null, noVest() ? "Dips et pompes en version lente. Touche si tu l’as finalement." : "Pas de gilet sous la main ? Touche pour la version sans charge."));
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
-      const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Séance faite. Voir mon parcours" : dn ? "Reprendre (" + dn + " / " + tot + ")" : (P.zen ? "Commencer" : "Démarrer") + " (" + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min)"); 
+      const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Séance faite. Voir mon parcours" : dn ? "Reprendre (" + dn + " / " + tot + ")" : "Démarrer" + " (" + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min)"); 
       bt.onclick = () => dn >= tot ? showTab("path") : startGuided(); nc.append(bt);
       if (dn >= tot && P.builtin) { const z = el("button","zenhint"); z.append(el("b",null,"Récup active, 8 min"), el("span",null,"Mobilité après l’effort.")); z.onclick = () => openZen("recup"); nc.append(z); }
       if (dn >= tot) nc.append(el("div","tmeta", daySummary()));
@@ -318,7 +318,7 @@ function record(v){
   else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée."); } if (m.type === "hold") cnt().hold += v; }
   stamp(cur); S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
   save(); fillDlg(); render();
-  const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + ", niveau " + lv1 + " atteint");
+  const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + ", niveau " + lv1 + " atteint.");
   const nd = document.querySelector('.jn[data-id="' + cur + '"]'); if (nd && lv1 > lv0) nd.classList.add("pop");
 }
 function resetClock(){

@@ -76,7 +76,7 @@ function zenP(){
 document.querySelectorAll("#zfDlg [data-zk]").forEach(b => b.onclick = () => zenRate(b.dataset.zk));
 const zenIdx = id => Math.max(0, ZEN.findIndex(z => z.id === id));
 function openZen(id){ pg().cur = "detente"; pickP(); pp().step = zenIdx(id); save(); render(); showTab("today"); window.scrollTo(0, 0); }
-const zenTxt = z => z.free ? "Toujours accessible" : "Palier " + (zst(z.id).tier + 1) + "/" + z.tiers.length + ", " + zTier(z).name + (zst(z.id).fin ? ", échelle terminée" : "");
+const zenTxt = z => z.free ? "Toujours accessible" : "Palier " + (zst(z.id).tier + 1) + "/" + z.tiers.length + " : " + zTier(z).name.charAt(0).toLowerCase() + zTier(z).name.slice(1) + (zst(z.id).fin ? ", échelle terminée" : "");
 // fin d’une séance de Maîtrise : la forme décide. Propre avec de la marge : on allonge (au plafond, ça compte pour valider le palier).
 // Juste : on garde. Ça s’affaisse ou ça tire : on revient un cran en arrière. Fatigué·e : la séance compte, sans faire progresser.
 function zenRate(k){
