@@ -74,7 +74,6 @@ function soupleDay(PS){
   const zones = PS && PS.phase === 1 ? (PS.zones || [PS.zone]) : [], y = new Date(); y.setDate(y.getDate() - 1);
   const noSplit = S.lastSplit === dayKey(y) || zones.includes("jambe");   // grands écarts : jamais deux jours de suite
   const pick = romWeak(ROM.filter(r => romOk(r, zones) && !(r.split && noSplit))).slice(0, 2);
-  if (pick.some(r => r.split)) S.lastSplit = dayKey(Date.now());   // gardé au prochain enregistrement (pas de save ici : la séance du jour est en train de se composer)
   const ks = [...new Set(pick.flatMap(r => r.pas.concat(r.act)))].filter(k => DRILLS[k] && !(zones.includes("poignet") && DRILLS[k].hands));
   return [Object.assign(drillBlock("miseEnRoute", false), {keep:true, name:"Mise en route, avant la souplesse douce"})].concat(ks.map(k => { const b = drillBlock(k, false); b.keep = true; return b; }), [drillBlock("hollow", false)]);
 }

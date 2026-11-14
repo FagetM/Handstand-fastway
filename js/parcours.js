@@ -63,6 +63,7 @@ function planFor(m){
   // Deux rythmes : l’équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
   const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = (/^pr_/.test(m.id) && m.type === "reps" && !/Lift$|^pr_(walk|float)$/.test(m.id)) || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id),   /* les excentriques en full planche chargent le tendon du biceps : 4 × 1, repos complet */   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", prSkill = prReps && /^pr_/.test(m.id) && !/Neg|halfSt/.test(m.id),   /* les descentes restent en 4 × 1 */ days = /^pr_(walk|float)$/.test(m.id) ? 4 : /^pl_/.test(m.id) ? (S.goal === "planche" || (S.ex && S.ex.on && S.ex.prio === "pl") ? 3 : 2) : prSkill ? 3 : /^pr_/.test(m.id) ? 2 : force ? 3 : m.sec === "onearm" ? 4 : 5,   /* comme les plafonds de la séance : 3 jours de force par semaine au plus, 4 jours un bras */
     sets = /^ul_/.test(m.id) ? 4 : oaReps ? 6 : prSkill ? 5 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
+  out.days = days;
   const freq = (prSkill ? "Jusqu’à " : "") + days + " séances par semaine" + (prSkill ? " : la montée est un geste technique, des séries courtes et fréquentes, toujours fraîches." : force ? " : un jour de repos entre deux, la force se construit pendant la récupération." : " : c’est une habileté, la fréquence compte plus que la durée.");
   // équilibre libre : c’est une habileté, on la travaille en essais tenus jusqu’à la perte d’équilibre
   if (FREE(m) && lightWeek(m.id) && k > 0) T = L[k - 1];   // semaine plus légère : le palier précédent, pas de validation
@@ -101,7 +102,7 @@ function planFor(m){
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
-  { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (pa && !E.para) out.lines.unshift("Sans parallettes : " + pa); if (eq) out.lines.unshift("Ton matériel : " + eq); }
+  { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (pa && !E.para && !E.blocks) out.lines.unshift("Sans parallettes : " + pa); if (eq) out.lines.unshift("Ton matériel : " + eq); }   /* avec des briques, la consigne du matériel suffit */
   if (/^pr_(mannaP|vsitH|manna)$/.test(m.id)) out.lines.push("La manna se compte en années, pas en semaines : chaque étape propre est déjà une victoire.");
   { const R = (ROM_FOR[m.id] || []).map(([r, k]) => { const x = ROMI[r], cur = romLv(r); return x.name.toLowerCase() + " : « " + x.lv[k].toLowerCase() + " »" + (cur >= k ? ", c’est fait" : cur < 0 ? ", pas encore mesuré" : ", toi : « " + x.lv[cur].toLowerCase() + " »"); });
     if (R.length) out.lines.push("Souplesse conseillée, " + R.join(" ; ") + "."); }
@@ -384,9 +385,10 @@ function quick(id){
       cmp.append(card("ok", "À faire", id, true), card("ko", "À éviter : " + f.label, faultKey(id), false)); t.prepend(cmp);
       if (!SPR[faultKey(id)]) setTimeout(() => buildSprites(true), 60); } }   /* pas encore calculée : on la fait passer en tête de file */
     if (t.childElementCount) fold("Technique", t); }
-  { const t = el("div"); if (!x.done) t.append(el("p",null, planFor(m).short));
-    const dl = el("ul","drc"); drillsFor(m).forEach(k=>{ const d = DRILLS[k]; dl.append(el("li",null, d.name + ", " + d.sets[0] + " × " + (d.kind === "hold" ? d.sets[1] + " s" : d.sets[1]))); });
-    if (dl.childElementCount) t.append(dl); if (t.childElementCount) fold(x.done ? "Préparation" : "Plan et préparation", t); }
+  { const t = el("div"); planVis(m, planFor(m), t);
+    // la préparation en images : chaque exercice avec son personnage animé
+    const dl = el("div","drv"); drillsFor(m).forEach(k=>{ const d = DRILLS[k], c = el("div","drc2"); const nm = drillBlock(k, false).name; c.append(drSp({dk:k, name:nm}, 64), el("b",null,nm), el("span","mut", nbsp(d.sets[0] + " × " + (d.kind === "hold" ? d.sets[1] + " s" : d.sets[1])))); dl.append(c); });
+    if (dl.childElementCount) t.append(el("div","lab","Préparation"), dl); if (t.childElementCount) fold(x.done ? "Préparation" : "Plan et préparation", t); }
   if (qkHist) fold(qkHist[1], qkHist[0]);
   if (qkTree) fold(req.length > 1 ? "Avant cette figure : les prérequis" : "Avant cette figure : le prérequis", qkTree);
   if (qkPh) fold("Le but", qkPh);
@@ -396,6 +398,15 @@ function quick(id){
   qd.onscroll = () => qd.classList.toggle("scrolled", qd.scrollTop > 300);   /* le nom revient dans la barre du haut quand le grand titre est passé */
 }
 
+// le plan en un coup d’œil : séries, repos, jours, validation en tuiles ; les consignes importantes en clair ; le reste replié
+function planVis(m, pl, box){ const x = st(m.id);
+  if (pl.n && !x.done) { const n = pl.n, V = valRule(m.id), rest = n.rest || (typeof restOf === "function" ? restOf(m) : 0), mm = r => r < 60 ? r + " s" : Math.floor(r / 60) + " min" + (r % 60 ? " " + r % 60 : ""),
+      tiles = [[n.attempts ? n.sets + " essais" : n.check ? n.sets + " essais" : n.sets + " × " + (n.hold ? n.work + " s" : n.work), n.attempts ? "jusqu’à " + n.T + " s" : n.check ? "par séance" : n.hold ? "tenues" : "répétitions"],
+        rest ? [mm(rest), "de repos"] : null, pl.days ? [pl.days + " ×", "par semaine"] : null, m.type !== "check" ? [V.n + " jours", "pour valider"] : null].filter(Boolean), tr = el("div","ptiles");
+    tiles.forEach(([a, b]) => { const t = el("div","ptile"); t.append(el("b",null,nbsp(a)), el("span",null,b)); tr.append(t); }); box.append(tr); }
+  const key = pl.lines.filter(t => /^(Ton matériel|Sans parallettes|Souplesse conseillée|La manna se compte|Figure acquise)/.test(t)), rest2 = pl.lines.filter(t => !key.includes(t));
+  if (key.length) { const ul = el("ul","plan pkey"); key.forEach(t=>ul.append(el("li",null,t))); box.append(ul); }
+  if (rest2.length) { const det = el("details","pdet"), sm = el("summary",null,"Le détail du plan"), ul = el("ul","plan"); rest2.forEach(t=>ul.append(el("li",null,t))); det.append(sm, ul); box.append(det); } }
 const vidKey = (s, v) => s.id + "|" + v[1];
 function vidChip(sid){ const s = SEC[sid], b = el("button","vchip"); b.append(el("span",null,"Vidéos du programme"), el("b",null, s.videos.filter(v=>S.vid[vidKey(s,v)]).length + "/" + s.videos.length)); b.onclick = e => { e.stopPropagation(); openVids(sid); }; return b; }
 function openVids(sid){ const s = SEC[sid], box = $("vdBody"); $("vdT").textContent = "Vidéos, " + s.name; box.textContent = "";

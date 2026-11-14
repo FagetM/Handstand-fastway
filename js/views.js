@@ -309,7 +309,8 @@ function fillDlg(){
     if (L.length > 1){ dp.append(el("h3",null,"Les niveaux")); const ld = el("div","ladder");
       L.forEach((v,i)=>{ const r = el("div","lv" + (i < k ? " ok" : i === k ? " now" : "")); r.append(el("span","b", i < k ? "" : String(i+1)), el("span","grow","Niveau " + (i+1) + (i === L.length - 1 ? ", jalon validé" : "")), el("span","v", unitTxt(m, v))); if (i < k) r.firstChild.innerHTML = ICON.check; ld.append(r); });
       dp.append(ld); }
-    dp.append(el("h3",null,pl.head)); const ul = el("ul","plan"); pl.lines.forEach(t=>ul.append(el("li",null,t))); dp.append(ul);
+    dp.append(el("h3",null,pl.head));
+    planVis(m, pl, dp);
     if (pl.prog) { const pb = el("button","btn line","Programme associé : " + PS[pl.prog[0]].name + (PS[pl.prog[0]].steps[pl.prog[1]] && pl.prog[0] === "planche-domination" ? ", " + PS[pl.prog[0]].steps[pl.prog[1]].name : "")); pb.onclick = () => { $("dlg").close(); openProg(pl.prog[0], pl.prog[0] === "planche-domination" ? pl.prog[1] : null); }; dp.append(pb); }
   }
   const dl = $("dLog"); dl.textContent = "";

@@ -137,8 +137,9 @@ function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name
 function plancheDays(){ const names = new Set(SEC.planche.ms.map(m => "pg:" + m.name)), since = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - 6); return x.getTime(); })(), today = dayKey(Date.now());
   return new Set(S.log.filter(l => l.t >= since && dayKey(l.t) !== today && (names.has(l.id) || /^pl_/.test(l.id) || /^pg:Planche/i.test(l.id))).map(l => dayKey(l.t))).size; }
 // jours avec appui sur les mains sur les 6 derniers jours
-function handDays(){ const out = new Set(); for (let i = 1; i <= 6; i++) { const x = new Date(); x.setDate(x.getDate() - i); out.add(dayKey(x)); }
-  return new Set(S.log.filter(l => (MS[l.id] || /^pg:/.test(l.id)) && out.has(dayKey(l.t))).map(l => dayKey(l.t))).size; }
+// (les figures seulement : échauffement, postures et souplesse ne comptent pas)
+function handDays(){ const out = new Set(), names = new Set(Object.values(MS).map(m => "pg:" + m.name)); for (let i = 1; i <= 6; i++) { const x = new Date(); x.setDate(x.getDate() - i); out.add(dayKey(x)); }
+  return new Set(S.log.filter(l => (MS[l.id] || names.has(l.id)) && out.has(dayKey(l.t))).map(l => dayKey(l.t))).size; }
 function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t)).concat(S.zw || [])), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + ", vérification"] = m.id; });
@@ -159,19 +160,19 @@ function fitTime(blocks, mins){
     const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
       if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
     { const pool = blocks.filter(b => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
-    { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 8)[0]; if (att) { att.sets.splice(-1, 1); continue; } }   // équilibre : 8 essais suffisent
+    { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (two(b) ? 9 : 8))[0]; if (att) { att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); continue; } }   // équilibre : 8 essais suffisent ; un bras : 9, toujours impair (le côté faible garde son essai de plus)
     { const dI = blocks.map((b, i) => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) || SIDED.has(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d’abord la dernière figure (la force), pas l’équilibre
       if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
     const mx = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.filter(s => s.max).length > (b.ms === "pl_1leg" ? 6 : /^pl_/.test(b.ms) ? 3 : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
     // dernier recours : l’équilibre descend à 6 essais
-    { const att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > 6)[0]; if (att) { att.sets.splice(-1, 1); continue; } }
+    { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (two(b) ? 7 : 6))[0]; if (att) { att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); continue; } }
     break; }
   return blocks;
 }
 // repos entre séries de planche : il augmente avec la difficulté
 // repos entre les séries de travail d’une figure : la séance l’applique, le plan de la fiche l’annonce
-const restOf = m => { const pr = /^pl_/.test(m.id); return pr ? (PL_REST[m.id] || 150) : /^pr_/.test(m.id) && m.type === "reps" && !/Lift$/.test(m.id) ? (/Neg|negS|halfSt/.test(m.id) ? 120 : 150) : /Lift$/.test(m.id) ? 45 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75; };
+const restOf = m => { const pr = /^pl_/.test(m.id); return pr ? (PL_REST[m.id] || 150) : /^pr_/.test(m.id) && m.type === "reps" && !/Lift$|^pr_(lift1|walk|float)$/.test(m.id) ? (/Neg|negS|halfSt/.test(m.id) ? 120 : 150) : /Lift$|^pr_(lift1|walk|float)$/.test(m.id) ? 45 : m.sec === "base" ? 45 : m.id === "oa_wall" ? 90 : m.sec === "onearm" && m.type === "reps" ? 60 : 75; };
 const PL_REST = {pl_strHs:240, pl_hsDown:210, pl_halfPress:240, pl_press:240, pl_fullNeg:240, pl_lean2:90, pl_tuckP:120, pl_tuckPu:120, pl_tuckO:120, pl_strBand:240, pl_strBandL:240, pl_strNar:240, pl_half:240, pl_fullBand:240, pl_lean:90, pl_ppp:90, pl_tuck:120, pl_adv:240, pl_frog:240, pl_1leg:240, pl_straddle:240, pl_full:300, pl_pike:240};   /* dès l’advanced tuck : 4 à 5 min, comme dans les programmes de planche */
 function builtinBlocks(){
   // météo du corps : fatigué·e, séance courte et sans tentative à fond ; raide, de la mobilité en plus
@@ -538,7 +539,8 @@ function endSession(){
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * 1.05 : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
   { const z0 = P && P.zen ? ZEN[pp().step] : null, dd0 = P && P.builtin && typeof pDay === "function" ? pDay(todayIdx()) : null;   // souplesse douce : on la compte
-    if ((z0 && z0.id === "souple") || (dd0 && dd0.blocks && /souplesse douce/.test((dd0.blocks[0] || {}).name || ""))) { (S.soft || (S.soft = [])).push(Date.now()); if (S.soft.length > 60) S.soft = S.soft.slice(-60); } }
+    if ((z0 && z0.id === "souple") || (dd0 && dd0.blocks && /souplesse douce/.test((dd0.blocks[0] || {}).name || ""))) { (S.soft || (S.soft = [])).push(Date.now()); if (S.soft.length > 60) S.soft = S.soft.slice(-60);
+      const SPL = [DRILLS.ecartF.name, DRILLS.ecartAP.name, DRILLS.demiEcart.name], bl = z0 ? zTier(z0).blocks : dd0.blocks; if (bl.some(b => SPL.includes(b.name))) S.lastSplit = dayKey(Date.now()); } }   // grands écarts faits aujourd’hui : pas demain
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
   { const dd = (typeof pDay === "function" && P) ? pDay(todayIdx()) : null; if (dd && dd.blocks && dd.blocks.some(b => b.test && sessRes[b.ms]) && S.cyc) { S.cyc.tested = dayKey(Date.now()); toast("Test fait : le bilan t’attend à la fin du cycle."); } }   // le test compte une seule fois
   save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
