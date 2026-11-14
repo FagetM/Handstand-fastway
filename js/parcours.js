@@ -360,7 +360,7 @@ function quick(id){
     req.forEach((r,i)=>{ const on = st(r).done, b = el("button","qkn" + (on ? " on" : "")), ps = el("span","sp"); ps.dataset.pose = poseId(r); ps.dataset.anim = r; ps.dataset.lk = on ? "" : 1; sprPaint(ps, 56);
       b.append(ps, el("i",null, MS[r].name)); b.setAttribute("aria-label", MS[r].name + (on ? ", validée" : ", à valider")); b.onclick = () => quick(r); par.append(b); }); }
   const top = el("div","qktop"); top.append(art, g); box.append(top);
-  if (HIST[id]) { const h = el("div","qhist" + (mst ? " mst" : "")); h.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Z"/><path d="M5 19l8-8"/></svg>'; h.append(el("div","lab","Un peu d’histoire"), el("p",null,HIST[id])); box.append(h); }
+  if (HIST[id]) { const h = el("div","qhist" + (mst ? " mst" : "")); h.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Z"/><path d="M5 19l8-8"/></svg>'; const dh = el("details","qhd"); dh.append(el("summary","lab","Un peu d’histoire"), el("p",null,HIST[id])); h.append(dh); box.append(h); }
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
     if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || goalOf().ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
@@ -385,8 +385,9 @@ function quick(id){
   row.append(go, more); box.querySelector(".qkblock").after(row);
   // carte en plein écran : tout est affiché, rien à déplier
   const D = DETAILS[id] || {}, info = el("div","qkinfo"), fold = (title, node) => { const s = el("section"); s.append(el("h3",null,title), node); info.append(s); };
-  { const t = el("div"); if (m.desc && !(D.how && D.how.length)) t.append(el("p",null,m.desc));   /* les étapes disent déjà tout : pas de paragraphe qui les répète */ if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); t.append(ol); }
-    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (D.err) t.append(el("p",null,"À éviter : " + lc1(D.err)));   /* toujours avec son libellé : seule, la phrase se lirait comme une consigne */   /* la carte animée porte déjà « À éviter » */
+  { const t = el("div"), steps = el("details","qsteps"), sb = el("div"); steps.append(el("summary",null,"Les étapes, pas à pas"), sb);   /* l’animation montre le geste ; les mots, pour qui les veut */
+    if (m.desc && !(D.how && D.how.length)) sb.append(el("p",null,m.desc)); if (D.how && D.how.length) { const ol = el("ol"); D.how.forEach(v=>ol.append(el("li",null,v))); sb.append(ol); }
+    if (D.cue && D.cue.length) { const ul = el("ul","cues"); D.cue.forEach(c => ul.append(el("li",null,c))); t.append(ul); } if (sb.childElementCount) t.append(steps); if (D.err) t.append(el("p",null,"À éviter : " + lc1(D.err)));   /* toujours avec son libellé : seule, la phrase se lirait comme une consigne */   /* la carte animée porte déjà « À éviter » */
     // l’erreur la plus visible, montrée : à gauche la bonne posture, à droite la même qui se dégrade
     { const f = faultOf(id); if (f) { const cmp = el("div","fxcmp"), card = (cls, lab, anim, still) => { const c = el("div","fx " + cls), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = anim; sp.dataset.lk = ""; if (still) sp.dataset.still = 1; sprPaint(sp, 108); c.append(sp, el("b",null, lab)); if (!still && !SPR[anim]) c.classList.add("wait"); return c; };   /* l’erreur pas encore calculée : estompée, pour ne pas montrer deux fois la même pose */
       cmp.append(card("ok", "À faire", id, true), card("ko", "À éviter : " + f.label, faultKey(id), false)); t.prepend(cmp);
@@ -411,7 +412,7 @@ function planVis(m, pl, box){ const x = st(m.id);
       tiles = [[n.attempts ? n.sets + " essais" : n.check ? n.sets + " essais" : n.sets + " × " + (n.hold ? n.work + " s" : n.work), n.attempts ? "jusqu’à " + n.T + " s" : n.check ? "par séance" : n.hold ? "tenues" : "répétitions"],
         rest ? [mm(rest), "de repos"] : null, pl.days ? [pl.days + " ×", "par semaine"] : null, m.type !== "check" ? [V.n + " jours", "pour valider"] : null].filter(Boolean), tr = el("div","ptiles");
     tiles.forEach(([a, b]) => { const t = el("div","ptile"); t.append(el("b",null,nbsp(a)), el("span",null,b)); tr.append(t); }); box.append(tr); }
-  const key = pl.lines.filter(t => /^(Pourquoi|Ton matériel|Sans parallettes|Souplesse conseillée|La manna se compte|Figure acquise)/.test(t)), rest2 = pl.lines.filter(t => !key.includes(t));
+  const key = pl.lines.filter(t => /^(Ton matériel|Sans parallettes|Souplesse conseillée|La manna se compte|Figure acquise)/.test(t)), rest2 = pl.lines.filter(t => !key.includes(t));
   if (key.length) { const ul = el("ul","plan pkey"); key.forEach(t=>ul.append(el("li",null,t))); box.append(ul); }
   if (pl.prog && PS[pl.prog[0]]) { const pid = pl.prog[0], st0 = pid === "planche-domination" ? pl.prog[1] : null, stp = st0 != null && PS[pid].steps[st0];
     const pb = el("button","btn line","Programme associé : " + PS[pid].name + (stp ? ", " + stp.name : "")); pb.onclick = () => { $("qkDlg").close(); openProg(pid, st0); }; box.append(pb); }

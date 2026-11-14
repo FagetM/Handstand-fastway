@@ -42,7 +42,7 @@ function cycFigs(since, until){ const n = {}; S.log.filter(l => l.t >= since && 
 function cycBest(id, a, b){ let m = 0; S.log.forEach(l => { if (typeof l.v === "number" && l.t >= a && l.t < b && idOfLog(l) === id) m = Math.max(m, l.v); }); return m; }
 // Aujourd’hui : une ligne de cycle, et la carte du test ou du bilan au bon moment
 function renderCycle(){
-  const box = $("cycle"); if (!box) return; box.textContent = ""; const C = cyc(), d = cycDay(), w = Math.min(4, Math.floor(d / 7) + 1);
+  const box = $("cycle"); if (!box) return; box.textContent = ""; box.hidden = false; const C = cyc(), d = cycDay(), w = Math.min(4, Math.floor(d / 7) + 1);
   const line = el("button","cyline"); const T = cycTheme(); line.append(el("span",null,"Cycle " + cycN() + ", semaine " + w + " sur 4" + (cycLight() ? ", semaine légère" : "")), el("span","cyth","Thème : " + T.n + (T.s ? ", " + T.s : "")), el("span","cyint", C.intent ? "Intention : " + C.intent : "Choisir une intention pour ce cycle"));
   line.onclick = () => cycIntent(); box.append(line);
   if (d >= 28) { const c = el("div","cycard"); c.append(el("b",null,"Ton cycle est terminé"), el("p","mut","Le moment de regarder le chemin : tes records, ton intention, ce que tu as écrit.")); const b = el("button","btn","Faire le bilan"); b.onclick = cycBilan; c.append(b); box.append(c); }

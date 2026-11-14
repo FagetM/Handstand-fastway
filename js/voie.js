@@ -1,4 +1,7 @@
 // avant de se renverser : lu dans la Voie et au début du bilan de départ
+// les mêmes, en quatre lignes à parcourir d’un coup d’œil
+const SAFE_LIST = ["Tension mal contrôlée : avis médical d’abord", "Glaucome ou rétine fragile : avis médical", "Nuque fragile : avis médical", "Fourmillements, douleur la nuit : stop, consulte"];
+const safeList = () => { const ul = el("ul","safel"); SAFE_LIST.forEach(t => ul.append(el("li",null,t))); return ul; };
 const SAFE_TXT = "Avant de passer tête en bas, demande l’avis d’un médecin si tu as une tension artérielle mal contrôlée, un glaucome, un décollement de rétine, ou des soucis de nuque. Engourdissement, fourmillements, gonflement ou douleur la nuit : arrête et consulte.";
 // La Voie : le côté intérieur de la pratique. Une pensée par jour (sources citées), des respirations guidées,
 // un carnet d’écoute du corps, et « Transmettre », le chemin vers l’enseignement du yoga et de la gym.
@@ -107,7 +110,7 @@ function renderVoie(){
   { const [c, src, tap] = penseeDuJour(vpK), b = el("div","block vpens"); b.append(el("div","lab","Pensée du jour"), el("blockquote",null,"« " + c + " »"), el("div","mut vsrc", src), el("p","vtap","Sur le tapis : " + lc1(tap)));
     const n = el("button","btn line","Une autre pensée"); n.onclick = () => { vpK++; vForce(); }; b.append(n); box.append(b); }
   // respirer et écouter
-  { const b = el("div","block vsafe"); b.append(el("h2",null,"Avant de te renverser"), el("p",null,SAFE_TXT)); box.append(b); }
+  { const b = el("div","block vsafe"); b.append(el("h2",null,"Avant de te renverser"), safeList()); box.append(b); }
   { const b = el("div","block"); b.append(el("h2",null,"Respirer, écouter"), el("p","mut","Des pratiques courtes, à faire avant, après, ou à la place d’une séance."));
     const g = el("div","vprl"); PRATIQUES.forEach(p => { const x = el("button","vpr"); x.append(el("b",null,p.name), el("span","mut",p.dur)); x.onclick = () => vpOpen(p); g.append(x); }); b.append(g); box.append(b); }
   // le carnet

@@ -34,13 +34,13 @@
     <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
     <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l’app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
     <figure class="scwrap" aria-live="polite"><div id="scene"></div><figcaption id="sceneCap"></figcaption></figure>
+    <div class="next" id="nextCard"></div>
+    <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
+    <div id="sess"></div>
     <div id="cycle"></div>
     <div class="ecoute" id="ecoute" hidden><div class="grow"><b>Écoute après la séance</b><span class="mut">4 minutes allongé : une note pour chaque articulation, un mot pour la séance.</span></div><button class="btn" id="ecGo">Commencer</button><button class="vdel" id="ecNo">Plus tard</button></div>
     <button class="sommet" id="sommet" hidden></button>
     <button class="pjour" id="pJour"></button>
-    <div class="next" id="nextCard"></div>
-    <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
-    <div id="sess"></div>
     <input type="file" id="pgFile" hidden>
   </section>
 
@@ -77,7 +77,7 @@
     <div class="block" id="souple"></div>
     <button class="btn line" id="histOpen" style="margin-top:16px;width:100%">Historique des séances</button>
     <div id="quest"></div>
-    <h2 class="sect">Réglages</h2>
+    <details class="reglages"><summary class="sect">Réglages</summary>
     <div class="block">
       <h2>Chrono</h2>
       <label class="mut" for="countdown">Compte à rebours avant le départ du chrono, le temps de te mettre en position</label>
@@ -137,6 +137,7 @@
       <div class="btns"><button class="btn line" id="exp">Exporter</button><button class="btn line" id="imp">Importer</button></div>
       <div class="btns"><button class="btn warn" id="reset">Tout effacer</button></div>
     </div>
+    </details>
   </section>
 </main>
 
@@ -204,13 +205,12 @@
 <dialog id="fbDlg" tabindex="-1">
   <div class="lab">Séance terminée</div>
   <h2 style="margin:6px 0 4px">Comment tu te sens ?</h2>
-  <p class="mut" style="margin:0 0 14px">Ton ressenti règle la prochaine séance.</p>
-  <p class="fbpens" id="fbPens"></p>
+  <p class="mut" style="margin:0 0 14px">Il règle la prochaine.</p>
   <input type="hidden" id="fbIds">
   <div class="fbg">
-    <button data-k="easy"><b>Léger</b><span>La charge monte avec tes séries</span></button>
-    <button data-k="ok"><b>Juste bien</b><span>On garde ce rythme</span></button>
-    <button data-k="hard"><b>Intense</b><span>On réduit</span></button>
+    <button data-k="easy"><b>Léger</b><span>↑</span></button>
+    <button data-k="ok"><b>Juste bien</b><span>=</span></button>
+    <button data-k="hard"><b>Intense</b><span>↓</span></button>
     <button data-k="pain" class="pain"><b>Ça tire</b><span>On allège</span></button>
   </div>
   <div id="fbZone" hidden>

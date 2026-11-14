@@ -118,10 +118,10 @@ function hitTarget(id, side){
   const fresh = h.n >= need && !h.days.includes(d) && gapOk; if (fresh) h.days.push(d);
   const span = h.days.length ? dayDiff(h.days[h.days.length - 1], h.days[0]) : 0;
   if (h.days.length >= V.n && span >= V.span) { st(id).done = true; st(id).dt = Date.now(); return ""; }
-  if (h.days.includes(d) && !fresh) return "Séance déjà validée aujourd’hui (" + h.days.length + "/" + V.n + ").";
-  if (h.n >= need && !gapOk) return "Cible tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
-  if (h.n < need) return SIDED.has(id) ? "Cible tenue d’un côté : à l’autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd’hui).";
-  if (fresh) return "Séance validée (" + h.days.length + "/" + V.n + ") : refais la cible un autre jour pour valider la figure.";
+  if (h.days.includes(d) && !fresh) return "Déjà validée aujourd’hui (" + h.days.length + "/" + V.n + ").";
+  if (h.n >= need && !gapOk) return "Cible tenue. Compte dans " + (V.gap - dayDiff(d, last)) + " j.";
+  if (h.n < need) return SIDED.has(id) ? "Cible tenue. L’autre côté !" : "Cible tenue (" + h.n + "/" + need + ").";
+  if (fresh) return "Jour validé : " + h.days.length + "/" + V.n + ".";
 }
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);

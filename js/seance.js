@@ -410,16 +410,16 @@ function endSession(){
       const SPL = [DRILLS.ecartF.name, DRILLS.ecartAP.name, DRILLS.demiEcart.name], bl = z0 ? zTier(z0).blocks : dd0.blocks; if (bl.some(b => SPL.includes(b.name))) S.lastSplit = dayKey(Date.now()); } }   // grands écarts faits aujourd’hui : pas demain
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
   { const dd = (typeof pDay === "function" && P) ? pDay(todayIdx()) : null; if (dd && dd.blocks && dd.blocks.some(b => b.test && sessRes[b.ms]) && S.cyc) { S.cyc.tested = dayKey(Date.now()); toast("Test fait : le bilan t’attend à la fin du cycle."); } }   // le test compte une seule fois
-  save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
+  save(); $("fbIds").value = ids.join(","); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
-function feedback(kind){
+function feedback(kind){ if (window._lateToast) { const lt = window._lateToast; window._lateToast = null; setTimeout(() => toast(lt), 2600); }   // les badges gagnés pendant la séance
   const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.04, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient surtout des séries réussies ; « facile » ajoute un petit cran, « dur » freine
   ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
   sessRes = {}; S.ecoute = Date.now(); save(); $("fbDlg").close(); render();   // juste après : l’invitation à écouter le corps, sur Aujourd’hui
   if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (window.A3 || typeof A3 !== "undefined") { try { A3.celebrate(); } catch(e){} } setTimeout(() => { toast("« " + MS[id].name + " » validée."); quick(id); }, 900); return; }
-  toast(kind === "easy" ? "Noté : la charge monte déjà avec tes séries réussies." : kind === "hard" ? "Noté : on réduit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().days || 7) + " jours" + " sans travail à un bras, ni planche, ni montées. La reprise se fera par paliers." : S.painZone === "jambe" ? "Noté : pas de grand écart pendant " + (painState().days || 3) + " jours, puis reprise douce." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : consulte un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
+  toast(kind === "easy" ? "Noté : ça monte." : kind === "hard" ? "Noté : on réduit." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().days || 7) + " j sans un bras, planche, montées." : S.painZone === "jambe" ? "Noté : pas de grand écart pendant " + (painState().days || 3) + " jours, puis reprise douce." : "Noté : séances allégées.") + (painState().again ? " Ça revient : consulte un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
 }
 // Séance guidée : un seul toucher, puis l’app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas
@@ -435,8 +435,9 @@ const autoGo = (mode, ms) => { const me = sd; setTimeout(() => { if (AUTO && sd 
 let pzT = 0; const pzShift = () => { const n = Date.now(), d = sd && sd.paused ? n - pzT : 0; pzT = n; return d; };
 function setPause(on){ if (!sd || !sdTimer || !!sd.paused === !!on) return; sd.paused = !!on; pzT = Date.now(); $("sdClock").classList.toggle("paused", !!on); if (on) { hush(); toast("En pause. Dis « top » ou touche le bouton pour reprendre."); } else beep(880, 150); }
 // consigne longue : la première phrase, et « Plus » pour lire la suite
-function howShort(t){ t = nbsp(t); const h = $("sdHow"); h.textContent = ""; const m = /^(.{25,}?[.:!?]) /.exec(t); if (!m || t.length < 110) { h.textContent = t; return; }
-  h.append(m[1] + " "); const more = el("button","lnk inl","Plus"); more.onclick = () => { h.textContent = t; }; h.append(more); }
+// la consigne : en clair la première fois qu’on rencontre l’exercice, ensuite derrière un « i » (l’animation montre déjà le geste)
+function howShort(t, first){ t = nbsp(t); const h = $("sdHow"); h.textContent = ""; if (!t) return; if (first) { h.textContent = t; return; }
+  const more = el("button","ihelp","i"); more.setAttribute("aria-label","Comment faire"); more.onclick = () => { h.textContent = t; }; h.append(more); }
 const cdSec = () => Math.max(3, S.countdown || 0);   // toujours au moins 3 secondes pour se placer
 const sdStop = () => { clearInterval(sdTimer); sdTimer = null; if (sdWake) { sdWake.release().catch(()=>{}); sdWake = null; } };
 const mmss = s => Math.floor(s/60) + ":" + String(Math.floor(s%60)).padStart(2,"0");
@@ -451,7 +452,7 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
   sdStop(); if (selDay === todayIdx()) freezeDay(); $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdUndo").hidden = true; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === bi && ub.p === P.id + "|" + dayKey(nowS())); } oopsSync(); $("sdNote").hidden = true;
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
-  $("sdT").textContent = b.name; howShort(b.how || "");
+  { const seen = S.seenHow || (S.seenHow = {}), key = b.ms || b.dk || b.name, first = !seen[key] && !(b.ms && lastWorked(b.ms)); seen[key] = 1; $("sdT").textContent = b.name; howShort(b.how || "", first); }
   { const art = $("sdArt"); art.textContent = ""; if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(b)) art.append(drSp(b, 110)); }
   const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
   if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l’exercice"; sv.append(vl); }
@@ -468,7 +469,9 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
     const hold = b.kind === "hold";
     ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
-    { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","src", String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); }); }
+    { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) { [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","qrep" + (n === t0 ? " on" : ""), String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); });
+        const ot = el("button","qrep alt","Autre"); ot.onclick = () => { $("sdReps").classList.add("typing"); $("sdNum").focus(); }; q.append(ot); }
+      $("sdReps").classList.toggle("typing", !t0); }   /* un nombre d’un toucher ; le clavier seulement si on le demande */
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
     // tenue libre : impossible de toucher Stop la tête en bas, alors on peut noter sa tenue après coup
     if (hold) { const q = $("sdNoteQ"), T = tg || 10; q.textContent = ""; [...new Set([0.3, 0.5, 0.75, 1, 1.25, 1.5].map(k => Math.max(1, Math.round(T * k))))].forEach(n => { const bq = el("button","src", n + " s"); bq.setAttribute("aria-label", "Tenue de " + n + " secondes"); bq.onclick = () => { clearInterval(sdTimer); sdTimer = null; saveSet(n); }; q.append(bq); }); }   /* les durées n’apparaissent qu’une fois le chrono lancé */
@@ -476,6 +479,8 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
       : "Premier passage : fais ton maximum propre, il servira de référence.";
     if (b.note) $("sdHint").textContent += " " + b.note;
   }
+  { const h = $("sdHint"), sideTxt = /côté faible/.test(b.note || "") ? (si % 2 ? "côté fort" : "côté faible") : /^Alterne la jambe/.test(b.note || "") ? (si % 2 ? "autre jambe" : "première jambe") : /^Alterne le côté/.test(b.note || "") ? (si % 2 ? "côté droit" : "côté gauche") : "";
+    if (sideTxt) h.textContent = h.textContent.replace(b.note, "").trim() + (h.textContent.replace(b.note, "").trim() ? " · " : "") + sideTxt.toUpperCase(); }   // la phrase d’alternance devient un mot
   $("sdHint").textContent = nbsp($("sdHint").textContent);
   if (!$("sd").open) $("sd").showModal();
   say(setSay(b, s, si, fx, tg, day));
@@ -577,7 +582,7 @@ function saveSet(v){
     if (s.auto && sd.tg) { const r = sessRes[b.ms] || (sessRes[b.ms] = {ok:0, miss:0}); if (v >= sd.tg * 0.95) r.ok++; else r.miss++;
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd’hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });
-        toast(num(v) + " s sur " + sd.tg + " : les séries suivantes visent " + ng + " s aujourd’hui. Propre avant long."); } } }
+        toast("Suivantes : " + ng + " s."); } } }
   if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0, s:setRef(), g:s.goal || undefined, mx:s.max ? 1 : undefined, m:b.ms || undefined}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 6000) S.log = S.log.slice(-6000);
   save(); render();
   const nx = nextSet();
@@ -626,7 +631,7 @@ $("sdUndo").onclick = () => { if (!sd) return; hush(); const u = undoLast(); if 
 $("sdRedo").onclick = () => { if (!sd) return; hush(); const a = AUTO; openSet(sd.bi, sd.si); if (!a && sd.mode === "idle") $("sdGo").click(); };
 $("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (saneReps(v, sd && sd.tg)) saveSet(v); };
 $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
-$("sdX").addEventListener("click", hush);
+$("sdX").addEventListener("click", () => { hush(); if (Object.keys(sessRes).length || Object.keys(wkGet(selDay)).length) setTimeout(() => { if (!$("fbDlg").open) endSession(); }, 50); });   // arrêter en route : la séance compte quand même
 // douleur pendant la séance : on arrête tout de suite et on demande où
 $("sdPain").onclick = () => { hush(); sdStop(); $("sd").close(); $("fbIds").value = ""; $("fbZone").hidden = false; $("fbDlg").showModal(); };
 // l’écran reste allumé pendant le chrono : le verrou est repris au retour dans l’app, et rendu s’il arrive trop tard

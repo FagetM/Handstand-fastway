@@ -19,7 +19,7 @@ const confirmUp = id => { const R = reqsOf(id); S.confirm = (S.confirm || []).fi
 function unDeclare(id){ const dep = (x, seen) => (MS[x].req || []).some(r => r === id || (!seen.has(r) && MS[r] && (seen.add(r), dep(r, seen))));
   (S.confirm || []).filter(x => x !== id && MS[x] && dep(x, new Set())).forEach(x => { const s = st(x); s.done = false; s.best = 0; s.b0 = null; }); S.confirm = (S.confirm || []).filter(x => x === id || !(MS[x] && dep(x, new Set()))); }
 function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box = $("plBody"); box.textContent = "";
-  const go = el("button","btn","J’ai lu, on y va"); go.onclick = plStep;
+  const go = el("button","btn","C’est parti"); go.onclick = plStep;
   const pf = el("div"); profForm(pf);
   const E = S.equip || (S.equip = {});
   const eqr = chipRow([["band","Élastiques"],["para","Parallettes"],["blocks","Briques de yoga"],["bench","Banc"],["rings","Anneaux"]], k => E[k],
@@ -27,17 +27,19 @@ function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box =
   const gr = chipRow([["both","Le combo"],["planche","Full planche"],["press","Équilibre en force"],["oahs","Un bras"],["min","Équilibre droit"]], g => (S.goal || "both") === g,
     g => { S.goal = g === "both" ? null : g; save(); const gs = $("goalSel"); if (gs) gs.value = g; }, "prow", "Ton objectif");
   const wrap = el("div"); wrap.append(el("div","lab","Ton objectif"), gr, pf, el("div","lab","Ton matériel"), eqr);   // le profil se redessine seul, sans effacer objectif ni matériel
-  box.append(el("h2",null,"Avant de te renverser"), el("p",null, SAFE_TXT), el("h2",null,"Toi, en quelques touches"), wrap, el("p","mut","Ensuite, ce que tu sais déjà faire. L’app vérifiera en séance."), go); $("plDlg").showModal(); }
+  const opt = el("details","popt"); opt.append(el("summary",null,"Préciser objectif, matériel, profil (facultatif)"), wrap);
+  box.append(el("h2",null,"Avant de te renverser"), safeList(), go, opt); $("plDlg").showModal(); }
 const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
   const id = goalOf().ms.find(x=>!st(x).done && !msLocked(MS[x]) && !eqSkip(x) && !plSkip.has(x) && (plMiss[MS[x].sec] || 0) < 2), box = $("plBody"); box.textContent = "";
   if (!id) { S.placed = true; save(); render();
-    const nx = goalOf().ms.find(x=>!st(x).done && !msLocked(MS[x]) && !eqSkip(x)); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? (plN <= 3 ? "En " + plN + " question" + (plN > 1 ? "s" : "") + " : tu démarres par « " + SEC[MS[nx].sec].name + " ». " : "") + "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tout est validé."));
-    if ((S.confirm || []).length) box.append(el("p","mut","Les figures de force, d’équilibre à un bras et de souplesse que tu as déclarées seront vérifiées en séance, deux à la fois. Si l’une ne passe pas, elle revient simplement dans ton parcours."));
-    const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
+    const nx = goalOf().ms.find(x=>!st(x).done && !msLocked(MS[x]) && !eqSkip(x)); box.append(el("h2",null, nx ? "Départ : " + MS[nx].name : "Tout est validé"));
+    if ((S.confirm || []).length) box.append(el("p","mut","Ce que tu as déclaré sera vérifié en séance."));
+    const b = el("button","btn","Démarrer la séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); startGuided(); }; box.append(b);
+    const l = el("button","lnk","Plus tard"); l.onclick = () => { $("plDlg").close(); showTab("today"); }; box.append(l); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
   box.append(el("div","lab", "Question " + (++plN) + ", " + SEC[m.sec].name), el("h2",null, m.name), art);
-  if (m.desc) box.append(el("p","mut", m.desc));
+  if (m.desc) { const d = el("p","mut"), qb = el("button","qhelp","?"); qb.setAttribute("aria-label","C’est quoi ?"); qb.onclick = () => { d.textContent = m.desc; qb.remove(); }; box.querySelector("h2").append(" ", qb); box.append(d); }
   const yes = () => { const x = st(id); x.done = true; if (m.target) x.best = Math.max(x.best, m.target); if (SAFE.has(id) || FORCE(id) || (m.sec !== "base" && m.type !== "check")) (S.confirm || (S.confirm = [])).push(id); save(); plStep(); };
   const no = (v) => { if (v) { const x = st(id); x.best = Math.max(x.best, v); } else plMiss[m.sec] = (plMiss[m.sec] || 0) + 1; plSkip.add(id); save(); plStep(); };
   const exact = (unit) => { const r = el("form","plx"), i = el("input"); i.type = "number"; i.min = "0"; i.inputMode = "numeric"; i.placeholder = "autre"; i.setAttribute("aria-label","Nombre exact en " + unit);
