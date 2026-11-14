@@ -676,3 +676,6 @@ dialog:focus-visible{outline:none}
 .mood button,.mins button{min-height:36px}.mood button b{font-size:13px}.mins button{font-size:13px}
 .gift .mut{white-space:nowrap}
 .gift .gtx{flex:1;min-width:0}
+
+/* hors fenêtre, le message apparaît en bas, au-dessus des onglets : il ne masque plus l'en-tête ni « Mes dates » */
+body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:translate(-50%,140%)}body>#toast.on{transform:translate(-50%,0)}

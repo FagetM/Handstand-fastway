@@ -74,7 +74,7 @@ const TREE = [
       desc:"Dos très cambré, épaules ouvertes : les jambes partent loin au-dessus de la tête et le buste fait contrepoids.",
       yt:[["qBgg3POD130","Équilibre mexicain"]]},
     {id:"in_hspu", name:"Pompes en équilibre", en:"Handstand Push Up – 3 Reps", sub:"compétence alternative", type:"reps", target:3, req:BASE, alt:true,
-      desc:"En équilibre, tu fléchis les bras jusqu’à approcher la tête du sol, puis tu repousses. Demande surtout de la force d’épaules.",
+      desc:"En équilibre, tu fléchis les bras jusqu’à approcher la tête du sol, puis tu repousses. C’est surtout un travail de force d’épaules.",
       yt:[["-sdV7YfO73Q","Tutoriel handstand push-up"]]},
   ], videos:[["Affiner à deux bras : conseils et astuces niveau intermédiaire","Intermediate handstand tips & tricks"],["Affiner à deux bras : souffrir avec les 7","Suffering with 7's"],["Affiner à deux bras : tu crois savoir tenir l’équilibre ?","So you think you can balance?"],["Affiner à deux bras : tête rentrée, regard vers les orteils","Head looking at toes"],["Affiner à deux bras : arguments pour la ligne droite","Arguments for a straight line"],["Affiner à deux bras : 10 conseils pour une ligne droite","10 tips for a straight line"],["Affiner à deux bras : l’alignement","Alignment"],["Un bras : les drapeaux comme préparation","Flagging as one arm handstand prep"]]},
   {id:"onearm", name:"Un bras", en:"One Arm", ms:[
