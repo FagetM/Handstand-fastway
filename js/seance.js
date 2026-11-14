@@ -602,7 +602,7 @@ function startRest(r, nx, title){
   const nb = nx && pDay(selDay).blocks[nx[0]];
   { const art = $("sdArt"); art.textContent = ""; if (nb) { if (nb.ms && MS[nb.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(nb.ms); sp.dataset.anim = nb.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(nb)) art.append(drSp(nb, 110)); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C’était la dernière série du jour.";
-  say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C’était la dernière série. Bravo.");
+  say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C’était la dernière série.");
   let warned = r.rest < 25;
   const tick = () => { end += pzShift(); const left = (end - Date.now())/1000;
     if (!warned && left <= 10 && left > 0) { warned = true; say("Dix secondes. Secoue les poignets, respire."); }

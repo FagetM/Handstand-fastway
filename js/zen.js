@@ -85,7 +85,7 @@ function zenRate(k){
   // plafond : assez de crans pour que chaque tenue de travail ait gagné « up » secondes
   const cap = Math.max(1, ...t.blocks.filter(b => b.work).map(b => Math.ceil(t.up / zStep(b.sets[0].dur))));
   let msg = "Séance enregistrée.";
-  if (z.free) msg = "Récup faite : ton corps te remercie.";
+  if (z.free) msg = "Récup faite.";
   else if (k === "bad") { x.add = Math.max(0, x.add - 1); x.ok = []; msg = "On revient un cran en arrière : la forme d’abord."; }
   else if (k === "ok") msg = "On garde les mêmes temps : la régularité fait le travail.";
   else if (moodToday() === "fatigue") msg = "Séance comptée. Aujourd’hui fatigué·e : on ne progresse pas, on entretient.";

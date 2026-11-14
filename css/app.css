@@ -8,7 +8,7 @@
   color-scheme:dark;
   --bg:#1e1f24; --raise:#272930; --line:#363944; --txt:#ece6dc; --mut:#a39d93; --acc:#9cbf9f; --acc2:#e9b4a6; --onacc:#1e1f24;
   --shadow:0 6px 24px rgb(0 0 0 / .35);
-  --gold:var(--gold); --wood:#8a5a2b; --wood2:#6e4520; --wood3:#9c6a35; --sky:#8fb3d9; --warn:#b4532a; --onwarn:#fdf6ef;
+  --gold:#c9a227; --wood:#8a5a2b; --wood2:#6e4520; --wood3:#9c6a35; --sky:#8fb3d9; --warn:#b4532a; --onwarn:#fdf6ef;
   --scrim:rgb(12 12 16 / .6); --photo:#141418; --onphoto:#f6f1e8; --onphoto2:#d9d2c6; --cap:rgb(16 16 20 / .58); --shade1:rgb(20 20 24 / .55); --shade2:rgb(20 20 24 / .85); --cream:#f2f0ea;
   --disp:"Nunito",ui-rounded,system-ui,sans-serif;
 }
@@ -632,7 +632,7 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 /* bouton de séance toujours visible au-dessus des onglets */
 .btn.big{position:sticky;bottom:calc(68px + env(safe-area-inset-bottom));z-index:3;box-shadow:0 0 0 14px var(--raise),var(--shadow)}
 /* douleur : visible, jamais un simple lien gris */
-.pain{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:16px auto 0;padding:8px 16px;border-radius:999px;color:var(--acc2);box-shadow:inset 0 0 0 1.5px var(--acc2);font-weight:600;font-size:14.5px}
+.painbtn{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;margin:16px auto 0;padding:8px 16px;border-radius:999px;color:var(--acc2);box-shadow:inset 0 0 0 1.5px var(--acc2);font-weight:600;font-size:14.5px}
 #sdOopsM{display:flex;flex-direction:column;align-items:center}#sdOopsM[hidden]{display:none}.lnk.inl{display:inline;margin:0;padding:0 2px}
 
 .gift{display:flex;align-items:center;gap:8px;width:100%;margin-top:16px;padding:8px 8px;border-radius:14px;background:var(--bg);font-size:13.5px;text-align:left;flex-wrap:wrap}
@@ -671,3 +671,7 @@ h1,h2{text-wrap:balance}
 .mood button{flex:1 1 0}.mins button{flex:1 1 0}
 .chest .cl,.chest .cn{background:var(--bg);padding:0 4px;border-radius:4px}
 h2[tabindex="-1"]:focus{outline:none}
+
+dialog:focus-visible{outline:none}
+.mood button,.mins button{min-height:36px}.mood button b{font-size:13px}.mins button{font-size:13px}
+.gift .mut{white-space:nowrap}

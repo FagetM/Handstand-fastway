@@ -205,7 +205,7 @@ function render(){
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
     DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); if (did) { c.setAttribute("role","button"); c.setAttribute("aria-label", DAYN[i] + " : voir ce que tu as fait"); c.onclick = () => { histN = 30; openHist(dayKey(dd)); }; } wk.append(c); });
     nc.append(wk);
-    { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; b.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), el("span","mut",", " + (g.wk <= 1 ? "cette semaine" : "≈ " + gainTxt(g.wk)))); b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
+    { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; b.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), el("span","mut","(" + (g.wk <= 1 ? "cette semaine" : "dans ≈ " + gainTxt(g.wk)) + ")")); b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
   }
 
   { const pt = $("pathTop"), gms = GOALS[0].ms, dn = doneIn(gms); pt.textContent = "";
