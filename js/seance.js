@@ -119,7 +119,7 @@ function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + ", vérification"] = m.id; });
   const out = new Set(S.log.filter(l=>FORCE(MS[l.id] ? l.id : byName[l.id] || "") || /^pg:Planche/i.test(l.id)).map(l=>dayKey(l.t))); (S.zf || []).forEach(d => out.add(d)); return out; }
 function forceOk(){ const fd = forceDays(), d = new Date(); d.setDate(d.getDate() - 1); if (fd.has(dayKey(d))) return false;
-  let n = 0; const w = new Date(); w.setDate(w.getDate() - todayIdx()); for (let i = 0; i < 7; i++) { const x = new Date(w); x.setDate(w.getDate() + i); if (fd.has(dayKey(x))) n++; }
+  let n = 0; for (let i = 1; i <= 6; i++) { const x = new Date(); x.setDate(x.getDate() - i); if (fd.has(dayKey(x))) n++; }   // sur 7 jours glissants, pas du lundi au dimanche
   return n < 3 || fd.has(dayKey(Date.now())); }
 // semaine légère : la 4e de chaque cycle de 4 semaines (cycle.js) ; la semaine qui suit, pas de détection de plateau
 const afterDeload = () => (S.cycles || []).length > 0 && cycDay() < 7, deloadWeek = () => cycLight();   // la semaine légère est la 4e du cycle (cycle.js)
@@ -153,9 +153,21 @@ function builtinBlocks(){
   const mood = moodToday(), tired = mood === "fatigue";
   const deload = deloadWeek();
   const mins = S.mins || 30, PS = painState(), pain = PS.phase === 1, armPain = pain && ["epaule","coude"].includes(PS.zone), nMs = tired || mins <= 15 ? 1 : mins <= 30 ? 2 : 3;
-  const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease, comeback() ? 0.7 : 1), scale = Math.max(0.6, Math.min(1.5, mins / 30)) * red;   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
+  const red = Math.min(tired ? 0.6 : 1, deload ? 0.6 : 1, PS.ease, comeback() ? 0.7 : 1), scale = deload ? 0.6 : Math.max(0.6, Math.min(1.5, mins / 30)) * red;   /* semaine légère : 60 % quel que soit le temps choisi */   // fatigue, décharge, douleur : on garde la réduction la plus forte, sans les cumuler
   // jour de récupération après 3 jours d’entraînement de suite
 
+  // fin de cycle : la séance de test (une fois), puis mobilité jusqu’au bilan
+  if (typeof cycTest === "function" && cycTest() && cycDay() < 28) {
+    if ((S.cyc || {}).tested) return ["epaules","pike","pancake","hollow"].map(k => drillBlock(k, false));
+    const caut = S.caution && Date.now() - S.caution < 36 * 3600e3, figs = []; let nF = 0, nO = 0;
+    cycFigs(S.cyc.start).forEach(id => { const m = MS[id]; if (!m || figs.length >= 4 || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id) || (/^pl_/.test(id) && m.type === "reps")) return;
+      const f = FORCE(id), o = /^oa_/.test(id); if ((f || o) && (PS.phase === 1 || PS.phase === 2 || caut)) return; if (f && nF >= 2) return; if (o && nO >= 1) return; if (f) nF++; if (o) nO++; figs.push(id); });
+    if (figs.length) {
+      const blocks = figs.map(id => { const m = MS[id], b = cycBest(id, S.cyc.start, Date.now()) || st(id).best || nextStep(m) || m.target || 5, g = k => Math.max(1, Math.round(b * k));
+        return {name:m.name + ", test", ms:id, kind:m.type === "reps" ? "reps" : "hold", test:true, note:"Deux montées en charge, puis une seule tentative au maximum, bien reposé.",
+          sets:[{goal:g(0.5), rest:90, auto:true}, {goal:g(0.75), rest:150, auto:true}, {goal:Math.max(b, nextStep(m) || b), rest:180, max:true}]}; });
+      return [Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", false)].concat(blocks);
+    } }
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && PS.zone === "poignet") return ["hollow","epaules","pike","pancake"].map(k=>drillBlock(k, false));
   if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return ["poignets","epaules","hollow","pancake"].map(k=>drillBlock(k, false));
@@ -189,7 +201,8 @@ function builtinBlocks(){
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    const plR = /^pl_/.test(id) && m.type === "reps", sets = plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)), tries = pain || PS.phase === 2 || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
+    const ecc = ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id), plR = /^pl_/.test(id) && m.type === "reps", sets = ecc ? 4 : plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)),   /* excentriques en full planche : 4 × 1, jamais plus */
+      tries = ecc || pain || PS.phase === 2 || (PS.phase === 3 && (PS.zone === "coude" || PS.zone === "epaule") && FORCE(id)) || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 12 : 16, sets * 2) : Math.min(pl.sets, sets)}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:/^ul_/.test(id) ? "Une réussite par séance suffit : il en faut sur 3 séances, à 2 jours d’écart au moins, sur 10 jours au moins." : "Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
@@ -223,7 +236,7 @@ function builtinBlocks(){
     const id = pool.filter(id => Date.now() - lastK(id) > 10 * 864e5).sort((a, b) => lastK(a) - lastK(b))[0];
     if (id) { const m = MS[id]; keepUp.push({name:m.name + ", entretien", kind:"hold", how:"Figure acquise : deux essais calmes pour l’entretenir. " + m.desc, keep:true, sets:Array.from({length:2}, () => ({dur:Math.max(3, Math.round(m.target * 0.7)), rest:60}))}); } }
   const BAD = armPain ? new Set(["lean","pseudo","dipsW","pushW","bandpl","oawall","oashrug","appuiArr","extEp","protrac","biceps"]) : new Set();
-  return fitTime([Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
+  return fitTime([Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !prep.some(p => p.dk === k)).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],
@@ -476,6 +489,7 @@ function endSession(){
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * 1.05 : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
+  { const dd = (typeof pDay === "function" && P) ? pDay(todayIdx()) : null; if (dd && dd.blocks && dd.blocks.some(b => b.test) && S.cyc) { S.cyc.tested = dayKey(Date.now()); toast("Test fait : le bilan t’attend à la fin du cycle."); } }   // le test compte une seule fois
   save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){

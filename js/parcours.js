@@ -10,9 +10,13 @@ const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 // Douleur : chaque signalement est daté par zone. Éviction de 3 jours (7 si la même zone revient en 3 semaines),
 // puis reprise par paliers : une semaine à 60 % sans tentative à fond, une semaine à 80 %.
 const painLog = () => S.painLog || (S.painLog = S.pain ? [{t:S.pain, zone:S.painZone || "autre"}] : []);
+// une douleur par zone : chaque zone suit ses propres phases, et c’est la plus restrictive qui compte
 function painState(){ const L = painLog(); if (!L.length) return {phase:0, ease:1, zone:null};
-  const last = L[L.length - 1], again = L.filter(p => p.zone === last.zone && last.t - p.t < 21 * 864e5).length >= 2, ev = (again || last.zone === "coude" || last.zone === "epaule" ? 7 : 3) * 864e5,   /* coude, épaule : une semaine sans figures de force */ d = Date.now() - last.t;
-  return d < ev ? {phase:1, ease:0.6, zone:last.zone, days:Math.ceil((ev - d) / 864e5), again} : d < ev + 7 * 864e5 ? {phase:2, ease:0.6, zone:last.zone} : d < ev + 14 * 864e5 ? {phase:3, ease:0.8, zone:last.zone} : {phase:0, ease:1, zone:null}; }
+  const one = last => { const again = L.filter(p => p.zone === last.zone && last.t - p.t < 21 * 864e5).length >= 2, ev = (again || last.zone === "coude" || last.zone === "epaule" ? 7 : 3) * 864e5, d = Date.now() - last.t;   /* coude, épaule : une semaine sans figures de force */
+    return d < ev ? {phase:1, ease:0.6, zone:last.zone, days:Math.ceil((ev - d) / 864e5), again} : d < ev + 7 * 864e5 ? {phase:2, ease:0.6, zone:last.zone} : d < ev + 14 * 864e5 ? {phase:3, ease:0.8, zone:last.zone} : {phase:0, ease:1, zone:null}; };
+  const lastBy = {}; L.forEach(p => { lastBy[p.zone] = p; });
+  const rk = s => s.phase === 0 ? 9 : s.phase;   // phase 1 la plus stricte
+  return Object.values(lastBy).map(one).sort((a, b) => rk(a) - rk(b) || (b.days || 0) - (a.days || 0))[0]; }
 const painRecent = () => painState().phase === 1;
 // habiletés d’équilibre (y compris sur un bras) : des essais tenus jusqu’à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
@@ -29,7 +33,8 @@ function plateau(id){
   return adaptOf(id) <= 0.7 ? "beaucoup de séries ratées : la charge était trop haute" : hard >= 2 ? "des séances ressenties dures ou douloureuses" : days.length < 6 && new Set(S.log.filter(l => l.t >= since).map(l => dayKey(l.t))).size < 8 ? "des séances un peu espacées" : "le corps consolide : une semaine plus légère débloque souvent la suite";
 }
 // semaine plus légère sur une figure en plateau (déclenchée une fois toutes les 3 semaines), puis on repart d’une charge neutre
-function lightWeek(id){ if (deloadWeek()) return false; const ph = painState().phase; if ((ph === 2 || ph === 3) && (FORCE(id) || /^oa_/.test(id))) return true;   /* retour après une douleur : un cran plus léger pendant deux semaines */
+function lightWeek(id){ const ph = painState().phase; if ((ph === 2 || ph === 3) && (FORCE(id) || /^oa_/.test(id))) return true;   /* retour après une douleur : un cran plus léger pendant deux semaines, même en semaine légère */
+  if (deloadWeek()) return false;
   const d = (S.dl || {})[id]; return !!d && Date.now() - d < 7 * 864e5; }
 function checkPlateau(id){ if (deloadWeek() || afterDeload()) return; const dl = S.dl || (S.dl = {}); if (dl[id] && Date.now() - dl[id] < 21 * 864e5) return; if (plateau(id)) { dl[id] = Date.now(); if (S.adapt) delete S.adapt[id]; } }
 // la règle de validation, en clair (même règle que hitTarget)
@@ -75,7 +80,7 @@ function planFor(m){
         : (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", avec " + (SIDED.has(m.id) ? "90 s" : "2 minutes") + " de repos entre chacune." : ".") + " Réussie, elle fait passer le palier ; " : "Une série à la cible fait passer le palier ; ") + "au dernier palier, la règle de validation s’applique."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l’équilibre sans fatiguer.",
       x.best > 0 ? "Ton record : " + fmt(m, x.best) + ". Cible : " + u(T) + "." : "Pas encore de record : commence par une tentative pour voir où tu en es.",
-      "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec " + (hold ? "des tenues plus longues." : "plus de répétitions par série."),
+      ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? "Toujours 4 répétitions isolées, repos complet : la progression vient de la lenteur et de la propreté, pas du volume." : "Chaque semaine, ajoute une série tant que les dernières restent propres ; à " + (sets + 4) + " séries, repars de " + sets + " avec " + (hold ? "des tenues plus longues." : "plus de répétitions par série."),
       "Douleur au pli du coude, au poignet ou à l’avant de l’épaule : arrête la figure et signale-la. Si tu stagnes trois semaines, l’app allège cette figure une semaine."];
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
@@ -153,7 +158,10 @@ function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t 
 // ton rythme réel : temps mis sur les figures que tu as validées, comparé aux repères (il en faut au moins trois pour juger)
 function pace(){ let a = 0, d = 0, n = 0; Object.values(MS).forEach(m => { const x = st(m.id); if (x.done && x.dt && x.t0 && DEFW[m.id]) { a += Math.max(1, (x.dt - x.t0) / (7 * 864e5)); d += DEFW[m.id]; n++; } });
   return {n, k:n >= 3 ? Math.max(0.6, Math.min(1.4, 1 + (a / d - 1) * Math.min(1, n / 8))) : 1}; }   /* peu de figures : on ne s’emballe pas, l’effet grandit avec les preuves */
-function plan(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.days != null ? o.days : trainDays();
+// le plan complet ne se recalcule que si quelque chose a été enregistré (ou le jour a changé)
+const planKey = () => (window._sv || 0) + "|" + S.log.length + "|" + dayKey(Date.now());
+function plan(o){ if (!o) { const k = planKey(); if (plan.k !== k) { plan.k = k; plan.v = planCalc(); } return plan.v; } return planCalc(o); }
+function planCalc(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.days != null ? o.days : trainDays();
   const fq = td == null ? 1 : Math.max(0.9, Math.min(2.5, 20 / Math.max(4, td)));
   // 30 min : une seule figure de force par séance, planche et montées se partagent la place ; 45 min et plus : les deux avancent
   const kf = {ba:mins <= 15 ? 1.5 : mins <= 30 ? 1 : mins <= 45 ? 0.9 : 0.85, pl:mins <= 15 ? 2.5 : mins <= 30 ? 1.6 : mins <= 45 ? 1 : 0.9}; kf.pr = kf.pl; kf.ul = kf.pl / (mins <= 30 ? 1.6 : 1);
@@ -307,10 +315,10 @@ function quick(id){
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 200); art.append(sp);
   { const ph = photo("but-" + id); if (ph) { const f = el("figure","qkph"), im = el("img"); im.src = ph; im.alt = m.name; im.loading = "lazy"; f.append(im); qkPh = f; } }
   const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + (/^[A-Z]{2}/.test(SEC[m.sec].name) ? SEC[m.sec].name : lc1(SEC[m.sec].name)) : SEC[m.sec].name), el("h2",null, m.name));
-  { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), el("b",null,y[0]), y[1] ? el("span",null,", " + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
-  if (mst) art.classList.add("mst");
+  { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), y[0] ? el("b",null,y[0]) : "", y[1] ? el("span",null,(y[0] ? ", " : "") + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
+  if (mst) { art.classList.add("mst"); const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr); }   // la figure maîtresse garde sa couronne dans sa fiche
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
-  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l’instant" + ((pw => pw > 0 ? ", ouverture estimée : " + dateTxt(pw) : "")(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + ", " + dateTxt(w) : ""));   /* loin du but : on montre l’écart au prochain niveau, pas une date qui recule */
+  const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? ((pw => pw > 52 ? "Un sommet lointain : chaque étape avant elle compte." : "Verrouillée pour l’instant" + (pw > 0 ? ", ouverture estimée : " + dateTxt(pw) : ""))(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + ", " + dateTxt(w) : ""));   /* loin du but : on montre l’écart au prochain niveau, pas une date qui recule */
   // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
   const req = (m.req || []).filter(r=>MS[r]);
   let qkTree = null;

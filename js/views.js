@@ -207,7 +207,7 @@ function render(){
     }
     // la semaine en un coup d’œil : un point par jour, plein si tu t’es entraîné
     const wk = el("div","twk"), d0 = new Date(); d0.setDate(d0.getDate() - today);
-    DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); if (did) { c.setAttribute("role","button"); c.setAttribute("aria-label", DAYN[i] + " : voir ce que tu as fait"); c.onclick = () => { histN = 30; openHist(dayKey(dd)); }; } wk.append(c); });
+    DAYL.forEach((l,i)=>{ const dd = new Date(d0); dd.setDate(d0.getDate() + i); const did = S.log.some(x=>dayKey(x.t) === dayKey(dd)); const c = el("span", (did ? "did" : "") + (i === today ? " today" : "")); c.append(el("i"), el("b",null,l)); if (did) { c.setAttribute("role","button"); c.tabIndex = 0; c.setAttribute("aria-label", DAYN[i] + " : voir ce que tu as fait"); c.onclick = () => { histN = 30; openHist(dayKey(dd)); }; c.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); c.click(); } }; } wk.append(c); });
     nc.append(wk);
     { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; { const tx = el("span","gtx"); tx.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), " ", el("span","mut","(" + (g.wk <= 1 ? "cette semaine" : "dans ≈ " + gainTxt(g.wk)) + ")")); b.append(tx); } b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
   }
@@ -222,7 +222,7 @@ function render(){
       here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
     pt.append(c);
   }
-  const tree = $("tree"), keepY = window.scrollY; tree.textContent = "";
+  const tree = $("tree"), keepY = window.scrollY; if (sprIO) tree.querySelectorAll(".sp").forEach(sp => { sprIO.unobserve(sp); sprLive.delete(sp); }); tree.textContent = "";
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
 

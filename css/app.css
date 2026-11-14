@@ -841,3 +841,14 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .dintro p{margin:4px 0 0}
 .dhead{font:700 18px/1.2 var(--disp);color:var(--goldtxt);text-align:center;margin-bottom:4px}
 .dsel .dpill b{display:flex;align-items:center;justify-content:center;min-height:2.5em}
+.vsafe{background:color-mix(in srgb,var(--acc2) 9%,var(--raise))}.vsafe p{margin:8px 0 0;font-size:14px}
+.ecred{font-size:13px;margin:4px 0 0}
+/* deuxième réunion : chemin parcouru en sauge, paliers plus lisibles, curseurs qui rougissent au-delà de 5 */
+.jr2 .jr-e path.on{stroke:var(--acc);stroke-opacity:.75}
+.qktop .pips span{padding:8px 4px;border-radius:999px}
+.qktop .pips span.ok{background:color-mix(in srgb,var(--acc) 22%,transparent);box-shadow:none}
+.ecr input:focus-visible{outline:2px solid var(--acc);outline-offset:4px;border-radius:999px}
+.ecr.hi b{color:var(--acc2)}.ecr.hi input{accent-color:var(--acc2)}
+.scmini{display:none}
+.qkart.mst{overflow:visible;isolation:isolate}.qkart.mst .sp{clip-path:circle(50% at 50% 50%)}.qkart.mst .laurel{width:276px;height:276px}
+.qkart.mst{margin-bottom:28px;margin-top:20px}

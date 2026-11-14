@@ -23,8 +23,8 @@ const YOGA = {
   pr_vsitC:["Nāvāsana", "le bateau", "une cousine : le bateau se tient sans les mains"],
   pr_extSup:["Pūrvottānāsana", "l’étirement intense de l’est", "l’est, c’est le devant du corps"],
   pl_tuck:["Lolāsana", "le pendentif", "une petite sœur : le pendentif se fait jambes croisées"],
-  pl_full:["Mayūrāsana", "le paon, mais sans l’appui des coudes", "pas de nom classique : c’est la posture la plus proche"],
-  pr_straddle:["d’Upaviṣṭa Koṇāsana à Adho Mukha Vṛkṣāsana", "de l’angle ouvert à l’arbre tourné vers le bas"],
+  pl_full:[null, "pas de nom classique", "la posture la plus proche est Mayūrāsana, le paon, mais elle prend appui sur les coudes"],
+  pr_straddle:["Prasārita Pādottānāsana → Adho Mukha Vṛkṣāsana", "de la pince jambes écartées, debout, à l’arbre tourné vers le bas"],
   pr_pike:["de Paścimottānāsana à Adho Mukha Vṛkṣāsana", "de la pince à l’arbre tourné vers le bas"],
 };
 // figures maîtresses : le sommet de chaque chemin
@@ -36,18 +36,19 @@ const HIST = {
   oa_oahs10:"Le sommet du chemin un bras : dix secondes de chaque côté, le côté faible compris. Les équilibristes de cirque en ont fait un art. Ici, on y vient pas à pas.",
   pl_full:"Le mot est français : la planche, en anglais comme ailleurs, a gardé son nom d’origine. Aux anneaux et au sol, c’est l’un des éléments de force les plus admirés de la gymnastique.",
   pr_stalder:"Elle emprunte son nom au « stalder » de la barre fixe, l’élément du gymnaste suisse Josef Stalder, champion olympique à la barre fixe en 1948. Ici, la même ouverture des jambes, mais au sol, vers l’équilibre.",
-  pr_manna:"L’une des figures de force les plus rares : les mains devant, le bassin loin derrière, les jambes qui montent vers le visage. Peu de gens la tiennent, et c’est ce qui la rend précieuse.",
+  pr_manna:"L’une des figures de force les plus rares : les mains devant, le bassin loin derrière, les jambes qui montent vers le visage. Peu de gens la tiennent.",
   ul_full:"Ton propre enchaînement : l’équerre, l’équilibre, un bras de chaque côté, la planche. Tout ce que tu as construit, posé bout à bout, sans toucher le sol.",
   lo_elbow:"La Haṭha Yoga Pradīpikā, un texte du XVᵉ siècle, décrit déjà le paon, Mayūrāsana : le corps à l’horizontale, en appui sur les coudes.",
   lo_frog:"En sanskrit, kāka veut dire corbeau, et baka désigne un échassier. Le premier envol de beaucoup de pratiquants, sur les tapis de yoga comme au gymnase.",
   pr_lsit:"« Équerre », comme l’outil du menuisier : un angle droit net entre le buste et les jambes, porté par les bras.",
   pl_tuck:"La première planche, celle qui fait décoller les pieds. Tout le corps se ramasse au-dessus des mains, prêt à s’allonger.",
   in_mexican:"Le dos se cambre, les pieds descendent vers la tête : une figure qu’on retrouve chez les contorsionnistes et les équilibristes.",
-  pr_vsitC:"Nāvāsana, le bateau du yoga, en version gymnaste : sur les mains, les jambes hautes, comme une coque qui fend l’eau.",
+  pr_vsitC:"Nāvāsana, le bateau du yoga, en version gymnaste : sur les mains, les jambes hautes.",
 };
 const yogaOf = id => YOGA[id] || null;
 // couronne de laurier dorée autour des figures maîtresses : deux branches de feuilles qui montent de part et d’autre
-function laurel(){
+function laurel(){ return laurel.v || (laurel.v = laurelCalc()); }
+function laurelCalc(){
   let leaves = ""; const R = 74, C = 90, deg = Math.PI / 180, P = f => [(C + R * Math.sin(f * deg)).toFixed(1), (C + R * Math.cos(f * deg)).toFixed(1)];
   [-1, 1].forEach(sd => { for (let k = 0; k < 8; k++) { const f = (28 + k * 17) * deg;   // de bas en haut, de part et d’autre
     const x = C + sd * R * Math.sin(f), y = C + R * Math.cos(f), tan = Math.atan2(-Math.sin(f), sd * Math.cos(f)) / deg;
@@ -76,7 +77,6 @@ function renderSommet(){
   const sl = el("span","lab smlab"); sl.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2Z" fill="currentColor"/></svg>'; sl.append(" Ton prochain sommet : " + m.name);
   g.append(sl, bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + (rng ? ", " + rng : "") + "."));
   box.append(art, g); box.onclick = () => { showTab("path"); goHere(aid); setTimeout(() => quick(aid), 500); };
-  box.setAttribute("aria-label", "Ton prochain sommet : " + m.name + ", " + pct + " % du chemin");
 }
 // les trois grandes disciplines : leur figure maîtresse, leur nom en yoga, une ligne d’histoire
 const DISC = {

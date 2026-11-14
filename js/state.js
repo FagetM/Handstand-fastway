@@ -72,7 +72,7 @@ const undoLast = () => undoTo(undoList().pop());
 const undoBlock = () => undoTo(ukGet("blk"));
 const undoDay = () => undoTo(ukGet("day"));
 let saveWarned = false;
-const save = () => { window._bb = null; try { const j = JSON.stringify(S); try { localStorage.setItem(KEY, j); } catch(e0){ [UKEY, UKEY + ".day", UKEY + ".blk"].forEach(k => localStorage.removeItem(k)); localStorage.setItem(KEY, j); }   /* mémoire pleine : les copies d’annulation partent d’abord */ saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l’appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
+const save = () => { window._bb = null; window._sv = (window._sv || 0) + 1; try { const j = JSON.stringify(S); try { localStorage.setItem(KEY, j); } catch(e0){ [UKEY, UKEY + ".day", UKEY + ".blk"].forEach(k => localStorage.removeItem(k)); localStorage.setItem(KEY, j); }   /* mémoire pleine : les copies d’annulation partent d’abord */ saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l’appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
 // bandeau qui reste affiché tant que le problème dure (un toast disparaît trop vite)
 function warnBar(msg){ let b = document.getElementById("warnBar"); if (!msg) { if (b) b.remove(); return; } if (!b) { b = document.createElement("div"); b.id = "warnBar"; b.setAttribute("role","alert"); } b.textContent = msg; ([...document.querySelectorAll("dialog[open]")].pop() || document.body).append(b); }
 if (loadErr) addEventListener("load", () => warnBar("Ta sauvegarde était illisible : l’app repart de zéro. Une copie est gardée sur l’appareil."));
@@ -176,7 +176,8 @@ const BADGES = [
   {id:"sq8", g:"Traverse", name:"Chemins de traverse", desc:"Réussir 8 quêtes annexes du parcours.", max:8, cur:()=>Object.keys(S.sq || {}).length},
   ...GOALS.filter(g=>g.id !== "all").map(g=>({id:"goal_" + g.id, g:"Quête", name:g.name, desc:"Terminer la quête « " + g.name + " ».", max:g.ms.length, cur:()=>doneIn(g.ms)})),
 ];
-function stats(){
+function stats(){ const k = (window._sv || 0) + "|" + S.log.length + "|" + dayKey(Date.now()); if (stats.k !== k) { stats.k = k; stats.v = statsCalc(); } return stats.v; }
+function statsCalc(){
   const c = cnt(), days = new Set(S.log.map(l=>dayKey(l.t)));
   let streak = 0; const d = new Date();
   // régularité douce : un jour de repos entre deux séances ne casse pas la série (deux jours de suite sans rien, si)
@@ -199,7 +200,7 @@ function toast(msg){ const t = $("toast"), dl = [...document.querySelectorAll("d
 
 // ---------- Niveaux d’un jalon : trois paliers vers la cible (un seul pour un jalon « réussi / pas réussi ») ----------
 // paliers sur mesure quand les tiers de la cible n’ont pas de sens
-const LVLS = {pr_negS:[3], pr_negP:[3], pr_halfSt:[3], pr_lsitNeg:[3], pr_wallNeg:[5], oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], oa_shTuck:[2,3,5], oa_shStrad:[2,3,5], oa_shFlag:[2,3,5], pr_manna:[1,2,3], pl_strHs:[1,2], pl_hsDown:[1,2,3], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
+const LVLS = {pl_fullNeg:[5], pl_hsDown:[3], pl_halfPress:[2], pr_negS:[3], pr_negP:[3], pr_halfSt:[3], pr_lsitNeg:[3], pr_wallNeg:[5], oa_oahs:[2,3,5], oa_oahsw:[2,3,5], oa_lift:[1,3,5], oa_oahs10:[6,8,10], oa_shTuck:[2,3,5], oa_shStrad:[2,3,5], oa_shFlag:[2,3,5], pr_manna:[1,2,3], pl_strHs:[1,2], pl_hsDown:[1,2,3], pl_strBand:[10,12,15], pl_strBandL:[6,8,10]};
 const lvls = m => LVLS[m.id] ? LVLS[m.id] : m.type === "check" || !m.target ? [1] : [...new Set([Math.ceil(m.target/3), Math.ceil(m.target*2/3), m.target])];
 const lvlOf = m => { const x = st(m.id), L = lvls(m); return x.done ? L.length : m.type === "check" ? 0 : Math.min(L.length - 1, L.filter(v=>x.best >= v).length); };   // le dernier palier se valide sur 2 séances
 const nextStep = m => { const L = lvls(m), k = lvlOf(m); return k < L.length ? L[k] : null; };

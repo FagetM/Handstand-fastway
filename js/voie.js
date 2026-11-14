@@ -9,7 +9,7 @@ const PENSEES = [
   ["Elle naît du relâchement de l’effort.", "Patañjali, Yoga Sūtra 2.47", "Cherche le muscle de trop, et lâche-le."],
   ["Par la pratique et le détachement.", "Patañjali, Yoga Sūtra 1.12", "Répète, puis laisse tomber le verdict du jour."],
   ["La pratique s’ancre quand elle dure longtemps, sans interruption, avec soin.", "Patañjali, Yoga Sūtra 1.14", "Une manna se gagne en saisons, pas en séances."],
-  ["Effort ardent, étude de soi, confiance.", "Patañjali, Yoga Sūtra 2.1", "Travaille, observe-toi, puis fais confiance au temps."],
+  ["Effort ardent, étude de soi, confiance.", "Patañjali, Yoga Sūtra 2.1 (le dernier terme, īśvara-praṇidhāna, rendu ici de façon laïque)", "Travaille, observe-toi, puis fais confiance au temps."],
   ["La souffrance à venir peut être évitée.", "Patañjali, Yoga Sūtra 2.16", "Tes poignets parlent avant de casser : écoute-les tôt."],
   ["Face aux pensées qui abîment, cultive leur contraire.", "Patañjali, Yoga Sūtra 2.33", "« Je n’y arrive pas » devient « je n’y arrive pas encore »."],
   ["Du contentement naît un bonheur sans égal.", "Patañjali, Yoga Sūtra 2.42", "Savoure la planche d’aujourd’hui, pas celle de dans six mois."],
@@ -35,7 +35,7 @@ const PENSEES = [
   ["Le jour sans entraînement fait partie de l’entraînement.", "adage des entraîneurs", "Le repos est un choix actif, pas une faute."],
   ["Ne pas nuire.", "d’après Patañjali, Yoga Sūtra 2.30 (ahiṃsā)", "Ni aux autres, ni à toi : une séance qui abîme n’est pas une bonne séance."],
   ["Être vrai.", "d’après Patañjali, Yoga Sūtra 2.30 (satya)", "Dis honnêtement comment tu vas, à ton carnet comme à ton entourage."],
-  ["J’inspire, je calme mon corps. J’expire, je souris.", "Thich Nhat Hanh, La paix, un art, une pratique (1991)", "À essayer aussi dans une file d’attente ou avant une conversation difficile."],
+  ["J’inspire, je calme mon corps. J’expire, je souris.", "Thich Nhat Hanh, Peace Is Every Step (1991)", "À essayer aussi dans une file d’attente ou avant une conversation difficile."],
   ["Le corps ne ment pas.", "adage des danseurs, souvent prêté à Martha Graham", "Ce que tu ressens compte plus que ce que tu voulais ressentir."],
 ];
 const dayN = () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
@@ -72,9 +72,9 @@ const MISSIONS = [
   {id:"tm_parade", r:6, name:"La parade", act:"Apprends les parades (équilibre, roulade arrière, ATR) avec un entraîneur diplômé, en club. Jamais seul.", q:"Où étaient tes mains, et pourquoi là ?"},
   {id:"tm_souffle", r:3, name:"Guider une respiration", act:"Guide à voix haute la respiration lente pour quelqu’un : 3 minutes, une voix posée, des silences.", q:"Où as-tu eu envie de remplir le silence ?"},
   {id:"tm_toucher", r:5, name:"Demander avant de toucher", act:"Avant d’aider un élève avec la main, demande-lui toujours son accord, et propose une consigne verbale d’abord.", q:"Comment formuler la question pour qu’on puisse dire non sans gêne ?"},
-  {id:"tm_eleve", r:6, needs:["tm_parade","tm_ci"], name:"Premier élève", act:"Donne ton cours de 45 minutes, gratuitement, à un ami, et demande-lui un retour honnête.", q:"Quelle consigne as-tu dû reformuler en direct ?"},
+  {id:"tm_eleve", r:6, needs:["tm_parade","tm_ci","tm_psc","tm_toucher"], name:"Premier élève", act:"Donne ton cours de 45 minutes, gratuitement, à un ami, et demande-lui un retour honnête.", q:"Quelle consigne as-tu dû reformuler en direct ?"},
   {id:"tm_cercle", r:7, name:"Ouvrir et fermer un cours", act:"Ouvre ton cours par une intention simple et ferme-le par un temps calme : une respiration, un mot de chacun.", q:"Qu’a changé ce temps d’ouverture dans l’attention du groupe ?"},
-  {id:"tm_groupe", r:7, name:"Un petit groupe", act:"Anime une séance pour trois personnes ou plus, de niveaux différents.", q:"Comment as-tu occupé les plus rapides pendant que tu aidais les autres ?"},
+  {id:"tm_groupe", r:7, needs:["tm_eleve","tm_psc"], name:"Un petit groupe", act:"Anime une séance pour trois personnes ou plus, de niveaux différents.", q:"Comment as-tu occupé les plus rapides pendant que tu aidais les autres ?"},
   {id:"tm_club", r:8, name:"Bénévole en club", act:"Aide un entraîneur en club, ou passe le diplôme fédéral d’animateur FFGym (encadrement bénévole).", q:"Qu’as-tu appris de l’entraîneur titulaire ?"},
   {id:"tm_voie", r:9, name:"Choisir sa formation", act:"Compare deux voies : BPJEPS Activités gymniques, formation de yoga de 200 heures, ou CQP ALS (gym d’entretien seulement). Coût, financement CPF, dates des tests.", q:"Laquelle correspond à ton projet dans deux ans, et pourquoi ?"},
   {id:"tm_pro", r:10, name:"Prêt à enseigner", act:"Prépare ton dossier : diplôme, déclaration d’éducateur sportif (carte professionnelle), assurance responsabilité civile professionnelle, tarifs.", q:"Que te manque-t-il encore pour être en règle ?"},
@@ -99,10 +99,12 @@ function renderVoie(){
   { const [c, src, tap] = penseeDuJour(vpK), b = el("div","block vpens"); b.append(el("div","lab","Pensée du jour"), el("blockquote",null,"« " + c + " »"), el("div","mut vsrc", src), el("p","vtap","Sur le tapis : " + lc1(tap)));
     const n = el("button","btn line","Une autre pensée"); n.onclick = () => { vpK++; vForce(); }; b.append(n); box.append(b); }
   // respirer et écouter
+  { const b = el("div","block vsafe"); b.append(el("h2",null,"Avant de te renverser"), el("p",null,"Tête en bas, demande l’avis d’un médecin si tu as une tension artérielle mal contrôlée, un glaucome, un décollement de rétine, ou des soucis de nuque. Engourdissement, fourmillements, gonflement ou douleur la nuit : arrête et consulte.")); box.append(b); }
   { const b = el("div","block"); b.append(el("h2",null,"Respirer, écouter"), el("p","mut","Des pratiques courtes, à faire avant, après, ou à la place d’une séance."));
     const g = el("div","vprl"); PRATIQUES.forEach(p => { const x = el("button","vpr"); x.append(el("b",null,p.name), el("span","mut",p.dur)); x.onclick = () => vpOpen(p); g.append(x); }); b.append(g); box.append(b); }
   // le carnet
-  { const trained = S.log.some(l => dayKey(l.t) === dayKey(Date.now())), QS = trained ? QUESTIONS : QUESTIONS_REPOS, q = QS[dayN() % QS.length], b = el("div","block"); b.append(el("h2",null,"Carnet"), el("p",null,q));
+  { const trained = S.log.some(l => dayKey(l.t) === dayKey(Date.now())), QS = trained ? QUESTIONS : QUESTIONS_REPOS, ec = (S.ecl || []).slice(-1)[0], sore = ec && dayKey(ec.t) === dayKey(Date.now()) && Math.max(ec.poignet || 0, ec.coude || 0, ec.epaule || 0, ec.dos || 0) >= 3,
+      it = (S.cyc || {}).intent, q = sore ? "Quelle gêne vas-tu surveiller demain ?" : it && dayN() % 7 === 0 ? "Ton intention « " + it + " » : où l’as-tu sentie cette semaine ?" : QS[dayN() % QS.length], b = el("div","block"); b.append(el("h2",null,"Carnet"), el("p",null,q));
     const ta = el("textarea","vta"); ta.rows = 3; ta.placeholder = "Quelques mots suffisent."; ta.setAttribute("aria-label", q);
     const ok = el("button","btn","Garder dans le carnet"); ok.onclick = () => { const a = ta.value.trim(); if (!a) return; (S.jr || (S.jr = [])).push({t:Date.now(), q, a}); save(); ta.value = ""; ta.blur(); toast("Gardé dans ton carnet."); renderVoie(); };
     b.append(ta, ok);
@@ -130,7 +132,7 @@ function tmOpen(m, on){
   const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : ri >= m.r && need.length ? "Après " + need.join(" et ") : "Au rang " + RANKS[m.r]), el("p",null, on ? m.act : (ri >= m.r && need.length ? "Elle s’ouvrira quand ces missions seront faites. " : "Elle s’ouvrira à ce rang. ") + "En attendant : " + lc1(m.act))); box.append(blk);
   { const le = tmLecon(m); if (le) box.append(le); }
   if (on) { const q = el("p","vq",m.q), ta = el("textarea","vta"); ta.rows = 4; ta.value = done ? done.a : ""; ta.placeholder = "Deux ou trois phrases : ce que tu as fait, ce que tu en retiens."; ta.setAttribute("aria-label", m.q);
-    const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Écris au moins deux phrases : c’est là que tu apprends."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); vForce(); toast("Mission « " + m.name + " » faite."); };
+    const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Deux phrases, pour t’en souvenir."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); vForce(); toast("Mission « " + m.name + " » faite."); };
     box.append(q, ta, ok);
     if (done) { const u = el("button","btn line vre","Retirer"); u.onclick = () => { delete S.tm[m.id]; save(); $("qkDlg").close(); vForce(); }; box.append(u); } }
   $("qkT").textContent = m.name; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
@@ -195,9 +197,9 @@ const NIVEAUX = ["Débutants", "Intermédiaires", "Avancés", "Tous niveaux"];
 const PARTS = [["ech","Échauffement"],["coeur","Cœur de séance"],["calme","Retour au calme"]];
 let qkGuard = null;   // atelier ouvert avec des changements : on demande avant de fermer
 const MODELE = {title:"Équilibre sur les mains, débutants", pub:"Débutants", dur:45,
-  ech:"Cercles de poignets et appuis sur les doigts, 3 min\nChat-vache, 2 min\nChien tête en bas actif, 3 × 20 s, 2 min\nGainage creux, 3 × 20 s, 3 min",
-  coeur:"Pieds au mur en L, 3 × 20 s, 6 min\nPoitrine face au mur, 3 × 20 s, 7 min\nSortie en roue, 5 essais de chaque côté, 7 min\nPour les plus avancés : décollages du mur, 5 min",
-  calme:"Posture de l’enfant, 2 min\nÉtirement des poignets et des épaules, 3 min\nRespiration lente, 5 min", notes:"Un seul objectif : un alignement mains, épaules, hanches. Trois consignes au plus.", vids:[]};
+  ech:"Ouverture : le thème du cours en une phrase, 1 min\nCercles de poignets et appuis sur les doigts, 3 min\nChat-vache, 2 min\nChien tête en bas actif, 3 × 20 s, 2 min\nGainage creux, 3 × 15 s, 2 min",
+  coeur:"Sortie en roue, d’abord loin du mur, 5 essais de chaque côté, 7 min\nPieds au mur en L, 3 × 20 s, 6 min\nPoitrine face au mur, 3 × 15 s, 6 min\nPour les plus avancés : décollages du mur, 6 min",
+  calme:"Posture de l’enfant, 2 min\nÉtirement des poignets et des épaules, 3 min\nRelaxation allongée, en silence, 5 min", notes:"Un seul objectif : un alignement mains, épaules, hanches. Trois consignes au plus.", vids:[]};
 const coursTxt = c => [c.title + " (" + c.pub + ", " + c.dur + " min)", c.theme ? "Thème : " + c.theme : "", ...PARTS.map(([k, n]) => c[k] ? n + " :\n" + c[k] : ""), c.notes ? "Notes : " + c.notes : "", ...(c.vids || []).map(v => v.label + " : " + v.url)].filter(Boolean).join("\n\n");
 function coursEdit(c0){
   const box = $("qkBody"), c = Object.assign({id:"c" + Date.now(), title:"", pub:NIVEAUX[0], dur:45, ech:"", coeur:"", calme:"", notes:"", vids:[]}, JSON.parse(JSON.stringify(c0 || {}))), isNew = !c0 || !c0.id; if (!c.id) c.id = "c" + Date.now();   // un modèle repart avec son propre identifiant
@@ -251,16 +253,16 @@ const ZONES = [["poignet","Poignets"],["coude","Coudes"],["epaule","Épaules"],[
 function ecouteForm(){
   const f = el("div","ecf"), val = {}; f.append(el("p","vq","Tes notes de gêne, de 0 à 10"));
   ZONES.forEach(([z, n]) => { const r = el("label","ecr"), v = el("b",null,"0"), inp = el("input"); inp.type = "range"; inp.min = 0; inp.max = 10; inp.value = 0; inp.setAttribute("aria-label", n + ", gêne de 0 à 10");
-    inp.oninput = () => { v.textContent = inp.value; val[z] = +inp.value; }; val[z] = 0; r.append(el("span",null,n), inp, v); f.append(r); });
+    inp.oninput = () => { v.textContent = inp.value; val[z] = +inp.value; r.classList.toggle("hi", +inp.value >= 5); }; val[z] = 0; r.append(el("span",null,n), inp, v); f.append(r); });
   const ok = el("button","btn","Garder mes notes"); ok.onclick = () => {
     (S.ecl || (S.ecl = [])).push(Object.assign({t:Date.now()}, val)); if (S.ecl.length > 120) S.ecl.shift();
     const mx = Math.max(...Object.values(val)), top = Object.keys(val).find(z => val[z] === mx);
-    if (mx > 5) { S.pain = Date.now(); painLog().push({t:S.pain, zone:top === "dos" ? "autre" : top}); if (S.painLog.length > 50) S.painLog.shift(); }
+    if (mx > 5) { S.pain = Date.now(); Object.keys(val).filter(z => val[z] > 5).forEach(z => painLog().push({t:S.pain, zone:z === "dos" ? "autre" : z})); while (S.painLog.length > 50) S.painLog.shift(); }   // chaque zone au-delà de 5
     else if (mx >= 3) S.caution = Date.now();
     save(); f.remove(); $("vpDlg").close(); render();
-    toast(mx > 5 ? "Noté : la zone se repose, la séance s’adapte." : mx >= 3 ? "Noté : pas de tentative au maximum pendant un jour et demi." : "Noté : tout va bien. Écris un mot dans ton carnet.");
+    const it = (S.cyc || {}).intent; toast((mx > 5 ? "Noté : la zone se repose, la séance s’adapte." : mx >= 3 ? "Noté : pas de tentative au maximum pendant un jour et demi." : "Noté : tout va bien.") + (it ? " Ton intention : " + it + "." : ""));
     showTab("voie"); vForce(); const ta = document.querySelector("#voie .vta"); if (ta) ta.focus(); };
-  f.append(ok); const stg = $("vpDlg").querySelector(".vpstage"); stg.after(f); stg.hidden = true; $("vpLeft").hidden = true; $("vpGo").hidden = true;
+  f.append(el("p","mut ecred","Engourdissement, fourmillements, gonflement ou douleur la nuit : arrête, et consulte un médecin."), ok); const stg = $("vpDlg").querySelector(".vpstage"); stg.after(f); stg.hidden = true; $("vpLeft").hidden = true; $("vpGo").hidden = true;
 }
 $("vpDlg").addEventListener("close", () => { const f = $("vpDlg").querySelector(".ecf"); if (f) f.remove(); $("vpGo").hidden = false; $("vpLeft").hidden = false; $("vpDlg").querySelector(".vpstage").hidden = false; });
 // Relire : tout le carnet, mois par mois, avec les réflexions des missions
