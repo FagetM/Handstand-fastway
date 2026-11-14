@@ -28,6 +28,8 @@ const THEMES = [
   {n:"le repos", s:"récupérer aussi", p:["Pas de yoga pour qui mange", "Le jour sans entraînement"], q:"Comment as-tu récupéré cette semaine ?", b:"Comment ton repos a-t-il nourri ta pratique ce mois-ci ?"},
   {n:"la gratitude", s:"le salut au tapis", p:["Le karaté commence et finit", "J’inspire, je calme"], q:"À qui dois-tu ce que tu sais faire ?", b:"Envers qui, ou quoi, as-tu ressenti de la gratitude ce mois-ci ?"},
 ];
+// le test attend un jour plus frais : poignet au repos, fatigue, gêne récente ou jour de récupération (même règle que la séance)
+function cycTestHeld(){ const PS = painState(); return (PS.phase === 1 && (PS.zones || [PS.zone]).includes("poignet")) || moodToday() === "fatigue" || !!(S.caution && Date.now() - S.caution < 36 * 3600e3) || needRest(); }
 const cycTheme = () => THEMES[(cycN() - 1) % THEMES.length];
 const cycDay = () => Math.floor((Date.now() - cyc().start) / 864e5);
 const cycN = () => (S.cycles || []).length + 1;
@@ -46,7 +48,7 @@ function renderCycle(){
   if (d >= 28) { const c = el("div","cycard"); c.append(el("b",null,"Ton cycle est terminé"), el("p","mut","Le moment de regarder le chemin : tes records, ton intention, ce que tu as écrit.")); const b = el("button","btn","Faire le bilan"); b.onclick = cycBilan; c.append(b); box.append(c); }
   else if (cycTest() && C.tested) { const c = el("div","cycard"); c.append(el("b",null,"Test fait"), el("p","mut","Mobilité jusqu’à la fin du cycle, puis le bilan. Tu peux encore ajouter la vidéo d’une tentative."));
     cycFigs(C.start).forEach(id => { const fm = el("button","chip cyfilm", ((C.vids || {})[id] ? "Vidéo gardée : " : "Ajouter une vidéo : ") + MS[id].name); fm.onclick = () => vPick(id, renderCycle); c.append(fm); }); box.append(c); }
-  else if (cycTest()) { const figs = cycFigs(C.start); if (figs.length) { const c = el("div","cycard"); const held = (S.caution && Date.now() - S.caution < 36 * 3600e3) || painState().phase === 1 || moodToday() === "fatigue";
+  else if (cycTest()) { const figs = cycFigs(C.start); if (figs.length) { const c = el("div","cycard"); const held = cycTestHeld();
       c.append(el("b",null, held ? "Test reporté" : "Jour de test"), el("p","mut", held ? "Pas aujourd’hui : ton corps demande du calme. Le test attendra un jour plus frais, avant la fin du cycle." : "Ta séance du jour est le test : échauffement, deux montées en charge, puis une tentative au maximum par figure. C’est ce qui recale tes dates."));
       figs.forEach(id => { const m = MS[id], x = el("button","cytest"), b = cycBest(id, C.start, Date.now()); x.append(el("span",null,m.name), el("span","mut","record du cycle : " + (b ? fmt(m, b) : "aucun"))); x.onclick = () => openMs(id);
         const ft = (C.vids || {})[id] ? "Vidéo gardée, refaire" : "Filmer la tentative", fm = el("button","chip cyfilm", ft); fm.setAttribute("aria-label", ft + " : " + m.name); fm.onclick = () => vPick(id, renderCycle); c.append(x, fm); });
@@ -114,11 +116,12 @@ async function vPrune(){ try { const keep = new Set([cyc().start].concat((S.cycl
 function vPick(id, after){   // filmer ou choisir une vidéo pour une figure du test
   const inp = document.createElement("input"); inp.type = "file"; inp.accept = "video/*"; inp.hidden = true; document.body.append(inp);   // caméra ou photothèque, au choix du téléphone
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch(e){}
+  window.addEventListener("focus", () => setTimeout(() => { if (!inp.files || !inp.files.length) inp.remove(); }, 1000), {once:true});   // sélecteur annulé : rien ne reste dans la page
   inp.onchange = async () => { const f = inp.files && inp.files[0]; inp.remove(); if (!f) return; if (f.size > 80e6) { toast("Vidéo trop lourde (plus de 80 Mo) : coupe-la autour de la tentative."); return; }
     try { await vPut(cyc().start, id, f); S.cyc.vids = Object.assign(S.cyc.vids || {}, {[id]:1}); save(); vPrune(); toast("Vidéo gardée dans ton carnet du cycle."); if (after) after(); } catch(e){ toast("Impossible de garder la vidéo sur ce téléphone."); } };
   inp.click();
 }
 function vShow(box, start, id, label){   // une vidéo du carnet, lue sur place
-  vGet(start, id).then(b => { if (!b) return; const f = el("figure","vfig"), v = document.createElement("video"); v.src = URL.createObjectURL(b); v.controls = true; v.playsInline = true; v.preload = "metadata"; v.setAttribute("aria-label", label);
+  vGet(start, id).then(b => { if (!b) return; const f = el("figure","vfig"), v = document.createElement("video"), u = URL.createObjectURL(b); v.src = u; $("qkDlg").addEventListener("close", () => URL.revokeObjectURL(u), {once:true}); v.controls = true; v.playsInline = true; v.preload = "metadata"; v.setAttribute("aria-label", label);
     f.append(v, el("figcaption","mut",label)); box.append(f); }).catch(() => {});
 }

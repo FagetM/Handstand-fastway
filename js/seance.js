@@ -159,7 +159,7 @@ function builtinBlocks(){
   // fin de cycle : la séance de test (une fois), puis mobilité jusqu’au bilan
   const wristRest = pain && (PS.zones || [PS.zone]).includes("poignet"), cautT = S.caution && Date.now() - S.caution < 36 * 3600e3;
   if (typeof cycTest === "function" && cycTest() && cycDay() < 28 && (S.cyc || {}).tested) return ["epaules","pike","pancake","hollow"].map(k => drillBlock(k, false));   // test fait : mobilité jusqu’au bilan
-  if (typeof cycTest === "function" && cycTest() && cycDay() < 28 && !wristRest && !tired && !cautT && !needRest()) {
+  if (typeof cycTest === "function" && cycTest() && cycDay() < 28 && !cycTestHeld()) {
     const caut = S.caution && Date.now() - S.caution < 36 * 3600e3, figs = []; let nF = 0, nO = 0;
     cycFigs(S.cyc.start).forEach(id => { const m = MS[id]; if (!m || figs.length >= 4 || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id) || (/^pl_/.test(id) && m.type === "reps")) return;
       const f = FORCE(id), o = /^oa_/.test(id); if ((f || o) && (PS.phase === 1 || PS.phase === 2 || caut)) return; if (f && nF >= 2) return; if (o && nO >= 1) return; if (f) nF++; if (o) nO++; figs.push(id); });
