@@ -256,7 +256,7 @@ function journey(nextId){
       c.onclick = () => chestScene(it.sid, !it.done);
       c.append(el("span","cl", it.done ? C[2] : "Coffre")); if (!it.done && cm.length) c.append(el("span","cn", cd + "/" + cm.length)); cv.append(c); }
     else { const id = it.id, m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), kk = lvlOf(m), cur = id === nextId, small = it.alt;
-      const b = el("button","jn d-" + m.sec + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
+      const b = el("button","jn d-" + m.sec + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "") + (MAITRES.has(id) ? " mst" : "")); b.dataset.id = id;
       b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 48 : cur ? 64 : 58)) + "px";   // centre du rond sur le chemin
       b.setAttribute("aria-label", m.name + (m.target ? ", " + goalTxt(m) : "") + ", niveau " + kk + " sur " + L.length + (lk ? ", verrouillé" : ""));
       const c = el("span","c"), R = 39, Cc = 2*Math.PI*R, sg = Cc / L.length, gap = L.length > 1 ? 5 : 0;
@@ -264,6 +264,7 @@ function journey(nextId){
       L.forEach((_,i)=>{ ring += '<circle cx="42" cy="42" r="' + R + '" class="' + (i < kk ? "f" : "") + '" stroke-dasharray="' + (sg - gap).toFixed(1) + ' ' + (Cc - sg + gap).toFixed(1) + '" stroke-dashoffset="' + (-(i*sg + gap/2)).toFixed(1) + '"/>'; });
       c.innerHTML = ring + '</svg>'; const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; sprPaint(sp, small ? 72 : cur ? 104 : 92); c.append(sp);
       if (x.done) c.append(icon("check","ck")); else if (lk) c.append(icon("lock","lkb"));
+      if (MAITRES.has(id)) c.append(el("span","mstb","Maîtresse"));   // le sommet d’un chemin, couronné
       b.append(c, el("span","n", it.alt ? m.name.replace(/\s*\(.*\)\s*$/, "") : m.name));   /* bonus : le nom court, la précision reste dans la fiche */
       const nx = nextStep(m);
       b.append(el("span","g", x.done ? "" : lk ? (m.target ? goalTxt(m) : "") : L.length > 1 ? "Niveau " + kk + "/" + L.length + ", " + unitTxt(m, nx) : small ? "Bonus" : m.target ? goalTxt(m) : ""));
@@ -296,7 +297,9 @@ function quick(id){
   let qkPh = null; const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 200); art.append(sp);
   { const ph = photo("but-" + id); if (ph) { const f = el("figure","qkph"), im = el("img"); im.src = ph; im.alt = m.name; im.loading = "lazy"; f.append(im); qkPh = f; } }
-  const g = el("div","grow"); g.append(el("div","lab", SEC[m.sec].name), el("h2",null, m.name));
+  const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + lc1(SEC[m.sec].name) : SEC[m.sec].name), el("h2",null, m.name));
+  { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), el("b",null,y[0]), y[1] ? el("span",null,", " + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
+  if (mst) art.classList.add("mst");
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
   const w = eta(m); g.append(el("div","mut", x.done ? "" : lk ? "Verrouillée pour l’instant" + ((pw => pw > 0 ? ", ouverture estimée : " + dateTxt(pw) : "")(plan().start[id] || 0)) : (w > 12 || plateau(id)) && m.type === "hold" && nextStep(m) > x.best && x.best > 0 ? "Niveau " + unitTxt(m, nextStep(m)) + " : il manque " + num(Math.round((nextStep(m) - x.best) * 10) / 10) + " s" : w ? "À ton rythme : " + etaTxt(w) + " pour " + goalTxt(m) + ", " + dateTxt(w) : ""));   /* loin du but : on montre l’écart au prochain niveau, pas une date qui recule */
   // mini-arbre : en haut les figures requises (allumées si validées), reliées à la figure ; un toucher ouvre le parent
@@ -306,6 +309,7 @@ function quick(id){
     req.forEach((r,i)=>{ const on = st(r).done, b = el("button","qkn" + (on ? " on" : "")), ps = el("span","sp"); ps.dataset.pose = poseId(r); ps.dataset.anim = r; ps.dataset.lk = on ? "" : 1; sprPaint(ps, 56);
       b.append(ps, el("i",null, MS[r].name)); b.setAttribute("aria-label", MS[r].name + (on ? ", validée" : ", à valider")); b.onclick = () => quick(r); par.append(b); }); }
   const top = el("div","qktop"); top.append(art, g); box.append(top);
+  if (HIST[id]) { const h = el("div","qhist" + (mst ? " mst" : "")); h.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Z"/><path d="M5 19l8-8"/></svg>'; h.append(el("div","lab","Un peu d’histoire"), el("p",null,HIST[id])); box.append(h); }
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
     if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
