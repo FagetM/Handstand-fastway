@@ -101,7 +101,7 @@ function hitTarget(id, side){
   const span = h.days.length ? dayDiff(h.days[h.days.length - 1], h.days[0]) : 0;
   if (h.days.length >= V.n && span >= V.span) { st(id).done = true; st(id).dt = Date.now(); return ""; }
   if (h.days.includes(d) && !fresh) return "Séance déjà validée aujourd’hui (" + h.days.length + "/" + V.n + ").";
-  if (h.n >= need && !gapOk) return "Belle tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
+  if (h.n >= need && !gapOk) return "Cible tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d’un côté : à l’autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd’hui).";
   if (fresh) return "Séance validée (" + h.days.length + "/" + V.n + ") : refais-le un autre jour pour valider la figure.";
 }
@@ -146,11 +146,11 @@ const mins = s => Math.floor(s/60);
 const BADGES = [
   {id:"first", g:"1", name:"Premier pas", desc:"Enregistrer une première série ou un premier essai.", max:1, cur:c=>c.sets + c.tries},
   {id:"st3", g:"3 j", name:"Trois jours fidèles", desc:"Bouger trois jours, séance ou détente. Deux jours de repos de suite ne cassent rien.", max:3, cur:c=>c.streak},
-  {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou détente, avec des jours de repos au milieu si tu veux.", max:7, cur:c=>c.streak},
-  {id:"st30", g:"30 j", name:"Trente jours fidèles", desc:"Un mois à prendre soin de toi, repos compris.", max:30, cur:c=>c.streak},
+  {id:"st7", g:"7 j", name:"Sept jours fidèles", desc:"Bouger sept jours, séance ou détente, repos permis entre deux.", max:7, cur:c=>c.streak},
+  {id:"st30", g:"30 j", name:"Trente jours fidèles", desc:"Un mois à bouger, repos compris.", max:30, cur:c=>c.streak},
   {id:"st60", g:"60 j", name:"Deux mois fidèles", desc:"Deux mois à bouger, repos compris.", max:60, cur:c=>c.streak},
-  {id:"st100", g:"100 j", name:"Cent jours fidèles", desc:"Cent jours de suite à prendre soin de toi.", max:100, cur:c=>c.streak},
-  {id:"st365", g:"1 an", name:"Une année fidèle", desc:"Un an sans lâcher, deux jours de repos de suite au plus.", max:365, cur:c=>c.streak},
+  {id:"st100", g:"100 j", name:"Cent jours fidèles", desc:"Cent jours à bouger, repos compris.", max:100, cur:c=>c.streak},
+  {id:"st365", g:"1 an", name:"Une année fidèle", desc:"Un an à bouger, deux jours de repos de suite au plus.", max:365, cur:c=>c.streak},
   {id:"se10", g:"10", name:"Dix séances", desc:"Terminer dix séances complètes d’un programme.", max:10, cur:c=>c.sess},
   {id:"se50", g:"50", name:"Cinquante séances", desc:"Terminer cinquante séances complètes.", max:50, cur:c=>c.sess},
   {id:"se100", g:"100", name:"Cent séances", desc:"Terminer cent séances complètes.", max:100, cur:c=>c.sess},

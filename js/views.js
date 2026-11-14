@@ -148,7 +148,7 @@ function render(){
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
     nc.append(el("div","lab", DAYN[today] + ", séance du jour"));
     if (!S.placed && Object.keys(MS).filter(id=>st(id).done).length < 6) { const pb = el("button","place");
-      pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"Quelques questions rapides sur ce que tu sais déjà faire : l’app te propose ensuite une séance à ta mesure."));
+      pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"Quelques questions rapides sur ce que tu sais déjà faire : l’app compose ensuite ta séance."));
       pb.onclick = () => startPlacement(); nc.append(pb); $("sessToggle").hidden = $("sess").hidden = true;   // avant le bilan : rien d’autre à l’écran
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       break today; }
@@ -162,20 +162,20 @@ function render(){
     else if (P.builtin) { const mw = el("div","mood"), mk = moodToday(); mw.append(el("span",null,"Aujourd’hui, je suis…"));
       MOODS.forEach(([k, lab, ico]) => { const b = el("button", mk === k ? "on" : ""); b.append(el("b",null,lab)); b.setAttribute("aria-pressed", mk === k); b.onclick = () => { delete S.moodEdit; setMood(k); }; mw.append(b); });
       nc.append(mw);
-      if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd’hui : récup active, 8 min"), el("span",null,"Mobilité, ça compte aussi. Ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
+      if (mk === "fatigue") { const z = el("button","zenhint"); z.append(el("b",null,"Aujourd’hui : récup active, 8 min"), el("span",null,"Mobilité, ou la séance allégée ci-dessous.")); z.onclick = () => openZen("recup"); nc.append(z); } }
     if (P.builtin && !(dn && dn < tot) && (!moodToday() || S.moodEdit)) { const tm = el("div","mins"); 
       [15,30,45,60].forEach(v=>{ const b = el("button", (S.mins || 30) === v ? "on" : "", v + " min"); b.setAttribute("aria-label", v + " minutes"); b.setAttribute("aria-pressed", (S.mins || 30) === v); b.onclick = () => { S.mins = v; if (S.bday && !dn) S.bday = null; save(); render(); }; tm.append(b); }); nc.append(tm); }
     if (P.builtin && needRest()) nc.append(el("div","painnote","Jour de récup : trois jours d’entraînement de suite. Mobilité et poignets aujourd’hui, la force revient demain."));
-    if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons se renforcent pendant ce temps."));
-    { const PS = painState(); if (PS.phase) nc.append(el("div","painnote", PS.phase === 1 ? (PS.zone === "poignet" ? "Poignets au repos encore " + PS.days + " j : pas d’appui sur les mains." : PS.zone === "epaule" || PS.zone === "coude" ? "Encore " + PS.days + " j sans un bras, planche ni montées." : "Séance en douceur encore " + PS.days + " j.") : PS.phase === 2 ? "Reprise : 60 % de la charge, sans tentative à fond." : "Reprise : 80 % de la charge.")); }
-    { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : fais une vraie pause et demande l’avis d’un professionnel de santé avant de reprendre.")); }
+    if (P.builtin && deloadWeek()) nc.append(el("div","painnote","Semaine légère : moins de séries et pas de tentative à fond. Les tendons récupèrent."));
+    { const PS = painState(); if (PS.phase) nc.append(el("div","painnote", PS.phase === 1 ? (PS.zone === "poignet" ? "Poignets au repos encore " + PS.days + " j : pas d’appui sur les mains." : PS.zone === "epaule" || PS.zone === "coude" ? "Encore " + PS.days + " j sans un bras, planche ni montées." : "Séance allégée encore " + PS.days + " j.") : PS.phase === 2 ? "Reprise : 60 % de la charge, sans tentative à fond." : "Reprise : 80 % de la charge.")); }
+    { const rep3 = (S.fb || []).filter(x=>x.k === "pain" && Date.now() - x.t < 10 * 864e5).length; if (rep3 >= 3) nc.append(el("div","painnote","Trois douleurs en dix jours : arrête-toi et demande l’avis d’un professionnel de santé avant de reprendre.")); }
     // Maîtrise : on choisit sa séance de postures tenues (poignets, compression, ligne, contrôle, récup)
     if (P.zen) { const zw = el("div","srcs zchips"); ZEN.forEach((z, i) => { const b = el("button","src" + (pp().step === i ? " on" : ""), z.name); b.setAttribute("aria-pressed", pp().step === i); b.onclick = () => { pp().step = i; save(); render(); }; zw.append(b); });
       const z = ZEN[pp().step] || ZEN[0]; nc.append(zw, el("div","zt2", z.when + ", " + zenTxt(z)));
       if (forceDays().has((() => { const x = new Date(); x.setDate(x.getDate() - 1); return dayKey(x); })()) && ["poignets","controle"].includes((ZEN[pp().step] || {}).id)) nc.append(el("p","zt2","Hier : force. Ligne ou Compression ménagent mieux les poignets aujourd’hui."));
     }
 
-    if (!tot){ nc.append(el("h2",null,"Repos aujourd’hui"), el("p",null, P.builtin ? "Aucune figure accessible pour l’instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou profite du repos.")); }
+    if (!tot){ nc.append(el("h2",null,"Repos aujourd’hui"), el("p",null, P.builtin ? "Aucune figure accessible pour l’instant." : "Rien de prévu ce jour-là dans « " + P.name + " ». Choisis un autre programme ci-dessus, ou repose-toi.")); }
     else {
       let secs = 0; const list = el("div","tlist");
       day.blocks.forEach((b,bi)=>{ const r = el("div","trow"), art = el("span","art"), g = el("div","grow"), done = b.sets.filter((_,si)=>vals[bi + "-" + si] != null).length;

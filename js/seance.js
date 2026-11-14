@@ -23,11 +23,11 @@ function builtin(){
   return window._bb || (window._bb = builtinOf(builtinBlocks()));
 }
 const builtinOf = blocks => { const day = {type:"train", blocks};
-  return {id:"equilibre", name:"Ma séance", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Séance construite à partir du parcours et du temps que tu as indiqué : tes prochains jalons accessibles, avec des séries ajustées à tes dernières séances.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]}; };
+  return {id:"equilibre", name:"Ma séance", builtin:true, steps:[{name:"Prochains jalons de la quête", info:"Tes prochains jalons accessibles, dosés selon le temps choisi et tes dernières séances.", days:Object.fromEntries(DAYK.map(k=>[k, day]))}]}; };
 // ---------- Exercices d’accompagnement : ce qui prépare chaque figure, en plus de la figure elle-même ----------
 // sets : [séries, durée en s] (tenue) ou [séries, répétitions] (reps). Repères généraux d’entraînement.
 const DRILLS = {
-  poignets:{name:"Préparation des poignets", kind:"hold", sets:[1,300], how:"5 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, sur le bout des doigts, puis 2 × 10 pompes poignets (on se soulève sur les doigts). Les poignets portent tout ton poids : ne les saute jamais."},
+  poignets:{name:"Préparation des poignets", kind:"hold", sets:[1,300], how:"5 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, sur le bout des doigts, puis 2 × 10 pompes poignets (on se soulève sur les doigts). Les poignets portent tout ton poids : ne la saute jamais."},
   hollow:{name:"Gainage en cuillère", kind:"hold", sets:[3,25], how:"Sur le dos, bas du dos plaqué au sol, bras tendus derrière la tête, jambes tendues décollées. C’est la ligne du corps en équilibre."},
   epaules:{name:"Ouverture des épaules", kind:"hold", sets:[2,40], how:"À genoux, mains sur une chaise ou un banc, laisse descendre la poitrine vers le sol, bras tendus. Les bras doivent pouvoir s’aligner avec le corps."},
   omoplates:{name:"Pompes d’omoplates en équilibre au mur", kind:"reps", sets:[3,8], how:"Poitrine face au mur, bras tendus : laisse le corps descendre de quelques centimètres en relâchant les épaules, puis repousse le sol vers les oreilles."},
@@ -35,14 +35,14 @@ const DRILLS = {
   toepull:{name:"Décollages du mur", kind:"reps", sets:[4,5], how:"En équilibre poitrine face au mur, appuie dans les doigts pour décoller les pieds du mur et tiens une ou deux secondes, puis reviens."},
   kickup:{name:"Montées contrôlées", kind:"reps", sets:[2,8], how:"Sans mur, monte en fente et cherche à t’arrêter pile à la verticale, sans dépasser. Sors en roue si tu pars trop loin."},
   doigts:{name:"Corrections avec les doigts", kind:"reps", sets:[3,5], how:"Au mur ou libre : volontairement, laisse partir le poids vers le dos puis rattrape-le en appuyant fort dans le bout des doigts."},
-  pike:{name:"Compressions jambes tendues", kind:"reps", sets:[3,10], how:"Assis jambes tendues, mains au sol près des genoux : décolle les talons en ramenant les jambes vers toi. Indispensable pour les 7 et les montées."},
+  pike:{name:"Compressions jambes tendues", kind:"reps", sets:[3,10], how:"Assis jambes tendues, mains au sol près des genoux : décolle les talons en ramenant les jambes vers toi. Prépare les 7 et les montées."},
   pancake:{name:"Écart facial penché", kind:"hold", sets:[2,45], how:"Assis jambes écartées, dos plat, penche-toi vers l’avant le plus loin possible sans arrondir le dos."},
   shift:{name:"Transferts de poids au mur", kind:"reps", sets:[3,6], how:"Dos au mur, jambes écartées : glisse le poids sur une main jusqu’à alléger l’autre, puis reviens au centre. Côté gauche, puis côté droit."},
   lean:{name:"Planche inclinée", kind:"hold", sets:[3,20], how:"Position de pompe, bras tendus, épaules loin devant les mains, omoplates écartées. Avance un peu plus à chaque série."},
   pseudo:{name:"Pompes mains aux hanches", kind:"reps", sets:[3,8], how:"Pompes avec les mains à hauteur des hanches, doigts vers l’extérieur : les épaules passent loin devant les mains."},
   frog:{name:"Grenouille", kind:"hold", sets:[3,15], how:"Accroupi, mains au sol, genoux posés sur les coudes : bascule vers l’avant jusqu’à décoller les pieds."},
   oawall:{name:"Tenue un bras dos au mur", kind:"hold", sets:[3,20], sides:1, how:"Dos au mur, jambes écartées : transfère le poids sur une main, retire l’autre et tiens. Épaule poussée vers l’oreille, bassin au-dessus de la main. Côté faible d’abord."},
-  oashrug:{name:"Haussements d’épaule à un bras", kind:"reps", sets:[3,8], sides:1, how:"En appui à un bras au mur, bras verrouillé : laisse l’épaule descendre puis repousse-la vers l’oreille. C’est la force qui porte l’équilibre sur un bras."},
+  oashrug:{name:"Haussements d’épaule à un bras", kind:"reps", sets:[3,8], sides:1, how:"En appui à un bras au mur, bras verrouillé : laisse l’épaule descendre puis repousse-la vers l’oreille. La force de base de l’équilibre sur un bras."},
   tuckflag:{name:"Drapeaux groupés pulsés", kind:"reps", sets:[3,6], how:"En équilibre, genoux groupés : incline-les sur le côté en petits rebonds contrôlés, puis tiens 3 s la position la plus basse. Change de côté."},
   biceps:{name:"Renforcement du biceps bras tendu", kind:"reps", sets:[3,12], rest:45, how:"Curl bras presque tendu à l’élastique, lent : prépare le tendon du biceps et le coude au travail bras tendus."},
   tuck2strad:{name:"Extensions tuck vers straddle", kind:"reps", sets:[4,3], how:"Depuis l’advanced tuck, ouvre les jambes en straddle 2 s puis reviens, sans laisser tomber les hanches."},
@@ -50,7 +50,7 @@ const DRILLS = {
   bandpl:{name:"Planche à l’élastique", kind:"hold", sets:[4,10], rest:150, how:"Élastique en boucle sous les hanches, fixé en hauteur par un ancrage de porte (porte fermée à clé) : tiens la position de l’étape suivante, bras verrouillés, omoplates écartées.", eq:"band"},
   lsitpara:{name:"L-sit sur parallettes", kind:"hold", sets:[3,15], how:"Bras verrouillés, épaules abaissées loin des oreilles, jambes tendues à l’horizontale (groupé si besoin).", eq:"para"},
   dipsW:{name:"Dips lestés", kind:"reps", sets:[3,6], rest:90, alt:{name:"Dips lents (sans gilet)", reps:10, how:"Sans gilet aujourd’hui : descente en 3 secondes, une seconde en bas, remontée bras verrouillés."}, how:"Sur barres ou supports fixes, jamais sur des chaises avec le gilet : descends coudes à 90°, épaules basses, remonte bras verrouillés. Force de base pour la planche.", eq:"kg"},
-  pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], rest:90, alt:{name:"Pompes lentes (sans gilet)", reps:12, how:"Sans gilet aujourd’hui : descente en 3 secondes, poitrine au sol, épaules devant les mains."}, how:"Gilet lesté, corps gainé, poitrine jusqu’au sol. Pour construire la force qui porte la planche.", eq:"kg"},
+  pushW:{name:"Pompes lestées", kind:"reps", sets:[3,8], rest:90, alt:{name:"Pompes lentes (sans gilet)", reps:12, how:"Sans gilet aujourd’hui : descente en 3 secondes, poitrine au sol, épaules devant les mains."}, how:"Gilet lesté, corps gainé, poitrine jusqu’au sol. Force de base pour la planche.", eq:"kg"},
   protrac:{name:"Pompes d’omoplates en planche inclinée", kind:"reps", sets:[3,10], how:"Position de pompe, bras tendus, épaules devant les mains : sans plier les coudes, rapproche puis écarte les omoplates. Le dos s’arrondit à chaque poussée."},
   pikepulse:{name:"Pulsations en pike", kind:"reps", sets:[3,15], how:"Assis jambes serrées tendues, mains près des chevilles, dos rond : décolle les talons et fais de petites pulsations sans reposer."},
   appuiArr:{name:"Appui arrière sur parallettes", kind:"hold", sets:[3,20], rest:45, how:"Mains derrière le bassin, doigts vers l’arrière, bras tendus, bassin levé, épaules basses et ouvertes."},
@@ -230,7 +230,7 @@ function builtinBlocks(){
   const keepUp = []; if (!pain && !tired && !deload && PS.phase !== 2) { const pool = ["in_str60"].concat(["onearm","planche","press"].map(sid => SEC[sid].ms.filter(m => st(m.id).done && m.type === "hold" && !SIDED.has(m.id) && !m.alt).map(m => m.id).pop())).filter(id => id && st(id).done && !next.includes(id));
     const lastK = id => { const n = "pg:" + MS[id].name; for (let q = S.log.length - 1; q >= 0; q--) { const l = S.log[q]; if (l.id === id || l.id === n || l.id === n + ", entretien") return l.t; } return 0; };
     const id = pool.filter(id => Date.now() - lastK(id) > 10 * 864e5).sort((a, b) => lastK(a) - lastK(b))[0];
-    if (id) { const m = MS[id]; keepUp.push({name:m.name + ", entretien", kind:"hold", how:"Figure acquise : deux essais tranquilles pour la garder. " + m.desc, keep:true, sets:Array.from({length:2}, () => ({dur:Math.max(3, Math.round(m.target * 0.7)), rest:60}))}); } }
+    if (id) { const m = MS[id]; keepUp.push({name:m.name + ", entretien", kind:"hold", how:"Figure acquise : deux essais calmes pour l’entretenir. " + m.desc, keep:true, sets:Array.from({length:2}, () => ({dur:Math.max(3, Math.round(m.target * 0.7)), rest:60}))}); } }
   const BAD = armPain ? new Set(["lean","pseudo","dipsW","pushW","bandpl","oawall","oashrug","appuiArr","extEp","protrac","biceps"]) : new Set();
   return fitTime([drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
@@ -311,7 +311,7 @@ async function loadRemote(pass){
 const LEX = [
   ["Planche","Figure où le corps tient à l’horizontale, uniquement sur les mains, bras tendus. Ne pas confondre avec « plank », le gainage."],
   ["Plank","Gainage : position de pompe (bras tendus) ou sur les avant-bras, corps aligné, tenue sans bouger."],
-  ["Lean (planche lean, plank lean)","Position de pompe où l’on avance les épaules loin devant les mains. Plus on avance, plus c’est dur : c’est le premier pas vers la planche."],
+  ["Lean (planche lean, plank lean)","Position de pompe où l’on avance les épaules loin devant les mains. Plus on avance, plus c’est dur : première étape vers la planche."],
   ["Tuck","Groupé : genoux repliés contre la poitrine. C’est la planche la plus facile, parce que le corps est ramassé près des mains."],
   ["Advanced tuck","Groupé dos plat : les hanches montent à hauteur des épaules, les genoux s’éloignent de la poitrine."],
   ["Straddle","Jambes tendues et écartées. Écarter rapproche le poids des mains, donc allège la figure."],
@@ -355,7 +355,7 @@ function renderSess(){
   }
   const head = el("div","block"); head.style.border = "0"; box.append(head);
   const passForm = () => { const w = el("div");
-    w.append(el("div","mut","Tes programmes (planche, étirements) ne sont pas encore sur cet appareil. Saisis ta phrase d’accès : ils sont téléchargés, déverrouillés, puis conservés dans ce téléphone."));
+    w.append(el("div","mut","Tes programmes (planche, étirements) ne sont pas encore sur cet appareil. Saisis ta phrase d’accès : ils seront téléchargés et gardés sur ce téléphone."));
     const f = el("form"), inp = el("input"), msg = el("div","mut"), b = el("button","btn","Charger mes programmes");
     inp.type = "text"; inp.autocapitalize = "none"; inp.autocomplete = "off"; inp.spellcheck = false; inp.setAttribute("aria-label","Phrase d’accès aux programmes"); inp.className = "pass";
     b.type = "submit"; msg.style.marginTop = "10px";
@@ -398,7 +398,7 @@ function renderSess(){
   const info = !day.blocks.length ? (day.type === "rest" && !P.routines ? "Récupération active : mobilité, étirements, marche. Pas de travail de force." : day.type === "rest" ? "Jour de repos dans ce programme." : "Rien de prévu ce jour-là dans ce programme.")
     : day.circuit ? day.name + ". Circuit : " + day.circuit.rounds + " tours, les exercices s’enchaînent, repos " + restTxt(day.circuit) + " entre les tours."
     : day.routine ? day.name + (day.scale < 1 ? ", durées réduites cette semaine" : "") + ". Touche un exercice pour le lancer ; la suite s’enchaîne toute seule." + (day.equip ? " Matériel : " + day.equip : "")
-    : day.type === "gtg" ? "Séries réparties sur la journée, bien espacées, sans aller à l’épuisement."
+    : day.type === "gtg" ? "Séries réparties sur la journée, sans aller à l’épuisement."
     : "Touche une série pour lancer le chrono. Le repos démarre tout seul après chaque série.";
   const ih = el("div","mut",info); ih.style.marginTop = "6px"; dh.append(ih);
   if (day.blocks.length && (day.info || step.info)) { const x = el("div","mut",day.info || step.info); x.style.marginTop = "6px"; dh.append(x); }
@@ -494,7 +494,7 @@ function feedback(kind){
   if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
   sessRes = {}; save(); $("fbDlg").close(); render();
   if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (window.A3 || typeof A3 !== "undefined") { try { A3.celebrate(); } catch(e){} } setTimeout(() => { toast("« " + MS[id].name + " » validée."); quick(id); }, 900); return; }
-  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on adoucit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().again ? "7 jours" : "3 jours") + " sans un bras, planche ni montées. La reprise se fera par paliers." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : montre-le à un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
+  toast(kind === "easy" ? "Noté : la prochaine séance sera un peu plus longue." : kind === "hard" ? "Noté : on réduit la prochaine fois." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().again ? "7 jours" : "3 jours") + " sans un bras, planche ni montées. La reprise se fera par paliers." : "Noté : séances allégées, puis reprise par paliers.") + (painState().again ? " Ça revient : montre-le à un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
 }
 // Séance guidée : un seul toucher, puis l’app enchaîne décompte, série, repos et exercice suivant.
 // la séance du jour est figée dès la première série (guidée ou non) : une figure validée en route ne la recompose pas

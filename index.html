@@ -30,7 +30,7 @@
 <main>
   <section id="v-today" class="view on">
     <div class="appbar" id="updBar" hidden><span class="grow">Une nouvelle version est prête.</span><button id="updGo">Mettre à jour</button></div>
-    <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app sur ton téléphone : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
+    <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
     <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l’app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
     <div class="next" id="nextCard"></div>
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
@@ -91,7 +91,7 @@
     </div>
     <div class="block">
       <h2>Sauvegarde</h2>
-      <div class="mut">Ta progression reste sur cet appareil. Exporte-la pour la conserver ou changer de téléphone.</div>
+      <div class="mut">Ta progression reste sur cet appareil. Exporte-la pour changer de téléphone.</div>
       <textarea id="io" placeholder="Colle ici une sauvegarde pour l'importer" aria-label="Sauvegarde"></textarea>
       <div class="btns"><button class="btn line" id="exp">Exporter</button><button class="btn line" id="imp">Importer</button></div>
       <div class="btns"><button class="btn warn" id="reset">Tout effacer</button></div>
@@ -163,12 +163,12 @@
 <dialog id="fbDlg" tabindex="-1">
   <div class="lab">Séance terminée</div>
   <h2 style="margin:6px 0 4px">Comment tu te sens ?</h2>
-  <p class="mut" style="margin:0 0 14px">Pas de bonne réponse : ton ressenti règle la prochaine séance.</p>
+  <p class="mut" style="margin:0 0 14px">Ton ressenti règle la prochaine séance.</p>
   <input type="hidden" id="fbIds">
   <div class="fbg">
     <button data-k="easy"><b>Léger</b><span>On ajoute un peu</span></button>
     <button data-k="ok"><b>Juste bien</b><span>On garde ce rythme</span></button>
-    <button data-k="hard"><b>Intense</b><span>On adoucit</span></button>
+    <button data-k="hard"><b>Intense</b><span>On réduit</span></button>
     <button data-k="pain" class="pain"><b>Ça tire</b><span>On allège</span></button>
   </div>
   <div id="fbZone" hidden>

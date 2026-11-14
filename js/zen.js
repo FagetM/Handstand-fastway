@@ -50,7 +50,7 @@ const ZEN = [
     {name:"Épaules au mur et chien actif 3 × 30 s", up:15, blocks:[W.chiot, W.chien(30), W.murEp(30), W.omoP(10), W.creux(30)]},
     {name:"Gainage creux 3 × 45 s, appui pike sur caisse", up:10, blocks:[W.chiot, W.creux(45), W.pikeBox(20), W.omoP(12)]},
     {name:"Équilibre dos au mur 3 × 30 s", up:15, blocks:[W.chiot, W.pikeBox(30), W.dosMur(30), W.creux(45)]}]},
-  {id:"controle", name:"Contrôle lent", min:12, when:"Poses tenues et transitions lentes : le corps sous contrôle", tiers:[
+  {id:"controle", name:"Contrôle lent", min:12, when:"Poses tenues et transitions lentes", tiers:[
     {name:"Corbeau 4 × 15 s → 30 s", up:15, blocks:[W.corbeau(15), W.latérale(30), W.chat(10), W.transi(6), W.guerrier]},
     {name:"Corbeau 4 × 30 s, chaturanga 3 × 20 s", up:10, blocks:[W.corbeau(30), W.latérale(45), W.chat(20), W.transi(8)]},
     {name:"Corbeau bras tendus 4 × 10 s, pseudo-planche", up:10, blocks:[W.corbeauT(10), W.pseudo(15), W.chat(20)]},
@@ -87,14 +87,14 @@ function zenRate(k){
   let msg = "Séance enregistrée.";
   if (z.free) msg = "Récup faite.";
   else if (k === "bad") { x.add = Math.max(0, x.add - 1); x.ok = []; msg = "On revient un cran en arrière : la forme d’abord."; }
-  else if (k === "ok") msg = "On garde les mêmes temps : la régularité fait le travail.";
-  else if (moodToday() === "fatigue") msg = "Séance comptée. Aujourd’hui fatigué·e : on ne progresse pas, on entretient.";
+  else if (k === "ok") msg = "On garde les mêmes temps.";
+  else if (moodToday() === "fatigue") msg = "Séance comptée. Fatigué·e aujourd’hui : on entretient, sans allonger.";
   else if (k === "top") {
     if (x.add < cap) { x.add++; msg = "Propre et avec de la marge : les tenues s’allongent la prochaine fois."; }
     else { if (!x.ok.length || now - x.ok[x.ok.length - 1] >= 48 * 3600e3) x.ok.push(now);
       if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s’ouvre."; say("Palier validé.", true); }
       else if (x.ok.length >= 2) { x.fin = true; x.ok = x.ok.slice(-2); msg = "Dernier palier maîtrisé. Garde-le en entretien."; }
-      else msg = "Au plafond du palier, propre : encore une séance comme ça, dans 2 jours ou plus, pour le valider."; } }
+      else msg = "Au plafond du palier, propre : une autre séance comme ça, dans 2 jours ou plus, le valide."; } }
   if (!z.free && (z.id === "poignets" || z.id === "controle")) { const zw = S.zw || (S.zw = []), d = dayKey(Date.now()); if (!zw.includes(d)) zw.push(d); if (zw.length > 60) zw.shift(); }   // jour d’appui sur les mains : compte dans la charge des poignets
   if (!z.free && ((z.id === "poignets" && x.tier >= 2) || (z.id === "controle" && x.tier >= 2) || (z.id === "compression" && x.tier >= 3))) { const zf = S.zf || (S.zf = []), d = dayKey(Date.now()); if (!zf.includes(d)) zf.push(d); if (zf.length > 60) zf.shift(); }
   save(); render(); toast(msg);
@@ -111,11 +111,11 @@ const STORIES = [
   "Mon plus bel équilibre, je l’ai fait un dimanche matin sur la plage, sans chrono et sans objectif.",
   "Un vieux maître de cirque me disait : « Le sol te porte, tu n’as pas à le combattre. » Depuis, je repousse le sol sans crispation.",
   "La première fois que j’ai tenu cinq secondes, je ne l’ai pas su : je souriais trop pour regarder le chrono.",
-  "J’ai passé un hiver entier sans progresser. Au printemps, tout est venu d’un coup. Le corps travaillait en silence.",
-  "Mes poignets m’ont appris la patience. Cinq minutes d’échauffement, c’est le prix d’un équilibre sans douleur.",
-  "Le jour où j’ai arrêté de vouloir réussir, j’ai commencé à sentir. Et c’est en sentant que j’ai réussi.",
-  "Une chute, c’est juste le sol qui te dit bonjour. Roue, sourire, et on remonte.",
-  "Les jours de fatigue, je fais juste de la récup active. Le lendemain, mon équilibre est toujours meilleur. Toujours.",
-  "Avant chaque montée, je prends une respiration. Pas pour me concentrer : pour me rappeler que j’aime ça.",
+  "J’ai passé un hiver entier sans progresser. Au printemps, tout est venu d’un coup.",
+  "Mes poignets m’ont appris la patience. Cinq minutes d’échauffement à chaque séance, sans exception.",
+  "Le jour où j’ai arrêté de vouloir réussir, j’ai commencé à sentir, et j’ai tenu.",
+  "Une chute ? Sortie en roue, et on remonte.",
+  "Les jours de fatigue, je fais juste de la récup active. Le lendemain, mon équilibre est meilleur.",
+  "Avant chaque montée, je prends une respiration : ça me rappelle que j’aime ça.",
 ];
 const storyOfDay = () => STORIES[Math.floor(Date.now() / 864e5) % STORIES.length];

@@ -57,7 +57,7 @@ function cueFor(b){
   if (/^pl_/.test(id)) return "Omoplates écartées. Bras verrouillés.";
   if (/^pr_|^in_hspu/.test(id)) return "Épaules devant. Monte lentement.";
   if (/^fd_plank|^fd_c2w/.test(id)) return "Corps aligné. Serre les fesses.";
-  if (/^(st_|b1_|b2_|in_)/.test(id)) return ["Pousse le sol. Grandis-toi.", "Respire. Laisse le poids descendre.", "Doigts vivants, épaules longues."][Math.floor(Math.random() * 3)];
+  if (/^(st_|b1_|b2_|in_)/.test(id)) return ["Pousse le sol. Grandis-toi.", "Respire. Laisse le poids descendre.", "Doigts actifs, épaules hautes."][Math.floor(Math.random() * 3)];
   return "";
 }
 
