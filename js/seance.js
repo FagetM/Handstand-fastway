@@ -78,19 +78,24 @@ const DRILLS = {
   ecartAP:{name:"Grand écart antéro-postérieur sur blocs", kind:"hold", sets:[1,60], sides:1, how:"Un bloc sous la cuisse avant, bassin de face : descends seulement tant que c’est confortable. Jamais de rebond."},
   pont:{name:"Pont progressif", kind:"hold", sets:[3,20], hands:1, how:"Après les épaules en extension : pont sur les mains, bras tendus, épaules au-dessus des poignets. Débutant : mains sur un banc ou descentes le long du mur. Mal au bas du dos : stop."},
   poignetsExt:{name:"Poignets en extension", kind:"hold", sets:[2,30], hands:1, how:"À genoux, paumes à plat, doigts vers l’avant : avance les épaules au-delà des mains, sans douleur, et respire."},
+  leanPress:{name:"Pressions en lean", kind:"reps", sets:[3,8], rest:60, how:"En planche lean, bras verrouillés : avance les épaules de quelques centimètres puis reviens, lentement, sans plier les coudes."},
+  ironWrist:{name:"Poignets d’acier", kind:"reps", sets:[2,15], hands:1, how:"À genoux, paumes au sol : 15 poussées dans les paumes en avançant les épaules, 15 sur le dos des poignets doucement, puis 15 levées de doigts en alternance."},
+  gainLat:{name:"Gainage latéral", kind:"hold", sets:[2,30], sides:1, how:"Sur un avant-bras ou bras tendu, corps aligné sur le côté, bassin haut. Change de côté."},
+  gainArr:{name:"Gainage inversé", kind:"hold", sets:[2,30], hands:1, how:"Assis, mains derrière toi, monte le bassin jusqu’à aligner épaules, hanches et chevilles, bras tendus."},
   ruades:{name:"Ruades", kind:"reps", sets:[3,6], rest:45, how:"Mains au sol, petits sauts jambes groupées pour amener les hanches au-dessus des épaules, puis retour doux. On apprend à monter sans peur, avant la montée en fente."},
   rowTable:{name:"Tirage sous une table", kind:"reps", sets:[3,10], rest:45, how:"Allongé sous une table solide, mains au bord, corps gainé : tire la poitrine vers la table, serre les omoplates, redescends lentement."},
   pikepu:{name:"Pompes en V inversé", kind:"reps", sets:[3,8], how:"Bassin en l’air, la tête descend entre les mains, puis tu repousses. Pieds surélevés pour plus de difficulté."},
 };
 function drillsFor(m){
   const s = m.sec, id = m.id, out = [];
-  if (s === "base") out.push("hollow","frog");
-  else if (s === "starter") out.push("ruades","hollow","epaules");
-  else if (s === "b1") out.push("c2w","toepull","hollow");
+  if (s === "base") out.push("hollow","gainLat","frog");
+  else if (s === "starter") out.push("ruades","hollow","gainArr","epaules");
+  else if (s === "b1") out.push("c2w","kickup","toepull","hollow");
   else if (s === "b2") out.push("c2w","kickup","doigts","hollow");
   else if (s === "inter") out.push(/7|toes/.test(id) ? "pike" : "doigts", /7/.test(id) ? "pancake" : "kickup", "omoplates");
-  else if (s === "onearm") out.push("oawall","oashrug","doigts");
-  else if (s === "planche") out.push(id === "pl_lean" || id === "pl_ppp" ? "lean" : (S.equip || {}).kg && st("fd_dips").done ? "dipsW" : "lean","protrac","pseudo","biceps");
+  else if (s === "onearm") out.push(...(id === "oa_strad30" || id === "oa_tuckflag" ? ["shift","pancake"] : []), "oawall","oashrug","doigts");
+  else if (s === "planche" && !["pl_lean","pl_ppp"].includes(id)) out.push("leanPress");
+  if (s === "planche") out.push(id === "pl_lean" || id === "pl_ppp" ? "lean" : (S.equip || {}).kg && st("fd_dips").done ? "dipsW" : "lean","protrac","pseudo","biceps");
   if (["pl_frog","pl_1leg","pl_straddle"].includes(id)) out.unshift("tuck2strad");
   if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
   if (s === "press") out.push("pikepulse","stradlift","pancake","omoplates");   // l’appui penché reste réservé aux jours de planche
@@ -131,6 +136,9 @@ function onearmOk(){ const names = new Set(SEC.onearm.ms.map(m => "pg:" + m.name
 // trois jours d’entraînement de suite : le lendemain, on récupère (mobilité, poignets)
 function plancheDays(){ const names = new Set(SEC.planche.ms.map(m => "pg:" + m.name)), since = (() => { const x = new Date(); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - 6); return x.getTime(); })(), today = dayKey(Date.now());
   return new Set(S.log.filter(l => l.t >= since && dayKey(l.t) !== today && (names.has(l.id) || /^pl_/.test(l.id) || /^pg:Planche/i.test(l.id))).map(l => dayKey(l.t))).size; }
+// jours avec appui sur les mains sur les 6 derniers jours
+function handDays(){ const out = new Set(); for (let i = 1; i <= 6; i++) { const x = new Date(); x.setDate(x.getDate() - i); out.add(dayKey(x)); }
+  return new Set(S.log.filter(l => (MS[l.id] || /^pg:/.test(l.id)) && out.has(dayKey(l.t))).map(l => dayKey(l.t))).size; }
 function needRest(){ const names = new Set(Object.values(MS).map(m => "pg:" + m.name)), days = new Set(S.log.filter(l => MS[l.id] || names.has(l.id)).map(l => dayKey(l.t)).concat(S.zw || [])), ago = k => { const x = new Date(); x.setDate(x.getDate() - k); return dayKey(x); };
   return !days.has(ago(0)) && days.has(ago(1)) && days.has(ago(2)) && days.has(ago(3)); }
 function forceDays(){ const byName = {}; Object.values(MS).forEach(m=>{ byName["pg:" + m.name] = m.id; byName["pg:" + m.name + ", vérification"] = m.id; });
@@ -189,7 +197,8 @@ function builtinBlocks(){
   // douleur au poignet : 48 h sans appui sur les mains, on travaille le reste
   if (pain && (PS.zones || [PS.zone]).includes("poignet")) return soupleDay(PS);
   if (needRest() && !(S.bday && S.bday.d === dayKey(Date.now()))) return soupleDay(PS);
-  const open = goalOf().ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !(BAND_STEPS.has(id) && !(S.equip || {}).band) && !(armPain && (/^(oa_|pl_|pr_|ul_)/.test(id) || id === "in_hspu"))), fok = forceOk() && !armPain;   /* épaule ou coude : ni un bras, ni planche, ni montées pendant l’éviction */
+  if (frag("poignet") && handDays() >= 4 && !(S.bday && S.bday.d === dayKey(Date.now()))) return soupleDay(Object.assign({}, PS, {phase:1, zones:["poignet"]}));   // poignets fragiles : 4 jours d’appui sur 7 au plus
+  const open = goalOf().ms.filter(id=>!st(id).done && !msLocked(MS[id]) && !eqSkip(id) && !(armPain && (/^(oa_|pl_|pr_|ul_)/.test(id) || id === "in_hspu"))), fok = forceOk() && !armPain;   /* épaule ou coude : ni un bras, ni planche, ni montées pendant l’éviction */
   // choix du jour : l’équilibre (une habileté) et, les jours de force, une place réservée à la force
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = fok && (S.confirm || []).some(id => MS[id] && FORCE(id)) ? 1 : 0;   // une vérification de force compte dans le plafond de 2
   // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
@@ -223,8 +232,8 @@ function builtinBlocks(){
   const blocks0 = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:(DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc) + (eqLine(id) ? " " + eqLine(id) : PARA_ALT[id] && !(S.equip || {}).para ? " Sans parallettes : " + PARA_ALT[id] : ""), ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const ecc = ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id), plR = /^pl_/.test(id) && m.type === "reps", sets = ecc ? 4 : plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)),   /* excentriques en full planche : 4 × 1, jamais plus */
       tries = ecc || pain || PS.phase === 2 || (PS.phase === 3 && (PS.zone === "coude" || PS.zone === "epaule") && FORCE(id)) || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
-    if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
-      sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 12 : 16, sets * 2) : Math.min(pl.sets, sets)}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
+    if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible : il a un essai de plus." : undefined,
+      sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 13 : (/^oa_(lift|oahs|oahsw|oahs10)$/.test(id) && !PS.phase ? 25 : 17), sets * 2 + 1) : Math.min(pl.sets, sets)}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});   /* nombre impair : le côté faible, qui commence, a un essai de plus */
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:/^ul_/.test(id) ? "Une réussite par séance suffit : il en faut sur 3 séances, à 2 jours d’écart au moins, sur 10 jours au moins." : "Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
@@ -248,7 +257,7 @@ function builtinBlocks(){
   const drs = dr.filter(k => !((deload || PS.phase) && DRILLS[k].eq === "kg")).slice(0, tired ? 1 : deload ? Math.max(1, nDr - 1) : nDr);
   // préparation ciblée, juste après les poignets et jamais coupée : épaules en extension avant la manna, biceps et appui penché avant la planche
   const prepB = (k, n, v) => { const b = drillBlock(k, false); b.sets = b.sets.slice(0, n); if (v) b.sets.forEach(s => { if (s.dur) s.dur = v; }); b.keep = true; b.name += ", préparation"; return b; };
-  const prep = []; if (next.some(id => /^pr_(manna|vsitH|extSup)|^ul_c3|^ul_full/.test(id))) prep.push(prepB("extEp", 2));
+  const prep = frag("poignet") ? [prepB("ironWrist", 2)] : []; if (next.some(id => /^pr_(manna|vsitH|extSup)|^ul_c3|^ul_full/.test(id))) prep.push(prepB("extEp", 2));
   if (next.some(id => /^pl_/.test(id))) prep.push(prepB("lean", 2, 15), prepB("biceps", frag("biceps") || frag("coude") ? 2 : 1));
   // antagonistes, les jours de force : tirage et, en alternance, rotateurs externes ou extenseurs du poignet (à l’élastique)
   const anta = next.some(FORCE) && !pain ? ((S.equip || {}).band ? ["tirage", dn % 2 ? "rotext" : "extpoig"] : ["rowTable"])   /* sans élastique : le tirage se fait sous une table */.map(k => { const b = drillBlock(k, mins <= 30); b.keep = true; return b; }) : [];
@@ -528,6 +537,8 @@ function endSession(){
   const light = deloadWeek() || moodToday() === "fatigue" || painRecent();
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * 1.05 : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
+  { const z0 = P && P.zen ? ZEN[pp().step] : null, dd0 = P && P.builtin && typeof pDay === "function" ? pDay(todayIdx()) : null;   // souplesse douce : on la compte
+    if ((z0 && z0.id === "souple") || (dd0 && dd0.blocks && /souplesse douce/.test((dd0.blocks[0] || {}).name || ""))) { (S.soft || (S.soft = [])).push(Date.now()); if (S.soft.length > 60) S.soft = S.soft.slice(-60); } }
   if (P && P.zen) { save(); render(); const z = ZEN[pp().step]; if (z && z.free) { zenRate("ok"); return; } $("zfDlg").showModal(); say("Séance terminée. Et la forme ?", true); return; }
   { const dd = (typeof pDay === "function" && P) ? pDay(todayIdx()) : null; if (dd && dd.blocks && dd.blocks.some(b => b.test && sessRes[b.ms]) && S.cyc) { S.cyc.tested = dayKey(Date.now()); toast("Test fait : le bilan t’attend à la fin du cycle."); } }   // le test compte une seule fois
   save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);

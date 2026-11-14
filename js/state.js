@@ -20,6 +20,9 @@ if (!S.migrDec) { const NEW = new Set(["oa_tuckflag","oa_shrug","oa_sidehold","o
   Object.keys(S.ms).filter(id => MS[id] && !MS[id].alt && S.ms[id].done).forEach(mark); S.migrDec = true; }
 if (!S.migrPr) { if (S.ms.pr_straddle && S.ms.pr_straddle.done) S.ms.pr_negS = {best:3, done:true}; S.migrPr = true; }
 // nouvelles marches faciles : déjà franchies quand la figure plus dure l’est
+if (!S.migrPl6) { const dn = id => S.ms[id] && S.ms[id].done, mk = ids => ids.forEach(b => { if (!dn(b)) S.ms[b] = Object.assign(S.ms[b] || {best:0}, {done:true}); });
+  if (dn("pl_lean2")) mk(["pl_protr","fd_support"]); if (dn("fd_dips")) mk(["fd_support"]); if (dn("pl_1leg") || dn("pl_straddle")) mk(["pl_frog"]); if (dn("pl_straddle")) mk(["pl_strElev","pl_t2s"]); if (dn("pl_fullNeg") || dn("pl_full")) mk(["pl_fullElev"]);
+  if (dn("pr_pikeLift")) mk(["pr_lift1"]); S.migrPl6 = 1; }
 if (!S.migrPr5) { const dn = id => S.ms[id] && S.ms[id].done, mk = ids => ids.forEach(b => { if (!dn(b)) S.ms[b] = {best:0, done:true}; });
   if (dn("pr_straddle")) mk(["pr_walk","pr_float","pr_wallPress","pr_1leg"]); else { if (dn("pr_elevLow")) mk(["pr_walk","pr_float","pr_wallPress"]); else if (dn("pr_elev")) mk(["pr_walk","pr_float"]); } S.migrPr5 = 1; }
 if (!S.migrFd3) { const dn = id => S.ms[id] && S.ms[id].done; [["fd_push","fd_pushInc"],["fd_dips","fd_dipsB"],["fd_c2w","fd_pike"]].forEach(([a, b]) => { if (dn(a) && !dn(b)) S.ms[b] = {best:0, done:true}; }); S.migrFd3 = 1; }
@@ -92,9 +95,9 @@ function stamp(id){ if (MS[id]) { const x = st(id); if (!x.t0 && !x.done) x.t0 =
 // record d’avant le premier enregistrement (bilan de départ) : il sert de plancher quand on efface l’historique
 function base0(id){ if (MS[id]) { const x = st(id); if (x.b0 == null) x.b0 = x.best || 0; } }
 // règle de validation par figure : nombre de séances, écart minimal entre deux (jours), étendue minimale (jours)
-const valRule = id => (typeof frag === "function" && (frag("biceps") || frag("coude")) && /^pl_(straddle|strNar|half|full|fullNeg)$|^pr_(mannaP|vsitH|manna)$/.test(id)) ? {n:4, gap:2, span:28} /* coude ou biceps fragile : une séance de plus, une semaine de plus */ : /^pl_(straddle|strNar|half|full)$/.test(id) ? {n:3, gap:2, span:21} /* grands leviers sans aide : trois semaines, le temps que les tendons suivent */ : /^ul_/.test(id) || id === "pl_press" || (/^pl_/.test(id) && MS[id] && MS[id].type === "hold" && !/^pl_(lean|ppp)/.test(id)) ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : /^pr_(mannaP|vsitH|manna)$/.test(id) ? {n:3, gap:2, span:21} /* manna : tendons du biceps et épaule avant, comme la planche */ : /^oa_finger/.test(id) ? {n:2, gap:1, span:0} /* paliers de doigts : deux séances, deux jours différents */ : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
+const valRule = id => (typeof frag === "function" && (frag("biceps") || frag("coude")) && /^pl_(straddle|strNar|half|full|fullNeg)$|^pr_(mannaP|vsitH|manna)$/.test(id)) ? {n:4, gap:2, span:28} /* coude ou biceps fragile : une séance de plus, une semaine de plus */ : /^pl_(straddle|strNar|half|full)$/.test(id) ? {n:3, gap:2, span:21} /* grands leviers sans aide : trois semaines, le temps que les tendons suivent */ : /^ul_/.test(id) || id === "pl_press" || (/^pl_/.test(id) && MS[id] && MS[id].type === "hold" && !/^pl_(lean|ppp)/.test(id)) ? {n:3, gap:2, span:10} : id === "oa_oahs" || id === "oa_oahsw" || id === "oa_oahs10" ? {n:4, gap:2, span:21} : /^(b2_str15|in_str40|in_str60)$/.test(id) ? {n:3, gap:1, span:0} /* équilibre droit : trois jours différents, pas un coup de chance */ : /^pr_(mannaP|vsitH|manna)$/.test(id) ? {n:3, gap:2, span:21} /* manna : tendons du biceps et épaule avant, comme la planche */ : /^oa_finger/.test(id) ? {n:2, gap:1, span:0} /* paliers de doigts : deux séances, deux jours différents */ : MS[id] && MS[id].sec === "onearm" ? {n:3, gap:2, span:14} : {n:NEED_DAYS, gap:1, span:0};
 // figures « de chaque côté » : la séance compte quand la cible est tenue des deux côtés (séries alternées gauche / droite)
-const SIDED = new Set(["pr_1leg","oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","oa_shTuck","oa_shStrad","oa_shFlag","oa_switch","pl_1leg"]);
+const SIDED = new Set(["pr_1leg","pr_lift1","oa_oahsw","oa_tuckflag","oa_wall","oa_flaghoriz","oa_flagfloor","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs10","oa_shTuck","oa_shStrad","oa_shFlag","oa_switch","pl_1leg"]);
 const perSide = id => /^pl_/.test(id) ? 3 : 1;   // planche une jambe : 3 séries à la cible de chaque jambe
 const hitNeed = id => SIDED.has(id) ? 2 : /^pl_/.test(id) && MS[id].type === "hold" ? 2 : 1;   // planche : 2 tentatives sur 3 à la cible
 function hitInfo(id){ const h = (S.hit || {})[id] || {}; return {days:(h.days || []).length, today:h.d === dayKey(Date.now()) ? h.n : 0}; }
@@ -134,8 +137,9 @@ const fmt = (m, v) => m.type === "hold" ? num(v) + "\u00a0s" : v + "\u00a0rép."
 const goalTxt = m => m.type === "hold" ? m.target + "\u00a0s" : m.type === "reps" ? "×\u00a0" + m.target : "";
 
 // étapes à l’élastique : sans élastique déclaré, elles ne bloquent pas le parcours
-const BAND_STEPS = new Set(["pl_strBand","pl_strBandL","pl_fullBand"]);
-const reqDone = r => st(r).done || (BAND_STEPS.has(r) && !(S.equip || {}).band);
+const BAND_STEPS = new Set(["pl_strBand","pl_strBandL","pl_fullBand"]), NOBAND_STEPS = new Set(["pl_strElev","pl_t2s","pl_fullElev"]);
+const eqSkip = r => (BAND_STEPS.has(r) && !(S.equip || {}).band) || (NOBAND_STEPS.has(r) && !!(S.equip || {}).band);   // l’autre chemin, selon ton matériel
+const reqDone = r => st(r).done || eqSkip(r);
 const msLocked = m => (m.req||[]).some(r=>!reqDone(r));
 const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };

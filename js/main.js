@@ -23,6 +23,7 @@ $("theme").onchange = e => { S.theme = e.target.value; save(); location.reload()
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n’est pas commencée
 { const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; else if (S.bday && S.bday.d === dayKey(Date.now())) toast("Séance déjà commencée : le changement vaudra dès demain."); save(); render(); };
   $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);
+  $("eqRings").checked = !!E().rings; $("eqRings").onchange = e => { E().rings = e.target.checked; redo(); };
   $("eqBlocks").checked = !!E().blocks; $("eqBench").checked = !!E().bench;
   $("eqBlocks").onchange = e => { E().blocks = e.target.checked; redo(); }; $("eqBench").onchange = e => { E().bench = e.target.checked; redo(); };
   $("eqBand").onchange = e => { E().band = e.target.checked; redo(); }; $("eqPara").onchange = e => { E().para = e.target.checked; redo(); };

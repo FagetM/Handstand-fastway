@@ -22,6 +22,8 @@ const ROM = [
 const ROMI = Object.fromEntries(ROM.map(r => [r.id, r]));
 const romLog = id => { const L = (S.rom || {})[id], r = ROMI[id]; return Array.isArray(L) ? L.filter(e => e && typeof e.t === "number" && Number.isInteger(e.v) && e.v >= 0 && e.v < r.lv.length) : []; };   // une sauvegarde abîmée ne casse pas l’affichage
 const romLv = (id, until) => { const L = romLog(id).filter(e => !until || e.t < until); return L.length ? L[L.length - 1].v : -1; };
+// séances de souplesse douce faites cette semaine (7 jours glissants)
+const softWeek = () => { const t0 = Date.now() - 7 * 864e5; return new Set((S.soft || []).filter(t => t > t0).map(t => dayKey(t))).size; };
 // le repère le plus en retard : jamais mesuré compte comme le premier palier, puis la part du chemin faite
 const romWeak = pool => pool.slice().sort((a, b) => Math.max(0, romLv(a.id)) / (a.lv.length - 1) - Math.max(0, romLv(b.id)) / (b.lv.length - 1));
 // la mesure du cycle : un repère différent à chaque cycle, toujours après l’échauffement, dans le même ordre

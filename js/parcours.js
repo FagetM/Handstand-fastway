@@ -7,15 +7,19 @@ const PLAN_PROG = {pl_lean:["planche-domination",0], pl_tuck:["planche-dominatio
   pr_straddle:["quest-for-the-press",0], pr_pike:["quest-for-the-press",0], pr_stalder:["quest-for-the-press",0], pr_negS:["quest-for-the-press",0], pr_elev:["quest-for-the-press",0], pr_stradL:["quest-for-the-press",0], pr_lsit:["quest-for-the-press",0], pr_lsitHs:["quest-for-the-press",0]};
 // ton matériel : un banc et des briques de yoga changent la consigne de certaines figures et de certains exercices
 const EQ_NOTE = {
-  bench:{fd_pushInc:"Sur ton banc : la bonne hauteur pour commencer.", fd_dipsB:"Sur ton banc.", fd_pike:"Pieds sur ton banc.", pr_elev:"Pieds sur ton banc.", pr_extSup:"Mains sur le bord de ton banc pour commencer.",
+  bench:{pl_strElev:"Pieds sur ton banc.", pl_fullElev:"Pieds sur ton banc.", fd_pushInc:"Sur ton banc : la bonne hauteur pour commencer.", fd_dipsB:"Sur ton banc.", fd_pike:"Pieds sur ton banc.", pr_elev:"Pieds sur ton banc.", pr_extSup:"Mains sur le bord de ton banc pour commencer.",
     epaules:"Mains sur ton banc.", pikepu:"Pieds sur ton banc pour plus de difficulté.", elevpress:"Pieds sur ton banc."},
+  rings:{fd_support:"Aux anneaux : mains tournées vers l’extérieur quand c’est stable.", fd_dips:"Aux anneaux quand les barres deviennent faciles.", pl_protr:"Possible aux anneaux bas, plus instable.", pl_lean:"Aux anneaux bas plus tard : la même ligne, plus instable."},
   blocks:{pr_lsit:"Mains sur deux briques : les talons passent plus facilement.", pr_stradL:"Mains sur deux briques.", pr_vsit:"Mains sur deux briques.", pr_vsitC:"Mains sur deux briques.", pr_halfSt:"Sur deux briques.",
     pr_mannaP:"Mains sur deux briques, dos au mur.", pr_walk:"Mains sur deux briques si le sol est loin.", pr_float:"Mains sur deux briques si le sol est loin.", pr_stalPart:"Sur deux briques debout.", pr_stalder:"Sur deux briques debout.",
     pliage:"Une brique sous les mains si le sol est loin.", ecartF:"Une brique sous le bassin.", ecartAP:"Une brique sous la cuisse avant.", demiEcart:"Une brique sous chaque main.", fente:"Une brique sous chaque main.",
     pancake:"Une brique sous les mains au début.", pont:"Mains sur deux briques calées contre le mur pour commencer.", pikeAct:"Mains sur deux briques : plus de place pour lever les talons."}};
-const eqLine = k => { const E = S.equip || {}; return [E.bench && EQ_NOTE.bench[k], E.blocks && EQ_NOTE.blocks[k]].filter(Boolean).join(" "); };
+const eqLine = k => { const E = S.equip || {}; return [E.bench && EQ_NOTE.bench[k], E.blocks && EQ_NOTE.blocks[k], E.rings && EQ_NOTE.rings[k]].filter(Boolean).join(" "); };
 // étapes prévues sur parallettes : la variante sans matériel
-const PARA_ALT = {pr_elev:"mains sur deux piles de livres stables ou deux blocs de yoga, ou au sol doigts écartés.", pr_vsit:"au sol, mains à plat ou sur les poings, à côté des hanches.", pr_halfSt:"au sol, mains sur les poings ; descends moins bas.", pr_vsitC:"au sol, mains sur les poings ou sur deux blocs de yoga.", pr_extSup:"mains au sol derrière toi, doigts vers l’arrière, ou sur le bord d’un canapé.", pr_mannaP:"sur deux blocs de yoga ou deux piles de livres collées au mur.", pr_tuckUp:"deux chaises solides calées contre un mur, ou deux blocs de yoga hauts.", pr_stalPart:"sur deux blocs de yoga hauts.", pr_stalder:"sur deux blocs de yoga hauts ou deux chaises calées."};
+const PARA_ALT = {pl_tuckP:"sur deux briques de yoga, ou au sol poings fermés.", fd_support:"sur deux chaises solides calées, deux briques, ou l’angle d’un plan de travail.", pr_elev:"mains sur deux piles de livres stables ou deux blocs de yoga, ou au sol doigts écartés.", pr_vsit:"au sol, mains à plat ou sur les poings, à côté des hanches.", pr_halfSt:"au sol, mains sur les poings ; descends moins bas.", pr_vsitC:"au sol, mains sur les poings ou sur deux blocs de yoga.", pr_extSup:"mains au sol derrière toi, doigts vers l’arrière, ou sur le bord d’un canapé.", pr_mannaP:"sur deux blocs de yoga ou deux piles de livres collées au mur.", pr_tuckUp:"deux chaises solides calées contre un mur, ou deux blocs de yoga hauts.", pr_stalPart:"sur deux blocs de yoga hauts.", pr_stalder:"sur deux blocs de yoga hauts ou deux chaises calées."};
+// les repères de souplesse conseillés avant une figure (un conseil : ils ne bloquent rien)
+const ROM_FOR = {pr_negP:[["pike",2]], pr_pike:[["pike",2]], pr_elev:[["pancake",1]], pr_straddle:[["pancake",1]], pr_stradL:[["pancake",1]], pr_stalder:[["pancake",2],["pike",2]],
+  pr_vsitC:[["pike",3]], pr_mannaP:[["pike",3],["ext",2]], pr_vsitH:[["pike",4],["ext",2]], pr_manna:[["pike",4],["ext",3]], oa_strad30:[["pancake",1]], pl_straddle:[["pancake",1]], in_7s:[["pike",2]], in_7d:[["pike",2]], in_mexican:[["pont",2]]};
 const SOUPLE = new Set(["in_7s","in_7d","in_toes7","pr_straddle","pr_pike","pr_stalder","pr_vsitC","pr_mannaP","pr_vsitH","pr_manna","pr_lsitHs","pr_lsitNeg","pl_pike","pl_straddle","oa_flaghoriz","oa_flagfloor","oa_strad30","oa_tuckflag"]);
 const adaptOf = id => Math.max(0.6, Math.min(1.35, ((S.adapt || {})[id]) || 1));
 // Douleur : chaque signalement est daté par zone. Éviction de 3 jours (7 si la même zone revient en 3 semaines),
@@ -32,7 +36,7 @@ function painState(){ const L = painLog(); if (!L.length) return {phase:0, ease:
 const painRecent = () => painState().phase === 1;
 // habiletés d’équilibre (y compris sur un bras) : des essais tenus jusqu’à la chute, pas des séries de force
 const FREE = m => m.type === "hold" && ["b1","b2","inter","onearm"].includes(m.sec) && m.id !== "oa_wall" && !/^oa_(sidehold|finger|strarm)/.test(m.id);   // tenues avec appui : séries par côté, pas des essais libres   // un bras au mur : séries de force par côté
-const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_walk","pr_float","pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit","pr_vsitC","pr_extSup"].includes(id)) || /^ul_/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
+const FORCE = id => (/^(pl_|pr_)/.test(id) && !["pr_lift1","pr_walk","pr_float","pr_lsit","pr_stradL","pr_pikeLift","pr_stradLift","pr_vsit","pr_vsitC","pr_extSup"].includes(id)) || /^ul_/.test(id) || id === "fd_push" || id === "fd_dips" || id === "in_hspu";
 // plateau : 3 semaines sans progrès (au moins 4 séances, meilleur temps +5 % au plus, aucune séance validée)
 function plateau(id){
   const m = MS[id]; if (!m || st(id).done || m.type === "check" || (m.target && st(id).best >= m.target)) return null;   // cible déjà tenue : il reste à valider, pas un plateau
@@ -98,7 +102,10 @@ function planFor(m){
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
   { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (pa && !E.para) out.lines.unshift("Sans parallettes : " + pa); if (eq) out.lines.unshift("Ton matériel : " + eq); }
-  if (SOUPLE.has(m.id)) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
+  if (/^pr_(mannaP|vsitH|manna)$/.test(m.id)) out.lines.push("La manna se compte en années, pas en semaines : chaque étape propre est déjà une victoire.");
+  { const R = (ROM_FOR[m.id] || []).map(([r, k]) => { const x = ROMI[r], cur = romLv(r); return x.name.toLowerCase() + " : « " + x.lv[k].toLowerCase() + " »" + (cur >= k ? ", c’est fait" : cur < 0 ? ", pas encore mesuré" : ", toi : « " + x.lv[cur].toLowerCase() + " »"); });
+    if (R.length) out.lines.push("Souplesse conseillée, " + R.join(" ; ") + "."); }
+  if (SOUPLE.has(m.id) && !ROM_FOR[m.id]) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
     out.lines.push("La souplesse compte ici" + (R.length ? " : " + R.map(r => r.name.toLowerCase()).join(", ") : "") + ". Mesure-la dans Profil, Ma souplesse ; 5 minutes actives après la séance et les jours de récup la font avancer."); }
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
   return out;
@@ -159,9 +166,9 @@ function eta(m){
 }
 // ---------- Dates estimées : un calendrier prudent de tout le chemin, recalculé à chaque séance ----------
 // semaines habituelles par figure, pour quelqu’un de régulier (5 jours par semaine) ; tes propres mesures remplacent ces repères dès qu’elles existent
-const DEFW = {pr_walk:2, pr_float:3, pr_wallPress:3, pr_1leg:4, fd_pushInc:3, fd_dipsB:3, fd_pike:2, b1_free5:4, b2_str15:6, in_holds:4, in_changes:4, in_tuck:3, in_str40:6, in_str60:8, in_7s:4, in_7d:4, in_toes:4, in_toes7:4,
+const DEFW = {fd_plank:2, fd_roue:2, fd_c2w:3, fd_push:4, fd_dips:4, fd_support:3, st_bail30:2, st_split:2, st_bailc2w:2, pl_protr:3, pl_strElev:6, pl_t2s:6, pl_fullElev:8, pr_lift1:2, pr_walk:2, pr_float:3, pr_wallPress:3, pr_1leg:4, fd_pushInc:3, fd_dipsB:3, fd_pike:2, b1_free5:4, b2_str15:6, in_holds:4, in_changes:4, in_tuck:3, in_str40:6, in_str60:8, in_7s:4, in_7d:4, in_toes:4, in_toes7:4,
   oa_strad30:4, oa_tuckflag:4, oa_flaghoriz:5, oa_flagfloor:5, oa_wall:6, oa_shrug:4, oa_shift:6, oa_sidehold:6, oa_finger:3, oa_finger3:3, oa_finger2:3, oa_finger1:4, oa_strarm:6, oa_lift:8, oa_oahs:20, oa_oahsw:12, oa_oahs10:16, oa_shTuck:8, oa_shStrad:8, oa_switch:10,
-  pr_pikeLift:3, pr_stradLift:3, pr_wallNeg:3, pr_negS:4, pr_elev:4, pr_elevLow:4, pr_straddle:8, pr_negP:5, pr_pike:10, pr_lsit:3, pr_stradL:4, pr_vsit:8, pr_halfSt:6, pr_tuckUp:6, pr_stalPart:8, pr_stalder:14, pr_lsitNeg:6, pr_lsitHs:10, pr_vsitC:6, pr_extSup:4, pr_mannaP:12, pr_vsitH:20, pr_manna:40,
+  pr_pikeLift:3, pr_stradLift:3, pr_wallNeg:3, pr_negS:4, pr_elev:4, pr_elevLow:4, pr_straddle:8, pr_negP:5, pr_pike:10, pr_lsit:3, pr_stradL:4, pr_vsit:8, pr_halfSt:6, pr_tuckUp:6, pr_stalPart:8, pr_stalder:14, pr_lsitNeg:6, pr_lsitHs:10, pr_vsitC:6, pr_extSup:4, pr_mannaP:16, pr_vsitH:26, pr_manna:80,
   lo_elbow:3, lo_croc:6, lo_qdr:6, pl_lean:3, pl_ppp:4, pl_lean2:4, pl_tuckP:5, pl_tuck:6, pl_tuckPu:6, pl_tuckO:8, pl_adv:12, pl_1leg:10, pl_strBand:8, pl_strBandL:8, pl_straddle:20, pl_strNar:12, pl_half:16, pl_fullBand:10, pl_fullNeg:10, pl_full:26, pl_strHs:10, pl_hsDown:10, pl_halfPress:20, pl_press:40,
   ul_c1:8, ul_c2:10, ul_c3:8, ul_c12:10, ul_full:12};
 const laneOf = m => /^pl_/.test(m.id) ? "pl" : m.sec === "press" || m.sec === "low" ? "pr" : m.sec === "ultime" ? "ul" : "ba";
@@ -171,7 +178,7 @@ function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t 
 // o.mins : durée de séance supposée, o.days : jours d’entraînement sur 28 supposés
 // ton rythme réel : temps mis sur les figures que tu as validées, comparé aux repères (il en faut au moins trois pour juger)
 function pace(){ let a = 0, d = 0, n = 0; Object.values(MS).forEach(m => { const x = st(m.id); if (x.done && x.dt && x.t0 && DEFW[m.id]) { a += Math.max(1, (x.dt - x.t0) / (7 * 864e5)); d += DEFW[m.id]; n++; } });
-  return {n, k:n >= 3 ? Math.max(0.6, Math.min(1.4, 1 + (a / d - 1) * Math.min(1, n / 8))) : 1}; }   /* peu de figures : on ne s’emballe pas, l’effet grandit avec les preuves */
+  return {n, k:n >= 3 ? Math.max(0.5, Math.min(2, 1 + (a / d - 1) * Math.min(1, n / 8))) : 1}; }   /* peu de figures : on ne s’emballe pas, l’effet grandit avec les preuves */
 // le plan complet ne se recalcule que si quelque chose a été enregistré (ou le jour a changé)
 const planKey = () => JSON.stringify(S.prof || {}) + (window._sv || 0) + "|" + S.log.length + "|" + dayKey(Date.now());
 function plan(o){ if (!o) { const k = planKey(); if (plan.k !== k) { plan.k = k; plan.v = planCalc(); } return plan.v; } return planCalc(o); }

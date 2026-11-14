@@ -55,6 +55,8 @@ const ZEN = [
     {name:"Corbeau 4 × 30 s, chaturanga 3 × 20 s", up:10, blocks:[W.corbeau(30), W.latérale(45), W.chat(20), W.transi(8)]},
     {name:"Corbeau bras tendus 4 × 10 s, pseudo-planche", up:10, blocks:[W.corbeauT(10), W.pseudo(15), W.chat(20)]},
     {name:"Corbeau bras tendus 4 × 20 s", up:10, blocks:[W.corbeauT(20), W.pseudo(20), W.chat(20)]}]},
+  {id:"souple", name:"Souplesse douce", min:20, when:"Deux fois par semaine : tes repères les plus en retard, tenus longtemps", free:true, tiers:[
+    {name:"Tes deux repères en retard", up:0, get blocks(){ return soupleDay(painState()).slice(1).map(b => ({name:b.name, how:b.how, kind:b.kind, sides:b.sets.some(s => s.sides) ? 1 : undefined, sets:b.sets.map(s => s.dur ? {dur:s.dur} : {reps:s.reps})})); }}]},
   {id:"recup", name:"Récup active", min:8, when:"Après la séance ou un jour léger : on récupère en bougeant", free:true, tiers:[
     {name:"Mobilité libre", up:0, blocks:[zh("Étirement des avant-bras", 60, "À genoux, doigts vers toi, recule doucement les épaules. Puis dos des mains."),
       zh("Enfant bras longs", 60, "Fesses vers les talons, bras allongés loin devant : les épaules s’étirent."),
