@@ -100,7 +100,7 @@ const drillBlock = (k, pain) => { const d = DRILLS[k];
   // parallettes : les exercices d’appui se font dessus ; lest : on indique la charge
   const E = S.equip || {}, nv = d.eq === "kg" && (noVest() || deloadWeek()) && d.alt, d2 = nv ? Object.assign({}, d, {name:d.alt.name, how:d.alt.how, sets:[d.sets[0], d.alt.reps]}) : d;
   const how = d2.how + (E.para && ["lean","pseudo","protrac","bandpl"].includes(k) ? " Sur parallettes si tu veux : poignets ménagés." : "")
-    + (d.eq === "kg" && !nv ? " Charge : commence à 5 kg, monte jusqu’à " + E.kg + " kg quand les 3 séries sont propres." : "");
+    + (d.eq === "kg" && !nv ? " Charge : commence à 5 kg" + (E.kg > 5 ? ", monte jusqu’à " + E.kg + " kg quand les 3 séries sont propres." : ".") : "");
   const n = Math.max(1, pain ? d2.sets[0] - 1 : d2.sets[0]);
   return {name:d2.name, kind:d.kind, how, dk:k, sets:Array.from({length:n}, ()=>d.kind === "hold" ? {dur:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined} : {reps:d2.sets[1], rest:d.rest || 30, sides:d.sides ? true : undefined})}; };
 // jours où une figure de force a été travaillée (planche, montées, pompes, dips)
@@ -464,7 +464,7 @@ const SAFE = new Set(["fd_roue","st_bail30","st_bailc2w"]);
 function plStep(){
   const id = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x]) && !plSkip.has(x)), box = $("plBody"); box.textContent = "";
   if (!id || plMiss >= 3) { S.placed = true; save(); render();
-    const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? (plN <= 3 ? "Bilan terminé en " + plN + " question" + (plN > 1 ? "s" : "") + " : tu démarres par « " + SEC[MS[nx].sec].name + " ». " : "") + "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tout est validé."));
+    const nx = GOALS[0].ms.find(x=>!st(x).done && !msLocked(MS[x])); box.append(el("h2",null,"Bilan terminé"), el("p",null, nx ? (plN <= 3 ? "En " + plN + " question" + (plN > 1 ? "s" : "") + " : tu démarres par « " + SEC[MS[nx].sec].name + " ». " : "") + "Ton point de départ : « " + MS[nx].name + " ». La séance du jour est prête." : "Tout est validé."));
     const b = el("button","btn","Voir ma séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); }; box.append(b); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
   box.append(el("div","lab", "Question " + (++plN) + ", " + SEC[m.sec].name), el("h2",null, m.name), art);
