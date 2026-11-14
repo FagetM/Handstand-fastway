@@ -172,7 +172,7 @@ function journey(nextId){
   ["base","starter","b1","b2","inter",jd].forEach(sid=>{ const s = SEC[sid], ids = new Set(s.ms.map(m=>m.id)), dep = {};
     if (sid === jd) { const pv = prev;
       // les figures au sol, à part, avant les disciplines difficiles : le sommet (le combo) reste tout en bas
-      sign("Figures au sol", "low", "Hors parcours, accessibles dès le départ : pour varier.");
+      sign("Figures au sol", "low", "Hors parcours, pour varier : la première est ouverte dès le départ.");
       prev = null; SEC.low.ms.forEach(m=>step(m.id));
       { const x = X[k++ % X.length]; chest("low", x); seg(pos[prev], pos.chest_low, secDone(SEC.low) ? "on" : ""); y += RH - 20; }
       prev = pv; items.push({k:"d", y}); y += 92; prev = null; }
