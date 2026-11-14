@@ -102,7 +102,7 @@ const TREE = [
       desc:"Une seule main au sol, 5 secondes."},
     {id:"oa_oahsw", name:"Un bras, côté faible", en:"OAHS Weak Side – 5s", type:"hold", target:5, req:["oa_oahs"],
       desc:"5 s sur le bras le moins bon. Il reçoit autant d’essais que l’autre et passe en premier."},
-    {id:"oa_oahs10", name:"Équilibre sur un bras, 10 s des deux côtés", en:"One Arm Handstand – 10s Both Sides", type:"hold", target:10, req:["oa_oahsw"],
+    {id:"oa_oahs10", name:"Équilibre sur un bras, des deux côtés", en:"One Arm Handstand – 10s Both Sides", type:"hold", target:10, req:["oa_oahsw"],
       desc:"10 secondes sur chaque bras, côté faible compris. Figure acquise."},
     {id:"oa_shTuck", name:"Un bras groupé", en:"One Arm Tuck – 5s Per Side", sub:"5 s de chaque côté", type:"hold", target:5, req:["oa_oahs10"],
       desc:"Sur un bras, les genoux reviennent vers la poitrine. Les jambes ne font plus contrepoids : le bassin se recale au-dessus de la main."},

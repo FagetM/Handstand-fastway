@@ -32,12 +32,12 @@ function migrQuote(S){ if (S.migrQ) return; const q = x => String(x).replace(/(?
   S.migrQ = true; }
 // figures renommées : les noms enregistrés (historique, records, séance du jour) suivent
 const RENAMED = {"Tenues de formes, niveau 1":"Tenues de forme, niveau 1", "Changements de formes, niveau 1":"Changements de forme, niveau 1", "Straddle planche serrée":"Straddle planche, écart réduit", "Queda de rins":"Queda de rins (appui sur le coude)",
-  "Tuck planche ouvert":"Tuck planche ouverte", "De l’équerre à la planche, et retour en équilibre":"De l’équerre à la full planche et retour en équilibre", "Équerre, équilibre, un bras de chaque côté":"Équerre, équilibre, puis un bras de chaque côté", "Drapeaux jusqu’au sol":"Drapeaux jusqu’au sol"};
-function migrNames(S){ if (S.migrN2) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
+  "Tuck planche ouvert":"Tuck planche ouverte", "De l’équerre à la planche, et retour en équilibre":"De l’équerre à la full planche et retour en équilibre", "Équerre, équilibre, un bras de chaque côté":"Équerre, équilibre, puis un bras de chaque côté", "Drapeaux jusqu’au sol":"Drapeaux jusqu’au sol", "Équilibre sur un bras, 10 s des deux côtés":"Équilibre sur un bras, des deux côtés"};
+function migrNames(S){ if (S.migrN3) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
   if (S.pg && S.pg.best) S.pg.best = Object.fromEntries(Object.entries(S.pg.best).map(([k, v]) => [q(k), v]));
   if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); });
-  S.migrN2 = true; }
+  S.migrN3 = true; }
 // les noms composés perdent leur point médian (« Planche inclinée, préparation ») : les noms enregistrés suivent
 function migrDot(S){ if (S.migrDot) return; const q = x => String(x).split(" · ").join(", ");
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
