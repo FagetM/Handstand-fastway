@@ -685,6 +685,6 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 
 .chest.open .cl{color:var(--goldtxt)}
 .sign .mut{-webkit-line-clamp:2}
-.jn.alt .n{font-size:12px;-webkit-line-clamp:2}
+.jn.alt .n{font-size:12px;-webkit-line-clamp:3}
 .fx.wait .sp{opacity:.3}
 #quest .golink{display:block;margin-top:12px}#quest .golink::after{content:" ›"}
