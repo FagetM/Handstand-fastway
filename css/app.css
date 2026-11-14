@@ -609,3 +609,18 @@ dialog .x:focus:not(:focus-visible),.fbg button:focus:not(:focus-visible),dialog
 .fx{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px;border-radius:14px;background:var(--raise);box-shadow:inset 0 0 0 1.5px var(--line)}
 .fx b{font-size:12.5px;text-align:center;line-height:1.25}.fx.ok{box-shadow:inset 0 0 0 1.5px var(--acc)}.fx.ok b{color:var(--acc)}
 .fx.ko{box-shadow:inset 0 0 0 1.5px var(--acc2)}.fx.ko b{color:var(--acc2)}
+
+/* vestiaire visuel */
+.fitprev{position:sticky;top:-20px;z-index:3;background:var(--bg);margin:0 -20px;padding:0 20px 6px;border-bottom:1px solid var(--line)}
+#fitPrev{height:210px}#fitLab{text-align:center;font-size:12.5px;min-height:1.3em;color:var(--acc2)}
+.wgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-top:8px}
+.wt{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 4px 7px;border-radius:14px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line);color:var(--txt)}
+.wt svg{flex:none}.wt .wn{font-size:11.5px;line-height:1.2;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wt.on{box-shadow:inset 0 0 0 2.5px var(--acc)}.wt.on .wn{color:var(--acc);font-weight:700}
+.wt.lk>svg:first-child{opacity:.32;filter:grayscale(.6)}.wt.lk .wn{color:var(--mut)}
+.wt .wl{font-size:10.5px;color:var(--mut)}.wt .wlk{position:absolute;top:6px;right:6px;color:var(--mut)}
+
+.hd.hdr{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.hedit{margin:0;padding:4px 0;font-size:13px;font-weight:600;color:var(--acc)}
+.hrow.ed{align-items:center;padding-bottom:0}.hdel{flex:none;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;color:var(--acc2)}
+.hvs{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 10px}.hvb{min-height:36px;padding:6px 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--line);font-size:13.5px;font-variant-numeric:tabular-nums}
+.hdday{width:100%;margin-top:8px;color:var(--acc2)}

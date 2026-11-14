@@ -31,24 +31,63 @@ Object.entries(CHESTS).forEach(([sid, [slot, id, name]])=>{ const w = WARD.find(
 const wardOk = (need, Z) => !need || (need === "quest" ? Z.badges.some(b=>b.ok && b.id.startsWith("goal_")) : typeof need === "string" ? need.startsWith("m:") ? st(need.slice(2)).done : (need.startsWith("c:") ? (chestOpen(SEC[need.slice(2)]) || (S.chests || []).includes(need.slice(2))) : (Z.badges.find(b=>b.id === need.slice(2)) || {}).ok) : Z.lvl >= need);
 const FIT0 = {skin:"s2", hair:"short", hairc:"brown", top:"tee_w", bottom:"short_k", feet:"bare", wrists:"none", head:"none", face:"none", extra:"none"};
 const fit = () => Object.assign({}, FIT0, S.fit || {});
-function renderFit(){
+// ---------- Vestiaire visuel : chaque élément est dessiné, aux couleurs du personnage ; les verrouillés se voient aussi ----------
+const WCOL = {w:"#f2f0ea", k:"#2a2a28", g:"#8a8880", o:"#ff5b2e", b:"#3d5f94", v:"#4f7a5b", y:"#dba622", r:"#c0392b", p:"#6a4c93", n:"#22324f", x:"#e58aa8"};
+const WSKIN = {s1:"#f0c8a4", s2:"#d9a074", s3:"#a86e45", s4:"#6b452b"}, WHAIR = {brown:"#3a2a20", black:"#141312", blond:"#c9a45c", red:"#9a4a22", grey:"#9a9892"};
+function wIcon(slot, id, F){ const [k, c] = String(id).split("_"), C = WCOL[c] || "#9a9892", sk = WSKIN[F.skin] || WSKIN.s2, hc = WHAIR[F.hairc] || WHAIR.brown, L = "stroke-linecap='round' stroke-linejoin='round'";
+  const head = "<circle cx='24' cy='26' r='11' fill='" + sk + "'/>", empty = "<circle cx='24' cy='24' r='13' fill='none' stroke='currentColor' stroke-width='2' stroke-dasharray='3 4' opacity='.5'/>";
+  let g = "";
+  if (slot === "skin") g = "<circle cx='24' cy='24' r='14' fill='" + (WSKIN[id] || sk) + "'/>";
+  else if (slot === "hairc") g = head.replace(sk, sk) + "<path d='M13 24a11 11 0 0 1 22 0c-3-4-8-6-11-6s-8 2-11 6z' fill='" + (WHAIR[id] || hc) + "'/>";
+  else if (slot === "hair") g = head + (k === "none" ? "" : "<path d='M13 24a11 11 0 0 1 22 0c-3-4-8-6-11-6s-8 2-11 6z' fill='" + hc + "'/>" + (k === "bun" ? "<circle cx='24' cy='11' r='5' fill='" + hc + "'/>" : k === "tail" ? "<path d='M34 20c6 2 7 10 4 15' stroke='" + hc + "' stroke-width='4' fill='none' " + L + "/>" : ""));
+  else if (slot === "top") g = k === "none" ? "<path d='M14 14h20l2 22H12z' fill='" + sk + "'/>" : k === "tank" ? "<path d='M18 9h3c1 4 5 4 6 0h3l2 6v25H16V15z' fill='" + C + "'/>" : k === "ls" ? "<path d='M17 9h14l9 7-3 4v18l-3 1V20 39H14V20v19l-3-1V20l-3-4z' fill='" + C + "'/>" : "<path d='M17 9h14l9 7-4 5-4-3v21H16V18l-4 3-4-5z' fill='" + C + "'/>";
+  else if (slot === "bottom") g = k === "pants" ? "<path d='M14 9h20l2 31h-8l-4-20-4 20h-8z' fill='" + C + "'/>" : "<path d='M13 13h22l2 18h-10l-3-9-3 9H11z' fill='" + C + "'/>";
+  else if (slot === "feet") g = k === "bare" ? "<path d='M18 10h8v18c4 1 10 3 11 6 1 2-1 4-4 4H17c-2 0-3-1-3-3z' fill='" + sk + "'/>" : k === "socks" ? "<path d='M18 10h9v17c4 1 9 3 10 6 1 2-1 5-4 5H17c-2 0-3-1-3-3z' fill='" + C + "'/>" : k === "clown" ? "<path d='M18 18h8v8c8 0 16 3 17 8s-3 6-8 6H12c-4 0-6-2-5-5s4-3 6-3z' fill='" + C + "'/><circle cx='36' cy='33' r='3' fill='#fff' opacity='.6'/>" : k === "flip" ? "<path d='M18 10h9v14l12 12c1 2-1 4-3 4H14l4-16z' fill='" + C + "'/>" : "<path d='M17 16h9v8c6 1 13 3 14 7 1 3-1 6-5 6H15c-2 0-3-1-3-3l2-10z' fill='" + C + "'/><path d='M12 37h28' stroke='#fff' stroke-width='3' opacity='.55'/>";
+  else if (slot === "wrists") g = k === "none" ? empty : k === "box" ? "<path d='M12 18c0-6 5-9 12-9s12 4 12 11-4 12-11 12h-4l-1 7h-6l-1-8c-1-4-1-9-1-13z' fill='" + C + "'/><path d='M14 36h12' stroke='#fff' stroke-width='2' opacity='.6'/>" : "<path d='M17 8v18c-3-1-6 0-6 3l7 11h13l4-8V18c0-2-3-2-3 0v-4c0-2-3-2-3 0v-3c0-2-3-2-3 0V8c0-2-3-2-3 0' fill='" + sk + "'/>" + (k === "chalk" ? "<path d='M15 22l18 10M14 30l14-12M22 16l10 10' stroke='#fff' stroke-width='3' opacity='.75' " + L + "/>" : "<rect x='14' y='34' width='20' height='8' rx='2' fill='" + C + "'/>");
+  else if (slot === "head") { const hat = {band:"<rect x='12' y='19' width='24' height='5' rx='2' fill='" + C + "'/>", beanie:"<path d='M12 24a12 12 0 0 1 24 0z' fill='" + C + "'/><rect x='11' y='22' width='26' height='5' rx='2' fill='" + C + "'/>", cap:"<path d='M13 23a11 10 0 0 1 22 0z' fill='" + C + "'/><path d='M24 23h16' stroke='" + C + "' stroke-width='4' " + L + "/>",
+      crown:"<path d='M12 22l3-11 5 6 4-8 4 8 5-6 3 11z' fill='#c9a227'/>", prop:"<path d='M13 23a11 10 0 0 1 22 0z' fill='" + C + "'/><path d='M24 13V7M15 7h18' stroke='#dba622' stroke-width='3' " + L + "/>", party:"<path d='M24 2l9 21H15z' fill='" + C + "'/><circle cx='24' cy='3' r='3' fill='#fff'/>",
+      cat:"<path d='M14 20l2-11 6 7zM34 20l-2-11-6 7z' fill='" + C + "'/>", chef:"<rect x='16' y='14' width='16' height='9' fill='#f4f2ec'/><circle cx='18' cy='10' r='5' fill='#f4f2ec'/><circle cx='24' cy='8' r='6' fill='#f4f2ec'/><circle cx='30' cy='10' r='5' fill='#f4f2ec'/>",
+      viking:"<path d='M13 23a11 10 0 0 1 22 0z' fill='" + C + "'/><path d='M13 19c-5-2-7-8-6-12 3 3 5 6 8 7M35 19c5-2 7-8 6-12-3 3-5 6-8 7' fill='#f2f0ea'/>", horn:"<path d='M21 16l3-14 3 14z' fill='#c9a227'/>", halo:"<ellipse cx='24' cy='9' rx='10' ry='3' fill='none' stroke='#c9a227' stroke-width='2.5'/>"}[k];
+    g = k === "none" ? empty : head + (hat || ""); }
+  else if (slot === "face") { const f = {stache:"<path d='M17 31c3-3 5-2 7 0 2-2 4-3 7 0-3 2-5 2-7 0-2 2-4 2-7 0z' fill='" + hc + "'/>", nose:"<circle cx='24' cy='28' r='3.5' fill='#d2362b'/>", shades:"<circle cx='19.5' cy='25' r='4' fill='#1b1b19'/><circle cx='28.5' cy='25' r='4' fill='#1b1b19'/><path d='M23 25h2' stroke='#1b1b19' stroke-width='2'/>",
+      mono:"<circle cx='19' cy='25' r='1.6' fill='#1b1b19'/><circle cx='29' cy='25' r='4' fill='none' stroke='#c9a227' stroke-width='2'/><path d='M33 26l2 10' stroke='#c9a227' stroke-width='1'/>", beard:"<path d='M14 28c2 10 7 13 10 13s8-3 10-13c-3 3-6 4-10 4s-7-1-10-4z' fill='#f2f0ea'/>"}[k];
+    g = k === "none" ? empty : head + "<circle cx='20' cy='25' r='1.4' fill='#1b1b19'/><circle cx='28' cy='25' r='1.4' fill='#1b1b19'/>" + (f || ""); }
+  else if (slot === "extra") g = ({none:empty, belt:"<rect x='8' y='20' width='32' height='8' rx='2' fill='" + C + "'/><rect x='21' y='19' width='6' height='10' fill='none' stroke='#c9a227' stroke-width='2'/>",
+      medal:"<path d='M17 6l7 14 7-14' fill='none' stroke='#ff5b2e' stroke-width='4'/><circle cx='24' cy='30' r='9' fill='#c9a227'/>", medal2:"<path d='M13 6l5 14 5-14M25 6l5 14 5-14' fill='none' stroke='#ff5b2e' stroke-width='3'/><circle cx='18' cy='30' r='7' fill='#c9a227'/><circle cx='31' cy='30' r='7' fill='#c9a227'/>",
+      bow:"<path d='M24 24L10 15v18zM24 24l14-9v18z' fill='" + C + "'/><circle cx='24' cy='24' r='4' fill='" + C + "'/>", duck:"<ellipse cx='24' cy='30' rx='17' ry='8' fill='none' stroke='#f2c230' stroke-width='6'/><circle cx='34' cy='17' r='6' fill='#f2c230'/><path d='M39 17l5 1-5 2z' fill='#d2362b'/>",
+      tutu:"<path d='M18 14h12l12 18H6z' fill='#e58aa8'/><path d='M6 32l4-4 4 4 4-4 4 4 4-4 4 4 4-4 4 4' fill='none' stroke='#fff' stroke-width='1.5' opacity='.6'/>", cape:"<path d='M16 8h16l6 32H10z' fill='" + C + "'/><path d='M16 8h16' stroke='#1b1b19' stroke-width='3'/>",
+      wings:"<path d='M23 24C14 6 4 10 6 18s9 10 17 6zM25 24c9-18 19-14 17-6s-9 10-17 6z' fill='#f2f0ea' stroke='#bbb' stroke-width='1'/>"})[k] || "";
+  return "<svg viewBox='0 0 48 48' width='44' height='44' aria-hidden='true'>" + g + "</svg>"; }
+// ce qui débloque un élément, en clair
+function wardNeed(need, Z){ if (!need) return ""; if (need === "quest") return "Termine une quête"; if (typeof need === "number") return "Niveau " + need;
+  if (need.startsWith("m:")) return "Valide « " + MS[need.slice(2)].name + " »"; if (need.startsWith("c:")) return "Coffre « " + SEC[need.slice(2)].name + " »";
+  const bd = Z.badges.find(b => b.id === need.slice(2)); return bd ? "Badge « " + bd.name + " »" : ""; }
+const wNeedShort = (need, Z) => typeof need === "number" ? "niv. " + need : need === "quest" ? "quête" : need.startsWith("m:") ? "figure" : need.startsWith("c:") ? "coffre" : "badge";
+// aperçu en grand : le personnage du vestiaire, qui porte ce que tu touches (même un élément verrouillé, pour l'essayer)
+let fitA = null;
+function fitPreview(F, label){ const host = $("fitPrev"); if (!host || !sprMod) { if (host) host.hidden = true; return; } host.hidden = false;
+  try { if (!fitA) fitA = sprMod.mount(host); fitA.set(Object.assign({}, a3want || {pose:"stand", level:1}, {fit:F})); } catch(e){ host.hidden = true; }
+  $("fitLab").textContent = label || ""; }
+function renderFit(tryF){
   const box = $("fitBody"), F = fit(), Z = lastZ || stats(); box.textContent = "";
   const all = WARD.flatMap(w=>w.items), okN = all.filter(([id,name,need])=>wardOk(need, Z)).length;
-  const cnt0 = el("div","mut", okN + " éléments débloqués sur " + all.length); cnt0.style.marginTop = "10px"; box.append(cnt0);
+  fitPreview(tryF ? tryF.f : F, tryF ? tryF.lab : "");
+  const cnt0 = el("div","mut", okN + " éléments débloqués sur " + all.length + ". Touche un élément verrouillé pour l'essayer."); cnt0.style.marginTop = "10px"; box.append(cnt0);
   { const s = el("div","slot"), row = el("div","chips"), cur = F.pose || "auto"; s.append(el("div","lab","Posture"));
     [["auto","Automatique (dernière figure)"]].concat(unlockedPoses()).forEach(([id, name])=>{
       const b = el("button","chip" + (cur === id ? " on" : ""), name); b.setAttribute("aria-pressed", cur === id);
       b.onclick = () => { S.fit = Object.assign(fit(), {pose:id}); save(); render(); renderFit(); }; row.append(b); });
-    s.append(row, el("div","mut","Chaque figure validée débloque sa posture.")); s.lastChild.style.marginTop = "8px"; box.append(s); }
-  WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const row = el("div","chips");
-    w.items.forEach(([id, name, need])=>{
-      const bd = typeof need === "string" && need.startsWith("b:") ? Z.badges.find(b=>b.id === need.slice(2)) : null, ch = typeof need === "string" && need.startsWith("c:") ? SEC[need.slice(2)] : null;
-      const ok = wardOk(need, Z);
-      const b = el("button","chip" + (F[w.slot] === id ? " on" : ""), name); b.disabled = !ok; b.setAttribute("aria-pressed", F[w.slot] === id);
-      if (!ok) b.append(el("small",null, need === "quest" ? "une quête terminée" : ch ? "coffre « " + ch.name + " »" : bd ? "badge « " + bd.name + " »" : typeof need === "string" && need.startsWith("m:") ? "figure « " + MS[need.slice(2)].name + " »" : "niveau " + need));
-      b.onclick = () => { S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); renderFit(); };
-      row.append(b); });
-    s.append(row); box.append(s); });
+    s.append(row); box.append(s); }
+  WARD.forEach(w=>{ const s = el("div","slot"); s.append(el("div","lab",w.name)); const grid = el("div","wgrid");
+    // débloqués d'abord, puis les verrouillés : on voit ce qui reste à gagner
+    w.items.map(it => [it, wardOk(it[2], Z)]).sort((a, b) => (b[1] ? 1 : 0) - (a[1] ? 1 : 0)).forEach(([[id, name, need], ok]) => {
+      const on = F[w.slot] === id, b = el("button","wt" + (on ? " on" : "") + (ok ? "" : " lk")); b.innerHTML = wIcon(w.slot, id, F); b.append(el("span","wn", name));
+      if (!ok) { b.append(el("span","wl", wNeedShort(need, Z))); b.insertAdjacentHTML("beforeend", "<svg class='wlk' viewBox='0 0 24 24' width='14' height='14' fill='none' stroke='currentColor' stroke-width='2.2' stroke-linecap='round'><rect x='5' y='11' width='14' height='10' rx='2'/><path d='M8 11V8a4 4 0 0 1 8 0v3'/></svg>"); }
+      b.setAttribute("aria-label", name + (on ? ", porté" : ok ? "" : ", verrouillé : " + wardNeed(need, Z))); b.setAttribute("aria-pressed", on);
+      b.onclick = () => { if (!ok) { renderFit({f:Object.assign(fit(), {[w.slot]:id}), lab:"Aperçu : " + name + " · " + wardNeed(need, Z)}); return; }
+        S.fit = Object.assign(fit(), {[w.slot]:id}); save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); renderFit(); };
+      grid.append(b); });
+    s.append(grid); box.append(s); });
 }
 $("fitOpen").onclick = () => { renderFit(); window.scrollTo(0, 0); $("fitDlg").showModal(); };
 document.querySelectorAll("#fbDlg [data-k]").forEach(b=>b.onclick = () => { if (b.dataset.k === "pain") { $("fbZone").hidden = false; return; } feedback(b.dataset.k); });
@@ -313,7 +352,34 @@ let histN = 30;
 function histName(id){ if (MS[id]) return MS[id].name; return String(id).replace(/^pg:/, ""); }
 function histVal(l){ const m = MS[l.id], k = m ? m.type : l.k; if (l.v === true || k === "check") return l.v === 0 ? "pas encore" : "réussi"; if (typeof l.v !== "number") return "";
   return k === "hold" ? num(l.v) + " s" : l.v + " rép."; }
-function openHist(focus){ const box = $("histBody"); box.textContent = "";
+// ---------- Modifier l'historique : effacer une journée, un exercice ou une série, corriger une valeur ----------
+// tout ce qui en découle suit : records, compteurs, séances validées, validation d'une figure
+const histFig = id => MS[id] ? id : (Object.values(MS).find(m => "pg:" + m.name === id) || {}).id || null;
+function histApply(drop, change){   // drop : entrées à effacer ; change : [entrée, nouvelle valeur]
+  pushUndo("Modification de l'historique"); const days = new Set(), figs = new Set(), names = new Set(), c = cnt(), top = {};
+  // le record d'une figure venait-il d'une entrée touchée ? (sinon il vient d'ailleurs, du bilan par exemple, et on n'y touche pas)
+  drop.concat(change.map(x => x[0])).forEach(l => { const f = histFig(l.id); if (f && typeof l.v === "number" && l.v >= st(f).best - 1e-9) top[f] = true; });
+  drop.forEach(l => { days.add(dayKey(l.t)); const f = histFig(l.id); if (f) figs.add(f); if (String(l.id).startsWith("pg:")) names.add(l.id.slice(3));
+    const m = MS[l.id], end = l.k === "check" && String(l.id).startsWith("pg:") && !histFig(l.id);
+    if (end) c.sess = Math.max(0, c.sess - 1); else if (String(l.id).startsWith("pg:")) c.sets = Math.max(0, c.sets - 1);
+    if (typeof l.v === "number" && ((m && m.type === "hold") || l.k === "hold") && f) c.hold = Math.max(0, c.hold - l.v); });
+  change.forEach(([l, v]) => { days.add(dayKey(l.t)); const f = histFig(l.id); if (f) figs.add(f); if (String(l.id).startsWith("pg:")) names.add(l.id.slice(3)); l.v = v; });
+  S.log = S.log.filter(l => !drop.includes(l));
+  // séries enregistrées dans la semaine : une journée effacée n'apparaît plus comme faite
+  drop.forEach(l => { const d = new Date(l.t), di = (d.getDay() + 6) % 7, ws = new Date(d); ws.setDate(d.getDate() - di); const pre = dayKey(ws) + "|", suf = "|" + DAYK[di];
+    if (!S.log.some(x => dayKey(x.t) === dayKey(l.t))) Object.keys(pg().wk).forEach(k => { if (k.startsWith(pre) && k.endsWith(suf)) delete pg().wk[k]; }); });
+  names.forEach(n => { const v = S.log.filter(l => l.id === "pg:" + n && typeof l.v === "number").map(l => l.v); if (v.length) pg().best[n] = Math.max(...v); else delete pg().best[n]; });
+  let lost = [];
+  figs.forEach(id => { const m = MS[id], x = st(id), vals = S.log.filter(l => (l.id === id || l.id === "pg:" + m.name) && typeof l.v === "number").map(l => l.v), mx = vals.length ? Math.max(...vals) : 0;
+    x.best = top[id] ? mx : Math.max(x.best, mx);   // un record qui venait d'une entrée effacée ou corrigée suit la correction
+    const h = (S.hit || {})[id]; if (h && h.days) days.forEach(d => { const okDay = S.log.some(l => dayKey(l.t) === d && (l.id === id || l.id === "pg:" + m.name) && (l.v === true || (typeof l.v === "number" && m.target && l.v >= m.target)));
+      if (!okDay) { h.days = h.days.filter(x => x !== d); if (h.d === d) h.n = 0; } });
+    if ((S.chk || {})[id] && days.has(S.chk[id].d)) delete S.chk[id];
+    if (x.done && x.dt && days.has(dayKey(x.dt)) && !(h && h.days && h.days.length >= valRule(id).n)) { x.done = false; delete x.dt; lost.push(m.name); } });
+  lastZ = null; save(); render(); openHist(histEdit); if (lost.length) toast("Plus validée : " + lost.join(", ") + ".");
+}
+let histEdit = null;
+function openHist(focus){ const box = $("histBody"); box.textContent = ""; if (focus) histEdit = histEdit === focus ? focus : histEdit;
   const days = new Map(); S.log.forEach(l => { const k = dayKey(l.t); if (!days.has(k)) days.set(k, []); days.get(k).push(l); });
   const keys = [...days.keys()].reverse();
   if (!keys.length) { box.append(el("p","mut","Rien encore : tes séances apparaîtront ici, jour par jour.")); return; }
@@ -322,9 +388,23 @@ function openHist(focus){ const box = $("histBody"); box.textContent = "";
     const work = L.filter(l => !end.includes(l)), groups = [];
     work.forEach(l => { const g = groups[groups.length - 1]; if (g && g.id === l.id) g.ls.push(l); else groups.push({id:l.id, ls:[l]}); });
     const mins = Math.round((L[L.length - 1].t - L[0].t) / 60000);
-    wrap.append(el("div","hd", DAYN[(d.getDay() + 6) % 7] + " " + d.getDate() + " " + MOIS[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : "")),
+    wrap.append(el("div","hd hdr", DAYN[(d.getDay() + 6) % 7] + " " + d.getDate() + " " + MOIS[d.getMonth()] + (d.getFullYear() !== new Date().getFullYear() ? " " + d.getFullYear() : "")),
       el("div","mut hs", groups.length + (groups.length > 1 ? " exercices" : " exercice") + " · " + work.length + (work.length > 1 ? " séries" : " série") + (mins >= 5 ? " · " + mins + " min" : "") + (end.length ? " · séance terminée" : "")));
-    groups.forEach(g => { const r = el("div","hrow"), pr = g.ls.some(l => l.pr); r.append(el("span","hn", histName(g.id)), el("span","hv", g.ls.map(histVal).filter(Boolean).join(" · ") + (pr ? " · record" : ""))); if (pr) r.classList.add("pr"); wrap.append(r); });
+    const ed = histEdit === k, eb = el("button","lnk hedit", ed ? "Terminé" : "Modifier"); eb.onclick = () => { histEdit = ed ? null : k; openHist(); }; wrap.firstChild.append(eb);
+    if (ed) wrap.append(el("div","mut hs","Touche une série pour la corriger ou l'effacer, la corbeille efface tout l'exercice."));
+    groups.forEach(g => { const r = el("div","hrow"), pr = g.ls.some(l => l.pr);
+      if (!ed) { r.append(el("span","hn", histName(g.id)), el("span","hv", g.ls.map(histVal).filter(Boolean).join(" · ") + (pr ? " · record" : ""))); if (pr) r.classList.add("pr"); wrap.append(r); return; }
+      // mode modification : chaque série est un bouton (corriger ou effacer), et l'exercice entier s'efface
+      r.classList.add("ed"); const vs = el("div","hvs");
+      g.ls.forEach(l => { const b = el("button","hvb", histVal(l) || "—"); b.onclick = () => { const num0 = typeof l.v === "number";
+          const a = prompt(num0 ? "Nouvelle valeur pour « " + histName(g.id) + " » (laisse vide pour effacer cette série) :" : "Effacer cette entrée ? (OK pour effacer)", num0 ? String(l.v).replace(".", ",") : "");
+          if (a === null) return; const v = parseFloat(String(a).replace(",", "."));
+          if (String(a).trim() === "" || !num0) histApply([l], []); else if (v > 0 && v < 10000) histApply([], [[l, Math.round(v * 10) / 10]]); else toast("Valeur non reconnue."); };
+        vs.append(b); });
+      const del = el("button","hdel"); del.setAttribute("aria-label", "Effacer « " + histName(g.id) + " » de cette journée"); del.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>';
+      del.onclick = () => { if (confirm("Effacer « " + histName(g.id) + " » de cette journée ?")) histApply(g.ls, []); };
+      r.append(el("span","hn", histName(g.id)), del); wrap.append(r, vs); });
+    if (ed) { const dd = el("button","btn line hdday", "Supprimer toute cette journée"); dd.onclick = () => { if (confirm("Supprimer tout ce qui a été enregistré ce jour-là ? Les records, badges et validations qui en venaient seront recalculés.")) { histEdit = null; histApply(L, []); } }; wrap.append(dd); }
     box.append(wrap); });
   if (keys.length > histN) { const more = el("button","golink","Plus ancien"); more.onclick = () => { histN += 30; openHist(); }; box.append(more); }
   if (!$("histDlg").open) $("histDlg").showModal();
