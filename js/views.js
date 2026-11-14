@@ -126,7 +126,9 @@ function render(){
   const autoPose = POSE3D[stage] || (stage.startsWith("pl_") ? stage : "stand"), want = (S.fit || {}).pose;
   setAvatar({pose:want && want !== "auto" && unlockedPoses().some(p=>p[0] === want) ? want : autoPose, frac, level:Z.lvl, fit:fit(), label:"Ton personnage en 3D, niveau " + Z.lvl + ", " + Z.rank});
   lastZ = Z; $("fitOpen").classList.toggle("new", !!S.newFit);
-  $("lvRank").textContent = Z.rank; $("lvNum").textContent = "Niveau " + Z.lvl;
+  renderScene(Z); $("lvRank").textContent = Z.rank;
+  { const [c, src] = penseeDuJour(0), pj = $("pJour"); pj.textContent = ""; pj.append(el("span","lab","Pensée du jour"), el("q",null,c), el("span","mut",src)); pj.onclick = () => { showTab("voie"); renderVoie(); window.scrollTo(0, 0); }; }
+  renderVoie(); $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d’expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
   if (seen){ const nbs = Z.badges.filter(b=>b.ok && !seen.b.includes(b.id)), up = Z.lvl > seen.lvl;

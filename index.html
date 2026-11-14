@@ -33,6 +33,8 @@
     <div class="appbar" id="updBar" hidden><span class="grow">Une nouvelle version est prête.</span><button id="updGo">Mettre à jour</button></div>
     <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
     <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l’app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
+    <figure class="scwrap" aria-live="polite"><div id="scene"></div><figcaption id="sceneCap"></figcaption></figure>
+    <button class="pjour" id="pJour"></button>
     <div class="next" id="nextCard"></div>
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
     <div id="sess"></div>
@@ -42,6 +44,11 @@
   <section id="v-path" class="view">
     <div id="pathTop"></div>
     <div id="tree"></div>
+  </section>
+
+  <section id="v-voie" class="view">
+    <header class="vhead"><h2>La Voie</h2><p class="mut">Le côté intérieur de la pratique : écouter, respirer, réfléchir, et un jour transmettre.</p></header>
+    <div id="voie"></div>
   </section>
 
   <section id="v-me" class="view">
@@ -56,6 +63,7 @@
           <div class="mut" id="xpTxt"></div>
         </div>
       </div>
+      <div id="sceneMini" class="scmini" aria-hidden="true"></div>
       <div class="tiles">
         <div class="tile"><b class="disp" id="stStreak">0</b><span>jours fidèles</span></div>
         <div class="tile"><b class="disp" id="stWeek">0</b><span>séances cette semaine</span></div>
@@ -108,6 +116,7 @@
 <nav class="tabs">
   <button data-v="today" class="on"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg><span>Aujourd’hui</span></button>
   <button data-v="path"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="6" r="2.2"/><path d="M8 17c5 0 2-6 7-6s1-4 1-4" stroke-dasharray="2 2.6"/></svg><span>Parcours</span></button>
+  <button data-v="voie"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Z"/><path d="M5 19l8-8"/></svg><span>Voie</span></button>
   <button data-v="me"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.6"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/></svg><span>Profil</span></button>
 </nav>
 
@@ -144,6 +153,16 @@
   </div>
   <div class="mut" style="margin:6px 0 10px">Coche les vidéos que tu as vues.</div>
   <div id="vdBody"></div>
+</dialog>
+
+<dialog id="vpDlg" class="vpdlg" aria-labelledby="vpT">
+  <div class="vphd"><h2 id="vpT"></h2><button class="x" id="vpX" aria-label="Fermer"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 2l12 12M14 2L2 14"/></svg></button></div>
+  <p class="mut" id="vpWhy"></p>
+  <div class="vpalt" id="vpAlt"></div>
+  <div class="vpstage"><div class="vpring" id="vpRing" aria-hidden="true"></div><p class="vptxt" id="vpTxt" aria-live="polite"></p></div>
+  <div class="vpleft disp" id="vpLeft"></div>
+  <button class="btn big" id="vpGo">Commencer</button>
+  <p class="mut vsrc" id="vpSrc"></p>
 </dialog>
 
 <dialog id="qkDlg" aria-labelledby="qkT">
@@ -251,10 +270,12 @@
 <script src="js/state.js" defer></script>
 <script src="js/parcours.js" defer></script>
 <script src="js/sprites.js" defer></script>
+<script src="js/scene.js" defer></script>
 <script src="js/views.js" defer></script>
 <script src="js/voice.js" defer></script>
 <script src="js/seance.js" defer></script>
 <script src="js/zen.js" defer></script>
+<script src="js/voie.js" defer></script>
 <script src="js/main.js" defer></script>
 </body>
 </html>

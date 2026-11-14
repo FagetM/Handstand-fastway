@@ -1,0 +1,142 @@
+// La Voie : le côté intérieur de la pratique. Une pensée par jour (sources citées), des respirations guidées,
+// un carnet d’écoute du corps, et « Transmettre », le chemin vers l’enseignement du yoga et de la gym.
+// Laïque, en invitation, sans promesse : les textes anciens sont cités pour ce qu’ils disent, pas comme des dogmes.
+"use strict";
+// [citation, source, ce que ça veut dire sur le tapis]
+const PENSEES = [
+  ["Le yoga est l’apaisement des fluctuations du mental.", "Patañjali, Yoga Sūtra 1.2", "Avant de chercher l’équilibre, laisse retomber le bruit intérieur."],
+  ["La posture est stable et agréable.", "Patañjali, Yoga Sūtra 2.46", "Tiens ton appui tendu sans serrer la mâchoire."],
+  ["Elle naît du relâchement de l’effort.", "Patañjali, Yoga Sūtra 2.47", "Cherche le muscle de trop, et lâche-le."],
+  ["Par la pratique et le détachement.", "Patañjali, Yoga Sūtra 1.12", "Répète, puis laisse tomber le verdict du jour."],
+  ["La pratique s’ancre quand elle dure longtemps, sans interruption, avec soin.", "Patañjali, Yoga Sūtra 1.14", "Une manna se gagne en saisons, pas en séances."],
+  ["Effort ardent, étude de soi, confiance.", "Patañjali, Yoga Sūtra 2.1", "Travaille, observe-toi, puis fais confiance au temps."],
+  ["La souffrance à venir peut être évitée.", "Patañjali, Yoga Sūtra 2.16", "Tes poignets parlent avant de casser : écoute-les tôt."],
+  ["Face aux pensées qui abîment, cultive leur contraire.", "Patañjali, Yoga Sūtra 2.33", "« Je n’y arrive pas » devient « je n’y arrive pas encore »."],
+  ["Du contentement naît un bonheur sans égal.", "Patañjali, Yoga Sūtra 2.42", "Savoure la planche d’aujourd’hui, pas celle de dans six mois."],
+  ["Tu as droit à l’action, jamais à ses fruits.", "Bhagavad Gītā 2.47", "Soigne la répétition ; le chrono suivra, ou pas."],
+  ["L’égalité d’âme s’appelle yoga.", "Bhagavad Gītā 2.48", "Accueille le bon jour comme le mauvais, avec la même tête."],
+  ["Le yoga est l’habileté dans l’action.", "Bhagavad Gītā 2.50", "La qualité d’abord, le volume ensuite."],
+  ["Pas de yoga pour qui mange ou dort trop, ni pour qui mange ou dort trop peu.", "Bhagavad Gītā 6.16", "Le sommeil et l’assiette font partie de la séance."],
+  ["Dans l’esprit du débutant, les possibilités sont nombreuses ; dans celui de l’expert, elles sont rares.", "Shunryu Suzuki, Esprit zen, esprit neuf (1970)", "Ancien gymnaste ou pas, réapprends chaque figure comme la première fois."],
+  ["Mon pouvoir merveilleux : puiser l’eau, porter le bois.", "Layman Pang, maître chan du VIIIᵉ siècle", "L’échauffement des poignets, c’est déjà la pratique."],
+  ["Si tu sais ce que tu fais, tu peux faire ce que tu veux.", "attribuée à Moshé Feldenkrais", "La conscience du geste vient avant la maîtrise."],
+  ["Pour sentir une différence, diminue l’effort.", "d’après Moshé Feldenkrais, Awareness Through Movement (1972)", "Explore le stalder lentement, sans charge : tu sentiras mieux."],
+  ["Certaines choses dépendent de nous, d’autres non.", "Épictète, Manuel, 1", "Ton sommeil et ton effort dépendent de toi ; la météo de tes tendons, non."],
+  ["Rien de grand ne naît d’un coup, pas même une grappe de raisin ou une figue.", "Épictète, Entretiens, I, 15", "Patience pour l’équilibre sur un bras : la figue mûrit à son heure."],
+  ["Ce qui fait obstacle à l’action fait avancer l’action ; ce qui barre le chemin devient le chemin.", "Marc Aurèle, Pensées, V, 20", "Un poignet au repos, c’est une saison pour les épaules."],
+  ["Revendique-toi pour toi-même.", "Sénèque, Lettres à Lucilius, 1", "Ce temps sur le tapis t’appartient : protège-le."],
+  ["Il n’est nulle part, celui qui est partout.", "Sénèque, Lettres à Lucilius, 2", "Un programme suivi vaut mieux que dix commencés."],
+  ["Pour qui ne sait pas vers quel port il navigue, aucun vent n’est favorable.", "Sénèque, Lettres à Lucilius, 71", "Nomme l’objectif de ce cycle, un seul."],
+  ["Prêter attention, délibérément, au moment présent, sans juger.", "Jon Kabat-Zinn, Où tu vas, tu es (1994)", "Observe ta chute ; ne la condamne pas."],
+  ["Tu ne peux pas arrêter les vagues, mais tu peux apprendre à surfer.", "Jon Kabat-Zinn, Où tu vas, tu es (1994)", "La fatigue viendra : ajuste-toi au lieu de lutter."],
+  ["Le karaté est comme l’eau chaude : sans feu constant, elle refroidit.", "Gichin Funakoshi, vingt préceptes, 11", "Un peu chaque jour plutôt que beaucoup de temps en temps."],
+  ["Le karaté commence et finit par le salut.", "Gichin Funakoshi, vingt préceptes, 1", "Ouvre et ferme ta séance par un instant de gratitude."],
+  ["La forme d’abord, le volume ensuite.", "adage des salles de gym", "Une belle répétition vaut mieux que cinq tordues."],
+  ["Le jour sans entraînement fait partie de l’entraînement.", "adage des entraîneurs", "Le repos est un choix actif, pas une faute."],
+  ["Le corps ne ment pas.", "adage des danseurs, souvent prêté à Martha Graham", "Ce que tu ressens compte plus que ce que tu voulais ressentir."],
+];
+const dayN = () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
+const penseeDuJour = k => PENSEES[((dayN() + (k || 0)) % PENSEES.length + PENSEES.length) % PENSEES.length];
+// Pratiques guidées : phases de souffle (in, out) ou étapes de texte, avec leur durée en secondes
+const breath = (pat, n) => Array.from({length:n}, () => pat).flat();
+const PRATIQUES = [
+  {id:"reso", name:"Respiration lente", dur:"5 min", why:"Vers 6 souffles par minute, le rythme cardiaque se met à onduler avec la respiration. Des études le relient à plus de calme ; rien de magique, juste un rythme.",
+    src:"Lehrer et Gevirtz, Frontiers in Psychology, 2014", alt:[["5 s, 5 s", breath([["in",5,"Inspire par le nez"],["out",5,"Expire par le nez"]], 30)], ["4 s, 6 s", breath([["in",4,"Inspire par le nez"],["out",6,"Expire longuement"]], 30)]]},
+  {id:"soupir", name:"Soupir cyclique", dur:"3 min", why:"Deux inspirations par le nez, une longue expiration par la bouche. Dans un essai de 2023, 5 minutes par jour ont amélioré l’humeur un peu plus que la méditation.",
+    src:"Balban et al., Cell Reports Medicine, 2023", steps:breath([["in",3,"Inspire par le nez"],["in2",1,"Encore un peu, pour remplir"],["out",6,"Expire lentement par la bouche"]], 18)},
+  {id:"scan", name:"Scan du corps", dur:"3 min", why:"Parcourir le corps sans rien changer, juste noter. L’écoute du corps se travaille comme un geste technique.",
+    src:"d’après le programme MBSR de Jon Kabat-Zinn", steps:[["txt",30,"Allonge-toi, ferme les yeux. Laisse le sol te porter."],["txt",30,"Les pieds, puis les jambes. Remarque ce qui est là, sans le changer."],["txt",40,"Le bassin, le bas du dos, le ventre qui monte et descend."],["txt",40,"Les épaules, les coudes, les poignets, les doigts : tes appuis de tous les jours."],["txt",30,"La nuque, la mâchoire, le front. Desserre ce qui serre."],["txt",10,"Le corps entier. Trouve un mot pour le dire."]]},
+  {id:"nadi", name:"Respiration alternée", dur:"4 min", why:"Nāḍī śodhana, une respiration lente de la tradition yogique. Les études trouvent des effets modestes sur la tension. Pas de rétention, et arrête si le nez est bouché.",
+    src:"méta-analyse sur la tension artérielle, 2024", steps:breath([["in",4,"Ferme à droite, inspire à gauche"],["out",6,"Ferme à gauche, expire à droite"],["in",4,"Inspire à droite"],["out",6,"Ferme à droite, expire à gauche"]], 12)},
+  {id:"ecoute", name:"Écoute après la séance", dur:"4 min", why:"Un bilan de 0 à 10 sur tes articulations clés. Une gêne légère qui passe n’est pas un ordre d’arrêter ; une douleur vive, articulaire, ou pire le lendemain en est un.",
+    src:"d’après le modèle de surveillance de la douleur (Smith et al., BJSM, 2017)", steps:[["txt",25,"Allongé, trois longues respirations."],["txt",45,"Les poignets. Donne une note à la gêne, de 0 à 10."],["txt",40,"Les coudes, puis les épaules. Une note pour chacun."],["txt",35,"Le bas du dos. Une note."],["txt",45,"Jusqu’à 3 : feu vert. 4 ou 5 : à surveiller demain. Au-delà, ou douleur vive : allège, et consulte si ça dure."],["txt",30,"Ta série la plus dure : combien de répétitions avais-tu encore en réserve ?"],["txt",20,"Un mot pour cette séance. Et merci à ce corps qui a travaillé."]], journal:true},
+];
+const QUESTIONS = ["Qu’est-ce que ton corps t’a dit aujourd’hui, que tu n’avais pas entendu hier ?", "Où as-tu forcé plus que nécessaire ?",
+  "Qu’est-ce qui dépendait de toi dans cette séance, et qu’est-ce qui n’en dépendait pas ?", "Quel petit progrès mérite d’être remarqué ?",
+  "Quelle gêne vas-tu surveiller demain ?", "Pourquoi ce chemin compte-t-il pour toi, au-delà de la figure ?"];
+// Transmettre : missions débloquées par rang (index dans RANKS) ; validées sur ta parole, avec une réflexion écrite
+const MISSIONS = [
+  {id:"tm_mots", r:0, name:"Poser les mots", act:"Décris à voix haute ton équilibre poitrine face au mur en 3 consignes, et enregistre-toi.", q:"Quelle consigne un débutant comprendrait-il mal ?"},
+  {id:"tm_oeil", r:1, name:"Œil de coach", act:"Regarde une vidéo d’équilibre et repère deux erreurs : bassin cassé, épaules fermées, coudes pliés…", q:"Comment as-tu distingué la cause de la conséquence ?"},
+  {id:"tm_psc", r:1, name:"Les premiers secours", act:"Inscris-toi au PSC (prévention et secours civiques, une journée) et passe-le. C’est le prérequis de toutes les formations d’éducateur.", q:"Quel geste de secours serait le plus probable dans un cours de gym ?"},
+  {id:"tm_demo", r:2, name:"Démonstration muette", act:"Montre une chandelle ou un pont sans parler, filmé de face puis de profil.", q:"Quel angle montre le mieux le point clé, et pourquoi ?"},
+  {id:"tm_niv", r:2, name:"Trois niveaux", act:"Écris 3 régressions et 2 progressions pour la tuck planche.", q:"À quel signe sais-tu qu’un élève peut passer au niveau suivant ?"},
+  {id:"tm_echauf", r:3, name:"Échauffement type", act:"Construis un échauffement de 12 minutes (poignets, épaules, gainage) et teste-le sur toi.", q:"Qu’est-ce qui a le mieux préparé ton premier exercice ?"},
+  {id:"tm_ci", r:4, name:"Contre-indications", act:"Liste les précautions de 5 postures : inversions et tension, grossesse, poignets, nuque.", q:"Que demanderais-tu à un élève avant son premier cours ?"},
+  {id:"tm_cours", r:5, name:"Le cours de 45 minutes", act:"Écris un cours pour débutants : 10 minutes d’échauffement, 25 de cœur de séance, 10 de retour au calme.", q:"À quel moment ton cours risque-t-il de déborder ?"},
+  {id:"tm_parade", r:6, name:"La parade", act:"Apprends les parades (équilibre, roulade arrière, ATR) avec un entraîneur diplômé, en club. Jamais seul.", q:"Où étaient tes mains, et pourquoi là ?"},
+  {id:"tm_eleve", r:6, name:"Premier élève", act:"Donne ton cours de 45 minutes, gratuitement, à un ami, et demande-lui un retour honnête.", q:"Quelle consigne as-tu dû reformuler en direct ?"},
+  {id:"tm_groupe", r:7, name:"Un petit groupe", act:"Anime une séance pour trois personnes ou plus, de niveaux différents.", q:"Comment as-tu occupé les plus rapides pendant que tu aidais les autres ?"},
+  {id:"tm_club", r:8, name:"Bénévole en club", act:"Aide un entraîneur en club, ou passe le diplôme fédéral d’animateur FFGym (encadrement bénévole).", q:"Qu’as-tu appris de l’entraîneur titulaire ?"},
+  {id:"tm_voie", r:9, name:"Choisir sa formation", act:"Compare deux voies : BPJEPS Activités gymniques, CQP ALS, ou formation de yoga de 200 heures. Coût, financement CPF, dates des tests.", q:"Laquelle correspond à ton projet dans deux ans, et pourquoi ?"},
+  {id:"tm_pro", r:10, name:"Prêt à enseigner", act:"Prépare ton dossier : diplôme, déclaration d’éducateur sportif (carte professionnelle), assurance responsabilité civile professionnelle, tarifs.", q:"Que te manque-t-il encore pour être en règle ?"},
+];
+const ROUTE = [
+  ["Les bases", "PSC (une journée) et certificat médical : demandés à l’entrée de toutes les formations."],
+  ["Encadrer bénévolement", "En club FFGym, avec les diplômes fédéraux d’animateur puis de moniteur. Ils permettent d’encadrer bénévolement, pas d’être payé."],
+  ["Le diplôme pour être payé en gym", "BPJEPS mention Activités gymniques (souvent 10 à 18 mois en alternance, avec un test technique d’entrée), ou CQP ALS, plus court et plus limité. La VAE est possible pour un ancien gymnaste."],
+  ["Le yoga", "Pas de diplôme d’État : des formations de 200 heures (environ 1 900 à 3 200 €) ou des cursus fédéraux de 3 à 4 ans. Certaines sont finançables par le CPF quand elles mènent à une certification enregistrée."],
+  ["Se déclarer", "Déclaration d’éducateur sportif (carte professionnelle, valable 5 ans), assurance responsabilité civile professionnelle, statut (par exemple micro-entreprise)."],
+  ["Continuer d’apprendre", "DEJEPS pour entraîner, formations avancées de yoga, et toujours des élèves pour t’apprendre."],
+];
+// ---------- Rendu de l’onglet ----------
+let vpK = 0;
+function renderVoie(){
+  const box = $("voie"); if (!box) return; box.textContent = "";
+  const Z = stats(), ri = Math.max(0, RANKS.indexOf(Z.rank));
+  // la pensée du jour
+  { const [c, src, tap] = penseeDuJour(vpK), b = el("div","block vpens"); b.append(el("div","lab","Pensée du jour"), el("blockquote",null,"« " + c + " »"), el("div","mut vsrc", src), el("p","vtap","Sur le tapis : " + lc1(tap)));
+    const n = el("button","btn line","Une autre pensée"); n.onclick = () => { vpK++; renderVoie(); }; b.append(n); box.append(b); }
+  // respirer et écouter
+  { const b = el("div","block"); b.append(el("h2",null,"Respirer, écouter"), el("p","mut","Des pratiques courtes, à faire avant, après, ou à la place d’une séance."));
+    const g = el("div","vprl"); PRATIQUES.forEach(p => { const x = el("button","vpr"); x.append(el("b",null,p.name), el("span","mut",p.dur)); x.onclick = () => vpOpen(p); g.append(x); }); b.append(g); box.append(b); }
+  // le carnet
+  { const b = el("div","block"), q = QUESTIONS[dayN() % QUESTIONS.length]; b.append(el("h2",null,"Carnet"), el("p",null,q));
+    const ta = el("textarea","vta"); ta.rows = 3; ta.placeholder = "Quelques mots suffisent."; ta.setAttribute("aria-label", q);
+    const ok = el("button","btn","Garder dans le carnet"); ok.onclick = () => { const a = ta.value.trim(); if (!a) return; (S.jr || (S.jr = [])).push({t:Date.now(), q, a}); save(); toast("Gardé dans ton carnet."); renderVoie(); };
+    b.append(ta, ok);
+    (S.jr || []).slice(-5).reverse().forEach(e => { const d = el("div","vjr"); d.append(el("div","mut", new Date(e.t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ", " + lc1(e.q)), el("p",null,e.a));
+      const x = el("button","vdel","Effacer"); x.setAttribute("aria-label","Effacer cette note"); x.onclick = () => { S.jr = S.jr.filter(o => o !== e); save(); renderVoie(); }; d.append(x); b.append(d); });
+    box.append(b); }
+  // transmettre
+  { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Un jour, enseigner le yoga et la gym. Les missions s’ouvrent avec ton rang : " + dn + " sur " + MISSIONS.length + " faites."));
+    b.append(el("p","vlaw","En France, être payé pour enseigner la gym ou l’acrobatie demande un diplôme reconnu (BPJEPS, CQP…) et la carte professionnelle d’éducateur sportif. Le yoga n’a pas de diplôme d’État."));
+    MISSIONS.forEach(m => { const on = ri >= m.r, done = (S.tm || {})[m.id], x = el("button","vmis" + (done ? " done" : on ? "" : " lk"));
+      x.append(el("b",null,m.name), el("span","mut", done ? "Faite" : on ? "Ouverte" : "Au rang " + RANKS[m.r])); x.onclick = () => tmOpen(m, on); b.append(x); });
+    b.append(el("h3",null,"La route, en France"));
+    const ol = el("ol","vroute"); ROUTE.forEach(([t, d]) => { const li = el("li"); li.append(el("b",null,t), el("span",null,d)); ol.append(li); }); b.append(ol);
+    b.append(el("p","mut vsrc","Sources : Code du sport (articles L212-1 et L212-11), FFGym, Yoga Alliance. Les durées et les coûts sont des ordres de grandeur, à vérifier auprès des organismes."));
+    box.append(b); }
+}
+function tmOpen(m, on){
+  const box = $("qkBody"), done = (S.tm || {})[m.id]; box.textContent = "";
+  const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Transmettre"), el("h2",null,m.name)); box.append(hd);
+  const blk = el("div","qkblock"); blk.append(el("b",null, on ? "La mission" : "Au rang " + RANKS[m.r]), el("p",null, on ? m.act : "Elle s’ouvrira à ce rang. En attendant : " + lc1(m.act))); box.append(blk);
+  if (on) { const q = el("p","vq",m.q), ta = el("textarea","vta"); ta.rows = 4; ta.value = done ? done.a : ""; ta.placeholder = "Deux ou trois phrases : ce que tu as fait, ce que tu en retiens."; ta.setAttribute("aria-label", m.q);
+    const ok = el("button","btn", done ? "Mettre à jour" : "Mission faite"); ok.onclick = () => { const a = ta.value.trim(); if (a.length < 40) { toast("Écris au moins deux phrases : c’est là que tu apprends."); return; } (S.tm || (S.tm = {}))[m.id] = {t:Date.now(), a}; save(); $("qkDlg").close(); renderVoie(); toast("Mission « " + m.name + " » faite."); };
+    box.append(q, ta, ok);
+    if (done) { const u = el("button","btn line vre","Retirer"); u.onclick = () => { delete S.tm[m.id]; save(); $("qkDlg").close(); renderVoie(); }; box.append(u); } }
+  $("qkT").textContent = m.name; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
+}
+// ---------- Lecteur de pratique guidée ----------
+let vp = null;
+function vpOpen(p, alt){
+  const steps = p.alt ? p.alt[alt || 0][1] : p.steps, tot = steps.reduce((a, s) => a + s[1], 0), d = $("vpDlg");
+  $("vpT").textContent = p.name; $("vpWhy").textContent = p.why; $("vpSrc").textContent = "Source : " + p.src;
+  const alts = $("vpAlt"); alts.textContent = ""; alts.hidden = !p.alt; if (p.alt) p.alt.forEach(([lab], k) => { const b = el("button", (alt || 0) === k ? "on" : "", lab); b.setAttribute("aria-pressed", (alt || 0) === k); b.onclick = () => { vpStop(); vpOpen(p, k); }; alts.append(b); });
+  vp = {p, steps, tot, t:0, i:-1, run:false, last:0}; $("vpGo").textContent = "Commencer"; $("vpTxt").textContent = steps[0][0] === "txt" ? "Installe-toi confortablement." : "Assieds-toi, le dos long.";
+  $("vpLeft").textContent = p.dur; vpRing(null, 0); if (!d.open) d.showModal();
+}
+function vpRing(ph, sec){ const r = $("vpRing"); r.style.transitionDuration = sec + "s"; r.dataset.ph = ph || ""; }
+function vpTick(){
+  if (!vp || !vp.run) return; const now = Date.now(); vp.t += (now - vp.last) / 1000; vp.last = now;
+  let acc = 0, i = 0; while (i < vp.steps.length && acc + vp.steps[i][1] <= vp.t) { acc += vp.steps[i][1]; i++; }
+  if (i >= vp.steps.length) { vpStop(); vp.i = i; $("vpGo").textContent = "Recommencer"; $("vpTxt").textContent = "C’est fini. Prends un instant avant de te relever."; $("vpLeft").textContent = ""; say("C’est fini.", true); vpRing(null, 1);
+    if (vp.p.journal) setTimeout(() => { $("vpDlg").close(); showTab("voie"); renderVoie(); const ta = document.querySelector("#voie .vta"); if (ta) ta.focus(); }, 2500); return; }
+  if (i !== vp.i) { vp.i = i; const [ph, sec, txt] = vp.steps[i]; $("vpTxt").textContent = txt; vpRing(ph, sec); say(txt, true); }
+  const left = Math.max(0, Math.ceil(vp.tot - vp.t)); $("vpLeft").textContent = Math.floor(left / 60) + " min " + String(left % 60).padStart(2, "0") + " s";
+}
+function vpStop(){ if (vp) vp.run = false; clearInterval(vpTick.h); if (vp && vp.i < vp.steps.length) $("vpGo").textContent = "Reprendre"; }
+$("vpGo").onclick = () => { if (!vp) return; if (vp.run) { vpStop(); return; } if (vp.i >= vp.steps.length) { vpOpen(vp.p); } vp.run = true; vp.last = Date.now(); $("vpGo").textContent = "Pause"; clearInterval(vpTick.h); vpTick.h = setInterval(vpTick, 200); vpTick(); };
+$("vpX").onclick = () => $("vpDlg").close();
+$("vpDlg").addEventListener("close", () => { vpStop(); try { speechSynthesis.cancel(); } catch(e){} });
