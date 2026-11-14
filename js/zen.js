@@ -105,17 +105,4 @@ const moodToday = () => S.mood && S.mood.d === dayKey(Date.now()) ? S.mood.k : n
 function setMood(k){ S.mood = {d:dayKey(Date.now()), k}; if (S.bday && S.bday.d === dayKey(Date.now()) && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render();
   toast(k === "fatigue" ? "Séance plus courte aujourd’hui, sans tentative à fond." : k === "raide" ? "On ajoute un peu de mobilité en début de séance." : k === "calme" ? "Séance normale, à ton rythme." : "Séance complète, tentatives permises."); }
 
-// Petites histoires : racontées par le personnage dans le conseil du jour, une par jour.
-const STORIES = [
-  "À 19 ans, je comptais mes secondes à l’envers. Une coach m’a demandé : « Et ta respiration ? » Elle était bloquée. Le jour où j’ai expiré, j’ai tenu deux fois plus longtemps.",
-  "Mon plus bel équilibre, je l’ai fait un dimanche matin sur la plage, sans chrono et sans objectif.",
-  "Un vieux maître de cirque me disait : « Le sol te porte, tu n’as pas à le combattre. » Depuis, je repousse le sol sans crispation.",
-  "La première fois que j’ai tenu cinq secondes, je ne l’ai pas su : je souriais trop pour regarder le chrono.",
-  "J’ai passé un hiver entier sans progresser. Au printemps, tout est venu d’un coup.",
-  "Mes poignets m’ont appris la patience. Cinq minutes d’échauffement à chaque séance, sans exception.",
-  "Le jour où j’ai arrêté de vouloir réussir, j’ai commencé à sentir, et j’ai tenu.",
-  "Une chute ? Sortie en roue, et on remonte.",
-  "Les jours de fatigue, je fais juste de la récup active. Le lendemain, mon équilibre est meilleur.",
-  "Avant chaque montée, je prends une respiration : elle me rappelle que j’aime ça.",
-];
-const storyOfDay = () => STORIES[Math.floor(Date.now() / 864e5) % STORIES.length];
+// (les petites histoires du personnage ont été retirées avec la carte du conseil du jour)
