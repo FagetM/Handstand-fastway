@@ -72,7 +72,7 @@ const undoLast = () => undoTo(undoList().pop());
 const undoBlock = () => undoTo(ukGet("blk"));
 const undoDay = () => undoTo(ukGet("day"));
 let saveWarned = false;
-const save = () => { window._bb = null; try { localStorage.setItem(KEY, JSON.stringify(S)); saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l’appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
+const save = () => { window._bb = null; try { const j = JSON.stringify(S); try { localStorage.setItem(KEY, j); } catch(e0){ [UKEY, UKEY + ".day", UKEY + ".blk"].forEach(k => localStorage.removeItem(k)); localStorage.setItem(KEY, j); }   /* mémoire pleine : les copies d’annulation partent d’abord */ saveWarned = false; warnBar(""); } catch(e){ saveWarned = true; warnBar("Enregistrement impossible : la mémoire de l’appareil est pleine. Exporte ta sauvegarde (Profil) avant de fermer."); } };
 // bandeau qui reste affiché tant que le problème dure (un toast disparaît trop vite)
 function warnBar(msg){ let b = document.getElementById("warnBar"); if (!msg) { if (b) b.remove(); return; } if (!b) { b = document.createElement("div"); b.id = "warnBar"; b.setAttribute("role","alert"); } b.textContent = msg; ([...document.querySelectorAll("dialog[open]")].pop() || document.body).append(b); }
 if (loadErr) addEventListener("load", () => warnBar("Ta sauvegarde était illisible : l’app repart de zéro. Une copie est gardée sur l’appareil."));

@@ -27,6 +27,7 @@ const builtinOf = blocks => { const day = {type:"train", blocks};
 // ---------- Exercices d’accompagnement : ce qui prépare chaque figure, en plus de la figure elle-même ----------
 // sets : [séries, durée en s] (tenue) ou [séries, répétitions] (reps). Repères généraux d’entraînement.
 const DRILLS = {
+  miseEnRoute:{name:"Mise en route", kind:"hold", sets:[1,150], how:"2 minutes et demie : marche rapide ou petits sauts sur place pour réchauffer, puis haussements et ouvertures d’omoplates, bras tendus devant toi. Le corps chaud avant les poignets."},
   poignets:{name:"Préparation des poignets", kind:"hold", sets:[1,300], how:"5 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, sur le bout des doigts, puis 2 × 10 pompes de poignets (soulève-toi sur les doigts). Les poignets portent tout ton poids : ne la saute jamais."},
   hollow:{name:"Gainage en cuillère", kind:"hold", sets:[3,25], how:"Sur le dos, bas du dos plaqué au sol, bras tendus derrière la tête, jambes tendues décollées. C’est la ligne du corps en équilibre."},
   epaules:{name:"Ouverture des épaules", kind:"hold", sets:[2,40], how:"À genoux, mains sur une chaise ou un banc, laisse descendre la poitrine vers le sol, bras tendus. Les bras doivent pouvoir s’aligner avec le corps."},
@@ -75,12 +76,12 @@ function drillsFor(m){
   else if (s === "planche") out.push(id === "pl_lean" || id === "pl_ppp" ? "lean" : (S.equip || {}).kg && st("fd_dips").done ? "dipsW" : "lean","protrac","pseudo","biceps");
   if (["pl_frog","pl_1leg","pl_straddle"].includes(id)) out.unshift("tuck2strad");
   if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
-  else if (s === "press") out.push("pikepulse","stradlift","pancake","lean");
+  else if (s === "press") out.push("pikepulse","stradlift","pancake","omoplates");   // l’appui penché reste réservé aux jours de planche
   if (id === "pr_straddle") out.unshift("elevpress");
   if (/^pr_(manna|vsitH|extSup)/.test(id)) { out.splice(0, out.length, "extEp", "appuiArr", "mannaLift", "pancake"); }   // la manna, c’est d’abord des épaules en extension
-  if (s === "ultime") out.push("doigts","extEp","lean");
+  if (s === "ultime") out.push("doigts","extEp","omoplates");
   if (id === "pr_stalder" || id === "pr_lsitHs") { out.unshift("stalneg"); if ((S.equip || {}).para) out.unshift("lsitpara"); }
-  else if (s === "low") out.push("frog","lean");
+  else if (s === "low") out.push("frog","omoplates");
   if (id === "in_hspu") out.unshift("pikepu");
   const E = S.equip || {};
   if (E.band && ["pl_tuck","pl_adv","pl_frog","pl_1leg","pl_straddle","pl_full"].includes(id)) out.unshift("bandpl");
@@ -200,7 +201,7 @@ function builtinBlocks(){
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
   const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc, ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
-    const plR = /^pl_/.test(id) && m.type === "reps", sets = plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)), tries = pain || PS.phase === 2 || tired || deload ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
+    const plR = /^pl_/.test(id) && m.type === "reps", sets = plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)), tries = pain || PS.phase === 2 || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 12 : 16, sets * 2) : Math.min(pl.sets, sets)}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:/^ul_/.test(id) ? "Une réussite par séance suffit : il en faut sur 3 séances, à 2 jours d’écart au moins, sur 10 jours au moins." : "Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
@@ -234,7 +235,7 @@ function builtinBlocks(){
     const id = pool.filter(id => Date.now() - lastK(id) > 10 * 864e5).sort((a, b) => lastK(a) - lastK(b))[0];
     if (id) { const m = MS[id]; keepUp.push({name:m.name + ", entretien", kind:"hold", how:"Figure acquise : deux essais calmes pour l’entretenir. " + m.desc, keep:true, sets:Array.from({length:2}, () => ({dur:Math.max(3, Math.round(m.target * 0.7)), rest:60}))}); } }
   const BAD = armPain ? new Set(["lean","pseudo","dipsW","pushW","bandpl","oawall","oashrug","appuiArr","extEp","protrac","biceps"]) : new Set();
-  return fitTime([drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
+  return fitTime([Object.assign(drillBlock("miseEnRoute", false), {keep:true}), drillBlock("poignets", pain || wristDone)].concat(prep, keepUp, mob, conf, blocks, drs.filter(k => !BAD.has(k) && !(k === "extEp" && prep.length && prep[0].dk === "extEp")).map(k=>drillBlock(k, pain || deload)), anta), deload ? Math.max(10, Math.round(mins * 0.6)) : mins);
 }
 const PGROUPS = [
   ["Parcours", id => id === "equilibre"],

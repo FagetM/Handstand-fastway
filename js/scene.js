@@ -31,7 +31,7 @@ function scene(i, fresh, sfx){
     + '<defs><filter id="wc-' + u + '" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency=".045" numOctaves="3" seed="4" result="n"/>'
     + '<feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur in="d" stdDeviation=".5"/></filter>'
     + '<filter id="wcs-' + u + '" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>'
-    + '<filter id="paper-' + u + '" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency=".8" numOctaves="2" seed="9"/><feColorMatrix values="0 0 0 0 .45 0 0 0 0 .4 0 0 0 0 .33 0 0 0 .14 0"/></filter></defs>';
+    + '</defs>';   /* le grain du papier vient du fond de page, une seule fois */
   s += '<rect width="360" height="120" fill="var(--scsky)"/><rect y="104" width="360" height="16" fill="var(--wc-soil)" fill-opacity=".9"/><g filter="url(#wc-' + u + ')">';
   // ciel : quelques lavis très dilués
   s += '<g filter="url(#wcs-' + u + ')">' + wash(blob(90, 26, 120, 30, 11), "var(--wc-sky)", .45) + wash(blob(280, 44, 130, 26, 11), "var(--wc-sky2)", .4) + (i >= 10 ? wash(blob(180, 30, 220, 40, 11), "var(--wc-night)", .5) : "") + '</g>';
@@ -61,7 +61,7 @@ function scene(i, fresh, sfx){
   s += L(10, SC_STARS.map(([x, y], k) => '<circle class="tw" style="--d:' + (k * 0.37).toFixed(2) + 's" cx="' + x + '" cy="' + y + '" r="' + (0.7 + (k % 3) * 0.3) + '" fill="var(--goldtxt)" opacity=".8"/>').join(""));
   if (i >= 6) s += L(6, '<path class="bird" d="M120 30q4-4 8 0q4-4 8 0M146 22q3-3 6 0q3-3 6 0" fill="none" stroke="var(--mut)" stroke-width="1.2" stroke-linecap="round"/>')
     + L(7, [[150, 70], [214, 60], [236, 78], [128, 54], [200, 40]].map(([x, y], k) => '<circle class="ff" style="--d:' + (-k * 1.3).toFixed(1) + 's" cx="' + x + '" cy="' + y + '" r="1.5" fill="var(--goldtxt)"/>').join(""));
-  return s + '<rect width="360" height="120" filter="url(#paper-' + u + ')"/></svg>';
+  return s + '</svg>';
 }
 // Aujourd’hui : le décor, et le passage de rang raconté une seule fois
 function renderScene(Z){
@@ -70,10 +70,13 @@ function renderScene(Z){
   // un nouveau rang se raconte quand Aujourd’hui est à l’écran ; la légende reste jusqu’au lendemain
   const prev = S.seenRank == null ? i : RANKS.indexOf(S.seenRank), seen = $("v-today").classList.contains("on") && !document.querySelector("dialog[open]"), up = prev >= 0 && i > prev && seen;
   if (up) { S.seenRank = Z.rank; S.rankUpT = Date.now(); save(); } else if (S.seenRank == null) { S.seenRank = Z.rank; save(); }
-  host.innerHTML = scene(i, up); const cap = $("sceneCap"); cap.textContent = "";
+  // le décor (filtres coûteux) n’est redessiné que s’il change : rang, moment de la journée, thème, ou un rang qui pousse
+  const key = [i, document.documentElement.dataset.tod, document.documentElement.dataset.theme || "", up].join("|");
+  if (up || host.dataset.k !== key) { host.innerHTML = scene(i, up); host.dataset.k = up ? "" : key; }
+  const cap = $("sceneCap"); cap.textContent = "";
   if (S.rankUpT && Date.now() - S.rankUpT < 864e5 && S.seenRank === Z.rank) cap.append(el("b", null, "Nouveau rang : " + Z.rank), el("span", "mut", SC_NEW[i]));
   else cap.append(el("span", "mut", Z.rank + ", niveau " + Z.lvl + (i < RANKS.length - 1 ? ". Prochain rang : " + RANKS[i + 1] + "." : ".")));
-  const mini = $("sceneMini"); if (mini) mini.innerHTML = scene(i, false, "m");
+  const mini = $("sceneMini"); if (mini && $("v-me").classList.contains("on") && mini.dataset.k !== key) { mini.innerHTML = scene(i, false, "m"); mini.dataset.k = key; }
 }
 // moment de la journée : seule la couleur du ciel du décor change, jamais le fond de la page
 const scTod = () => { const h = new Date().getHours(), t = h >= 5 && h < 11 ? "matin" : h < 18 ? "jour" : h < 22 ? "soir" : "nuit", ch = document.documentElement.dataset.tod !== t; document.documentElement.dataset.tod = t; return ch; };

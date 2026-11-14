@@ -807,3 +807,6 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .smy{font-size:13px;font-style:italic;color:var(--mut)}
 .smbar{display:block;height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}.smbar span{display:block;height:100%;border-radius:3px;background:var(--gold)}
 .sommet .mut{font-size:13px}
+.ecf{display:flex;flex-direction:column;gap:12px;margin:8px 0 16px;text-align:left}.ecr{display:grid;grid-template-columns:96px 1fr 28px;align-items:center;gap:8px;font-size:15px}.ecr input{width:100%;accent-color:var(--acc)}.ecr b{text-align:right}
+.mood button{min-width:0}
+.vpstage[hidden],.vpleft[hidden]{display:none}

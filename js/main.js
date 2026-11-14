@@ -4,7 +4,7 @@
 function goHere(id){ const m = MS[id]; if (!m) return;
   if (HARD.some(h => h[0] === m.sec) && S.jdisc !== m.sec && !document.querySelector('.jn[data-id="' + id + '"]')) { S.jdisc = m.sec; save(); render(); }   // figure d’une autre discipline : on l’affiche
   requestAnimationFrame(()=>{ const nd = document.querySelector('.jn[data-id="' + id + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }); }
-function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); }
+function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); if (v === "me") renderScene(stats()); }   // le petit décor du Profil ne se dessine qu’à l’ouverture
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const was = b.classList.contains("on"); showTab(b.dataset.v); window.scrollTo(0,0);
   // en arrivant sur le parcours, on t’amène à ta position
   if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
@@ -15,10 +15,11 @@ $("theme").onchange = e => { S.theme = e.target.value; save(); location.reload()
   $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);
   $("eqBand").onchange = e => { E().band = e.target.checked; redo(); }; $("eqPara").onchange = e => { E().para = e.target.checked; redo(); };
   $("eqKg").onchange = e => { E().kg = +e.target.value; redo(); }; }
-$("exp").onclick = () => { $("io").value = JSON.stringify(S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
+$("exp").onclick = () => { let pr = null; try { pr = JSON.parse(localStorage.getItem("hs-fastway-progs")); } catch(e){} $("io").value = JSON.stringify(pr ? Object.assign({}, S, {_progs:pr}) : S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
 $("imp").onclick = () => {
   try { const d = JSON.parse($("io").value); if (!d || !d.ms || typeof d.ms !== "object" || Array.isArray(d.ms) || !Array.isArray(d.log)) throw 0;
-    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { S = Object.assign(blank(), d); save(); alert("Sauvegarde importée."); location.reload(); } }
+    if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { const pr = d._progs; delete d._progs; ["jr"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["cours"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["tm","sq"].forEach(k => { if (d[k] && (typeof d[k] !== "object" || Array.isArray(d[k]))) delete d[k]; });
+      S = Object.assign(blank(), d); [UKEY, UKEY + ".day", UKEY + ".blk"].forEach(k => localStorage.removeItem(k)); if (pr) localStorage.setItem("hs-fastway-progs", JSON.stringify(pr)); save(); alert("Sauvegarde importée."); location.reload(); } }
   catch(e){ alert("Sauvegarde illisible : colle le texte exporté tel quel."); }
 };
 $("reset").onclick = () => { if (confirm("Effacer toute ta progression ? C’est définitif.")) { S = blank(); save(); location.reload(); } };   // le rechargement relance les migrations et réglages par défaut

@@ -33,6 +33,9 @@ const PENSEES = [
   ["Le karaté commence et finit par le salut.", "Gichin Funakoshi, vingt préceptes, 1", "Ouvre et ferme ta séance par un instant de gratitude."],
   ["La forme d’abord, le volume ensuite.", "adage des salles de gym", "Une belle répétition vaut mieux que cinq tordues."],
   ["Le jour sans entraînement fait partie de l’entraînement.", "adage des entraîneurs", "Le repos est un choix actif, pas une faute."],
+  ["Ne pas nuire.", "Patañjali, Yoga Sūtra 2.35 (ahiṃsā)", "Ni aux autres, ni à toi : une séance qui abîme n’est pas une bonne séance."],
+  ["Être vrai.", "Patañjali, Yoga Sūtra 2.36 (satya)", "Dis honnêtement comment tu vas, à ton carnet comme à ton entourage."],
+  ["J’inspire, je calme mon corps. J’expire, je souris.", "Thich Nhat Hanh, La paix, un art, une pratique (1991)", "À essayer aussi dans une file d’attente ou avant une conversation difficile."],
   ["Le corps ne ment pas.", "adage des danseurs, souvent prêté à Martha Graham", "Ce que tu ressens compte plus que ce que tu voulais ressentir."],
 ];
 const dayN = () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
@@ -42,16 +45,18 @@ const breath = (pat, n) => Array.from({length:n}, () => pat).flat();
 const PRATIQUES = [
   {id:"reso", name:"Respiration lente", dur:"5 min", why:"Vers 6 souffles par minute, le rythme cardiaque se met à onduler avec la respiration. Des études le relient à plus de calme ; rien de magique, juste un rythme.",
     src:"Lehrer et Gevirtz, Frontiers in Psychology, 2014", alt:[["5 s, 5 s", breath([["in",5,"Inspire par le nez"],["out",5,"Expire par le nez"]], 30)], ["4 s, 6 s", breath([["in",4,"Inspire par le nez"],["out",6,"Expire longuement"]], 30)]]},
-  {id:"soupir", name:"Soupir cyclique", dur:"5 min", why:"Deux inspirations par le nez, une longue expiration par la bouche. Dans un essai de 2023, 5 minutes par jour ont amélioré l’humeur un peu plus que la méditation.",
+  {id:"soupir", name:"Soupir cyclique", dur:"5 min", why:"Deux inspirations par le nez, une longue expiration par la bouche. Dans un essai de 2023, 5 minutes par jour ont amélioré l’humeur un peu plus que la méditation. Si la tête tourne, reviens à un souffle normal.",
     src:"Balban et al., Cell Reports Medicine, 2023", steps:breath([["in",3,"Inspire par le nez"],["in2",1,"Encore un peu, pour remplir"],["out",6,"Expire lentement par la bouche"]], 30)},
   {id:"scan", name:"Scan du corps", dur:"3 min", why:"Parcourir le corps sans rien changer, juste noter. L’écoute du corps se travaille comme un geste technique.",
-    src:"d’après le programme MBSR de Jon Kabat-Zinn", steps:[["txt",30,"Allonge-toi, ferme les yeux. Laisse le sol te porter."],["txt",30,"Les pieds, puis les jambes. Remarque ce qui est là, sans le changer."],["txt",40,"Le bassin, le bas du dos, le ventre qui monte et descend."],["txt",40,"Les épaules, les coudes, les poignets, les doigts : tes appuis de tous les jours."],["txt",30,"La nuque, la mâchoire, le front. Desserre ce qui serre."],["txt",10,"Le corps entier. Trouve un mot pour le dire."]]},
+    src:"d’après le programme MBSR de Jon Kabat-Zinn", steps:[["txt",30,"Allonge-toi, ou reste assis si tu préfères. Ferme les yeux, laisse le sol te porter."],["txt",30,"Les pieds, puis les jambes. Remarque ce qui est là, sans le changer."],["txt",40,"Le bassin, le bas du dos, le ventre qui monte et descend."],["txt",40,"Les épaules, les coudes, les poignets, les doigts : tes appuis de tous les jours."],["txt",30,"La nuque, la mâchoire, le front. Desserre ce qui serre."],["txt",10,"Le corps entier. Trouve un mot pour le dire."]]},
   {id:"nadi", name:"Respiration alternée", dur:"4 min", why:"Nāḍī śodhana, une respiration lente de la tradition du hatha yoga. Les études sur ses effets restent modestes : vois-la comme une façon de ralentir. Pas de rétention, et arrête si le nez est bouché.",
     src:"tradition du hatha yoga", steps:breath([["in",4,"Ferme à droite, inspire à gauche"],["out",6,"Ferme à gauche, expire à droite"],["in",4,"Inspire à droite"],["out",6,"Ferme à droite, expire à gauche"]], 12)},
   {id:"ecoute", name:"Écoute après la séance", dur:"4 min", why:"Un bilan de 0 à 10 sur tes articulations clés. Une gêne légère qui passe n’est pas un ordre d’arrêter ; une douleur vive, articulaire, ou pire le lendemain en est un.",
-    src:"d’après le modèle de surveillance de la douleur (Silbernagel et al., 2007)", steps:[["txt",25,"Allongé, trois longues respirations."],["txt",45,"Les poignets. Donne une note à la gêne, de 0 à 10."],["txt",40,"Les coudes, puis les épaules. Une note pour chacun."],["txt",35,"Le bas du dos. Une note."],["txt",45,"Jusqu’à 2 : feu vert. De 3 à 5 : acceptable, si ça s’est calmé demain matin. Au-delà de 5, ou douleur vive : allège, et consulte si ça dure."],["txt",30,"Ta série la plus dure : combien de répétitions avais-tu encore en réserve ?"],["txt",20,"Un mot pour cette séance. Et merci à ce corps qui a travaillé."]], journal:true},
+    src:"d’après le modèle de surveillance de la douleur (Silbernagel et al., 2007)", steps:[["txt",25,"Allonge-toi, et prends trois longues respirations."],["txt",45,"Les poignets. Donne une note à la gêne, de 0 à 10."],["txt",40,"Les coudes, puis les épaules. Une note pour chacun."],["txt",35,"Le bas du dos. Une note."],["txt",45,"Jusqu’à 2 : feu vert. De 3 à 5 : acceptable, si ça s’est calmé demain matin. Au-delà de 5, ou douleur vive : allège, et consulte si ça dure."],["txt",30,"Ta série la plus dure : combien de répétitions avais-tu encore en réserve ?"],["txt",20,"Un mot pour cette séance. Et merci à ce corps qui a travaillé."]], journal:true},
 ];
-const QUESTIONS = ["Qu’est-ce que ton corps t’a dit aujourd’hui, que tu n’avais pas entendu hier ?", "Où as-tu forcé plus que nécessaire ?",
+const QUESTIONS_REPOS = ["Comment ton corps se sent-il un jour sans entraînement ?", "Qu’est-ce qui t’a fait du bien aujourd’hui, en dehors du tapis ?", "À qui pourrais-tu transmettre quelque chose cette semaine ?",
+  "Qu’as-tu remarqué de ta respiration aujourd’hui ?", "Quelle tension gardes-tu sans t’en rendre compte ?", "Qu’est-ce que la patience t’a appris ce mois-ci ?", "Quel moment simple as-tu savouré aujourd’hui ?"];
+const QUESTIONS = ["Qu’est-ce que ton corps t’a dit aujourd’hui, que tu n’avais pas entendu hier ?", "Où as-tu forcé plus que nécessaire ?", "Quelle consigne t’a le plus aidé aujourd’hui ?", "Qu’as-tu ressenti au moment de la chute ?",
   "Qu’est-ce qui dépendait de toi dans cette séance, et qu’est-ce qui n’en dépendait pas ?", "Quel petit progrès mérite d’être remarqué ?",
   "Quelle gêne vas-tu surveiller demain ?", "Pourquoi ce chemin compte-t-il pour toi, au-delà de la figure ?"];
 // Transmettre : missions débloquées par rang (index dans RANKS) ; validées sur ta parole, avec une réflexion écrite
@@ -65,7 +70,10 @@ const MISSIONS = [
   {id:"tm_ci", r:4, name:"Contre-indications", act:"Liste les précautions à prendre dans 5 situations : tension artérielle et inversions, grossesse, poignets fragiles, nuque, reprise après blessure.", q:"Que demanderais-tu à un élève avant son premier cours ?"},
   {id:"tm_cours", r:5, name:"Le cours de 45 minutes", act:"Écris un cours pour débutants : 10 minutes d’échauffement, 25 de cœur de séance, 10 de retour au calme.", q:"À quel moment ton cours risque-t-il de déborder ?"},
   {id:"tm_parade", r:6, name:"La parade", act:"Apprends les parades (équilibre, roulade arrière, ATR) avec un entraîneur diplômé, en club. Jamais seul.", q:"Où étaient tes mains, et pourquoi là ?"},
-  {id:"tm_eleve", r:6, name:"Premier élève", act:"Donne ton cours de 45 minutes, gratuitement, à un ami, et demande-lui un retour honnête.", q:"Quelle consigne as-tu dû reformuler en direct ?"},
+  {id:"tm_souffle", r:3, name:"Guider une respiration", act:"Guide à voix haute la respiration lente pour quelqu’un : 3 minutes, une voix posée, des silences.", q:"Où as-tu eu envie de remplir le silence ?"},
+  {id:"tm_toucher", r:5, name:"Demander avant de toucher", act:"Avant d’aider un élève avec la main, demande-lui toujours son accord, et propose une consigne verbale d’abord.", q:"Comment formuler la question pour qu’on puisse dire non sans gêne ?"},
+  {id:"tm_eleve", r:6, needs:["tm_parade","tm_ci"], name:"Premier élève", act:"Donne ton cours de 45 minutes, gratuitement, à un ami, et demande-lui un retour honnête.", q:"Quelle consigne as-tu dû reformuler en direct ?"},
+  {id:"tm_cercle", r:7, name:"Ouvrir et fermer un cours", act:"Ouvre ton cours par une intention simple et ferme-le par un temps calme : une respiration, un mot de chacun.", q:"Qu’a changé ce temps d’ouverture dans l’attention du groupe ?"},
   {id:"tm_groupe", r:7, name:"Un petit groupe", act:"Anime une séance pour trois personnes ou plus, de niveaux différents.", q:"Comment as-tu occupé les plus rapides pendant que tu aidais les autres ?"},
   {id:"tm_club", r:8, name:"Bénévole en club", act:"Aide un entraîneur en club, ou passe le diplôme fédéral d’animateur FFGym (encadrement bénévole).", q:"Qu’as-tu appris de l’entraîneur titulaire ?"},
   {id:"tm_voie", r:9, name:"Choisir sa formation", act:"Compare deux voies : BPJEPS Activités gymniques, formation de yoga de 200 heures, ou CQP ALS (gym d’entretien seulement). Coût, financement CPF, dates des tests.", q:"Laquelle correspond à ton projet dans deux ans, et pourquoi ?"},
@@ -94,20 +102,21 @@ function renderVoie(){
   { const b = el("div","block"); b.append(el("h2",null,"Respirer, écouter"), el("p","mut","Des pratiques courtes, à faire avant, après, ou à la place d’une séance."));
     const g = el("div","vprl"); PRATIQUES.forEach(p => { const x = el("button","vpr"); x.append(el("b",null,p.name), el("span","mut",p.dur)); x.onclick = () => vpOpen(p); g.append(x); }); b.append(g); box.append(b); }
   // le carnet
-  { const b = el("div","block"), q = QUESTIONS[dayN() % QUESTIONS.length]; b.append(el("h2",null,"Carnet"), el("p",null,q));
+  { const trained = S.log.some(l => dayKey(l.t) === dayKey(Date.now())), QS = trained ? QUESTIONS : QUESTIONS_REPOS, q = QS[dayN() % QS.length], b = el("div","block"); b.append(el("h2",null,"Carnet"), el("p",null,q));
     const ta = el("textarea","vta"); ta.rows = 3; ta.placeholder = "Quelques mots suffisent."; ta.setAttribute("aria-label", q);
     const ok = el("button","btn","Garder dans le carnet"); ok.onclick = () => { const a = ta.value.trim(); if (!a) return; (S.jr || (S.jr = [])).push({t:Date.now(), q, a}); save(); ta.value = ""; ta.blur(); toast("Gardé dans ton carnet."); renderVoie(); };
     b.append(ta, ok);
-    (S.jr || []).slice(-5).reverse().forEach(e => { const d = el("div","vjr"); d.append(el("div","mut", new Date(e.t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ", " + lc1(e.q)), el("p",null,e.a));
+    if ((S.jr || []).length || Object.keys(S.tm || {}).length) { const rl = el("button","btn line vre","Relire tout le carnet"); rl.onclick = relire; b.append(rl); }
+    (S.jr || []).slice(-3).reverse().forEach(e => { const d = el("div","vjr"); d.append(el("div","mut", new Date(e.t).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ", " + lc1(e.q)), el("p",null,e.a));
       const x = el("button","vdel","Effacer"); x.setAttribute("aria-label","Effacer cette note"); x.onclick = () => { S.jr = S.jr.filter(o => o !== e); save(); vForce(); }; d.append(x); b.append(d); });
     box.append(b); }
   // transmettre
   { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Un jour, enseigner le yoga et la gym. Les missions s’ouvrent avec ton rang : " + dn + " sur " + MISSIONS.length + " faites."));
     b.append(el("p","vlaw","En France, être payé pour enseigner la gym ou l’acrobatie demande un diplôme reconnu (BPJEPS, CQP…) et la carte professionnelle d’éducateur sportif. Le yoga n’a pas de diplôme d’État."));
     let lkN = 0;
-    MISSIONS.forEach(m => { const on = ri >= m.r, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
+    MISSIONS.forEach(m => { const need = (m.needs || []).filter(n => !(S.tm || {})[n]), on = ri >= m.r && !need.length, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
       const x = el("button","vmis" + (done ? " done" : on ? "" : " lk"));
-      x.append(el("b",null,m.name), el("span","mut", done ? "Faite" : on ? "Ouverte" : "Au rang " + RANKS[m.r])); x.onclick = () => tmOpen(m, on); b.append(x); });
+      x.append(el("b",null,m.name), el("span","mut", done ? "Faite" : on ? "Ouverte" : ri >= m.r ? "Après « " + MISSIONS.find(o => o.id === need[0]).name + " »" : "Au rang " + RANKS[m.r])); x.onclick = () => tmOpen(m, on); b.append(x); });
     if (lkN > 2) b.append(el("p","mut", (lkN - 2) + " autres missions t’attendent plus loin."));
     b.append(el("h3",null,"La route, en France"));
     const ol = el("ol","vroute"); ROUTE.forEach(([t, d]) => { const li = el("li"); li.append(el("b",null,t), el("span",null,d)); ol.append(li); }); b.append(ol);
@@ -139,12 +148,15 @@ function vpTick(){
   if (!vp || !vp.run) return; const now = Date.now(); vp.t += (now - vp.last) / 1000; vp.last = now;
   let acc = 0, i = 0; while (i < vp.steps.length && acc + vp.steps[i][1] <= vp.t) { acc += vp.steps[i][1]; i++; }
   if (i >= vp.steps.length) { vpStop(); vp.i = i; $("vpGo").textContent = "Recommencer"; $("vpTxt").textContent = "C’est fini. Prends un instant avant de te relever."; $("vpLeft").textContent = ""; say("C’est fini.", true); vpRing(null, 1);
-    if (vp.p.journal) vpOpen.jt = setTimeout(() => { $("vpDlg").close(); showTab("voie"); renderVoie(); const ta = document.querySelector("#voie .vta"); if (ta) ta.focus(); }, 2500); return; }
-  if (i !== vp.i) { vp.i = i; const [ph, sec, txt] = vp.steps[i]; $("vpTxt").textContent = txt; vpRing(ph, sec); say(txt, true); }
+    if (vp.p.journal) ecouteForm(); return; }
+  if (i !== vp.i) { vp.i = i; const [ph, sec, txt] = vp.steps[i]; $("vpTxt").textContent = txt; vpRing(ph, sec);
+    // la voix guide les premiers cycles, puis le cercle prend le relais : un souffle ne se compte pas à voix haute pendant 5 minutes
+    const cyc = vp.steps.findIndex((s, k) => k > 0 && s[2] === vp.steps[0][2]), lim = cyc > 0 ? cyc * 3 : Infinity;   // trois cycles guidés
+    if (ph === "txt" || i < lim) say(txt, true); else if (i === lim) say("Continue à ce rythme, avec le cercle.", true); }
   const left = Math.max(0, Math.ceil(vp.tot - vp.t)); $("vpLeft").textContent = Math.floor(left / 60) + " min " + String(left % 60).padStart(2, "0") + " s";
 }
 function vpStop(){ if (vp) vp.run = false; clearInterval(vpTick.h); if (vp && vp.i < vp.steps.length) $("vpGo").textContent = "Reprendre"; }
-$("vpGo").onclick = () => { if (!vp) return; if (vp.run) { vpStop(); return; } if (vp.i >= vp.steps.length) { vpOpen(vp.p, vp.alt); } vp.run = true; vp.last = Date.now(); $("vpGo").textContent = "Pause"; clearInterval(vpTick.h); vpTick.h = setInterval(vpTick, 200); vpTick(); };
+$("vpGo").onclick = () => { if (!vp) return; if (vp.run) { vpStop(); return; } if (vp.i >= vp.steps.length) { vpOpen(vp.p, vp.alt); } if (vp.t === 0) say(vp.p.steps && vp.p.steps[0][0] === "txt" ? "On commence." : "On commence. Suis le cercle.", true); vp.run = true; vp.last = Date.now(); $("vpGo").textContent = "Pause"; clearInterval(vpTick.h); vpTick.h = setInterval(vpTick, 200); vpTick(); };
 $("vpX").onclick = () => $("vpDlg").close();
 $("vpDlg").addEventListener("close", () => { clearTimeout(vpOpen.jt); vpStop(); try { speechSynthesis.cancel(); } catch(e){} });
 $("ecGo").onclick = () => { S.ecoute = 0; save(); $("ecoute").hidden = true; vpOpen(PRATIQUES.find(p => p.id === "ecoute")); };
@@ -161,6 +173,9 @@ const LECONS = {
   tm_ci:{c:["Inversions (tête en bas) à éviter sans avis médical : hypertension non contrôlée, glaucome, décollement de rétine.", "Grossesse : pas de nouvelle figure risquée de chute, et des adaptations à partir du deuxième trimestre, avec avis médical.", "Poignets fragiles : appuis sur poings, parallettes ou avant-bras. Nuque fragile : aucune charge sur la tête, ni chandelle ni charrue."], v:["en:yoga contraindications inversions"]},
   tm_cours:{c:["Une structure simple : échauffement, cœur de séance, retour au calme.", "Le cœur de séance vise un seul objectif, décliné en 2 ou 3 niveaux.", "Prévois une marge de 5 minutes : les transitions prennent toujours plus de temps que prévu."], v:["en:how to plan a yoga class", "plan de cours gym débutant"]},
   tm_parade:{c:["La parade s’apprend avec un entraîneur diplômé, en club, jamais seul ni par vidéo.", "Principe : accompagner le bassin et protéger la tête, sans porter tout le poids.", "Le pareur se place du côté de la chute probable, appuis solides, genoux fléchis."], v:["parade gymnastique ATR FFGym"]},
+  tm_souffle:{c:["Annonce la durée et la posture, puis laisse la voix ralentir avec le souffle.", "Donne le rythme deux ou trois fois, puis tais-toi : le silence fait partie du guidage.", "Prévois une sortie : « si la tête tourne, reviens à ton souffle normal »."], v:["guider une respiration yoga cours"]},
+  tm_toucher:{c:["Le toucher se demande à chaque fois, et la réponse peut changer d’un jour à l’autre.", "Propose d’abord une consigne verbale ou une démonstration.", "Une carte ou un geste convenu permet de refuser sans avoir à parler devant le groupe."], v:["en:consent based touch yoga teaching"]},
+  tm_cercle:{c:["Une intention tient en une phrase et ne se commente pas.", "Le retour au calme est une partie du cours, pas ce qui reste quand le temps manque.", "Un mot de chacun à la fin : court, sans obligation."], v:["ouverture et clôture cours de yoga"]},
   tm_eleve:{c:["Commence par demander ce que ton élève ressent ou redoute.", "Observe plus que tu ne parles : une consigne, un essai, un retour.", "À la fin, demande une seule chose à améliorer, et note-la."], v:["en:first yoga class teaching tips"]},
   tm_groupe:{c:["Donne la même figure en 3 niveaux : chacun travaille au sien, en même temps.", "Place-toi pour voir tout le monde : jamais dos au groupe.", "Prépare un défi pour les plus rapides pendant que tu aides les autres."], v:["en:teaching mixed level class"]},
   tm_club:{c:["En club, le bénévole encadre souvent aux côtés d’un entraîneur diplômé ; avec le diplôme d’animateur fédéral, il peut mener des séances bénévolement.", "Les diplômes fédéraux FFGym (animateur, puis moniteur) se passent par le club et le comité régional.", "Observe la gestion du temps, du matériel et de la sécurité : c’est le cœur du métier."], v:["FFGym animateur fédéral formation"]},
@@ -182,13 +197,16 @@ const MODELE = {title:"Équilibre sur les mains, débutants", pub:"Débutants", 
   ech:"Cercles de poignets et appuis sur les doigts, 3 min\nChat-vache, 2 min\nChien tête en bas actif, 3 × 20 s, 2 min\nGainage creux, 3 × 20 s, 3 min",
   coeur:"Pieds au mur en L, 3 × 20 s, 6 min\nPoitrine face au mur, 3 × 20 s, 7 min\nSortie en roue, 5 essais de chaque côté, 7 min\nPour les plus avancés : décollages du mur, 5 min",
   calme:"Posture de l’enfant, 2 min\nÉtirement des poignets et des épaules, 3 min\nRespiration lente, 5 min", notes:"Un seul objectif : un alignement mains, épaules, hanches. Trois consignes au plus.", vids:[]};
-const coursTxt = c => [c.title + " (" + c.pub + ", " + c.dur + " min)", ...PARTS.map(([k, n]) => c[k] ? n + " :\n" + c[k] : ""), c.notes ? "Notes : " + c.notes : "", ...(c.vids || []).map(v => v.label + " : " + v.url)].filter(Boolean).join("\n\n");
+const coursTxt = c => [c.title + " (" + c.pub + ", " + c.dur + " min)", c.theme ? "Thème : " + c.theme : "", ...PARTS.map(([k, n]) => c[k] ? n + " :\n" + c[k] : ""), c.notes ? "Notes : " + c.notes : "", ...(c.vids || []).map(v => v.label + " : " + v.url)].filter(Boolean).join("\n\n");
 function coursEdit(c0){
   const box = $("qkBody"), c = Object.assign({id:"c" + Date.now(), title:"", pub:NIVEAUX[0], dur:45, ech:"", coeur:"", calme:"", notes:"", vids:[]}, JSON.parse(JSON.stringify(c0 || {}))), isNew = !c0 || !c0.id; if (!c.id) c.id = "c" + Date.now();   // un modèle repart avec son propre identifiant
   box.textContent = ""; box.append(el("span","cedit"));   // repère : l’atelier est ouvert (garde-fou à la fermeture)
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Mes cours"), el("h2",null, isNew ? "Nouveau cours" : "Modifier le cours")); box.append(hd);
   const fld = (lab, node) => { const f = el("label","cfld"); f.append(el("span","lab",lab), node); box.append(f); return node; };
   const ti = fld("Titre", el("input")); ti.value = c.title; ti.placeholder = "Par exemple : équilibre, débutants";
+  const th = fld("Thème ou intention", el("input")); th.value = c.theme || ""; th.placeholder = "Par exemple : la patience";
+  { const ps = el("select","cadd"); ps.setAttribute("aria-label","Prendre une pensée comme thème"); ps.append(el("option",null,"+ Une pensée de la Voie comme thème")); PENSEES.forEach((p, k) => { const o = el("option",null,p[0]); o.value = k; ps.append(o); });
+    ps.onchange = () => { const p = PENSEES[+ps.value]; if (p) th.value = p[0] + " (" + p[1] + ")"; ps.selectedIndex = 0; }; box.append(ps); }
   const row = el("div","crow"); box.append(row);
   const pu = el("select"); NIVEAUX.forEach(n => { const o = el("option",null,n); o.value = n; pu.append(o); }); pu.value = c.pub;
   const du = el("select"); [30, 45, 60, 75, 90].forEach(n => { const o = el("option",null,n + " min"); o.value = n; du.append(o); }); du.value = String(c.dur);
@@ -208,7 +226,7 @@ function coursEdit(c0){
     add.onclick = () => { const u = ur.value.trim(); let ok = false; try { const x = new URL(u); ok = x.protocol === "https:" && !!x.hostname; } catch(e){} if (!ok) { toast("Colle un lien complet qui commence par https://"); return; } c.vids.push({label:lb.value.trim() || "Vidéo", url:u}); lb.value = ur.value = ""; drawV(); };
     r.append(lb, ur); box.append(r, add); }
   box.append(el("p","mut vsrc","Tes vidéos restent là où tu les ranges (YouTube en non répertorié, Google Drive…) : l’app garde seulement le lien."));
-  const read = () => { c.title = ti.value.trim(); c.pub = pu.value; c.dur = +du.value; PARTS.forEach(([k]) => c[k] = tas[k].value.trim()); c.notes = no.value.trim(); };
+  const read = () => { c.theme = th.value.trim(); c.title = ti.value.trim(); c.pub = pu.value; c.dur = +du.value; PARTS.forEach(([k]) => c[k] = tas[k].value.trim()); c.notes = no.value.trim(); };
   const snap = isNew && c0 ? "" : JSON.stringify(c);   // un modèle ou une copie n’existe pas encore : fermer sans enregistrer demande confirmation
   qkGuard = () => { read(); return JSON.stringify(c) === snap || confirm("Fermer sans enregistrer ce cours ?"); };
   const okb = el("button","btn","Enregistrer le cours"); okb.onclick = () => {
@@ -225,4 +243,31 @@ function coursBlock(){
   L.slice().sort((a, z) => (z.t || 0) - (a.t || 0)).forEach(c => { const x = el("button","vmis"); x.append(el("b",null,c.title), el("span","mut", c.pub + ", " + c.dur + " min" + (c.vids && c.vids.length ? ", " + c.vids.length + " vidéo" + (c.vids.length > 1 ? "s" : "") : ""))); x.onclick = () => coursEdit(c); b.append(x); });
   const row = el("div","btns"), nw = el("button","btn","Nouveau cours"), md = el("button","btn line","Partir d’un modèle"); nw.onclick = () => coursEdit(null); md.onclick = () => coursEdit(Object.assign({}, MODELE, {id:""})); row.append(nw, md); b.append(row);
   return b;
+}
+// Après l’écoute : les notes de gêne sont gardées et la séance suivante en tient compte
+// jusqu’à 2 : rien ; de 3 à 5 : pas de tentatives au maximum pendant 36 h ; au-delà de 5 : traité comme une douleur (repos de la zone)
+const ZONES = [["poignet","Poignets"],["coude","Coudes"],["epaule","Épaules"],["dos","Bas du dos"]];
+function ecouteForm(){
+  const f = el("div","ecf"), val = {}; f.append(el("p","vq","Tes notes de gêne, de 0 à 10"));
+  ZONES.forEach(([z, n]) => { const r = el("label","ecr"), v = el("b",null,"0"), inp = el("input"); inp.type = "range"; inp.min = 0; inp.max = 10; inp.value = 0; inp.setAttribute("aria-label", n + ", gêne de 0 à 10");
+    inp.oninput = () => { v.textContent = inp.value; val[z] = +inp.value; }; val[z] = 0; r.append(el("span",null,n), inp, v); f.append(r); });
+  const ok = el("button","btn","Garder mes notes"); ok.onclick = () => {
+    (S.ecl || (S.ecl = [])).push(Object.assign({t:Date.now()}, val)); if (S.ecl.length > 120) S.ecl.shift();
+    const mx = Math.max(...Object.values(val)), top = Object.keys(val).find(z => val[z] === mx);
+    if (mx > 5) { S.pain = Date.now(); painLog().push({t:S.pain, zone:top === "dos" ? "autre" : top}); if (S.painLog.length > 50) S.painLog.shift(); }
+    else if (mx >= 3) S.caution = Date.now();
+    save(); f.remove(); $("vpDlg").close(); render();
+    toast(mx > 5 ? "Noté : la zone se repose, la séance s’adapte." : mx >= 3 ? "Noté : pas de tentative au maximum pendant un jour et demi." : "Noté : tout va bien. Écris un mot dans ton carnet.");
+    showTab("voie"); vForce(); const ta = document.querySelector("#voie .vta"); if (ta) ta.focus(); };
+  f.append(ok); const stg = $("vpDlg").querySelector(".vpstage"); stg.after(f); stg.hidden = true; $("vpLeft").hidden = true; $("vpGo").hidden = true;
+}
+$("vpDlg").addEventListener("close", () => { const f = $("vpDlg").querySelector(".ecf"); if (f) f.remove(); $("vpGo").hidden = false; $("vpLeft").hidden = false; $("vpDlg").querySelector(".vpstage").hidden = false; });
+// Relire : tout le carnet, mois par mois, avec les réflexions des missions
+function relire(){
+  const box = $("qkBody"); box.textContent = ""; const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Carnet"), el("h2",null,"Relire")); box.append(hd);
+  const items = (S.jr || []).map(e => ({t:e.t, q:e.q, a:e.a})).concat(Object.entries(S.tm || {}).map(([id, v]) => { const m = MISSIONS.find(x => x.id === id); return {t:v.t, q:m ? "Mission « " + m.name + " » : " + lc1(m.q) : "Mission", a:v.a}; })).sort((a, b) => b.t - a.t);
+  let mo = ""; items.forEach(e => { const d = new Date(e.t), k = d.toLocaleDateString("fr-FR",{month:"long", year:"numeric"}); if (k !== mo) { mo = k; box.append(el("h3","ch3", k.charAt(0).toUpperCase() + k.slice(1))); }
+    const r = el("div","vjr"); r.append(el("div","mut", d.toLocaleDateString("fr-FR",{day:"numeric", month:"long"}) + ", " + lc1(e.q)), el("p",null,e.a)); box.append(r); });
+  if (!items.length) box.append(el("p","mut","Ton carnet est encore vide."));
+  $("qkT").textContent = "Relire le carnet"; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
 }

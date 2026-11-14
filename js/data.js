@@ -78,7 +78,7 @@ const TREE = [
       yt:[["-sdV7YfO73Q","Tutoriel handstand push-up"]]},
   ], videos:[["Affiner à deux bras : conseils et astuces niveau intermédiaire","Intermediate handstand tips & tricks"],["Affiner à deux bras : souffrir avec les 7","Suffering with 7's"],["Affiner à deux bras : tu crois savoir tenir l’équilibre ?","So you think you can balance?"],["Affiner à deux bras : tête rentrée, regard vers les orteils","Head looking at toes"],["Affiner à deux bras : arguments pour la ligne droite","Arguments for a straight line"],["Affiner à deux bras : 10 conseils pour une ligne droite","10 tips for a straight line"],["Affiner à deux bras : l’alignement","Alignment"],["Un bras : les drapeaux comme préparation","Flagging as one arm handstand prep"]]},
   {id:"onearm", name:"Un bras", en:"One Arm", ms:[
-    {id:"oa_wall", name:"Un bras dos au mur", en:"One Arm Wall Hold – 30s Per Side", sub:"30 s de chaque côté", type:"hold", target:30, req:["oa_flaghoriz"],
+    {id:"oa_wall", name:"Un bras dos au mur", en:"One Arm Wall Hold – 30s Per Side", sub:"30 s de chaque côté", type:"hold", target:30, req:["oa_flaghoriz","in_str60"],
       desc:"Dos au mur, jambes écartées : tu retires une main et tu tiens sur l’autre. Première vraie charge sur un bras, avec la sécurité du mur."},
     {id:"oa_shrug", name:"Haussements d’épaule à un bras", en:"One Arm Wall Shrugs – 8 Per Side", sub:"8 de chaque côté", type:"reps", target:8, req:["oa_wall"],
       desc:"Au mur sur un bras, l’épaule descend puis remonte vers l’oreille. La force de base sur un bras."},
