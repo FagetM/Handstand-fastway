@@ -31,12 +31,13 @@ function migrQuote(S){ if (S.migrQ) return; const q = x => String(x).replace(/(?
   if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); if (b.how) b.how = q(b.how); });
   S.migrQ = true; }
 // figures renommées : les noms enregistrés (historique, records, séance du jour) suivent
-const RENAMED = {"Tenues de formes, niveau 1":"Tenues de forme, niveau 1", "Changements de formes, niveau 1":"Changements de forme, niveau 1", "Straddle planche serrée":"Straddle planche, écart réduit", "Queda de rins":"Queda de rins (appui sur le coude)"};
-function migrNames(S){ if (S.migrN1) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
+const RENAMED = {"Tenues de formes, niveau 1":"Tenues de forme, niveau 1", "Changements de formes, niveau 1":"Changements de forme, niveau 1", "Straddle planche serrée":"Straddle planche, écart réduit", "Queda de rins":"Queda de rins (appui sur le coude)",
+  "Tuck planche ouvert":"Tuck planche ouverte", "De l’équerre à la planche, et retour en équilibre":"De l’équerre à la full planche et retour en équilibre", "Équerre, équilibre, un bras de chaque côté":"Équerre, équilibre, puis un bras de chaque côté", "Drapeaux jusqu’au sol":"Drapeaux jusqu’au sol"};
+function migrNames(S){ if (S.migrN2) return; const q = x => { for (const [o, n] of Object.entries(RENAMED)) { if (x === o || x === "pg:" + o || x.startsWith(o + ",") || x.startsWith("pg:" + o + ",")) return x.replace(o, n); } return x; };
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
   if (S.pg && S.pg.best) S.pg.best = Object.fromEntries(Object.entries(S.pg.best).map(([k, v]) => [q(k), v]));
   if (S.bday && S.bday.blocks) S.bday.blocks.forEach(b => { if (b.name) b.name = q(b.name); });
-  S.migrN1 = true; }
+  S.migrN2 = true; }
 // les noms composés perdent leur point médian (« Planche inclinée, préparation ») : les noms enregistrés suivent
 function migrDot(S){ if (S.migrDot) return; const q = x => String(x).split(" · ").join(", ");
   (S.log || []).forEach(l => { if (typeof l.id === "string") l.id = q(l.id); });
@@ -110,12 +111,12 @@ function hitTarget(id, side){
   if (h.days.includes(d) && !fresh) return "Séance déjà validée aujourd’hui (" + h.days.length + "/" + V.n + ").";
   if (h.n >= need && !gapOk) return "Cible tenue. Elle comptera pour la validation dans " + (V.gap - dayDiff(d, last)) + " jour" + (V.gap - dayDiff(d, last) > 1 ? "s" : "") + " : on espace les séances validées.";
   if (h.n < need) return SIDED.has(id) ? "Cible tenue d’un côté : à l’autre maintenant." : "Cible tenue (" + h.n + "/" + need + " séries aujourd’hui).";
-  if (fresh) return "Séance validée (" + h.days.length + "/" + V.n + ") : refais-le un autre jour pour valider la figure.";
+  if (fresh) return "Séance validée (" + h.days.length + "/" + V.n + ") : refais la cible un autre jour pour valider la figure.";
 }
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
 // espaces insécables avant les unités et après « × » : « 15 s », « 12 rép. », « ≈ 5 semaines » ne se coupent jamais en fin de ligne
-const nbsp = t => String(t).replace(/(\d) (?=(?:s|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0");
+const nbsp = t => String(t).replace(/(\d) (?=(?:s|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0");
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = typeof txt === "string" ? nbsp(txt) : txt; return e; };
 const ICON = {
   check:'<svg width="11" height="9" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4.5l3 3 6-6.5"/></svg>',

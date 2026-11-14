@@ -294,7 +294,7 @@ ul.plan li{margin:8px 0}
 .hist{margin:16px 0 4px}
 .hist .mut{font-size:12.5px}
 /* le chemin */
-.jr2 .jr-e path{stroke-width:7;stroke-opacity:.18;stroke-dasharray:none}
+.jr2 .jr-e path{stroke-width:7;stroke-opacity:.3;stroke-dasharray:none}
 .jr2 .jr-e path.on{stroke:var(--txt);stroke-opacity:.9}
 .jr2 .jr-e path.go{stroke:var(--acc);stroke-opacity:1;stroke-dasharray:1 14;stroke-width:7}
 .sign{position:absolute;left:0;right:0;display:flex;align-items:center;gap:12px;padding:8px 12px;border-radius:14px;background:var(--raise);z-index:2;flex-wrap:wrap}
@@ -690,3 +690,4 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 #quest .golink{display:block;margin-top:12px}#quest .golink::after{content:" ›"}
 label[for="eqKg"]{display:block;margin-top:12px}
 .dpill.on span{color:var(--txt)}
+.jn .rg circle{stroke:color-mix(in srgb,var(--mut) 45%,var(--line))}
