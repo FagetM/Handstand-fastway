@@ -37,9 +37,9 @@ const cycDays = () => { const s0 = cyc().start; return new Set(S.log.filter(l =>
 const cycTest = () => cycDay() >= 25;                                                              // fin de cycle : jour de test, puis bilan
 const cycLight = () => { const d = cycDay(); return d >= 21 && d < 25 && cycDays() >= 8; };        // 4e semaine plus légère, avant le test, si le cycle a été travaillé
 // les figures suivies : les plus travaillées du cycle (tenues ou répétitions chiffrées)
-function cycFigs(since, until){ const n = {}; S.log.filter(l => l.t >= since && l.t < (until || Infinity) && MS[l.id] && typeof l.v === "number").forEach(l => { n[l.id] = (n[l.id] || 0) + 1; });
+function cycFigs(since, until){ const n = {}; S.log.filter(l => l.t >= since && l.t < (until || Infinity) && typeof l.v === "number" && idOfLog(l)).forEach(l => { const i = idOfLog(l); n[i] = (n[i] || 0) + 1; });
   return Object.keys(n).sort((a, b) => n[b] - n[a]).slice(0, 4); }
-function cycBest(id, a, b){ let m = 0; S.log.forEach(l => { if (l.id === id && typeof l.v === "number" && l.t >= a && l.t < b) m = Math.max(m, l.v); }); return m; }
+function cycBest(id, a, b){ let m = 0; S.log.forEach(l => { if (typeof l.v === "number" && l.t >= a && l.t < b && idOfLog(l) === id) m = Math.max(m, l.v); }); return m; }
 // Aujourd’hui : une ligne de cycle, et la carte du test ou du bilan au bon moment
 function renderCycle(){
   const box = $("cycle"); if (!box) return; box.textContent = ""; const C = cyc(), d = cycDay(), w = Math.min(4, Math.floor(d / 7) + 1);

@@ -883,3 +883,4 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .drc2{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;padding:8px 4px;border-radius:12px;background:var(--raise)}
 .drc2 b{font-size:13px;line-height:1.2}.drc2 .mut{font-size:12px}
 .drc2 .sp{position:relative}
+.blk .why{font-size:12.5px;color:var(--acc);margin-top:4px;line-height:1.35}

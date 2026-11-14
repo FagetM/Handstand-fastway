@@ -322,7 +322,7 @@ function record(v){
   pushUndo(m.name + ", " + (v === true ? "réussi" : num(v) + (m.type === "hold" ? " s" : " rép."))); base0(cur);
   if (v === true) chkHit(cur);
   else { if (v > x.best) { pr = x.best > 0; x.best = v; } if (v >= m.target && !x.done && SIDED.has(cur)) toast("Cible tenue. Cette figure se valide des deux côtés : fais-la dans la séance du jour, côtés alternés."); else if (v >= m.target && !x.done) { const msg = hitTarget(cur); toast(msg || "« " + m.name + " » validée."); } if (m.type === "hold") cnt().hold += v; }
-  stamp(cur); S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  stamp(cur); S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 6000) S.log = S.log.slice(-6000);
   save(); fillDlg(); render();
   const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + ", niveau " + lv1 + " atteint.");
   const nd = document.querySelector('.jn[data-id="' + cur + '"]'); if (nd && lv1 > lv0) nd.classList.add("pop");

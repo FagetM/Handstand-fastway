@@ -245,8 +245,8 @@ function builtinBlocks(){
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
     if (pl.sides) base.note = /^pl_/.test(id) ? "Alterne la jambe à chaque série (séries paires d’une jambe, impaires de l’autre) : les deux doivent tenir la cible." : "Alterne le côté à chaque série (séries paires d’un côté, impaires de l’autre) : les deux doivent tenir la cible.";
-    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 240 : 120, max:true})))}); });
-  const blocks = blocks0.map(b => { const fn = fragNote(b.ms); if (fn) b.note = (b.note ? b.note + " " : "") + fn; return b; });
+    return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.tryT || pl.T, rest:pl.sides ? 90 : pr ? 240 : 120, max:true})))}); });
+  const blocks = blocks0.map(b => { const wy = MS[b.ms] && planFor(MS[b.ms]).why; if (wy) b.why = wy; const fn = fragNote(b.ms); if (fn) b.note = (b.note ? b.note + " " : "") + fn; return b; });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = confIds.map(id=>{ const m = MS[id], base = {name:m.name + ", vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l’essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
@@ -455,6 +455,7 @@ function renderSess(){
       : fx ? b.sets.length + (day.circuit ? " tours, " : " séries, ") + fixTxt(b, b.sets[0], day.scale)
       : b.sets.length + (b.sets.length > 1 ? " séries" : " série") + (b.sets[0].rest ? ", repos " + restTxt(b.sets[0]) : "") + (best ? ", record " + num(best) + unit(b) : "")));
     if (b.how) t.append(el("div","how",b.how));
+    if (b.why) t.append(el("div","why", b.why));   // la micro-intelligence explique sa charge, en une ligne
     if (b.fr && b.fr !== b.name) t.append(el("div","orig","En français : " + b.fr));
     if (b.terms && b.terms.length) { const det = el("details"); det.append(el("summary",null,"Les termes de ce cours, " + b.terms.length));
       const dl = el("dl","lex"); b.terms.forEach(([k,v])=>dl.append(el("dt",null,k), el("dd",null,v))); det.append(dl); t.append(det); }
@@ -554,6 +555,10 @@ function plStep(){
 // Fin de séance : la charge de chaque figure s’ajuste aux séries réussies ou ratées, puis à ton ressenti.
 function endSession(){
   const ad = S.adapt || (S.adapt = {}), ids = Object.keys(sessRes);
+  { const d0 = new Date(); d0.setHours(0, 0, 0, 0); const rs = ids.map(id => { const c = capEst(id, d0.getTime()), L = logsOf(id).filter(l => l.t >= d0.getTime()); if (!c || !c.v || !L.length) return null;
+      const T = L.filter(l => !(l.g && !l.mx && l.v >= l.g * 0.95)); return T.length ? Math.max(...T.map(l => l.v)) / c.v : null; }).filter(r => r != null);   /* seules les vraies mesures (tentatives, séries ratées) disent la forme : une série arrêtée à sa cible ne dit rien */
+    const tot = ids.reduce((n, id) => n + sessRes[id].ok + sessRes[id].miss, 0), mi = ids.reduce((n, id) => n + sessRes[id].miss, 0);
+    if (rs.length || tot) { const pf = S.perf || (S.perf = []); if (pf.length && dayKey(pf[pf.length - 1].t) === dayKey(Date.now())) pf.pop(); pf.push({t:Date.now(), r:rs.length ? Math.round(rs.reduce((a, b) => a + b, 0) / rs.length * 100) / 100 : 1, miss:tot ? Math.round(mi / tot * 100) / 100 : 0}); if (S.perf.length > 60) S.perf = S.perf.slice(-60); } }
   const light = deloadWeek() || moodToday() === "fatigue" || painRecent();
   ids.forEach(id=>{ const r = sessRes[id], tot = r.ok + r.miss; if (!tot) return; const f0 = ad[id] || 1, up = !light && !lightWeek(id);   // jours allégés : on ne monte pas
     ad[id] = Math.round(Math.max(0.6, Math.min(1.35, r.miss / tot <= 0.25 ? (up ? f0 * (profHeavy() ? 1.03 : 1.05) : f0) : r.miss / tot >= 0.5 ? f0 * 0.92 : f0)) * 100) / 100; });
@@ -565,7 +570,7 @@ function endSession(){
   save(); $("fbIds").value = ids.join(","); $("fbPens").textContent = "Sur le tapis : " + lc1(penseeDuJour(0)[2]); $("fbDlg").showModal(); $("fbDlg").focus(); say("Séance terminée. Comment tu te sens ?", true);
 }
 function feedback(kind){
-  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner
+  const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.04, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient déjà des séries réussies : le ressenti ne fait que freiner
   ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
   if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
@@ -660,7 +665,7 @@ function saveFixed(v){
   const {b, s, day, si} = sd; sdStop();
   const val = v != null ? v : s.dur != null ? sDur(s, day.scale) : s.reps; storeSet(val);
   // chaque série faite entre dans l’historique, même à durée ou nombre fixes, et chaque essai réussi / pas encore
-  S.log.push(s.lab === "essai" ? {t:Date.now(), id:"pg:" + b.name, k:"try", v:val > 0, s:setRef()} : {t:Date.now(), id:"pg:" + b.name, k:s.dur != null ? "fix" : "reps", v:val, s:setRef()}); if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  S.log.push(s.lab === "essai" ? {t:Date.now(), id:"pg:" + b.name, k:"try", v:val > 0, s:setRef()} : {t:Date.now(), id:"pg:" + b.name, k:s.dur != null ? "fix" : "reps", v:val, s:setRef()}); if (S.log.length > 6000) S.log = S.log.slice(-6000);
   if (b.confirm && (S.confirm || []).includes(b.ms) && b.sets.every((_,i)=>wkGet(selDay)[sd.bi + "-" + i] != null)) {
     const okN = b.sets.filter((_,i)=>wkGet(selDay)[sd.bi + "-" + i] > 0).length; S.confirm = (S.confirm || []).filter(x=>x !== b.ms);
     if (okN >= 2) { confirmUp(b.ms); toast("« " + MS[b.ms].name + " » confirmée."); } else { st(b.ms).done = false; st(b.ms).best = 0; st(b.ms).b0 = null; unDeclare(b.ms); toast("« " + MS[b.ms].name + " » pas encore confirmée : elle revient dans ton parcours."); } }
@@ -725,7 +730,7 @@ function saveSet(v){
       // tenue bien en dessous de la cible : les séries suivantes de ce bloc, aujourd’hui, visent un peu plus court
       if (v < sd.tg * 0.5) { const ng = Math.max(3, Math.round(v * 1.3)); if (S.bday && S.bday.d === dayKey(Date.now()) && S.bday.blocks[sd.bi]) S.bday.blocks[sd.bi].sets.forEach((x, i) => { if (i > sd.si && x.auto && x.goal > ng) x.goal = ng; });
         toast(num(v) + " s sur " + sd.tg + " : les séries suivantes visent " + ng + " s aujourd’hui. Propre avant long."); } } }
-  if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0, s:setRef()}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 2000) S.log = S.log.slice(-2000);
+  if (b.ms) stamp(b.ms); S.log.push({t:Date.now(), id:"pg:" + b.name, k:b.kind, v, pr:pr && old > 0, s:setRef(), g:s.goal || undefined, mx:s.max ? 1 : undefined}); if (pr && old > 0) sessPR = [b.name, v, unit(b)]; if (S.log.length > 6000) S.log = S.log.slice(-6000);
   save(); render();
   const nx = nextSet();
   if (!s.rest) { sdStop(); if (nx && sd.day.type !== "gtg") openSet(nx[0], nx[1]); else closeEnd(); return; }
