@@ -61,11 +61,11 @@ function romBilan(start){
   return sc;
 }
 // zones au repos qui ferment un repère : poignets (appui sur les mains), cuisses et aine (grands écarts), bas du dos (pont)
-const romOk = (r, zones) => !(r.sh && (zones.includes("epaule") || zones.includes("coude") || (typeof frag === "function" && frag("epaule")))) && !(r.hands && zones.includes("poignet")) && !(r.split && zones.includes("jambe")) && !(r.back && zones.includes("dos"));
+const romOk = (r, zones, active) => !(r.sh && (zones.includes("epaule") || zones.includes("coude") || (!active && typeof frag === "function" && frag("epaule")))) && !(r.hands && zones.includes("poignet")) && !(r.split && zones.includes("jambe")) && !(r.back && zones.includes("dos"));
 // les 5 minutes actives de fin de séance : le repère le plus en retard parmi ceux que demandent les figures du jour
 function romActive(ids, PS){
   const secs = new Set(ids.map(id => MS[id] && MS[id].sec)), manna = ids.some(id => /^pr_(manna|vsitH|extSup|mannaP)/.test(id)), zones = PS.phase === 1 ? (PS.zones || [PS.zone]) : [];
-  const ok = ROM.filter(r => romOk(r, zones)), pool = ok.filter(r => r.for.some(s => secs.has(s) || (s === "manna" && manna)));
+  const ok = ROM.filter(r => romOk(r, zones, true)), pool = ok.filter(r => r.for.some(s => secs.has(s) || (s === "manna" && manna)));
   const r = romWeak(pool.length ? pool : ok)[0]; if (!r || !DRILLS[r.act]) return null;
   const b = drillBlock(r.act, false); b.name += ", souplesse active"; b.keep = true; b.note = "Souplesse active : soulever et tenir l’amplitude que tu sais déjà atteindre. Jamais jusqu’à l’échec."; return b;
 }
@@ -74,6 +74,6 @@ function soupleDay(PS){
   const zones = PS && PS.phase === 1 ? (PS.zones || [PS.zone]) : [], y = new Date(); y.setDate(y.getDate() - 1);
   const noSplit = S.lastSplit === dayKey(y) || zones.includes("jambe");   // grands écarts : jamais deux jours de suite
   const pick = romWeak(ROM.filter(r => romOk(r, zones) && !(r.split && noSplit))).slice(0, 2);
-  const ks = [...new Set(pick.flatMap(r => r.pas.concat(r.act)))].filter(k => DRILLS[k] && !(zones.includes("poignet") && DRILLS[k].hands));
+  const ks = [...new Set(pick.flatMap(r => (typeof frag === "function" && frag("hyper") ? [] : r.pas).concat(r.act)))]   // hyperlaxe : la souplesse active seulement, pas d’étirement passif.filter(k => DRILLS[k] && !(zones.includes("poignet") && DRILLS[k].hands));
   return [Object.assign(drillBlock("miseEnRoute", false), {keep:true, name:"Mise en route, avant la souplesse douce"})].concat(ks.map(k => { const b = drillBlock(k, false); b.keep = true; return b; }), [drillBlock("hollow", false)]);
 }

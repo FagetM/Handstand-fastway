@@ -61,7 +61,7 @@ function planFor(m){
   if (x.done) { out.head = "Figure maîtrisée"; out.short = "Entretien : une ou deux fois par semaine."; out.lines = ["Figure acquise. Reviens-y une ou deux fois par semaine pour l’entretenir, en échauffement des jalons suivants."]; return out; }
   const miss = (m.req||[]).filter(r=>!st(r).done);
   // Deux rythmes : l’équilibre est une habileté, elle se travaille presque tous les jours ; la force (planche, montées, un bras, équilibres bas) demande plus de récupération.
-  const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = (/^pr_/.test(m.id) && m.type === "reps" && !/Lift$|^pr_(walk|float)$/.test(m.id)) || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id),   /* les excentriques en full planche chargent le tendon du biceps : 4 × 1, repos complet */   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", prSkill = prReps && /^pr_/.test(m.id) && !/Neg|halfSt/.test(m.id),   /* les descentes restent en 4 × 1 */ days = /^pr_(walk|float)$/.test(m.id) ? 4 : /^pl_/.test(m.id) ? (S.goal === "planche" || (S.ex && S.ex.on && S.ex.prio === "pl") ? 3 : 2) : prSkill ? 3 : /^pr_/.test(m.id) ? 2 : force ? 3 : m.sec === "onearm" ? 4 : 5,   /* comme les plafonds de la séance : 3 jours de force par semaine au plus, 4 jours un bras */
+  const force = /^(pl_|pr_|lo_|ul_)/.test(m.id) || m.id === "in_hspu", prReps = (/^pr_/.test(m.id) && m.type === "reps" && !/Lift$|^pr_(walk|float)$/.test(m.id)) || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id),   /* les excentriques en full planche chargent le tendon du biceps : 4 × 1, repos complet */   /* les élévations se dosent comme des répétitions normales */ oaReps = m.sec === "onearm" && m.type === "reps", prSkill = prReps && /^pr_/.test(m.id) && !/[Nn]eg|halfSt/.test(m.id),   /* les descentes restent en 4 × 1 */ days = /^pr_(walk|float)$/.test(m.id) ? 4 : /^pl_/.test(m.id) ? ((S.goal === "planche" || (S.ex && S.ex.on && S.ex.prio === "pl")) && !profHeavy() ? 3 : 2) : prSkill ? 3 : /^pr_/.test(m.id) ? 2 : force ? 3 : m.sec === "onearm" ? 4 : 5,   /* comme les plafonds de la séance : 3 jours de force par semaine au plus, 4 jours un bras */
     sets = /^ul_/.test(m.id) ? 4 : oaReps ? 6 : prSkill ? 5 : prReps ? 4 : m.id === "oa_wall" ? 8 : /^pl_/.test(m.id) ? 5 : force ? 6 : 8, tries = oaReps || ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(m.id) ? 0 : prReps ? 1 : /^pl_/.test(m.id) ? 3 : 2;   // descentes de montée : 4 × 1, une tentative
   out.days = days;
   const freq = (prSkill ? "Jusqu’à " : "") + days + " séances par semaine" + (prSkill ? " : la montée est un geste technique, des séries courtes et fréquentes, toujours fraîches." : force ? " : un jour de repos entre deux, la force se construit pendant la récupération." : " : c’est une habileté, la fréquence compte plus que la durée.");
@@ -184,13 +184,14 @@ function pace(){ let a = 0, d = 0, n = 0; Object.values(MS).forEach(m => { const
 const planKey = () => JSON.stringify(S.prof || {}) + (window._sv || 0) + "|" + S.log.length + "|" + dayKey(Date.now());
 function plan(o){ if (!o) { const k = planKey(); if (plan.k !== k) { plan.k = k; plan.v = planCalc(); } return plan.v; } return planCalc(o); }
 // profil : plus de 50 ans ou plus de 90 kg, la force avance moins vite (l’équilibre, à moitié moins)
+const profHeavy = () => { const p = S.prof || {}; return p.age === ">50" || p.poids === ">90"; };   // plus de 50 ans ou plus de 90 kg : on monte plus doucement
 const profK = lane => { const p = S.prof || {}, a = p.age === ">50" ? 1.35 : p.age === "35-50" ? 1.15 : 1, w = p.poids === ">90" ? 1.3 : p.poids === "70-90" ? 1.1 : 1; return lane === "ba" ? 1 + (a * w - 1) * 0.5 : a * w; };
 function planCalc(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.days != null ? o.days : trainDays();
   const fq = td == null ? 1 : Math.max(0.9, Math.min(2.5, 20 / Math.max(4, td)));
   // 30 min : une seule figure de force par séance, planche et montées se partagent la place ; 45 min et plus : les deux avancent
   const kf = {ba:mins <= 15 ? 1.5 : mins <= 30 ? 1 : mins <= 45 ? 0.9 : 0.85, pl:mins <= 15 ? 2.5 : mins <= 30 ? 1.6 : mins <= 45 ? 1 : 0.9}; kf.pr = kf.pl; kf.ul = kf.pl / (mins <= 30 ? 1.6 : 1);
   const pk = pace().k, fin = {}, start = {}, by = {}, free = {ba:0, pl:0, pr:0, ul:0}, last = {}, todo = [];
-  Object.values(MS).forEach(m => { if (st(m.id).done) fin[m.id] = 0; else if (m.alt) fin[m.id] = null; else todo.push(m); });
+  Object.values(MS).forEach(m => { if (st(m.id).done || eqSkip(m.id)) fin[m.id] = 0; else if (m.alt) fin[m.id] = null; else todo.push(m); });
   const W = m => { const x = st(m.id), has = S.log.filter(l => l.id === m.id && typeof l.v === "number").length >= 2, e = has && !msLocked(m) ? eta(m) : null;
     if (e != null) return e; const d = DEFW[m.id] || 2, part = m.target && x.best ? Math.min(0.7, 0.7 * x.best / m.target) : 0; return Math.max(1, d * (1 - part) * kf[laneOf(m)] * fq * pk * profK(laneOf(m))); };
   while (todo.length) { let bi = -1, br = 0, bt = Infinity, bw = null;
@@ -222,7 +223,7 @@ function openEta(){ const box = $("etaBody"), P = plan(), goal = goalTop(), w0 =
   [45, 60].filter(v => v > mins).forEach(v => { const w = plan({mins:v}).fin[goal]; if (w0 - w >= 4) lever("Si tu as plus de temps : " + v + " min", gainTxt(w0 - w) + " plus tôt, " + dateTxt(w), () => { S.mins = v; if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); openEta(); toast("Séances réglées sur " + v + " min."); }); });
   if (mins > 30) lever("Tu es à " + mins + " min", "planche et montées avancent ensemble");
   if (td != null && td < 18) { const w = plan({days:20}).fin[goal]; if (w0 - w >= 4) lever("Si tu peux, 5 jours par semaine (tu es à " + td + " jours sur 28)", gainTxt(w0 - w) + " plus tôt, " + dateTxt(w)); }
-  box.append(lv, el("p","mut etnote","Estimation prudente : elle part de repères habituels, puis de tes propres mesures dès que tu en as. Elle se recalcule à chaque séance. Pour les tendons, la planche reste à 2 jours par semaine.")); }
+  box.append(lv, el("p","mut etnote","Estimation prudente : elle part de repères habituels, puis de tes propres mesures dès que tu en as. Elle se recalcule à chaque séance. " + (S.goal === "planche" && !profHeavy() ? "Avec ton objectif, la planche passe à 3 jours par semaine." : "Pour les tendons, la planche reste à 2 jours par semaine.") + "")); }
 const etaTxt = w => w == null ? "" : w <= 1 ? "≈ 1 semaine" : "≈ " + w + " semaines";
 // ---------- Le parcours : un seul chemin qui serpente, figure après figure ; il se divise en trois voies au niveau difficile.
 function journey(nextId){

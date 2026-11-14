@@ -19,11 +19,11 @@ const TREE = [
       desc:"20 pompes propres d’affilée, corps gainé, poitrine jusqu’au poing. La force de base pour les épaules et la planche."},
     {id:"fd_c2w", name:"Poitrine face au mur", en:"Chest To Wall Hold", type:"hold", target:30, req:["fd_pike"],
       desc:"Face au sol, pieds contre le mur, tu montes les pieds le long du mur jusqu’à la verticale, poitrine face au mur. Tenir 30 s donne l’endurance d’épaules pour la suite."},
-    {id:"fd_dipsB", name:"Dips sur banc", en:"Bench dips", type:"reps", target:15, req:["fd_pushInc"],
+    {id:"fd_dipsB", name:"Dips sur banc", en:"Bench dips", sub:"variante, épaules en forme seulement", alt:true, type:"reps", target:15, req:["fd_pushInc"],
       desc:"Mains sur un banc derrière toi, genoux pliés, pieds au sol : descends jusqu’à 90° aux coudes, épaules basses. Prépare les épaules aux vrais dips."},
-    {id:"fd_support", name:"Appui bras tendus, épaules basses", en:"Straight-arm support hold – 30s", type:"hold", target:30, req:["fd_dipsB"],
+    {id:"fd_support", name:"Appui bras tendus, épaules basses", en:"Straight-arm support hold – 30s", type:"hold", target:30, req:["fd_pushInc"],
       desc:"En appui sur des barres, des parallettes ou deux briques, bras verrouillés : pousse les épaules loin des oreilles et tiens. La force qui tient la planche."},
-    {id:"fd_dips", name:"Dips", en:"Dips", type:"reps", target:10, req:["fd_push","fd_dipsB"],
+    {id:"fd_dips", name:"Dips", en:"Dips", type:"reps", target:10, req:["fd_push","fd_support"],
       desc:"10 dips, bras jusqu’à 90°, aux barres parallèles (parc, salle) ou sur l’angle d’un plan de travail solide. Avec les pompes, c’est le prérequis de la planche."},
   ], videos:[]},
   {id:"starter", name:"Départ", en:"Starter", ms:[
@@ -195,7 +195,7 @@ const TREE = [
     {id:"pl_protr", name:"Pompes d’omoplates en lean", en:"Protraction push-ups in lean – 10", type:"reps", target:10, req:["pl_lean"],
       desc:"En planche lean, bras verrouillés : laisse la poitrine descendre entre les épaules, puis repousse le sol en arrondissant le haut du dos. 10 lentes."},
     {id:"pl_lean2", name:"Planche lean profond", en:"Deep planche lean – 20s", type:"hold", target:20, req:["pl_ppp","pl_protr","fd_support"],
-      desc:"Épaules au-dessus du bout des doigts ou plus loin, omoplates écartées, pieds presque sans appui."},
+      desc:"Épaules au-dessus du bout des doigts, omoplates écartées, pieds presque sans appui. Plus loin, seulement quand les coudes restent tranquilles."},
     {id:"pl_tuckP", name:"Tuck planche sur parallettes", en:"Tuck planche on parallettes – 10s", type:"hold", target:10, req:["pl_lean2"],
       desc:"Premier décollage sur parallettes : poignets neutres, place pour les pieds, dos rond."},
     {id:"pl_tuck", name:"Tuck planche", en:"Tuck planche", type:"hold", target:20, req:["pl_tuckP"],
@@ -257,7 +257,7 @@ const TREE = [
   ], videos:[]},
   {id:"key", name:"Concepts clés (tous niveaux)", en:"Key concept videos", ms:[], videos:[["Prendre soin de ses poignets","Looking after your wrists"],["Position des mains, du regard et des omoplates","Hands, eyes and scapula position"],["La montée de base","The basic kick up"],["Suivre ses progrès","How to track your progress"],["La méthode la plus rapide pour apprendre l’équilibre","The undisputed fastest way to learn to handstand"]]},
 ];
-const P_FD = ["fd_plank","fd_roue","fd_pike","fd_c2w","fd_pushInc","fd_push","fd_dipsB","fd_support","fd_dips"];
+const P_FD = ["fd_plank","fd_roue","fd_pike","fd_c2w","fd_pushInc","fd_push","fd_support","fd_dips"];
 const P_BASE = ["st_bail30","st_split","st_bailc2w","b1_free5","b2_str15"];
 const P_B2 = ["in_holds","in_changes","in_tuck","in_str40","in_str60"];
 // l’objectif principal choisi (Réglages) : ses figures composent les séances ; le combo par défaut
@@ -265,7 +265,7 @@ const goalOf = () => GOALS.find(g => g.id === S.goal) || GOALS[0];
 const GOALS = [
   {id:"both", name:"Le combo ultime : un bras, full planche, stalder, manna", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","pl_lean","oa_tuckflag","oa_flaghoriz","pl_ppp","oa_wall","pr_lift1","pr_pikeLift","pr_stradLift","pr_lsit","pr_wallNeg","pr_walk","pr_float","pr_negS","pr_wallPress","pr_1leg","pr_elev","pr_elevLow","pl_protr","pl_lean2","pl_tuckP","pl_tuck","oa_shrug","oa_shift","oa_sidehold","oa_flagfloor","pr_straddle","pl_tuckPu","pl_tuckO","pl_adv","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","pr_stradL","pr_vsit","pl_frog","pl_1leg","oa_lift","pr_negP","pr_pike","pl_strElev","pl_t2s","pl_strBand","pl_strBandL","pl_straddle","oa_oahs","oa_oahsw","pr_halfSt","pr_tuckUp","pr_stalPart","pr_stalder","pl_strNar","pl_half","pl_fullElev","pl_fullBand","pl_fullNeg","pl_full","oa_oahs10","pr_lsitNeg","pr_lsitHs","oa_shTuck","pr_vsitC","pr_extSup","pl_strHs","oa_shStrad","pr_mannaP","pl_hsDown","oa_switch","oa_shFlag","pr_vsitH","pl_halfPress","pr_manna","pl_press","ul_c1","ul_c2","ul_c3","ul_c12","ul_full"]},
   {id:"oahs", name:"Équilibre sur un bras, des deux côtés", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","in_toes","in_toes7","oa_strad30","oa_tuckflag","oa_flaghoriz","oa_wall","oa_shrug","oa_shift","oa_sidehold","oa_finger","oa_finger3","oa_finger2","oa_finger1","oa_strarm","oa_lift","oa_oahs","oa_oahsw","oa_oahs10"]},
-  {id:"planche", name:"Full planche, 10 s", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d","pl_lean","pl_ppp","pl_protr","pl_lean2","pl_tuckP","pl_tuck","pl_tuckPu","pl_tuckO","pl_adv","pl_frog","pl_1leg","pl_strElev","pl_t2s","pl_strBand","pl_strBandL","pl_straddle","pl_strNar","pl_half","pl_fullElev","pl_fullBand","pl_fullNeg","pl_full"]},
+  {id:"planche", name:"Full planche, 10 s", ms:[...P_FD,...P_BASE,"pl_lean","pl_ppp","pl_protr","pl_lean2","pl_tuckP","pl_tuck","pl_tuckPu","pl_tuckO","pl_adv","pl_frog","pl_1leg","pl_strElev","pl_t2s","pl_strBand","pl_strBandL","pl_straddle","pl_strNar","pl_half","pl_fullElev","pl_fullBand","pl_fullNeg","pl_full"]},
   {id:"min", name:"Équilibre droit, 60 s", ms:[...P_FD,...P_BASE,"in_str40","in_str60"]},
   {id:"press", name:"Équilibre en force : montées, stalder, manna", ms:[...P_FD,...P_BASE,...P_B2,"in_7s","in_7d",...TREE.find(x => x.id === "press").ms.map(m => m.id)]},
   {id:"all", name:"Tout l’arbre", ms:TREE.flatMap(s=>s.ms.map(m=>m.id))},
@@ -334,7 +334,7 @@ const DETAILS = {
   oa_finger2:{how:["Ne garde que le pouce et l’index."],cue:["Contact léger."],err:"Le bassin revient au centre.",ok:"15 s par côté."},
   oa_finger1:{how:["Ne garde que l’index, puis plie-le jusqu’à ce que la main flotte."],cue:["Calme, peu de corrections."],err:"Le doigt devient une béquille.",ok:"10 s par côté."},
   oa_oahsw:{how:["Toutes les étapes refaites côté faible."],cue:["Le côté faible passe en premier."],err:"Ne s’entraîner que sur le bon côté.",ok:"5 s sur chaque bras, la même séance."},
-  pl_lean2:{how:["Depuis le lean, avance par crans : épaules 10 cm, puis 15, puis 20 cm devant les doigts.","N’avance d’un cran que si les coudes restent verrouillés, sans douleur au pli du coude.","Pousse le sol, rentre le bassin."],cue:["Coudes verrouillés."],err:"Lever les fesses pour gagner de l’avancée.",ok:"20 s, épaules au-delà des doigts."},
+  pl_lean2:{how:["Depuis le lean, avance par crans : épaules 10 cm devant les poignets, puis au-dessus du bout des doigts, puis 5 cm au-delà.","N’avance d’un cran que si les coudes restent verrouillés, sans douleur au pli du coude.","Pousse le sol, rentre le bassin."],cue:["Coudes verrouillés."],err:"Lever les fesses pour gagner de l’avancée.",ok:"20 s, épaules au-dessus du bout des doigts."},
   pl_tuckP:{how:["Lean sur parallettes, genoux à la poitrine.","Décolle en avançant les épaules."],cue:["Dos rond, omoplates écartées."],err:"Sauter pour décoller.",ok:"10 s, pieds décollés."},
   pl_tuckPu:{how:["En tuck, plie les coudes et descends.","Repousse sans poser les pieds."],cue:["Coudes près du corps."],err:"Reculer les épaules.",ok:"5 répétitions sans toucher le sol."},
   pl_tuckO:{how:["Depuis le tuck, éloigne les genoux jusqu’à les avoir sous les hanches.","Commence à aplatir le dos."],cue:["Bassin rétroversé."],err:"Hanches qui tombent.",ok:"15 s, hanches à 90°."},
