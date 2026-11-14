@@ -97,7 +97,7 @@ function planFor(m){
   }
   if (miss.length) out.lines.unshift("D’abord : " + miss.map(r=>MS[r].name).join(" + ") + ". Tu peux t’y essayer, mais le plan suppose ces bases.");
   if (m.type !== "check") out.lines.push(valTxt(m));
-  { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (eq) out.lines.unshift("Ton matériel : " + eq); else if (pa && !E.para) out.lines.unshift("Sans parallettes : " + pa); }
+  { const E = S.equip || {}, pa = PARA_ALT[m.id], eq = eqLine(m.id); if (pa && !E.para) out.lines.unshift("Sans parallettes : " + pa); if (eq) out.lines.unshift("Ton matériel : " + eq); }
   if (SOUPLE.has(m.id)) { const R = ROM.filter(r => r.for.includes(m.sec) || (/^pr_(manna|vsit|extSup|mannaP)/.test(m.id) && r.for.includes("manna"))).slice(0, 3);
     out.lines.push("La souplesse compte ici" + (R.length ? " : " + R.map(r => r.name.toLowerCase()).join(", ") : "") + ". Mesure-la dans Profil, Ma souplesse ; 5 minutes actives après la séance et les jours de récup la font avancer."); }
   const pp = PLAN_PROG[m.id]; if (pp && PS[pp[0]] && !progLock(pp[0])) out.prog = pp;
@@ -348,7 +348,7 @@ function quick(id){
   if (HIST[id]) { const h = el("div","qhist" + (mst ? " mst" : "")); h.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Z"/><path d="M5 19l8-8"/></svg>'; h.append(el("div","lab","Un peu d’histoire"), el("p",null,HIST[id])); box.append(h); }
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
-    if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || GOALS[0].ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
+    if (x.done) { blk.classList.add("ok"); const nx = SEC[m.sec].ms.map(q=>q.id).find(i=>!reqDone(i) && !msLocked(MS[i])) || goalOf().ms.find(i=>!reqDone(i) && !msLocked(MS[i]));   /* la suite dans la même discipline d abord */ blk.append(el("b",null,"Maîtrisé"), el("p",null, nx ? "Prochaine figure : " + MS[nx].name + "." : "Tout est validé.")); bar(1); }
     else if (lk) blk.append(el("b",null,"Il te manque : " + missing(m)), el("p",null,((m.req || []).filter(r=>!st(r).done).length > 1 ? "Valide-les d’abord." : "Valide d’abord ce prérequis.") + " Tu peux quand même essayer."));
     else if (plateau(id)) { blk.append(el("b",null,"Plateau depuis 3 semaines"), el("p",null,"Pourquoi : " + plateau(id) + ". " + (lightWeek(id) ? ([2, 3].includes(painState().phase) ? "Reprise en douceur après une douleur : un cran plus léger, puis on repart." : "Semaine plus légère en cours sur cette figure, puis on repart.") : "Elle sera allégée une semaine à sa prochaine séance."))); bar(Math.min(1, x.best / (m.target || 1))); }
     else if (hi.days) { blk.append(el("b",null, hi.days + (hi.days > 1 ? " séances validées sur " : " séance validée sur ") + valRule(id).n), el("p",null,"Refais la cible un autre jour pour valider la figure." + (D0.err ? " À surveiller : " + lc1(D0.err) : ""))); bar(hi.days / valRule(id).n); }

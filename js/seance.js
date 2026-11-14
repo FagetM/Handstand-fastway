@@ -218,17 +218,19 @@ function builtinBlocks(){
   const ulDay = next.some(id => /^ul_/.test(id));
   next.forEach(checkPlateau);
   const nDr = mins <= 15 ? 1 : mins <= 30 ? 2 : mins <= 45 ? 3 : 4;
-  const blocks = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:(DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc) + (eqLine(id) ? " " + eqLine(id) : PARA_ALT[id] && !(S.equip || {}).para ? " Sans parallettes : " + PARA_ALT[id] : ""), ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
+  // fragilités déclarées au profil : un mot sur chaque figure concernée, ajouté aux autres consignes
+  const fragNote = id => [frag("poignet") && /^(pl_|pr_|oa_|lo_|in_|b[12]_)/.test(id) ? "Poignets fragiles : sur parallettes, briques ou poings fermés." : "", frag("epaule") && /^(oa_|pr_(manna|mannaP|vsitH|extSup)|ul_)/.test(id) ? "Épaules fragiles : arrête au premier pincement à l’avant de l’épaule." : ""].filter(Boolean).join(" ");
+  const blocks0 = next.map(id=>{ const m = MS[id], pl = planFor(m).n, base = {name:m.name, how:(DETAILS[id] && DETAILS[id].how ? DETAILS[id].how.slice(0, 2).join(" ") : m.desc) + (eqLine(id) ? " " + eqLine(id) : PARA_ALT[id] && !(S.equip || {}).para ? " Sans parallettes : " + PARA_ALT[id] : ""), ms:id, yt:m.yt && m.yt[0] ? m.yt[0][0] : undefined};
     const ecc = ["pl_fullNeg","pl_hsDown","pl_halfPress"].includes(id), plR = /^pl_/.test(id) && m.type === "reps", sets = ecc ? 4 : plR ? Math.min(5, Math.max(3, Math.round(pl.sets * scale))) : Math.max(3, Math.round(pl.sets * scale)),   /* excentriques en full planche : 4 × 1, jamais plus */
       tries = ecc || pain || PS.phase === 2 || (PS.phase === 3 && (PS.zone === "coude" || PS.zone === "epaule") && FORCE(id)) || tired || deload || (S.caution && Date.now() - S.caution < 36 * 3600e3) ? 0 : plR ? Math.min(1, pl.tries || 0) : pl.tries || 0;
     if (pl.attempts) return Object.assign(base, {kind:"hold", note:pl.sides ? "Alterne gauche et droite à chaque essai, en commençant par ton côté faible." : undefined,
       sets:Array.from({length:pl.sides ? Math.min(ulDay || next.some(FORCE) ? 12 : 16, sets * 2) : Math.min(pl.sets, sets)}, ()=>({goal:pl.T, rest:pl.rest || 30, max:true}))});
     if (m.type === "check") return Object.assign(base, {kind:"reps", note:/^ul_/.test(id) ? "Une réussite par séance suffit : il en faut sur 3 séances, à 2 jours d’écart au moins, sur 10 jours au moins." : "Réussis-la 3 fois dans la séance, deux jours différents, pour la valider.", sets:Array.from({length:/^ul_/.test(id) ? 4 : /^pr_/.test(id) ? 6 : Math.max(5, Math.min(sets, 8))}, ()=>({reps:1, lab:"essai", rest:/^ul_/.test(id) ? 180 : /^pr_/.test(id) ? 120 : 45}))});   /* montées : 6 essais, repos complet */
     const pr = /^pl_/.test(id), short = pr && (m.target || 0) <= 20; // planche : bras tendus, on récupère complètement (moins long sur les tenues courtes)
-    if (frag("poignet") && /^(pl_|pr_|oa_|lo_)/.test(id)) base.note = "Poignets fragiles : sur parallettes, blocs ou poings fermés.";
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
     if (pl.sides) base.note = /^pl_/.test(id) ? "Alterne la jambe à chaque série (séries paires d’une jambe, impaires de l’autre) : les deux doivent tenir la cible." : "Alterne le côté à chaque série (séries paires d’un côté, impaires de l’autre) : les deux doivent tenir la cible.";
     return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.T, rest:pl.sides ? 90 : pr ? 240 : 120, max:true})))}); });
+  const blocks = blocks0.map(b => { const fn = fragNote(b.ms); if (fn) b.note = (b.note ? b.note + " " : "") + fn; return b; });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = (tired || deload || PS.phase ? [] : S.confirm || []).filter(id=>MS[id] && (fok || !FORCE(id))).slice(0, 2).map(id=>{ const m = MS[id], base = {name:m.name + ", vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l’essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};
@@ -488,10 +490,10 @@ const FRAG = [["poignet","Poignets"],["coude","Coudes"],["biceps","Biceps"],["ep
 const frag = z => ((S.prof || {}).frag || []).includes(z);
 function profForm(box, after){ if (!box) return; box.textContent = ""; const P = S.prof || (S.prof = {});
   PROF.forEach(([k, lab, opts]) => { const row = el("div","chips prow"); row.setAttribute("role","group"); row.setAttribute("aria-label", lab);
-    opts.forEach(([v, t]) => { const b = el("button","chip" + (P[k] === v ? " on" : ""), t); b.setAttribute("aria-pressed", P[k] === v); b.onclick = () => { P[k] = v; save(); profForm(box, after); }; row.append(b); }); box.append(el("div","lab",lab), row); });
+    opts.forEach(([v, t]) => { const b = el("button","chip" + (P[k] === v ? " on" : ""), t); b.setAttribute("aria-pressed", P[k] === v); b.onclick = () => { P[k] = v; save(); profForm(box, after); if (after) after(); }; row.append(b); }); box.append(el("div","lab",lab), row); });
   const row = el("div","chips prow"); row.setAttribute("aria-label","Fragilités");
-  FRAG.forEach(([z, t]) => { const on = frag(z), b = el("button","chip" + (on ? " on" : ""), t); b.setAttribute("aria-pressed", on); b.onclick = () => { P.frag = on ? (P.frag || []).filter(x => x !== z) : (P.frag || []).concat(z); save(); profForm(box, after); }; row.append(b); });
-  box.append(el("div","lab","Déjà fragile, ou déjà blessé"), row); if (after) after(); }
+  FRAG.forEach(([z, t]) => { const on = frag(z), b = el("button","chip" + (on ? " on" : ""), t); b.setAttribute("aria-pressed", on); b.onclick = () => { P.frag = on ? (P.frag || []).filter(x => x !== z) : (P.frag || []).concat(z); save(); profForm(box, after); if (after) after(); }; row.append(b); });
+  box.append(el("div","lab","Déjà fragile, ou déjà blessé"), row); }
 let plSkip = new Set(), plMiss = {}, plN = 0;
 // d’abord la sécurité, puis les questions ; un « pas du tout » deux fois dans une même voie et on passe à la suivante
 function startPlacement(){ plSkip = new Set(); plMiss = {}; plN = 0; const box = $("plBody"); box.textContent = "";

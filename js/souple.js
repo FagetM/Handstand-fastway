@@ -13,9 +13,9 @@ const ROM = [
   {id:"epaules", name:"Épaules au-dessus de la tête", yoga:"Uttāna Śiśosana", how:"Allongé sur le dos, genoux pliés, bas du dos et côtes plaqués : monte les bras tendus au-dessus de la tête.",
     lv:["Poignets à 20 cm du sol","Poignets à 10 cm","Poignets au sol, côtes basses"], act:"epAct", pas:["epaules"], an:"z_murEp", for:["onearm","b1","b2","inter","ultime"]},
   {id:"pont", name:"Pont", yoga:"Ūrdhva Dhanurāsana", how:"Pont sur les mains, bras tendus, épaules au-dessus des poignets : rapproche les mains des talons.",
-    lv:["Pont bras pliés","Pont bras tendus","Mains à 40 cm des talons","Mains à 20 cm","Mains aux talons"], act:"epAct", pas:["pont"], an:"z_bridge", back:true, hands:true, for:["ultime"]},
+    lv:["Pont bras pliés","Pont bras tendus","Mains à 40 cm des talons","Mains à 20 cm","Mains aux talons"], act:"epAct", pas:["pont"], an:"z_bridge", back:true, hands:true, sh:true, for:["ultime"]},
   {id:"ext", name:"Épaules en extension", yoga:"Pūrvottānāsana", how:"Debout, mains jointes dans le dos, bras tendus : penche-toi en avant et laisse les mains monter vers le plafond.",
-    lv:["Mains au bas du dos","Bras à 45°","Bras à l’horizontale","Bras au-dessus de la tête"], act:"extEp", pas:["extEp"], an:"dr_extEp", hands:true, for:["manna"]},
+    lv:["Mains au bas du dos","Bras à 45°","Bras à l’horizontale","Bras au-dessus de la tête"], act:"extEp", pas:["extEp"], an:"dr_extEp", hands:true, sh:true, for:["manna"]},
   {id:"poignets", name:"Poignets en extension", yoga:"", how:"À genoux, paumes à plat, doigts vers l’avant, bras tendus : avance les épaules au-delà des mains sans décoller les paumes.",
     lv:["Épaules au-dessus des mains","Épaules 5 cm devant","Épaules 10 cm devant","Épaules 15 cm devant"], act:"poignetsAct", pas:["poignetsExt"], an:"z_poigF", hands:true, for:["planche","onearm","low"]},
 ];
@@ -59,7 +59,7 @@ function romBilan(start){
   return sc;
 }
 // zones au repos qui ferment un repère : poignets (appui sur les mains), cuisses et aine (grands écarts), bas du dos (pont)
-const romOk = (r, zones) => !(r.hands && zones.includes("poignet")) && !(r.split && zones.includes("jambe")) && !(r.back && zones.includes("dos"));
+const romOk = (r, zones) => !(r.sh && (zones.includes("epaule") || zones.includes("coude") || (typeof frag === "function" && frag("epaule")))) && !(r.hands && zones.includes("poignet")) && !(r.split && zones.includes("jambe")) && !(r.back && zones.includes("dos"));
 // les 5 minutes actives de fin de séance : le repère le plus en retard parmi ceux que demandent les figures du jour
 function romActive(ids, PS){
   const secs = new Set(ids.map(id => MS[id] && MS[id].sec)), manna = ids.some(id => /^pr_(manna|vsitH|extSup|mannaP)/.test(id)), zones = PS.phase === 1 ? (PS.zones || [PS.zone]) : [];
