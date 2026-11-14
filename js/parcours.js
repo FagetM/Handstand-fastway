@@ -242,8 +242,10 @@ function journey(nextId){
         b.setAttribute("aria-pressed", sid === jd); b.onclick = () => { S.jdisc = sid; save(); render(); const t = document.querySelector(".dsel"); if (t) t.scrollIntoView({block:"start"}); }; d.append(b); });
       cv.append(d); }
     else if (it.k === "q"){ const q = it.q, on = reqDone(q.req), dn = !!sqDone()[q.id], b = el("button","sq" + (dn ? " done" : on ? " open" : " lk"));
-      b.style.left = it.x + "%"; b.style.top = (it.y - 34) + "px"; b.setAttribute("aria-label", "Quête annexe : " + q.name + (dn ? ", réussie" : on ? ", ouverte" : ", après " + MS[q.req].name));
-      const t = el("span","tk"); t.append(el("i",null,"Quête"), el("b",null,q.name)); b.append(t); if (dn) b.append(el("span","stamp","Fait"));
+      b.style.left = it.x + "%"; b.style.top = (it.y - 40) + "px"; b.setAttribute("aria-label", "Quête annexe : " + q.name + (dn ? ", réussie" : on ? ", ouverte" : ", après " + MS[q.req].name));
+      // médaillon doré (drapeau), le nom dessous, puis l’état : même langage que les figures, en plus petit et en or
+      const md = el("span","md"); md.innerHTML = ICON.flag; if (dn) md.append(icon("check","ck")); else if (!on) md.append(icon("lock","lkb"));
+      b.append(md, el("b",null,q.name), el("span","st", dn ? "Quête réussie" : on ? "Quête annexe" : "Après " + MS[q.req].name.replace(/\s*\(.*\)\s*$/, "")));
       b.onclick = () => sqOpen(q); cv.append(b); }
     else if (it.k === "c"){ const C = CHESTS[it.sid], c = el("button","chest" + (it.done ? " open" : "")); c.style.left = it.x + "%"; c.style.top = it.y + "px";
       c.innerHTML = it.done ? '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 22h32v16H8z"/><path d="M8 22l4-12h24l4 12" fill="currentColor" fill-opacity=".25"/><path d="M24 26v6"/></svg>'

@@ -687,14 +687,18 @@ label[for="eqKg"]{display:block;margin-top:12px}
 .etab .etm{white-space:nowrap}.jn .g{background:var(--bg);border-radius:6px;padding:2px 4px;margin-top:-4px}
 
 /* quêtes annexes : une étiquette de travers dans les creux du chemin, un tampon quand c’est fait */
-.sq{position:absolute;z-index:1;transform:translateX(-50%) rotate(-4deg);width:96px;padding:0;background:none;border:0;color:var(--txt)}
-.sq .tk{display:flex;flex-direction:column;gap:2px;padding:8px 8px 12px;border-radius:6px;background:var(--raise);box-shadow:inset 0 0 0 1.5px var(--goldtxt);clip-path:polygon(8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px),0 8px);text-align:center}
-.sq .tk i{font-style:normal;font-size:12px;font-weight:700;color:var(--goldtxt)}
-.sq .tk b{font-size:12.5px;line-height:1.2;font-weight:700}
-.sq.lk .tk{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}.sq.lk .tk i{color:var(--mut)}
-.sq.lk .tk{outline:1.5px dashed var(--line);outline-offset:-1.5px;box-shadow:none}
-.sq .stamp{position:absolute;right:-8px;top:-10px;padding:4px 8px;border:2px solid var(--acc);border-radius:6px;color:var(--acc);background:var(--bg);font:800 13px/1 var(--disp);transform:rotate(12deg)}
-.sq.done .tk{opacity:.75}
+.sq{position:absolute;z-index:1;transform:translateX(-50%);width:112px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:0;background:none;border:0;text-align:center;color:var(--txt)}
+.sq .md{position:relative;display:grid;place-items:center;width:52px;height:52px;border-radius:50%;background:color-mix(in srgb,var(--gold) 16%,var(--raise));box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--gold) 70%,transparent),0 0 0 4px color-mix(in srgb,var(--gold) 12%,transparent);color:var(--goldtxt)}
+.sq .md svg{width:26px;height:26px}
+.sq .md .ck,.sq .md .lkb{position:absolute;right:-4px;bottom:-4px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--raise);box-shadow:0 1px 3px rgb(0 0 0 / .15)}
+.sq .md .ck{background:var(--gold);color:var(--onacc)}
+.sq>b{font-size:13px;line-height:1.25;font-weight:700;background:var(--bg);border-radius:6px;padding:0 4px}
+.sq .st{font-size:12px;line-height:1.2;color:var(--goldtxt);font-weight:600}
+.sq.lk .md{background:var(--raise);box-shadow:inset 0 0 0 1.5px var(--line);color:var(--mut)}
+.sq.lk>b{color:var(--mut);font-weight:600}.sq.lk .st{color:var(--mut);font-weight:400}
+.sq.done .md{background:color-mix(in srgb,var(--gold) 30%,var(--raise))}
+@media (prefers-reduced-motion:no-preference){.sq.open .md{animation:sqglow 2.4s ease-in-out infinite alternate}}
+@keyframes sqglow{to{box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--gold) 70%,transparent),0 0 0 8px color-mix(in srgb,var(--gold) 6%,transparent)}}
 .sqhd{text-align:center;padding:24px 0 8px}.sqhd svg{display:block;margin:0 auto 8px;width:48px;height:48px;color:var(--goldtxt)}.sqhd h2{margin:4px 0 0;font-size:26px}
 .sqnote{margin-top:24px;font-size:13px;text-align:center}
 #qkDlg.sqd{margin:auto auto 0;height:auto;max-height:92dvh;max-width:640px;border-radius:16px 16px 0 0;border-top:1px solid var(--line)}#qkDlg.sqd #qkHd{border-radius:16px 16px 0 0;padding-top:8px}
