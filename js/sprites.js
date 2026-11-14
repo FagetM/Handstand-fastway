@@ -24,12 +24,13 @@ const ZN_ANIM = {"Bascules à quatre pattes":"z_bascules", "Appui sur le bout de
 const blockAnim = b => b.dk ? ((b.dk === "dipsW" || b.dk === "pushW") && b.name === DRILLS[b.dk].name ? "dr_" + b.dk : DR_ANIM[b.dk]) : ZN_ANIM[b.name];
 const drSp = (b, size) => { const an = blockAnim(b), sp = el("span","sp"); sp.dataset.pose = poseId(an) || "stand"; sp.dataset.anim = an; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n’en a pas, la plus proche
-const STILLS = new Set(["crow","hs","hs_flag","hs_seven","hs_seven1","hs_split","hs_straddle","hs_tuck","lever","oahs","pl_adv","pl_frog","pl_full","pl_lean","pl_pike","pl_straddle","pl_tuck","stand"]);
-const STILL_NEAR = {hs_wsplit:"hs_split", pk1:"hs_seven", pk2:"hs_seven", sp2:"hs_straddle", sup_up:"stand", hs_spress:"hs_straddle", hs_stal0:"crow", lsit0:"crow", lsit1:"crow", pl_1legP:"pl_adv", pl_pdown:"pl_lean", hs_tuck90:"hs_tuck", hs_finger:"oahs", hs_oastr:"oahs", hs_oafull:"oahs", hs_oatuck:"oahs", hs_oastrad:"oahs", hs_oaflag:"oahs", vsitC:"crow", mannaP:"crow", manna:"crow", vsitH:"crow", revSup:"stand", pl_halfL:"pl_full", hs_pl45:"pl_full", pl_s45:"pl_straddle"};
+const STILLS = new Set(["crow","hs","hs_finger","hs_flag","hs_oaflag","hs_oafull","hs_oastr","hs_oastrad","hs_oatuck","hs_pl45","hs_seven","hs_seven1","hs_split","hs_spress","hs_stal0","hs_stal1","hs_straddle","hs_tuck","hs_tuck90","hs_wsplit","lever","lsit0","lsit1","manna","mannaP","oahs","pk1","pk2","pl_1legP","pl_adv","pl_frog","pl_full","pl_halfL","pl_lean","pl_pdown","pl_pike","pl_s45","pl_straddle","pl_tuck","revSup","sp2","stand","sup_up","vsitC","vsitH"]);   /* une image fixe fidèle par posture, rendue par le moteur actuel */
+const STILL_NEAR = {};
 const stillOf = p => STILLS.has(p) ? p : STILL_NEAR[p] || (p.startsWith("hs") ? "hs" : p.startsWith("pl_") ? "pl_lean" : "stand");
 function sprPaint(sp, size){
   const pose = sp.dataset.pose, lk = !!sp.dataset.lk, R = SPR[sp.dataset.anim]; sp.style.width = sp.style.height = size + "px"; if (size) sp.dataset.size = size;
   if (!R) { sp.style.backgroundImage = 'url("anim/still_' + stillOf(pose) + '.webp")'; sp.style.backgroundSize = "cover"; sp.style.animation = "none"; return; }
+  { const w = sp.closest(".fx.wait"); if (w) w.classList.remove("wait"); }
   sp.style.backgroundImage = 'url("' + R.url + '")'; sp.style.backgroundSize = (R.n * size) + "px " + size + "px";
   // still : on montre la posture tenue de la figure, sans boucle (nœuds du parcours)
   if (!animOn() || sp.dataset.still) { sp.style.animation = "none"; sp.style.backgroundPosition = (-R.hold * size) + "px 0"; return; }
@@ -42,7 +43,7 @@ const sprIO = window.IntersectionObserver ? new IntersectionObserver(es => es.fo
   else { sp.style.animationPlayState = "paused"; if (SPR[sp.dataset.anim]) { sp._off = 1; sp.style.animation = "none"; sp.style.backgroundImage = "none"; } } }), {rootMargin:"120px"}) : null;
 const sprRepaint = id => document.querySelectorAll(".sp" + (id ? '[data-anim="' + id + '"]' : "")).forEach(sp=>sprPaint(sp, +sp.dataset.size || 64));
 // Les animations calculées sont conservées sur l’appareil (stockage du navigateur) : elles ne sont refaites que si la tenue change.
-const SPV = "40-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
+const SPV = "41-" + SPN + "-" + SPF, SPC = "hs-sprites", SPM = "hs-spr-meta";
 const sprMeta = () => { try { return JSON.parse(localStorage.getItem(SPM)) || {}; } catch(e){ return {}; } };
 const idle = () => new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r(), {timeout:500}) : setTimeout(r, 60));
 async function sprRestore(key){

@@ -8,12 +8,12 @@
   color-scheme:dark;
   --bg:#1e1f24; --raise:#272930; --line:#363944; --txt:#ece6dc; --mut:#a39d93; --acc:#9cbf9f; --acc2:#e9b4a6; --onacc:#1e1f24;
   --shadow:0 6px 24px rgb(0 0 0 / .35);
-  --gold:#c9a227; --wood:#8a5a2b; --wood2:#6e4520; --wood3:#9c6a35; --sky:#8fb3d9; --warn:#b4532a; --onwarn:#fdf6ef;
+  --gold:#c9a227; --goldtxt:#e0bd4a; --wood:#8a5a2b; --wood2:#6e4520; --wood3:#9c6a35; --sky:#8fb3d9; --warn:#b4532a; --onwarn:#fdf6ef;
   --scrim:rgb(12 12 16 / .6); --photo:#141418; --onphoto:#f6f1e8; --onphoto2:#d9d2c6; --cap:rgb(16 16 20 / .58); --shade1:rgb(20 20 24 / .55); --shade2:rgb(20 20 24 / .85); --cream:#f2f0ea;
   --disp:"Nunito",ui-rounded,system-ui,sans-serif;
 }
 @media (prefers-color-scheme: light){
-  :root{color-scheme:light; --bg:#f7f3ec; --raise:#fffdf8; --line:#e6ddd0; --txt:#3d3a35; --mut:#716a60; --acc:#4a7456; --acc2:#b8604f; --onacc:#fbfaf5; --shadow:0 6px 24px rgb(61 58 53 / .08)}
+  :root{color-scheme:light; --bg:#f7f3ec; --raise:#fffdf8; --line:#e6ddd0; --txt:#3d3a35; --mut:#716a60; --acc:#4a7456; --acc2:#b8604f; --onacc:#fbfaf5; --goldtxt:#7d6210; --shadow:0 6px 24px rgb(61 58 53 / .08)}
 }
 *{box-sizing:border-box}
 html,body{margin:0;overflow-x:clip;background:var(--bg);color:var(--txt);font:16px/1.5 "Nunito",ui-rounded,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-text-size-adjust:100%}
@@ -682,3 +682,9 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 
 /* libellés des figures lisibles par-dessus le tracé, et au-dessus des tuiles bonus voisines */
 .jn .n{background:var(--bg);border-radius:6px;padding:0 4px}.jn:not(.alt){z-index:2}.jn.alt{width:104px}
+
+.chest.open .cl{color:var(--goldtxt)}
+.sign .mut{-webkit-line-clamp:2}
+.jn.alt .n{font-size:12px;-webkit-line-clamp:2}
+.fx.wait .sp{opacity:.3}
+#quest .golink{display:block;margin-top:12px}#quest .golink::after{content:" ›"}

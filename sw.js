@@ -1,7 +1,7 @@
 // Service worker : l'app s'ouvre instantanément depuis l'appareil, même hors connexion (salle, parc…).
 // Les fichiers de l'app sont mis en cache à l'installation ; chaque nouvelle version change CACHE, s'installe en arrière-plan
 // puis attend que l'utilisateur accepte la mise à jour (ou ferme l'app), pour ne jamais couper une séance en cours.
-const CACHE = "hs-fastway-v139", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
+const CACHE = "hs-fastway-v140", RUNTIME = "hs-runtime", SPRITES = "hs-sprites";
 const CORE = ["./", "index.html", "manifest.webmanifest", "icon-180.png", "icon-192.png", "icon-512.png", "icon-mask-512.png",
   "fonts/nunito-latin.woff2", "avatar3d.js", "spr-worker.js", "vendor/three.module.min.js",
   "css/app.css", "js/data.js", "js/state.js", "js/parcours.js", "js/sprites.js", "js/views.js", "js/voice.js", "js/seance.js", "js/zen.js", "js/main.js"];
@@ -10,10 +10,11 @@ self.addEventListener("install", e => {
   // tout ou rien : si un seul fichier manque (réseau instable), la nouvelle version ne s'installe pas et l'ancienne reste entière
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE.map(u => new Request(u, {cache:"reload"})))).catch(err => caches.delete(CACHE).then(() => { throw err; })));
 });
+const ANIM_KEEP = false;   // false pour cette version : les images fixes ont été refaites, les anciennes copies doivent partir
 self.addEventListener("activate", e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE && k !== RUNTIME && k !== SPRITES).map(k => caches.delete(k))))
     // les copies de passage des fichiers de l'app sont purgées : jamais de mélange entre deux versions
-    .then(() => caches.open(RUNTIME)).then(c => c.keys().then(ks => Promise.all(ks.filter(r => !new URL(r.url).pathname.includes("/programs/") && !new URL(r.url).pathname.includes("/anim/")).map(r => c.delete(r)))))
+    .then(() => caches.open(RUNTIME)).then(c => c.keys().then(ks => Promise.all(ks.filter(r => !new URL(r.url).pathname.includes("/programs/") && !(new URL(r.url).pathname.includes("/anim/") && ANIM_KEEP)).map(r => c.delete(r)))))
     .then(() => self.clients.claim()));
 });
 self.addEventListener("message", e => { if (e.data === "skip") self.skipWaiting(); });
