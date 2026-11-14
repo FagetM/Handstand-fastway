@@ -230,7 +230,7 @@ const PGROUPS = [
   ["Full planche", id => id === "planche-domination"],
   ["Autres programmes de planche", id => /^planche-/.test(id)],
   ["Souplesse", id => /^etirements/.test(id)],
-  ["Secondaire, Montées en force", id => id === "quest-for-the-press"],
+  ["Secondaire, Montée en ATR", id => id === "quest-for-the-press"],
   ["Autres", id => true],
 ];
 const allP = () => Object.assign({equilibre:builtin(), detente:zenP()}, PS);

@@ -87,7 +87,7 @@ function planFor(m){
 function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } save(); render(); showTab("today"); window.scrollTo(0, 0); }
 
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
-const HARD = [["onearm","Un bras"],["planche","Planche"],["press","Montées en force"]];
+const HARD = [["onearm","ATR un bras"],["planche","Planche"],["press","Montée en ATR"]];   // les termes des gymnases français (ATR : appui tendu renversé)
 // un coffre s’ouvre quand les figures du chemin de l’étage sont validées (les bonus hors chemin ne comptent pas)
 function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>reqDone(m.id)); }
 // Coffres : un par étage, ouvert quand l’étage est terminé ; chacun débloque une tenue.
@@ -306,7 +306,7 @@ function quick(id){
   let qkPh = null; const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 200); art.append(sp);
   { const ph = photo("but-" + id); if (ph) { const f = el("figure","qkph"), im = el("img"); im.src = ph; im.alt = m.name; im.loading = "lazy"; f.append(im); qkPh = f; } }
-  const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + lc1(SEC[m.sec].name) : SEC[m.sec].name), el("h2",null, m.name));
+  const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + (/^[A-Z]{2}/.test(SEC[m.sec].name) ? SEC[m.sec].name : lc1(SEC[m.sec].name)) : SEC[m.sec].name), el("h2",null, m.name));
   { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), el("b",null,y[0]), y[1] ? el("span",null,", " + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
   if (mst) art.classList.add("mst");
   if (L.length > 1) { const pips = el("div","pips"); L.forEach((v,i)=>{ const p = el("span", i < kk ? "ok" : i === kk ? "now" : ""); p.textContent = unitTxt(m, v); pips.append(p); }); g.append(pips); }
