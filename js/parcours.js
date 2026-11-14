@@ -201,8 +201,10 @@ function journey(nextId){
       c.innerHTML = it.done ? '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 22h32v16H8z"/><path d="M8 22l4-12h24l4 12" fill="currentColor" fill-opacity=".25"/><path d="M24 26v6"/></svg>'
         : '<svg viewBox="0 0 48 48" width="40" height="40" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M8 20h32v18H8z"/><path d="M8 20c0-6 4-10 16-10s16 4 16 10"/><path d="M8 26h32"/><rect x="21" y="23" width="6" height="7" rx="1"/></svg>';
       c.setAttribute("aria-label", (it.done ? "Coffre ouvert : " : "Coffre fermé : ") + C[2]);
-      c.onclick = () => { if (it.done) { toast("Coffre ouvert : " + C[2] + ". Enfile-le dans le vestiaire (Profil)."); } else toast("Termine l'étage pour ouvrir ce coffre : " + C[2] + "."); };
-      c.append(el("span","cl", it.done ? C[2] : "Coffre")); cv.append(c); }
+      // il manque peu : le coffre frémit et montre le compte de l'étage
+      const cm = SEC[it.sid] ? SEC[it.sid].ms.filter(m => !m.alt) : [], cd = cm.filter(m => reqDone(m.id)).length; if (!it.done && cm.length && cm.length - cd <= 1) c.classList.add("near");
+      c.onclick = () => chestScene(it.sid, !it.done);
+      c.append(el("span","cl", it.done ? C[2] : "Coffre")); if (!it.done && cm.length) c.append(el("span","cn", cd + " / " + cm.length)); cv.append(c); }
     else { const id = it.id, m = MS[id], x = st(id), lk = !x.done && msLocked(m), p = pos[id], L = lvls(m), kk = lvlOf(m), cur = id === nextId, small = it.alt;
       const b = el("button","jn d-" + m.sec + (x.done ? " done" : lk ? " lk" : cur ? " cur" : " open") + (small ? " sm alt" : "")); b.dataset.id = id;
       b.style.left = p[0] + "%"; b.style.top = (p[1] - (small ? 48 : cur ? 64 : 58)) + "px";   // centre du rond sur le chemin

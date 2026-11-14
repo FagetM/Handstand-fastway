@@ -133,10 +133,12 @@ function render(){
     // tout ce qui vient d'être gagné, d'un coup : badges, niveau, et les tenues qui vont avec
     const gifts = nbs.flatMap(b => badgeReward(b.id)).concat(up ? WARD.flatMap(w => w.items.filter(it => typeof it[2] === "number" && it[2] > seen.lvl && it[2] <= Z.lvl).map(it => it[1])) : []);
     const parts = []; if (nbs.length) parts.push((nbs.length > 1 ? "Badges : " : "Badge : ") + nbs.map(b => b.name).join(", ")); if (up) parts.push("Niveau " + Z.lvl + " · " + Z.rank);
-    if (parts.length) { toast(parts.join(" · ") + (gifts.length ? " · Nouveau au vestiaire : " + gifts.join(", ") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
+    if (parts.length) { toast(parts.join(" · ") + (gifts.length ? " · Nouveau au vestiaire : " + gifts.slice(0, 3).join(", ") + (gifts.length > 3 ? " et " + (gifts.length - 3) + " autres" : "") : "")); if (gifts.length) { S.newFit = true; } if (A3) A3.celebrate(); } }
   { const op = Object.keys(CHESTS).filter(sid=>SEC[sid] && chestOpen(SEC[sid])), had = S.chests;
-    if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { toast("Coffre ouvert : " + CHESTS[nw][2] + " ! Va l'enfiler dans le vestiaire."); S.newFit = true; if (A3) A3.celebrate(); } }
+    if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste
+  // coffre gagné : la scène d'ouverture attend qu'aucune fenêtre ne soit ouverte (jamais au milieu d'une série)
+  if (S.chestQ && !document.querySelector("dialog[open]")) { const q = S.chestQ; delete S.chestQ; save(); setTimeout(() => chestScene(q), 350); }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!reqDone(id) && !msLocked(MS[id])) || ids.find(id=>!reqDone(id));
@@ -438,3 +440,17 @@ function nextGift(){ let P; try { P = plan(); } catch(e){ return null; } const Z
     if (need.startsWith("m:")) wk = P.fin[need.slice(2)]; else if (need.startsWith("l:")) { const [, f, k] = need.split(":"), m = MS[f]; if (m && P.fin[f] != null) { const L = lvls(m).length, s0 = P.start[f] || 0; wk = s0 + (P.fin[f] - s0) * (+k) / Math.max(1, L); } }
     else if (need.startsWith("c:")) { const sec = SEC[need.slice(2)]; if (sec) wk = Math.max(0, ...sec.ms.filter(m => !m.alt).map(m => P.fin[m.id] || 0)); }
     if (wk != null && (!best || wk < best.wk)) best = {wk, name, icon:wIcon(w.slot, id, F)}; })); return best; }
+
+// ---------- Scène du coffre : il tremble, s'ouvre, la tenue sort, et on l'enfile d'un toucher ----------
+function chestScene(sid, locked){ const C = CHESTS[sid]; if (!C) return; const [slot, id, name] = C, F = fit(), sc = $("chestScene");
+  sc.className = "cscene"; sc.innerHTML = '<div class="rays"></div><div class="gift">' + wIcon(slot, id, F) + '</div>' +
+    '<svg class="box" viewBox="0 0 150 120" aria-hidden="true"><rect x="12" y="52" width="126" height="62" rx="8" fill="#8a5a2b"/><rect x="12" y="52" width="126" height="12" fill="#6e4520"/><rect x="66" y="60" width="18" height="22" rx="3" fill="#c9a227"/>' +
+    '<path d="M12 52h126v34H12z" fill="none"/><g class="lid"><path d="M10 52c0-26 18-38 65-38s65 12 65 38z" fill="#9c6a35"/><rect x="10" y="44" width="130" height="10" rx="3" fill="#c9a227"/></g></svg>';
+  $("chestSec").textContent = "Coffre · " + (SEC[sid] ? SEC[sid].name : ""); $("chestName").textContent = name;
+  const worn = fit()[slot] === id, w = $("chestWear");
+  if (locked) { const cm = SEC[sid] ? SEC[sid].ms.filter(m => !m.alt) : [], left = cm.filter(m => !reqDone(m.id)); $("chestTxt").textContent = left.length ? "Encore " + left.length + (left.length > 1 ? " figures" : " figure") + " de l'étage : " + left.slice(0, 3).map(m => m.name).join(", ") + (left.length > 3 ? "…" : "") + "." : ""; w.textContent = "Essayer dans le vestiaire"; w.onclick = () => { $("chestDlg").close(); renderFit({f:Object.assign(fit(), {[slot]:id}), lab:"Aperçu : " + name + " · coffre « " + SEC[sid].name + " »"}); $("fitDlg").showModal(); }; }
+  else { $("chestTxt").textContent = worn ? "Tu la portes déjà." : "Nouveau dans ton vestiaire."; w.textContent = worn ? "Fermer" : "Enfiler"; w.onclick = () => { if (!worn) { S.fit = Object.assign(fit(), {[slot]:id}); delete S.newFit; save(); if (A3 && a3want) { a3want.fit = fit(); A3.set(a3want); A3.celebrate(); } clearTimeout(sprT); sprT = setTimeout(buildSprites, 900); toast(name + " : c'est porté !"); render(); } $("chestDlg").close(); }; }
+  if (!$("chestDlg").open) { $("chestDlg").showModal(); w.focus({preventScroll:true}); w.blur(); }
+  if (locked) { sc.classList.add("go"); sc.querySelector(".lid").style.animation = "none"; sc.querySelector(".rays").style.display = "none"; sc.querySelector(".gift").style.cssText = "opacity:.35;transform:none;filter:grayscale(1)"; return; }   // verrouillé : il tremble, sans s'ouvrir
+  requestAnimationFrame(() => sc.classList.add("go")); setTimeout(() => { if (typeof beep === "function") { beep(660, 120); setTimeout(() => beep(990, 260), 140); } }, 1000); }
+$("chestX").onclick = () => $("chestDlg").close(); $("chestDlg").addEventListener("click", e => { if (e.target === $("chestDlg")) $("chestDlg").close(); });

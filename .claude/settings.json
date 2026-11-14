@@ -1,13 +1,20 @@
 {
+  "enabledPlugins": {
+    "ecc@ecc": true,
+    "hallmark@hallmark": true
+  },
   "extraKnownMarketplaces": {
     "ecc": {
       "source": {
         "source": "git",
         "url": "https://github.com/affaan-m/ECC.git"
       }
+    },
+    "hallmark": {
+      "source": {
+        "source": "git",
+        "url": "https://github.com/Nutlope/hallmark.git"
+      }
     }
-  },
-  "enabledPlugins": {
-    "ecc@ecc": true
   }
 }
