@@ -769,9 +769,9 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .vpr:last-child:nth-child(odd){grid-column:1/-1}
 .fbpens{margin:0 0 16px;padding:8px 12px;border-radius:12px;background:color-mix(in srgb,var(--tierc) 12%,transparent);font-size:14px;color:var(--txt)}
 .vvid a{display:block;padding:8px 0}
-.cfld{display:flex;flex-direction:column;gap:4px;margin-top:12px}.cfld input,.cfld select,.crow input{width:100%;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--raise);font-size:15px}
+.cfld{display:flex;flex-direction:column;gap:4px;margin-top:12px}.cfld input,.cfld select,.crow input{width:100%;min-height:44px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background-color:var(--raise);font-size:15px}.cfld select{padding-right:32px}
 .cfld textarea{margin-top:0}
 .crow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.crow .cfld{margin-top:4px}
-.cadd{width:100%;min-height:44px;margin-top:8px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--mut);font-size:15px}
+.cadd{width:100%;min-height:44px;margin-top:8px;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background-color:var(--bg);color:var(--mut);font-size:15px;padding-right:32px}
 .ch3{margin:20px 0 4px;font-size:15px}
 .cvid{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}.cvid .vdel{position:static}

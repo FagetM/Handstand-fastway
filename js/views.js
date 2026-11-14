@@ -101,7 +101,8 @@ document.querySelectorAll("#fbDlg [data-z]").forEach(b=>b.onclick = () => { S.pa
 $("plX").onclick = () => { S.placed = true; save(); $("plDlg").close(); render(); };
 // fenêtres : la croix ferme, et un toucher à côté de la fenêtre aussi
 [["qkDlg","qkX"],["vdDlg","vdX"],["bdDlg","bdX"],["etaDlg","etaX"],["fitDlg","fitX"],["dlg","dX"],["sd","sdX"]].forEach(([id, x]) => { const d = $(id);
-  $(x).onclick = () => d.close(); d.addEventListener("click", e => { if (e.target === d) d.close(); }); });
+  const ok = () => id !== "qkDlg" || !document.querySelector("#qkBody .cedit") || typeof qkGuard !== "function" || qkGuard();   // atelier de cours : rien ne se perd sans confirmation
+  $(x).onclick = () => { if (ok()) d.close(); }; d.addEventListener("click", e => { if (e.target === d && ok()) d.close(); }); d.addEventListener("cancel", e => { if (!ok()) e.preventDefault(); }); });
 function setAvatar(s){
   a3want = s; if (A3) { A3.set(s); return; }
   if (a3tried) return; a3tried = true;

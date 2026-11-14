@@ -158,33 +158,34 @@ const LECONS = {
   tm_demo:{c:["Une démonstration se regarde avant de s’écouter : montre en silence, puis nomme un seul point.", "Choisis l’angle qui montre le point clé : de profil pour l’alignement, de face pour la symétrie.", "Montre lentement, une fois en entier, puis la partie difficile seule."], v:["how to demonstrate exercise teaching"]},
   tm_niv:{c:["Une régression garde le geste et retire de la charge : pieds au sol, élastique, bras de levier plus court.", "Une progression ajoute une seule variable à la fois : durée, levier ou appui.", "Le signe pour passer au niveau suivant : la cible tenue propre, deux séances de suite."], v:["tuck planche progression regression"]},
   tm_echauf:{c:["Du général au spécifique : réchauffer, mobiliser, puis préparer les articulations du jour.", "Pour l’appui sur les mains : poignets, épaules, gainage, dans cet ordre.", "Un bon échauffement finit par une version facile de l’exercice principal."], v:["wrist warm up handstand", "échauffement poignets épaules"]},
-  tm_ci:{c:["Les inversions (tête en bas) se discutent avec un médecin en cas d’hypertension ou de glaucome.", "Grossesse : pas de nouvelle figure risquée de chute, et des adaptations à partir du deuxième trimestre, avec avis médical.", "Poignets ou nuque fragiles : propose des appuis sur poings, parallettes ou avant-bras, et aucune charge sur la tête."], v:["yoga contraindications inversions"]},
+  tm_ci:{c:["Inversions (tête en bas) à éviter sans avis médical : hypertension non contrôlée, glaucome, décollement de rétine.", "Grossesse : pas de nouvelle figure risquée de chute, et des adaptations à partir du deuxième trimestre, avec avis médical.", "Poignets fragiles : appuis sur poings, parallettes ou avant-bras. Nuque fragile : aucune charge sur la tête, ni chandelle ni charrue."], v:["yoga contraindications inversions"]},
   tm_cours:{c:["Une structure simple : échauffement, cœur de séance, retour au calme.", "Le cœur de séance vise un seul objectif, décliné en 2 ou 3 niveaux.", "Prévois une marge de 5 minutes : les transitions prennent toujours plus de temps que prévu."], v:["how to plan a yoga class", "plan de cours gym débutant"]},
   tm_parade:{c:["La parade s’apprend avec un entraîneur diplômé, en club, jamais seul ni par vidéo.", "Principe : accompagner le bassin et protéger la tête, sans porter tout le poids.", "Le pareur se place du côté de la chute probable, appuis solides, genoux fléchis."], v:["parade gymnastique ATR FFGym"]},
   tm_eleve:{c:["Commence par demander ce que ton élève ressent ou redoute.", "Observe plus que tu ne parles : une consigne, un essai, un retour.", "À la fin, demande une seule chose à améliorer, et note-la."], v:["first yoga class teaching tips"]},
   tm_groupe:{c:["Donne la même figure en 3 niveaux : chacun travaille au sien, en même temps.", "Place-toi pour voir tout le monde : jamais dos au groupe.", "Prépare un défi pour les plus rapides pendant que tu aides les autres."], v:["teaching mixed level class"]},
-  tm_club:{c:["En club, le bénévolat se fait sous la responsabilité d’un entraîneur diplômé.", "Les diplômes fédéraux FFGym (animateur, puis moniteur) se passent par le club et le comité régional.", "Observe la gestion du temps, du matériel et de la sécurité : c’est le cœur du métier."], v:["FFGym animateur fédéral formation"]},
-  tm_voie:{c:["Pour être payé en gym ou en acrobatie : BPJEPS Activités gymniques, avec un test technique d’entrée.", "Pour le yoga : pas de diplôme d’État ; formations de 200 heures ou cursus fédéraux de plusieurs années.", "Vérifie le financement CPF : seulement si la formation mène à une certification enregistrée (RNCP ou répertoire spécifique)."], v:["BPJEPS activités gymniques témoignage", "formation professeur de yoga 200h"]},
+  tm_club:{c:["En club, le bénévole encadre souvent aux côtés d’un entraîneur diplômé ; avec le diplôme d’animateur fédéral, il peut mener des séances bénévolement.", "Les diplômes fédéraux FFGym (animateur, puis moniteur) se passent par le club et le comité régional.", "Observe la gestion du temps, du matériel et de la sécurité : c’est le cœur du métier."], v:["FFGym animateur fédéral formation"]},
+  tm_voie:{c:["Pour être payé en gym ou en acrobatie : BPJEPS Éducateur sportif, mention Activités gymniques, avec un test technique d’entrée. Le DEJEPS vient ensuite, pour entraîner.", "Pour le yoga : pas de diplôme d’État ; formations de 200 heures ou cursus fédéraux de plusieurs années.", "Vérifie le financement CPF : seulement si la formation mène à une certification enregistrée (RNCP ou répertoire spécifique)."], v:["BPJEPS activités gymniques témoignage", "formation professeur de yoga 200h"]},
   tm_pro:{c:["La carte professionnelle s’obtient par la déclaration d’éducateur sportif, sur le portail officiel, une fois le diplôme en poche.", "Une assurance responsabilité civile professionnelle te couvre pendant les cours.", "Fixe tes tarifs en comparant les cours de ta ville, et choisis un statut (par exemple micro-entreprise)."], v:["déclaration éducateur sportif carte professionnelle"]},
 };
 const ytSearch = q => "https://www.youtube.com/results?search_query=" + encodeURIComponent(q);
 function tmLecon(m){   // le mini-cours, affiché dans la fiche de la mission
   const L = LECONS[m.id]; if (!L) return null; const w = el("div","qkinfo"), sc = el("section"), ul = el("ul"); L.c.forEach(t => ul.append(el("li",null,t)));
   sc.append(el("h3",null,"Le mini-cours"), ul); w.append(sc);
-  const sv = el("section"), vl = el("div","vvid"); L.v.forEach(q => vl.append(extLink(ytSearch(q), "Vidéos : « " + q + " »"))); sv.append(el("h3",null,"Voir faire"), vl, el("p","mut vsrc","Recherches YouTube : choisis des professionnels diplômés, et garde un œil critique.")); w.append(sv);
+  const sv = el("section"), vl = el("div","vvid"); L.v.forEach(q => vl.append(extLink(ytSearch(q), "Vidéos : « " + q + " »" + (/[àâçéèêëîïôûù]|consignes|erreurs|échauffement|formation|plan de cours|parade|déclaration|témoignage|premiers secours/i.test(q) ? "" : " (en anglais)")))); sv.append(el("h3",null,"Voir faire"), vl, el("p","mut vsrc","Recherches YouTube : choisis des professionnels diplômés, et garde un œil critique.")); w.append(sv);
   return w;
 }
 // ---------- Mes cours : l’atelier du futur prof ----------
 const NIVEAUX = ["Débutants", "Intermédiaires", "Avancés", "Tous niveaux"];
 const PARTS = [["ech","Échauffement"],["coeur","Cœur de séance"],["calme","Retour au calme"]];
+let qkGuard = null;   // atelier ouvert avec des changements : on demande avant de fermer
 const MODELE = {title:"Équilibre sur les mains, débutants", pub:"Débutants", dur:45,
-  ech:"Cercles de poignets, 1 min\nBascules à quatre pattes, 1 min\nChien tête en bas actif, 3 × 20 s\nGainage creux, 3 × 20 s",
-  coeur:"Pieds au mur en L, 3 × 20 s\nPoitrine face au mur, 3 × 20 s\nSortie en roue, 5 essais de chaque côté\nPour les plus avancés : décollages du mur",
-  calme:"Posture de l’enfant, 1 min\nÉtirement des poignets, 1 min\nRespiration lente, 3 min", notes:"Un seul objectif : un alignement mains, épaules, hanches. Trois consignes au plus.", vids:[]};
+  ech:"Cercles de poignets et appuis sur les doigts, 3 min\nChat-vache, 2 min\nChien tête en bas actif, 3 × 20 s, 2 min\nGainage creux, 3 × 20 s, 3 min",
+  coeur:"Pieds au mur en L, 3 × 20 s, 6 min\nPoitrine face au mur, 3 × 20 s, 7 min\nSortie en roue, 5 essais de chaque côté, 7 min\nPour les plus avancés : décollages du mur, 5 min",
+  calme:"Posture de l’enfant, 2 min\nÉtirement des poignets et des épaules, 3 min\nRespiration lente, 5 min", notes:"Un seul objectif : un alignement mains, épaules, hanches. Trois consignes au plus.", vids:[]};
 const coursTxt = c => [c.title + " (" + c.pub + ", " + c.dur + " min)", ...PARTS.map(([k, n]) => c[k] ? n + " :\n" + c[k] : ""), c.notes ? "Notes : " + c.notes : "", ...(c.vids || []).map(v => v.label + " : " + v.url)].filter(Boolean).join("\n\n");
 function coursEdit(c0){
   const box = $("qkBody"), c = Object.assign({id:"c" + Date.now(), title:"", pub:NIVEAUX[0], dur:45, ech:"", coeur:"", calme:"", notes:"", vids:[]}, JSON.parse(JSON.stringify(c0 || {}))), isNew = !c0 || !c0.id; if (!c.id) c.id = "c" + Date.now();   // un modèle repart avec son propre identifiant
-  box.textContent = "";
+  box.textContent = ""; box.append(el("span","cedit"));   // repère : l’atelier est ouvert (garde-fou à la fermeture)
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Mes cours"), el("h2",null, isNew ? "Nouveau cours" : "Modifier le cours")); box.append(hd);
   const fld = (lab, node) => { const f = el("label","cfld"); f.append(el("span","lab",lab), node); box.append(f); return node; };
   const ti = fld("Titre", el("input")); ti.value = c.title; ti.placeholder = "Par exemple : équilibre, débutants";
@@ -192,31 +193,35 @@ function coursEdit(c0){
   const pu = el("select"); NIVEAUX.forEach(n => { const o = el("option",null,n); o.value = n; pu.append(o); }); pu.value = c.pub;
   const du = el("select"); [30, 45, 60, 75, 90].forEach(n => { const o = el("option",null,n + " min"); o.value = n; du.append(o); }); du.value = String(c.dur);
   { const a = el("label","cfld"); a.append(el("span","lab","Pour qui"), pu); const b = el("label","cfld"); b.append(el("span","lab","Durée"), du); row.append(a, b); }
-  const tas = {}; PARTS.forEach(([k, n]) => { const t = el("textarea"); t.rows = k === "coeur" ? 6 : 4; t.value = c[k]; t.placeholder = "Un exercice par ligne, avec sa durée ou ses répétitions."; tas[k] = fld(n, t); });
-  // ajouter une figure de l’app au cœur de séance
-  { const s = el("select","cadd"); s.append(el("option",null,"+ Une figure de l’app au cœur de séance")); Object.values(MS).filter(m => !/^ul_/.test(m.id)).forEach(m => { const o = el("option",null,m.name); o.value = m.id; s.append(o); });
+  const tas = {}; PARTS.forEach(([k, n]) => { const t = el("textarea"); t.rows = k === "coeur" ? 6 : 4; t.value = c[k]; t.placeholder = "Un exercice par ligne, avec sa durée ou ses répétitions."; tas[k] = fld(n, t);
+    if (k === "coeur") addFig(); });
+  // ajouter une figure de l’app au cœur de séance, juste sous lui
+  function addFig(){ const s = el("select","cadd"); s.setAttribute("aria-label","Ajouter une figure de l’app au cœur de séance"); s.append(el("option",null,"+ Une figure de l’app au cœur de séance")); Object.values(MS).filter(m => !/^ul_/.test(m.id)).forEach(m => { const o = el("option",null,m.name); o.value = m.id; s.append(o); });
     s.onchange = () => { const m = MS[s.value]; if (m) { tas.coeur.value = (tas.coeur.value.trim() ? tas.coeur.value.trim() + "\n" : "") + m.name + (m.target ? ", " + goalTxt(m) : ""); } s.selectedIndex = 0; }; box.append(s); }
   const no = fld("Notes pour toi", el("textarea")); no.rows = 3; no.value = c.notes; no.placeholder = "L’objectif du cours, les consignes clés, les précautions.";
   // vidéos : des liens (YouTube, Drive…), pas de fichiers dans l’app
   box.append(el("h3","ch3","Vidéos du cours"));
   const vl = el("div","cvids"); box.append(vl);
-  const drawV = () => { vl.textContent = ""; c.vids.forEach((v, k) => { const r = el("div","cvid"); r.append(extLink(v.url, v.label)); const x = el("button","vdel","Retirer"); x.setAttribute("aria-label","Retirer la vidéo " + v.label); x.onclick = () => { c.vids.splice(k, 1); drawV(); }; r.append(x); vl.append(r); }); };
+  const drawV = () => { vl.textContent = ""; c.vids.forEach((v, k) => { const r = el("div","cvid"); r.append(/^https:\/\/[^/\s]/.test(v.url) ? extLink(v.url, v.label) : el("span","mut", v.label)); const x = el("button","vdel","Retirer"); x.setAttribute("aria-label","Retirer la vidéo " + v.label); x.onclick = () => { c.vids.splice(k, 1); drawV(); }; r.append(x); vl.append(r); }); };
   drawV();
-  { const r = el("div","crow"), lb = el("input"), ur = el("input"), add = el("button","btn line","Ajouter"); lb.placeholder = "Nom (ex. : démonstration)"; ur.placeholder = "Lien https://…"; ur.type = "url"; lb.setAttribute("aria-label","Nom de la vidéo"); ur.setAttribute("aria-label","Lien de la vidéo");
-    add.onclick = () => { const u = ur.value.trim(); if (!/^https:\/\//.test(u)) { toast("Colle un lien qui commence par https://"); return; } c.vids.push({label:lb.value.trim() || "Vidéo", url:u}); lb.value = ur.value = ""; drawV(); };
+  { const r = el("div","crow"), lb = el("input"), ur = el("input"), add = el("button","btn line","Ajouter"); lb.placeholder = "Nom"; ur.placeholder = "Lien https://…"; ur.type = "url"; lb.setAttribute("aria-label","Nom de la vidéo"); ur.setAttribute("aria-label","Lien de la vidéo");
+    add.onclick = () => { const u = ur.value.trim(); let ok = false; try { const x = new URL(u); ok = x.protocol === "https:" && !!x.hostname; } catch(e){} if (!ok) { toast("Colle un lien complet qui commence par https://"); return; } c.vids.push({label:lb.value.trim() || "Vidéo", url:u}); lb.value = ur.value = ""; drawV(); };
     r.append(lb, ur); box.append(r, add); }
   box.append(el("p","mut vsrc","Tes vidéos restent là où tu les ranges (YouTube en non répertorié, Google Drive…) : l’app garde seulement le lien."));
+  const read = () => { c.title = ti.value.trim(); c.pub = pu.value; c.dur = +du.value; PARTS.forEach(([k]) => c[k] = tas[k].value.trim()); c.notes = no.value.trim(); };
+  const snap = JSON.stringify(c);
+  qkGuard = () => { read(); return JSON.stringify(c) === snap || confirm("Fermer sans enregistrer ce cours ?"); };
   const okb = el("button","btn","Enregistrer le cours"); okb.onclick = () => {
-    c.title = ti.value.trim(); if (!c.title) { toast("Donne un titre à ton cours."); ti.focus(); return; }
-    c.pub = pu.value; c.dur = +du.value; PARTS.forEach(([k]) => c[k] = tas[k].value.trim()); c.notes = no.value.trim(); c.t = Date.now();
+    read(); if (!c.title) { toast("Donne un titre à ton cours."); ti.focus(); return; } c.t = Date.now(); qkGuard = null;
     const L = S.cours || (S.cours = []), i = L.findIndex(x => x.id === c.id); if (i >= 0) L[i] = c; else L.push(c); save(); $("qkDlg").close(); vForce(); toast("Cours enregistré."); };
   box.append(okb);
-  if (!isNew) { const sh = el("button","btn line vre","Partager le plan"); sh.onclick = async () => { const txt = coursTxt(c); try { if (navigator.share) await navigator.share({title:c.title, text:txt}); else { await navigator.clipboard.writeText(txt); toast("Plan copié."); } } catch(e){} }; box.append(sh);
-    const del = el("button","btn warn vre","Supprimer ce cours"); del.onclick = () => { if (!confirm("Supprimer « " + c.title + " » ?")) return; S.cours = (S.cours || []).filter(x => x.id !== c.id); save(); $("qkDlg").close(); vForce(); }; box.append(del); }
+  if (!isNew) { const sh = el("button","btn line vre","Partager le plan"); sh.onclick = async () => { read(); const txt = coursTxt(c); try { if (navigator.share) await navigator.share({title:c.title, text:txt}); else { await navigator.clipboard.writeText(txt); toast("Plan copié."); } } catch(e){ if (e.name !== "AbortError") toast("Partage impossible sur cet appareil."); } }; box.append(sh);
+    const dup = el("button","btn line vre","Dupliquer"); dup.onclick = () => { qkGuard = null; read(); coursEdit(Object.assign({}, c, {id:"", title:c.title + " (copie)"})); }; box.append(dup);
+    const del = el("button","btn warn vre","Supprimer ce cours"); del.onclick = () => { if (!confirm("Supprimer « " + c.title + " » ?")) return; S.cours = (S.cours || []).filter(x => x.id !== c.id); qkGuard = null; save(); $("qkDlg").close(); vForce(); toast("Cours supprimé."); }; box.append(del); }
   $("qkT").textContent = isNew ? "Nouveau cours" : c.title; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.onscroll = null;
 }
 function coursBlock(){
-  const b = el("div","block"), L = S.cours || []; b.append(el("h2",null,"Mes cours"), el("p","mut","Ton atelier de prof : écris tes plans de séance et range les liens de tes vidéos, pour les donner plus tard."));
+  const b = el("div","block"), L = S.cours || []; b.append(el("h2",null,"Mes cours"), el("p","mut","Ton atelier de prof : écris tes plans de séance et range les liens de tes vidéos, pour les donner plus tard. Ils restent sur ce téléphone : garde une copie avec Exporter, dans le Profil."));
   L.slice().sort((a, z) => (z.t || 0) - (a.t || 0)).forEach(c => { const x = el("button","vmis"); x.append(el("b",null,c.title), el("span","mut", c.pub + ", " + c.dur + " min" + (c.vids && c.vids.length ? ", " + c.vids.length + " vidéo" + (c.vids.length > 1 ? "s" : "") : ""))); x.onclick = () => coursEdit(c); b.append(x); });
   const row = el("div","btns"), nw = el("button","btn","Nouveau cours"), md = el("button","btn line","Partir d’un modèle"); nw.onclick = () => coursEdit(null); md.onclick = () => coursEdit(Object.assign({}, MODELE, {id:""})); row.append(nw, md); b.append(row);
   return b;
