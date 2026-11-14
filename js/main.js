@@ -46,9 +46,9 @@ function tipOfDay(){
   const m = curMs(), days = [...new Set(S.log.map(l=>dayKey(l.t)))], today = dayKey(Date.now()), trained = days.includes(today);
   const lastT = S.log.length ? S.log[S.log.length - 1].t : 0, gap = lastT ? Math.floor((Date.now() - lastT) / 864e5) : null;
   if (painRecent()) return "Tu as signalé une douleur : aujourd’hui, séance légère. Échauffe bien les poignets, et arrête si ça tire.";
-  if (trained) return "Séance faite aujourd’hui, bravo. La progression se construit pendant la récupération : dors bien.";
+  if (trained) return "Séance faite. Récupère, dors bien.";
   if (gap != null && gap >= 3) return gap + " jours sans séance : on reprend doucement aujourd’hui, une seule figure, 15 minutes.";
-  if (!m) return "Tu as tout validé. Entretiens tes figures, tu es au sommet !";
+  if (!m) return "Tout est validé. Entretiens tes figures.";
   const x = st(m.id), nx = nextStep(m);
   if (m.type === "hold" && x.best > 0 && nx && nx - x.best <= 2) return "Tu es à " + num(nx - x.best) + " s de ton palier sur « " + m.name + " ». Tente-le aujourd’hui, en fin de séance.";
   if (!S.placed) return "Premier jour ? Commence par ton bilan sur l’accueil : l’app te place au bon endroit.";

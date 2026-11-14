@@ -92,7 +92,7 @@ function zenRate(k){
   else if (k === "top") {
     if (x.add < cap) { x.add++; msg = "Propre et avec de la marge : les tenues s’allongent la prochaine fois."; }
     else { if (!x.ok.length || now - x.ok[x.ok.length - 1] >= 48 * 3600e3) x.ok.push(now);
-      if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s’ouvre."; say("Palier validé. Bravo.", true); }
+      if (x.ok.length >= 2 && x.tier < z.tiers.length - 1) { x.tier++; x.add = 0; x.ok = []; msg = "Palier validé : « " + zTier(z).name + " » s’ouvre."; say("Palier validé.", true); }
       else if (x.ok.length >= 2) { x.fin = true; x.ok = x.ok.slice(-2); msg = "Dernier palier maîtrisé. Garde-le en entretien."; }
       else msg = "Au plafond du palier, propre : encore une séance comme ça, dans 2 jours ou plus, pour le valider."; } }
   if (!z.free && (z.id === "poignets" || z.id === "controle")) { const zw = S.zw || (S.zw = []), d = dayKey(Date.now()); if (!zw.includes(d)) zw.push(d); if (zw.length > 60) zw.shift(); }   // jour d’appui sur les mains : compte dans la charge des poignets
@@ -103,13 +103,13 @@ function zenRate(k){
 const MOODS = [["top","En forme",""],["calme","Tranquille",""],["fatigue","Fatigué·e",""],["raide","Raide",""]];
 const moodToday = () => S.mood && S.mood.d === dayKey(Date.now()) ? S.mood.k : null;
 function setMood(k){ S.mood = {d:dayKey(Date.now()), k}; if (S.bday && S.bday.d === dayKey(Date.now()) && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render();
-  toast(k === "fatigue" ? "Merci de l’avoir dit. Séance plus courte aujourd’hui, sans tentative à fond." : k === "raide" ? "On ajoute un peu de mobilité en début de séance." : k === "calme" ? "Séance normale, à ton rythme." : "Belle énergie : profite, sans forcer."); }
+  toast(k === "fatigue" ? "Séance plus courte aujourd’hui, sans tentative à fond." : k === "raide" ? "On ajoute un peu de mobilité en début de séance." : k === "calme" ? "Séance normale, à ton rythme." : "Séance complète, tentatives permises."); }
 
 // Petites histoires : racontées par le personnage dans le conseil du jour, une par jour.
 const STORIES = [
   "À 19 ans, je comptais mes secondes à l’envers. Une coach m’a demandé : « Et ta respiration ? » Elle était bloquée. Le jour où j’ai expiré, j’ai tenu deux fois plus longtemps.",
-  "Mon plus bel équilibre, je l’ai fait un dimanche matin sur la plage, sans chrono et sans objectif. Juste le sable chaud sous les mains.",
-  "Un vieux maître de cirque me disait : « Le sol te porte, tu n’as pas à le combattre. » Depuis, je pousse le sol comme on caresse un chat.",
+  "Mon plus bel équilibre, je l’ai fait un dimanche matin sur la plage, sans chrono et sans objectif.",
+  "Un vieux maître de cirque me disait : « Le sol te porte, tu n’as pas à le combattre. » Depuis, je repousse le sol sans crispation.",
   "La première fois que j’ai tenu cinq secondes, je ne l’ai pas su : je souriais trop pour regarder le chrono.",
   "J’ai passé un hiver entier sans progresser. Au printemps, tout est venu d’un coup. Le corps travaillait en silence.",
   "Mes poignets m’ont appris la patience. Cinq minutes d’échauffement, c’est le prix d’un équilibre sans douleur.",
