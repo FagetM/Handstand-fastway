@@ -578,8 +578,8 @@ export function mount(host, opts = {}){
     if (opts.bare) { pivot.updateMatrixWorld(true); box.setFromObject(root); box.getSize(tmp); const r = 0.5 * Math.hypot(tmp.x, tmp.y, tmp.z), cy = (box.min.y + box.max.y) / 2;
       // cadrage : la caméra suit aussi le centre horizontal (mur, barres, figures décalées) et recule assez pour tout voir
       const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
-      // recul juste suffisant pour la largeur et la hauteur à l’écran (champ de 30°), plus la moitié de la profondeur : le corps remplit l’image
-      const wantY = Math.max(0.42, cy), hy = Math.max(wantY - box.min.y, box.max.y - wantY), wantD = Math.max(1.7, Math.min(5.2, Math.max(tmp.x / 2 / cam.aspect, hy) * 1.14 / 0.268 + tmp.z / 2));
+      // recul juste suffisant pour que le corps tienne dans le cercle des vignettes (champ de 30°), plus la moitié de la profondeur
+      const wantY = Math.max(0.42, cy), hy = Math.max(wantY - box.min.y, box.max.y - wantY), wantD = Math.max(1.7, Math.min(5.2, Math.hypot(tmp.x / 2 / cam.aspect, hy) * 1.05 / 0.268 + tmp.z / 2));
       if (camD < 0) { camD = wantD; camY = wantY; camX = cx; camZ = cz; } else { const k = 0.22, kc = 0.45; camD = wantD > camD ? wantD : camD + (wantD - camD) * k; camY += (wantY - camY) * kc; camX += (cx - camX) * kc; camZ += (cz - camZ) * kc; }   /* recule tout de suite, se rapproche en douceur : rien n’est coupé */
       cam.position.set(camX, camY + 0.03, camZ + camD); cam.lookAt(camX, camY, camZ); }
   }

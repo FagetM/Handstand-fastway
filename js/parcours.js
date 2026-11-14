@@ -94,21 +94,21 @@ const CHESTS = {base:["bottom","short_n","Short marine"], starter:["head","band_
   onearm:["top","ls_o","Manches longues orange"], planche:["bottom","pants_v","Pantalon vert"], press:["head","beanie_y","Bonnet jaune"], low:["extra","belt_y","Ceinture jaune"], ultime:["extra","wings","Ailes d’ange"]};
 // quêtes annexes : petits défis pour le plaisir, posés dans les creux du chemin ; elles ne comptent ni dans les séances ni dans les dates
 const SQ = [
-  {id:"sq_tripod", name:"Trépied à l’aveugle", req:"fd_c2w", d:"Équilibre tête-mains en trépied, 20 s, les yeux fermés."},
+  {id:"sq_tripod", name:"Trépied immobile", req:"fd_c2w", d:"Équilibre tête-mains en trépied, 20 s, le regard fixé entre les mains."},
   {id:"sq_roueG", name:"Roue du mauvais côté", req:"fd_roue", d:"5 roues du côté faible, les mains posées sur une ligne au sol."},
-  {id:"sq_pont", name:"Le pont tient bon", req:"st_bailc2w", d:"Pont bras et jambes tendus, 30 s."},
-  {id:"sq_corbeau", name:"Corbeau patient", req:"lo_frog", d:"Corbeau 30 s, puis décolle un pied 3 s, de chaque côté."},
+  {id:"sq_pont", name:"Le pont tient bon", req:"st_bailc2w", d:"Pont, épaules au-dessus des mains, 20 s."},
+  {id:"sq_corbeau", name:"Corbeau patient", req:"lo_frog", d:"Corbeau 30 s, puis tends une jambe derrière toi 3 s, de chaque côté."},
   {id:"sq_pq", name:"Le rouleau sur les pieds", req:"in_str40", d:"Un rouleau de papier toilette posé sur la plante des pieds : 10 s d’équilibre libre sans le faire tomber."},
   {id:"sq_marche", name:"Dix mètres à l’envers", req:"b2_str15", d:"Marche 10 m sur les mains sans poser les pieds."},
   {id:"sq_demitour", name:"Demi-tour sur les mains", req:"in_7s", d:"Pivote d’un demi-tour en équilibre, puis tiens 3 s."},
   {id:"sq_roulade", name:"Roulade arrière à l’équilibre", req:"in_str60", d:"Une roulade arrière qui finit en équilibre, tenu 2 s."},
-  {id:"sq_epaule", name:"La main baladeuse", req:"oa_wall", d:"Équilibre dos au mur : 10 tapes sur l’épaule opposée, 5 par main."},
+  {id:"sq_epaule", name:"Petites tapes", req:"oa_wall", d:"Équilibre dos au mur : 10 tapes sur l’épaule opposée, 5 par main."},
   {id:"sq_pianiste", name:"Le pianiste", req:"oa_finger", d:"En équilibre libre, décolle un à un les doigts d’une main, puis repose-les."},
   {id:"sq_pistol", name:"Pistol des deux côtés", req:"pr_pikeLift", d:"3 pistol squats par jambe, le talon reste au sol."},
   {id:"sq_crepe", name:"La crêpe", req:"pr_stradLift", d:"Écart facial, coudes au sol, 30 s."},
   {id:"sq_crabe", name:"Crabe pressé", req:"pr_extSup", d:"10 m en marche du crabe, le bassin à la hauteur des genoux."},
   {id:"sq_croco", name:"Le crocodile marche", req:"lo_croc", d:"3 pas des mains en crocodile, sans poser les pieds."},
-  {id:"sq_poings", name:"Lean sur les poings", req:"pl_lean", d:"Planche lean sur les poings, 20 s."}];
+  {id:"sq_poings", name:"Planche lean sur les poings", req:"pl_lean", d:"Planche lean sur les poings, 20 s."}];
 const sqDone = () => S.sq || (S.sq = {});
 function sqOpen(q){
   const box = $("qkBody"), on = reqDone(q.req), dn = sqDone()[q.id]; box.textContent = "";
@@ -118,11 +118,11 @@ function sqOpen(q){
   else blk.append(el("b",null,"Le défi"), el("p",null,q.d));
   box.append(blk);
   if (on) { const row = el("div","btns");
-    if (dn) { row.append(el("p","mut","Réussie le " + new Date(dn).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ". Un tampon de plus.")); const u = el("button","btn line","Annuler"); u.onclick = () => { delete sqDone()[q.id]; save(); $("qkDlg").close(); render(); }; row.append(u); }
-    else { const b = el("button","btn","C’est fait"); b.onclick = () => { sqDone()[q.id] = Date.now(); save(); $("qkDlg").close(); render(); const n = Object.keys(sqDone()).length; toast(n === 8 ? "Huitième tampon : badge « Chemins de traverse »." : "Tampon posé : " + n + " sur " + SQ.length + "."); }; row.append(b); }
+    if (dn) { row.append(el("p","mut","Réussie le " + new Date(dn).toLocaleDateString("fr-FR",{day:"numeric",month:"long"}) + ".")); const u = el("button","btn line","Retirer le tampon"); u.onclick = () => { delete sqDone()[q.id]; save(); $("qkDlg").close(); render(); }; row.append(u); }
+    else { const b = el("button","btn","C’est fait"); b.onclick = () => { sqDone()[q.id] = Date.now(); save(); $("qkDlg").close(); render(); const n = Object.keys(sqDone()).length; toast(n === 8 && !(S.bgot || []).includes("sq8") ? "Huitième tampon : badge « Chemins de traverse »." : "Tampon posé : " + n + " sur " + SQ.length + "."); }; row.append(b); }
     box.append(row); }
   box.append(el("p","mut sqnote","Pour le plaisir : les quêtes annexes ne changent ni tes séances ni tes dates."));
-  $("qkT").textContent = q.name; const qd = $("qkDlg"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled"); qd.onscroll = null;
+  $("qkT").textContent = q.name; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled"); qd.onscroll = null;
 }
 // Estimation, à ton rythme : semaines pour atteindre la cible d’une figure (d’après tes progrès enregistrés, sinon une estimation prudente)
 function eta(m){
@@ -342,7 +342,7 @@ function quick(id){
   if (qkPh) fold("Le but", qkPh);
   if (m.yt && m.yt.length) { const v = el("div"); m.yt.forEach(([vid,t])=>v.append(ytLink(vid, "Vidéo : " + t))); fold("Vidéo", v); }
   box.append(info);
-  $("qkT").textContent = m.name; const qd = $("qkDlg"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled");
+  $("qkT").textContent = m.name; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled");
   qd.onscroll = () => qd.classList.toggle("scrolled", qd.scrollTop > 300);   /* le nom revient dans la barre du haut quand le grand titre est passé */
 }
 

@@ -116,7 +116,7 @@ function hitTarget(id, side){
 const st = id => S.ms[id] || (S.ms[id] = {best:0, done:false});
 const $ = id => document.getElementById(id);
 // espaces insécables avant les unités et après « × » : « 15 s », « 12 rép. », « ≈ 5 semaines » ne se coupent jamais en fin de ligne
-const nbsp = t => String(t).replace(/(\d) (?=(?:s|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0").replace(/([ ’]à) (?=\d)/g, "$1\u00a0").replace(/(\d) ([×≈])/g, "$1\u00a0$2").replace(/« /g, "«\u00a0").replace(/ »/g, "\u00a0»");
+const nbsp = t => String(t).replace(/(\d) (?=(?:s|m|min|rép|cm|kg|j|mois|ans?|semaines?|séries?|essais?|tentatives?|%)(?![A-Za-zÀ-ÿ]))/g, "$1\u00a0").replace(/([×≈]) /g, "$1\u00a0").replace(/ : (?=\d)/g, "\u00a0:\u00a0").replace(/([ ’]à) (?=\d)/g, "$1\u00a0").replace(/(\d) ([×≈])/g, "$1\u00a0$2").replace(/« /g, "«\u00a0").replace(/ »/g, "\u00a0»");
 const el = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = typeof txt === "string" ? nbsp(txt) : txt; return e; };
 const ICON = {
   flag:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M12 42V6"/><path d="M12 8c8-4 14 4 24 0v18c-10 4-16-4-24 0" fill="currentColor" fill-opacity=".18"/></svg>',

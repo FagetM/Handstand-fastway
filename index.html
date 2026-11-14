@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#1e1f24" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f7f3ec" media="(prefers-color-scheme: light)">
 <meta name="robots" content="noindex">
+<script>try { const t = (JSON.parse(localStorage.getItem("hs-fastway-v1") || "{}") || {}).theme; if (t === "light" || t === "dark") { document.documentElement.dataset.theme = t; document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.media = "all"; m.content = t === "dark" ? "#1e1f24" : "#f7f3ec"; }); } } catch (e) {}</script>
 <title>Gymnastic Yoga</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -68,6 +69,11 @@
       <h2>Chrono</h2>
       <label class="mut" for="countdown">Compte à rebours avant le départ du chrono, le temps de te mettre en position</label>
       <select id="countdown"><option value="3">3 secondes</option><option value="5">5 secondes</option><option value="10">10 secondes</option></select>
+    </div>
+    <div class="block">
+      <h2>Apparence</h2>
+      <label class="mut" for="theme">Couleurs de l’app</label>
+      <select id="theme"><option value="">Comme le téléphone</option><option value="light">Claires (sable)</option><option value="dark">Sombres</option></select>
     </div>
     <div class="block">
       <h2>Mon matériel</h2>

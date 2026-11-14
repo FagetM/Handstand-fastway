@@ -222,7 +222,7 @@ function render(){
   tree.append(journey(nextId));
   if (keepY) window.scrollTo(0, keepY);
 
-  $("countdown").value = String(Math.max(3, S.countdown || 0));
+  $("countdown").value = String(Math.max(3, S.countdown || 0)); $("theme").value = S.theme || "";
   renderQuest(Z, nextId);
   renderSess();
 }
