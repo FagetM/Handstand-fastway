@@ -23,7 +23,7 @@ const YOGA = {
   pr_vsitC:["Nāvāsana", "le bateau", "une cousine : le bateau se tient sans les mains"],
   pr_extSup:["Pūrvottānāsana", "l’étirement intense de l’est", "l’est, c’est le devant du corps"],
   pl_tuck:["Lolāsana", "le pendentif", "une petite sœur : le pendentif se fait jambes croisées"],
-  pl_full:["Mayūrāsana", "le paon, mais sans l’appui des coudes", "pas de nom classique : c’est sa plus proche cousine"],
+  pl_full:["Mayūrāsana", "le paon, mais sans l’appui des coudes", "pas de nom classique : c’est la posture la plus proche"],
   pr_straddle:["d’Upaviṣṭa Koṇāsana à Adho Mukha Vṛkṣāsana", "de l’angle ouvert à l’arbre tourné vers le bas"],
   pr_pike:["de Paścimottānāsana à Adho Mukha Vṛkṣāsana", "de la pince à l’arbre tourné vers le bas"],
 };
