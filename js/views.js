@@ -129,7 +129,7 @@ function render(){
   lastZ = Z; $("fitOpen").classList.toggle("new", !!S.newFit);
   renderScene(Z); $("lvRank").textContent = Z.rank;
   { const [c, src] = penseeDuJour(0), pj = $("pJour"); pj.textContent = ""; pj.append(el("span","lab","Pensée du jour"), el("q",null,c), el("span","mut",src)); pj.onclick = () => { vpK = 0; showTab("voie"); vForce(); window.scrollTo(0, 0); }; }
-  renderVoie(); $("ecoute").hidden = !(S.ecoute && Date.now() - S.ecoute < 3 * 3600e3); $("lvNum").textContent = "Niveau " + Z.lvl;
+  renderSommet(); renderVoie(); $("ecoute").hidden = !(S.ecoute && Date.now() - S.ecoute < 3 * 3600e3); $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d’expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
   if (seen){ const nbs = Z.badges.filter(b=>b.ok && !seen.b.includes(b.id)), up = Z.lvl > seen.lvl;

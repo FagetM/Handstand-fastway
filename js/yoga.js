@@ -46,3 +46,31 @@ const HIST = {
   pr_vsitC:"Nāvāsana, le bateau du yoga, en version gymnaste : sur les mains, les jambes hautes, comme une coque qui fend l’eau.",
 };
 const yogaOf = id => YOGA[id] || null;
+// couronne de laurier dorée autour des figures maîtresses : deux branches de feuilles qui montent de part et d’autre
+function laurel(){
+  let leaves = ""; const R = 74, C = 90, deg = Math.PI / 180, P = f => [(C + R * Math.sin(f * deg)).toFixed(1), (C + R * Math.cos(f * deg)).toFixed(1)];
+  [-1, 1].forEach(sd => { for (let k = 0; k < 8; k++) { const f = (28 + k * 17) * deg;   // de bas en haut, de part et d’autre
+    const x = C + sd * R * Math.sin(f), y = C + R * Math.cos(f), tan = Math.atan2(-Math.sin(f), sd * Math.cos(f)) / deg;
+    [-1, 1].forEach(side => { const ox = x + side * 5 * Math.sin(f) * sd, oy = y + side * 5 * Math.cos(f), rot = tan + 90 + side * 35;
+      leaves += '<ellipse cx="' + ox.toFixed(1) + '" cy="' + oy.toFixed(1) + '" rx="3.4" ry="8" transform="rotate(' + rot.toFixed(0) + ' ' + ox.toFixed(1) + ' ' + oy.toFixed(1) + ')" fill="var(--gold)" fill-opacity="' + (side > 0 ? .85 : .6) + '"/>'; }); } });
+  const sparks = [[18, 52, 0], [164, 40, 1.1], [158, 132, 2.1]].map(([x, y, d]) => '<path class="spk" style="--d:' + d + 's" d="M' + x + ' ' + (y - 6) + 'L' + (x + 1.5) + ' ' + (y - 1.5) + 'L' + (x + 6) + ' ' + y + 'L' + (x + 1.5) + ' ' + (y + 1.5) + 'L' + x + ' ' + (y + 6) + 'L' + (x - 1.5) + ' ' + (y + 1.5) + 'L' + (x - 6) + ' ' + y + 'L' + (x - 1.5) + ' ' + (y - 1.5) + 'Z" fill="var(--gold)"/>').join("");
+  const a = P(28), b = P(147);
+  return '<svg viewBox="0 0 180 180" aria-hidden="true"><path d="M' + (2 * C - a[0]) + ' ' + a[1] + 'A' + R + ' ' + R + ' 0 0 1 ' + (2 * C - b[0]) + ' ' + b[1] + 'M' + a[0] + ' ' + a[1] + 'A' + R + ' ' + R + ' 0 0 0 ' + b[0] + ' ' + b[1] + '" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' + leaves + sparks + '</svg>';
+}
+// Aujourd’hui : le prochain sommet, celui qui donne envie d’y aller
+function renderSommet(){
+  const box = $("sommet"); if (!box) return; box.textContent = "";
+  const P = plan(), todo = [...MAITRES].filter(id => MS[id] && !st(id).done); if (!todo.length) { box.hidden = true; return; }
+  const id = todo.reduce((a, b) => (P.fin[b] || 999) < (P.fin[a] || 999) ? b : a), m = MS[id];
+  const anc = new Set(), walk = i => (MS[i].req || []).forEach(r => { if (MS[r] && !anc.has(r)) { anc.add(r); walk(r); } }); walk(id);
+  const done = [...anc].filter(r => reqDone(r)).length, tot = anc.size || 1, pct = Math.round(done / tot * 100), y = yogaOf(id);
+  box.hidden = false;
+  const art = el("div","smart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 88); art.append(sp);
+  const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr);
+  const g = el("div","grow"); g.append(el("div","lab","Ton prochain sommet"), el("b","smn", m.name));
+  if (y) g.append(el("span","smy", y[0] + (y[1] ? ", " + y[1] : "")));
+  const bar = el("div","smbar"), i = el("span"); i.style.width = pct + "%"; bar.append(i);
+  g.append(bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + (P.fin[id] ? ", " + dateTxt(P.fin[id]) : "")));
+  box.append(art, g); box.onclick = () => { showTab("path"); goHere(id); setTimeout(() => quick(id), 500); };
+  box.setAttribute("aria-label", "Ton prochain sommet : " + m.name + ", " + pct + " % du chemin");
+}

@@ -785,5 +785,25 @@ nav.tabs button.on svg{background:color-mix(in srgb,var(--tierc) 26%,transparent
 .qhist.mst{background:color-mix(in srgb,var(--gold) 12%,var(--raise))}.qhist.mst svg{color:var(--goldtxt)}
 .jn.mst .c{box-shadow:0 0 0 7px color-mix(in srgb,var(--gold) 28%,transparent),0 0 28px 8px color-mix(in srgb,var(--gold) 30%,transparent)}
 .jn.mst .c::before{content:"";position:absolute;inset:-7px;border-radius:50%;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--gold) 80%,transparent);pointer-events:none}
-.jn.mst .mstb{position:absolute;left:50%;top:-14px;transform:translateX(-50%);padding:2px 8px;border-radius:999px;background:var(--raise);color:var(--goldtxt);box-shadow:inset 0 0 0 1.5px var(--gold);font:700 12px/1.3 var(--disp);white-space:nowrap;z-index:2}
+.jn.mst .mstb{position:absolute;left:50%;top:-24px;transform:translateX(-50%);padding:2px 8px;border-radius:999px;background:var(--raise);color:var(--goldtxt);box-shadow:inset 0 0 0 1.5px var(--gold);font:700 12px/1.3 var(--disp);white-space:nowrap;z-index:2}
 .jn.mst .n{font-weight:800}
+/* figures maîtresses : plus grandes, couronnées de laurier, quelques étincelles */
+.jn.mst{width:150px}
+.jn.mst .c{width:124px;height:124px;background:color-mix(in srgb,var(--gold) 14%,var(--raise))}
+.jn.mst .n{font-size:15px;color:var(--txt)}
+.laurel{position:absolute;left:50%;top:50%;width:176px;height:176px;transform:translate(-50%,-48%);pointer-events:none;z-index:-1}
+.laurel svg{width:100%;height:100%;overflow:visible}
+.laurel .spk{transform-box:fill-box;transform-origin:center;animation:spk 2.6s ease-in-out var(--d,0s) infinite}
+@keyframes spk{0%,100%{opacity:.25;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.laurel .spk{animation:none}}
+.sommet{display:flex;align-items:center;gap:16px;width:100%;text-align:left;margin:0 0 16px;padding:16px 16px 16px 12px;border-radius:24px;background:color-mix(in srgb,var(--gold) 12%,var(--raise));box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--gold) 45%,transparent),var(--shadow)}
+.sommet[hidden]{display:none}
+.smart{position:relative;flex:none;width:96px;height:96px;display:grid;place-items:center;border-radius:50%;background:var(--raise);isolation:isolate}
+.smart .sp{border-radius:50%}
+.smart .laurel{width:136px;height:136px}
+.sommet .grow{display:flex;flex-direction:column;gap:4px;min-width:0}
+.sommet .lab{color:var(--goldtxt);font-weight:700}
+.smn{font:700 20px/1.2 var(--disp)}
+.smy{font-size:13px;font-style:italic;color:var(--mut)}
+.smbar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}.smbar span{display:block;height:100%;border-radius:3px;background:var(--gold)}
+.sommet .mut{font-size:13px}
