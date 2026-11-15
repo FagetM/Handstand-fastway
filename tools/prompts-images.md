@@ -2,7 +2,9 @@
 
 Ces prompts sont gardés ici pour plus tard. Envoie-moi les images avec leur nom entre crochets : je les recadre, les compresse et les mets dans l’app.
 
-## 1. Photos : les 6 qui manquent
+## 1. Photos : les 2 qui manquent
+
+Déjà dans l’app : etage-inter, etage-press, but-pl_full, but-pr_stalder, but-b1_free5 (en bonus). Restent : but-pr_manna, but-ul_full.
 
 Colle d’abord ce message de style, une seule fois, au début d’une conversation Gemini. Joins une des photos déjà faites avec « use this athlete as reference ».
 
