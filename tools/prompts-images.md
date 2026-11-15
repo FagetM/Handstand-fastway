@@ -28,9 +28,11 @@ Puis une ligne à la fois :
 [etage-press] Athlete halfway through a straddle press to handstand: hands on the floor, hips stacked over the shoulders, straight legs wide apart lifting off the floor.
 [but-pl_full] Side view: full planche, legs together, body perfectly horizontal a few centimeters above the floor, elbows fully locked, arms perfectly straight.
 [but-pr_stalder] Athlete in a straddle L-sit on parallettes, legs wide and straight, about to press up to a handstand.
-[but-pr_manna] Side view: manna on low parallettes, hips pushed far behind the hands, straight legs raised high in front toward the face, shoulders in extension.
+[but-pr_manna] Strict side view, camera at hip height. Advanced calisthenics hold called "manna": the athlete is supported only on two low wooden parallettes placed BEHIND his hips. Arms perfectly straight and locked, reaching backward behind the torso, palms on the bars, fingers pointing backward. Buttocks lifted off the floor and pushed FORWARD, in front of the hands. Torso leaning back about 45 degrees, chest open. Both legs straight, pressed together, toes pointed, lifted high so the feet are above the head, close to the face. The body forms a tight V, nothing touches the floor except the parallettes.
 [but-ul_full] Athlete on low parallettes in a one-arm handstand, legs in a straddle, shot at golden hour, triumphant but calm.
 ```
+
+Manna : si Gemini bloque, fais-le en deux temps. D’abord : « Same athlete seated in an L-sit on low parallettes, hands beside the hips, legs straight and horizontal. » Puis, sur cette image : « Now move the hands behind the hips, fingers pointing backward, arms straight behind the back, push the hips forward past the hands and raise the straight legs until the feet are above the head. »
 
 Si la technique est fausse, réponds par exemple : « same photo, but the supporting elbow must be fully locked and the hand flat on the floor ». La manna et le un bras demandent souvent plusieurs essais.
 
