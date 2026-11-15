@@ -177,8 +177,8 @@ const DEFW = {fd_plank:2, fd_roue:2, fd_c2w:3, fd_push:4, fd_dips:4, fd_support:
   oa_strad30:4, oa_tuckflag:4, oa_flaghoriz:5, oa_flagfloor:5, oa_wall:6, oa_shrug:4, oa_shift:6, oa_sidehold:6, oa_finger:3, oa_finger3:3, oa_finger2:3, oa_finger1:4, oa_strarm:6, oa_lift:8, oa_oahs:20, oa_oahsw:12, oa_oahs10:16, oa_shTuck:8, oa_shStrad:8, oa_switch:10,
   pr_pikeLift:3, pr_stradLift:3, pr_wallNeg:3, pr_negS:4, pr_elev:4, pr_elevLow:4, pr_straddle:8, pr_negP:5, pr_pike:10, pr_lsit:3, pr_stradL:4, pr_vsit:8, pr_halfSt:6, pr_tuckUp:6, pr_stalPart:8, pr_stalder:14, pr_lsitNeg:6, pr_lsitHs:10, pr_vsitC:6, pr_extSup:4, pr_mannaP:16, pr_vsitH:26, pr_manna:80,
   lo_elbow:3, lo_croc:6, lo_qdr:6, pl_lean:3, pl_ppp:4, pl_lean2:4, pl_tuckP:5, pl_tuck:6, pl_tuckPu:6, pl_tuckO:8, pl_adv:12, pl_1leg:10, pl_strBand:8, pl_strBandL:8, pl_straddle:20, pl_strNar:12, pl_half:16, pl_fullBand:10, pl_fullNeg:10, pl_full:26, pl_strHs:10, pl_hsDown:10, pl_halfPress:20, pl_press:40,
-  ul_c1:8, ul_c2:10, ul_c3:8, ul_c12:10, ul_full:12};
-const laneOf = m => /^pl_/.test(m.id) ? "pl" : m.sec === "press" || m.sec === "low" ? "pr" : m.sec === "ultime" ? "ul" : "ba";
+  ul_c1:8, ul_c2:10, ul_c3:8, ul_c12:10, ul_full:12, pl_frog:6};
+const laneOf = m => /^pl_/.test(m.id) || (laneOf.pp || (laneOf.pp = reqsOf("pl_lean"))).has(m.id) ? "pl" : m.sec === "press" || m.sec === "low" ? "pr" : m.sec === "ultime" ? "ul" : "ba";
 // jours d’entraînement sur les 28 derniers jours (null tant que l’historique est trop court pour juger)
 function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t : now; if (now - first < 14 * 864e5) return null; return new Set(S.log.filter(l => l.t >= now - 28 * 864e5).map(l => dayKey(l.t))).size; }
 // calendrier : chaque famille (équilibre, planche, montées) avance une figure à la fois, les familles avancent en parallèle
