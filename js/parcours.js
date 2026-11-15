@@ -206,7 +206,7 @@ function planCalc(o){ o = o || {}; const mins = o.mins || S.mins || 30, td = o.d
   return {fin, start, by}; }
 // le sommet de l’objectif choisi
 const goalTop = () => ({planche:"pl_full", press:"pr_manna", oahs:"oa_oahs10", min:"in_str60"})[S.goal] || "ul_full";
-const goalShort = () => ({planche:"Full planche", press:"Équilibre en force", oahs:"Un bras", min:"Équilibre droit"})[S.goal] || "Combo ultime";
+const goalShort = () => ({planche:"Full planche", press:"Équilibre en force", oahs:"Un bras", min:"Tenir sur les mains"})[S.goal] || "Combo ultime";
 const planWk = (P, ids) => ids.reduce((n, id) => Math.max(n, P.fin[id] || 0), 0);
 const MOIS = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
 // une date lisible : le jour quand c’est proche, le mois quand c’est loin (une estimation à un an n’a pas de jour)
@@ -219,14 +219,14 @@ const STEPS = [["in_str60","Équilibre droit, 60 s"],["pr_straddle","Montée en 
 // au-delà d’un an, une fourchette plutôt qu’une date précise : le chemin est long, il ne doit pas décourager
 function rangeTxt(w){ if (!w) return ""; if (w <= 52) return dateTxt(w); const y = k => new Date(Date.now() + w * k * 7 * 864e5).getFullYear(), a = y(0.8), b = y(1.25); return a === b ? dateTxt(w) : "entre " + a + " et " + b; }
 function openEta(){ const box = $("etaBody"), P = plan(), goal = goalTop(), w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";
-  const tl = el("div","etl"); STEPS.filter(([id]) => MS[id]).sort((a, b) => (P.fin[a[0]] || 0) - (P.fin[b[0]] || 0)).forEach(([id, name]) => { const r = el("div","etr" + (st(id).done ? " ok" : id === goal ? " goal" : ""));
+  const tl = el("div","etl"); STEPS.filter(([id]) => MS[id]).sort((a, b) => (b[0] === goal) - (a[0] === goal) || (P.fin[a[0]] || 0) - (P.fin[b[0]] || 0)).forEach(([id, name]) => { const r = el("div","etr" + (st(id).done ? " ok" : id === goal ? " goal" : ""));   // ton but d’abord
     r.append(el("span","etn", name), el("span","etd", st(id).done ? "Validé" : rangeTxt(P.fin[id]))); tl.append(r); }); box.append(tl);
   if (!w0) return;
   { const pc = pace(); if (pc.n >= 3 && Math.abs(pc.k - 1) >= 0.05) box.append(el("p","mut etnote","Ton rythme mesuré sur " + pc.n + " figures validées : " + Math.round(Math.abs(1 - pc.k) * 100) + " % " + (pc.k < 1 ? "plus rapide" : "plus lent") + " que les repères. Toutes les dates en tiennent compte.")); }
   box.append(el("div","lab","Pour arriver plus vite")); const lv = el("div","etl");
   const lever = (t, d, fn) => { const r = el(fn ? "button" : "div","etr lev"); r.append(el("span","etn", t), el("span","etd", d)); if (fn) r.onclick = fn; lv.append(r); };
   const k = keyFig(P, [goal]); if (k) lever("Figure clé, sur le chemin le plus long", MS[k].name, () => { $("etaDlg").close(); goHere(k); });
-  [45, 60].filter(v => v > mins).forEach(v => { const w = plan({mins:v}).fin[goal]; if (w0 - w >= 4) lever("Si tu as plus de temps : " + v + " min", gainTxt(w0 - w) + " plus tôt, " + dateTxt(w), () => { S.mins = v; if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); openEta(); toast("Séances réglées sur " + v + " min."); }); });
+  [45, 60].filter(v => v > mins).forEach(v => { const w = plan({mins:v}).fin[goal]; if (w0 - w >= 4) lever("Si tu as plus de temps : " + v + " min", gainTxt(w0 - w) + " plus tôt, " + dateTxt(w), () => { if (!confirm("Passer tes séances à " + v + " minutes ? Tu pourras revenir en arrière dans les Réglages.")) return; S.mins = v; if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; save(); render(); openEta(); toast("Séances réglées sur " + v + " min."); }); });
   if (mins > 30) lever("Tu es à " + mins + " min", "planche et montées avancent ensemble");
   if (td != null && td < 18) { const w = plan({days:20}).fin[goal]; if (w0 - w >= 4) lever("Si tu peux, 5 jours par semaine (tu es à " + td + " jours sur 28)", gainTxt(w0 - w) + " plus tôt, " + dateTxt(w)); }
   box.append(lv, el("p","mut etnote","Estimation prudente : elle part de repères habituels, puis de tes propres mesures dès que tu en as. Elle se recalcule à chaque séance. " + (S.goal === "planche" && !profHeavy() ? "Avec ton objectif, la planche passe à 3 jours par semaine." : "Pour les tendons, la planche reste à 2 jours par semaine.") + "")); }

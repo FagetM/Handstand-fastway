@@ -965,3 +965,17 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 :root:not([data-theme="light"]) .twk .did i{background:var(--acc);box-shadow:0 0 12px var(--acc)}
 :root:not([data-theme="light"]) .twk .did i::after{content:none}
 @media (prefers-reduced-motion:reduce){.trow.cur .art{animation:none}}
+/* bilan : le but en grand, les figures avancées à cocher ; même matière que les cartes du ciel */
+.plgoal{display:grid;gap:8px;margin:12px 0}
+.plg{display:flex;align-items:center;gap:12px;min-height:64px;padding:4px 16px 4px 4px;border-radius:20px;background:var(--raise);box-shadow:var(--shadow);text-align:left;font:700 16px/1.2 var(--disp)}
+.plg .sp{flex:none;border-radius:50%;background:var(--bg)}
+.plg.on{box-shadow:inset 0 0 0 2px var(--acc)}
+.pladv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0 16px}
+.pla{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:44px;padding:8px;border-radius:16px;background:var(--raise);box-shadow:var(--shadow);font:600 13px/1.2 var(--disp);text-align:center}
+.pla .sp{border-radius:50%;background:var(--bg)}
+.pla.on{box-shadow:inset 0 0 0 2px var(--acc);color:var(--acc)}
+.plstop{display:block;margin:0 0 8px;min-height:44px;font-size:13px}
+.srcs .qlab{flex:none;align-self:center;max-width:84px;font-size:13px;line-height:1.2;color:var(--mut)}
+.cstn.skip{width:12px;height:12px;background:transparent;box-shadow:inset 0 0 0 1.5px var(--nring);opacity:.6}
+.cstn.skip i{display:none}
+.cstp button.cstpr{pointer-events:auto;min-height:44px;color:inherit;text-align:left}

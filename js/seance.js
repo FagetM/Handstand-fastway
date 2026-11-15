@@ -416,7 +416,11 @@ function feedback(kind){ if (window._lateToast) { const lt = window._lateToast; 
   const ad = S.adapt || (S.adapt = {}), ids = $("fbIds").value.split(",").filter(Boolean), mult = {easy:1.04, ok:1, hard:0.9, pain:1}[kind];   // la hausse vient surtout des séries réussies ; « facile » ajoute un petit cran, « dur » freine
   ids.forEach(id=>{ ad[id] = Math.round(Math.max(0.6, Math.min(1.35, (ad[id] || 1) * mult)) * 100) / 100; });
   (S.fb || (S.fb = [])).push({t:Date.now(), k:kind}); if (S.fb.length > 200) S.fb = S.fb.slice(-200);
-  if (kind === "pain") { S.pain = Date.now(); painLog().push({t:S.pain, zone:S.painZone || "autre"}); if (S.painLog.length > 50) S.painLog.shift(); }
+  if (kind === "pain") { const z = S.painZone || "autre", L = painLog(); S.pain = Date.now();
+    // une même douleur signalée deux fois dans la journée (bouton « Ça fait mal », puis le ressenti de fin) ne compte qu’une fois
+    if (!L.some(p => p.zone === z && S.pain - p.t < 6 * 3600e3)) { L.push({t:S.pain, zone:z}); if (S.painLog.length > 50) S.painLog.shift(); }
+    // la séance du jour se recompose sans la zone douloureuse : ce qui était fait reste dans l’historique, mis de côté
+    if (S.bday && S.bday.d === dayKey(nowS()) && P && P.builtin) { const k = wkKey(todayIdx()), o = pg().wk[k]; if (o && Object.keys(o).length) { (pg().wkPain || (pg().wkPain = {}))[k] = o; delete pg().wk[k]; } delete S.bday; } }
   sessRes = {}; S.ecoute = Date.now(); save(); $("fbDlg").close(); render();   // juste après : l’invitation à écouter le corps, sur Aujourd’hui
   if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (window.A3 || typeof A3 !== "undefined") { try { A3.celebrate(); } catch(e){} } setTimeout(() => { toast("« " + MS[id].name + " » validée."); quick(id); }, 900); return; }
   toast(kind === "easy" ? "Noté : ça monte." : kind === "hard" ? "Noté : on réduit." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().days || 7) + " j sans un bras, planche, montées." : S.painZone === "jambe" ? "Noté : pas de grand écart pendant " + (painState().days || 3) + " jours, puis reprise douce." : "Noté : séances allégées.") + (painState().again ? " Ça revient : consulte un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
@@ -469,7 +473,7 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
     const hold = b.kind === "hold";
     ck.style.display = hold ? "" : "none"; ck.textContent = "0,0";
     $("sdReps").style.display = hold ? "none" : ""; $("sdNum").value = "";
-    { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) { [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","qrep" + (n === t0 ? " on" : ""), String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); });
+    { const q = $("sdQuick"); q.textContent = ""; const t0 = tg || s.reps || 0; if (!hold && t0) { q.append(el("div","qlab","Combien en as-tu fait ?")); [t0 - 2, t0 - 1, t0, t0 + 1].filter(n => n > 0).forEach(n => { const bq = el("button","qrep" + (n === t0 ? " on" : ""), String(n)); bq.setAttribute("aria-label", n + " répétitions"); bq.onclick = () => saveSet(n); q.append(bq); });   // la question, au-dessus des chiffres
         const ot = el("button","qrep alt","Autre"); ot.onclick = () => { $("sdReps").classList.add("typing"); $("sdNum").focus(); }; q.append(ot); }
       $("sdReps").classList.toggle("typing", !t0); }   /* un nombre d’un toucher ; le clavier seulement si on le demande */
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
@@ -527,7 +531,7 @@ function saveFixed(v){
 // la réserve : ce qu’il restait après une série de travail réussie (rien, un peu, beaucoup) ; la micro-intelligence s’en sert
 function resAsk(){ const box = $("sdRes"); if (!box) return; box.textContent = ""; const l = S.log[S.log.length - 1];
   if (!l || !l.m || !l.g || l.mx || typeof l.v !== "number" || l.v < l.g * 0.95 || Date.now() - l.t > 120e3) { box.hidden = true; return; }
-  box.append(el("div","mut","Il te restait ?"), chipRow([[0,"Rien"],[1,"Un peu"],[2,"Beaucoup"]], k => l.rir === k, k => { l.rir = k; save(); })); box.hidden = false; }
+  box.append(el("div","mut", l.ty === "hold" || (MS[l.m] && MS[l.m].type === "hold") ? "Tu aurais pu tenir encore ?" : "Tu aurais pu en faire encore ?"), chipRow([[0,"Non, c’était tout"],[1,"1 ou 2"],[2,"Bien plus"]], k => l.rir === k, k => { l.rir = k; save(); })); box.hidden = false; }
 function startRest(r, nx, title){
   let end = Date.now() + r.rest*1000, done = false; const ck = $("sdClock");
   sd.mode = "rest"; sd.next = nx; $("sdNo").hidden = true; $("sdRedo").hidden = true; $("sdNote").hidden = true; $("sdUndo").hidden = !undoList().length; { const ub = ukGet("blk"); $("sdUndoB").hidden = !(ub && ub.bi === sd.bi); } oopsSync();
@@ -631,7 +635,7 @@ $("sdUndo").onclick = () => { if (!sd) return; hush(); const u = undoLast(); if 
 $("sdRedo").onclick = () => { if (!sd) return; hush(); const a = AUTO; openSet(sd.bi, sd.si); if (!a && sd.mode === "idle") $("sdGo").click(); };
 $("sdSave").onclick = () => { const v = parseInt($("sdNum").value, 10); if (!(v > 0)) { toast("Entre un nombre de répétitions."); return; } if (saneReps(v, sd && sd.tg)) saveSet(v); };
 $("sd").addEventListener("close", () => { AUTO = false; sdStop(); });
-$("sdX").addEventListener("click", () => { hush(); if (Object.keys(sessRes).length || Object.keys(wkGet(selDay)).length) setTimeout(() => { if (!$("fbDlg").open) endSession(); }, 50); });   // arrêter en route : la séance compte quand même
+$("sdX").addEventListener("click", () => { hush(); render(); });   // la croix met en pause : ce qui est fait est gardé, « Reprendre » attend sur Aujourd’hui ; on termine quand on veut
 // douleur pendant la séance : on arrête tout de suite et on demande où
 $("sdPain").onclick = () => { hush(); sdStop(); $("sd").close(); $("fbIds").value = ""; $("fbZone").hidden = false; $("fbDlg").showModal(); };
 // l’écran reste allumé pendant le chrono : le verrou est repris au retour dans l’app, et rendu s’il arrive trop tard

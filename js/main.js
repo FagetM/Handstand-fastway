@@ -17,7 +17,7 @@ function reDay(){ if (S.bday && S.bday.d === dayKey(Date.now()) && !Object.keys(
   sync(); }
 $("goalSel").value = S.goal || "both"; $("goalSel").onchange = e => { S.goal = e.target.value === "both" ? null : e.target.value; reDay(); save(); render(); toast("Objectif : " + goalOf().name + "."); };
 profForm($("profBox"), () => { reDay(); render(); });
-$("theme").onchange = e => { S.theme = e.target.value; save(); location.reload(); };   // les personnages 3D reprennent leurs couleurs au rechargement
+$("theme").onchange = e => { S.theme = e.target.value; save(); try { sessionStorage.setItem("hs-back","reglages"); } catch(err){} location.reload(); };   // au retour : de nouveau dans les Réglages, pas sur Aujourd’hui   // les personnages 3D reprennent leurs couleurs au rechargement
 // matériel : élastiques, parallettes, lest ; la séance du jour se recompose si elle n’est pas commencée
 { const E = () => S.equip || (S.equip = {}), redo = () => { if (S.bday && !Object.keys(wkGet(todayIdx())).length) S.bday = null; else if (S.bday && S.bday.d === dayKey(Date.now())) toast("Séance déjà commencée : le changement vaudra dès demain."); save(); render(); };
   $("eqBand").checked = !!E().band; $("eqPara").checked = !!E().para; $("eqKg").value = String(E().kg || 0);
@@ -84,6 +84,8 @@ if (navigator.storage && navigator.storage.persist) navigator.storage.persisted(
 // Raccourcis de l’icône : « Démarrer la séance » et « Mon parcours ».
 { const q = new URLSearchParams(location.search), go = () => { if (document.body.classList.contains("locked")) return;
     if (q.get("tab") === "path") showTab("path");
+    { let back = null; try { back = sessionStorage.getItem("hs-back"); sessionStorage.removeItem("hs-back"); } catch(err){}
+      if (back === "reglages") { showTab("me"); const r = document.querySelector("details.reglages"); if (r) { r.open = true; requestAnimationFrame(() => $("theme").scrollIntoView({block:"center"})); } } }
     if (q.get("go") === "session") setTimeout(()=>{ if (!$("sd").open && nextSet()) startGuided(); }, 500);
     if (q.has("tab") || q.has("go")) history.replaceState(null, "", location.pathname); };
   go(); }

@@ -36,7 +36,7 @@ const HIST = {
   oa_oahs10:"Le sommet du chemin un bras : dix secondes de chaque côté, le côté faible compris. Les équilibristes de cirque en ont fait un art. Ici, on y vient pas à pas.",
   pl_full:"Le mot est français : la planche, en anglais comme ailleurs, a gardé son nom d’origine. Aux anneaux et au sol, c’est l’un des éléments de force les plus admirés de la gymnastique.",
   pr_stalder:"Elle emprunte son nom au « stalder » de la barre fixe, l’élément du gymnaste suisse Josef Stalder, champion olympique à la barre fixe en 1948. Ici, la même ouverture des jambes, mais au sol, vers l’équilibre.",
-  pr_manna:"L’une des figures de force les plus rares : les mains devant, le bassin loin derrière, les jambes qui montent vers le visage. Peu de gens la tiennent.",
+  pr_manna:"L’une des figures de force les plus rares : les mains au sol derrière le bassin, doigts vers l’arrière, le bassin poussé loin devant elles, les jambes qui montent vers le visage. Peu de gens la tiennent.",
   ul_full:"Ton propre enchaînement : l’équerre, l’équilibre, un bras de chaque côté, la planche. Tout ce que tu as construit, posé bout à bout, sans toucher le sol.",
   lo_elbow:"La Haṭha Yoga Pradīpikā, un texte du XVᵉ siècle, décrit déjà le paon, Mayūrāsana : le corps à l’horizontale, en appui sur les coudes.",
   lo_frog:"En sanskrit, kāka veut dire corbeau, et baka désigne un échassier. Le premier envol de beaucoup de pratiquants, sur les tapis de yoga comme au gymnase.",

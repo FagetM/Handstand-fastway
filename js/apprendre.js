@@ -40,7 +40,7 @@ function renderLearn(){
   // vue d’ensemble en constellation (par défaut), sur tout l’écran : le titre, la série et la révision flottent sur le ciel
   if (!L.list) { const w = skyFull(constellation(), "Apprendre", lnStreak() + " j de série", "Vue liste", flip), rb = el("div","cstrev");
     revCard(rb); if (rb.firstChild) w.append(rb); box.append(w); return; }
-  const hd = el("div","lnstats"); hd.append(el("div","lnst", lnStreak() + " j"), el("span","mut","de série"), el("div","lnst", String(L.xp || 0)), el("span","mut","points"));
+  const hd = el("div","lnstats"); hd.append(el("div","lnst", lnStreak() + " j"), el("span","mut","de série"), el("div","lnst", String(L.xp || 0)), el("span","mut","points de savoir"));
   box.append(hd);
   revCard(box);
   { const tg = el("button","lnview","Vue constellation"); tg.onclick = flip; box.append(tg); }
@@ -88,8 +88,10 @@ function constellation(){
     return {name:cat, col:CST_COL[cat], a0, a1, arcR:640, nameR:662, neb:[C + Math.cos(am) * 430, C + Math.sin(am) * 430, 200 + as.length * 45]}; });
   const all = nodes, dn = all.filter(o => o.done).length;
   return skyMap({key:"ln", W, sectors:secs, seps:secs.map(s => ({a:s.a0 - 0.03, r0:120, r1:690})), rings:[{r:92, col:"#e8a0b0", op:.45, w:2, dash:"3 7"}, {r:640, op:.12, w:1}],
-    paths, links, dots, nodes, labels, center:{big:String(L.xp || 0), small:"points"},
-    panel:{head:dn + "/" + all.length, sub:"étoiles", rows:Object.keys(CST_COL).map(cat => { const vs = LEARN.find(c => c.cat === cat).voies, xs = all.filter(o => vs.some(v => lessonsOf(v).includes(o.l))), d = xs.filter(o => o.done).length;
+    paths, links, dots, nodes, labels, center:{big:String(L.xp || 0), small:"points de savoir"}, legendFirst:() => !L.help && !revDue().length,
+    legend:skyLegend("Lire le ciel", "Du centre vers le bord : chaque branche est une voie, ses leçons s’enchaînent.", [["maj","Première et dernière leçon d’une voie"],["ok","Leçon faite"],["cur","Ta prochaine leçon"],["far","Pas encore : termine la précédente"],["th","Fil lumineux : ton chemin"]],
+      "Touche une étoile pour ouvrir sa leçon, ou le nom d’une voie pour voir tout son chemin.", () => { L.help = 1; save(); }),
+    panel:{head:dn + "/" + all.length, sub:"leçons faites", rows:Object.keys(CST_COL).map(cat => { const vs = LEARN.find(c => c.cat === cat).voies, xs = all.filter(o => vs.some(v => lessonsOf(v).includes(o.l))), d = xs.filter(o => o.done).length;
       return {name:cat.replace(/^Le y/,"Y"), col:CST_COL[cat], p:xs.length ? d / xs.length : 0, title:cat + " : " + d + "/" + xs.length}; })},
     view:{get:() => L.view, set:v => { L.view = v; }}, k0:0.62,
     // à l’ouverture : entre le cœur et la prochaine étoile
@@ -142,7 +144,7 @@ function lnStep(){ if (typeof hush === "function") hush(); const box = $("lnBody
   else if (s[0] === "p") { const p = pracOf(s);
     if (!p) { ln.i++; return lnStep(); }
     box.append(el("div","lab","Pratique"), el("h3",null,p.name), el("p","mut", p.dur));
-    const pb = el("button","btn line","Commencer la pratique"); pb.onclick = () => { $("lnDlg").close(); vpOpen(p); $("vpDlg").addEventListener("close", () => { $("lnDlg").showModal(); ln.i++; lnStep(); }, {once:true}); }; box.append(pb);
+    const pb = el("button","btn line","Commencer la pratique"); pb.onclick = () => { $("lnDlg").close(); vpOpen(p); vp.fromLesson = true; $("vpDlg").addEventListener("close", () => { $("lnDlg").showModal(); ln.i++; lnStep(); }, {once:true}); }; box.append(pb);
     go.textContent = "Passer"; go.onclick = () => { ln.i++; lnStep(); }; }
 }
 function lnEnd(){ const L = LS(); ln.ended = true; const first = !ln.rev && !L.done[ln.l.id], pts = ln.rev ? 5 : first ? 10 + (ln.miss ? 0 : 5) : 2;   // revoir une leçon rapporte peu : on ne gagne qu’en avançant

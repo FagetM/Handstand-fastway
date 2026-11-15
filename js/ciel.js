@@ -38,7 +38,7 @@ function skyMap(o){
   world.insertAdjacentHTML("beforeend", '<svg class="cste" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true"><defs>' + defs.join("") + '</defs>' + bg.join("") + glow.join("") + fg.join("") + '</svg>');
   // le cœur
   // « Toi » : une épingle posée sur ta prochaine étoile, qui garde sa taille à tous les zooms (comme « vous êtes ici » sur un plan)
-  if (o.pin) { const pn = el("div","cstpin", o.pin.text); pn.style.left = o.pin.x + "px"; pn.style.top = o.pin.y + "px"; pn.setAttribute("aria-hidden","true"); world.append(pn); }
+  if (o.pin) { const pn = el("div","cstpin", o.pin.text); pn.style.left = o.pin.x + "px"; pn.style.top = o.pin.y + "px"; if (!o.panel.rows.some(r => r.go)) pn.setAttribute("aria-hidden","true"); world.append(pn); }
   if (o.center) { const h = el("div","csth"); h.style.left = (o.center.x != null ? o.center.x : C) + "px"; h.style.top = (o.center.y != null ? o.center.y : C) + "px"; h.append(el("b",null, o.center.big), el("span",null, o.center.small)); world.append(h); }
   // des noms posés dans le ciel (sommets des lignes, titres des massifs), qui ne captent pas le doigt
   (o.tags || []).forEach(g => { const t = el("span","cstg" + (g.big ? " big" : ""), g.text); t.style.left = g.x + "px"; t.style.top = g.y + "px"; t.style.color = g.col; world.append(t); });
@@ -60,11 +60,13 @@ function skyMap(o){
   const pick = id => { const x = btn[id]; if (!x) return; clear(); wrap.classList.add("sel"); x.b.classList.add("hot");
     (x.n.rel || []).forEach(r => { const y = btn[r]; if (y) { y.b.classList.add("hot"); line(y.n, x.n, x.n.col, y.n.done); } });
     (x.n.unl || []).forEach(r => { const y = btn[r]; if (y) { y.b.classList.add("hot"); line(x.n, y.n, y.n.col, false); } });
-    if (bar) { bar.remove(); bar = null; } card = o.card(x.n, pick, clear); card.classList.add("cstcard"); wrap.append(card); };
-  if (o.pick) { wrap.addEventListener("click", e => { if (!wrap.dataset.moved && wrap.classList.contains("sel") && !e.target.closest(".cstcard,.cstz,.csttop,.cstn")) clear(); }); dock(); wrap.pick = id => { pick(id); const x = btn[id]; if (x) wrap.goTo(x.n.x, x.n.y + 90); }; }
+    if (bar) { bar.remove(); bar = null; } card = o.card(x.n, pick, clear); card.classList.add("cstcard"); wrap.append(card);
+    // l’étoile touchée vient au-dessus de la carte, sans changer le zoom
+    requestAnimationFrame(() => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520, ch = card.offsetHeight || 200; tx = w / 2 - x.n.x * k; ty = (h - ch) / 2 + 40 - x.n.y * k; apply(); keep(); }); };
+  if (o.pick) { wrap.addEventListener("click", e => { if (!wrap.dataset.moved && wrap.classList.contains("sel") && !e.target.closest(".cstcard,.cstz,.csttop,.cstn")) clear(); }); dock(); wrap.pick = id => { if (k < 0.6) { const x = btn[id]; if (x) wrap.goTo(x.n.x, x.n.y, 0.8); } pick(id); }; }
   // le panneau de bord : le total, et une jauge par secteur
-  if (o.panel) { const pn = el("div","cstp"), hd = el("div","cstph"); pn.setAttribute("aria-hidden","true"); hd.append(el("b",null, o.panel.head), el("span",null, o.panel.sub)); pn.append(hd);
-    o.panel.rows.forEach(r => { const x = el("div","cstpr"), bar = el("i"); x.style.setProperty("--c", r.col); bar.style.setProperty("--p", r.p); x.title = r.title || r.name; x.append(el("span",null, r.name), bar); pn.append(x); });
+  if (o.panel) { const pn = el("div","cstp"), hd = el("div","cstph"); if (!o.panel.rows.some(r => r.go)) pn.setAttribute("aria-hidden","true"); hd.append(el("b",null, o.panel.head), el("span",null, o.panel.sub)); pn.append(hd);
+    o.panel.rows.forEach(r => { const x = el(r.go ? "button" : "div","cstpr"), bar = el("i"); if (r.go) { x.onclick = e => { e.stopPropagation(); r.go(); }; x.setAttribute("aria-label", r.title); } x.style.setProperty("--c", r.col); bar.style.setProperty("--p", r.p); x.title = r.title || r.name; x.append(el("span",null, r.name), bar); pn.append(x); });
     wrap.append(pn); }
   // déplacer au doigt, zoomer à deux doigts ou à la molette ; boutons + − ⤢ ; de loin, seuls les grands noms restent
   const kMin = o.kMin || 0.25, st0 = o.view.get(); let k = st0 ? st0.k : 0, tx = st0 ? st0.x : 0, ty = st0 ? st0.y : 0; const pts = new Map(); let base = null;
@@ -148,17 +150,21 @@ function skyLayout(){
   Object.values(groups).forEach(g => { g.cx -= x0; g.by -= y0; g.top -= y0; });
   return (skyLayout.v = {pos, line, strands, groups, gate:sh(gate), W, H, toi:sh([0, 150])});
 }
-const figState = id => reqDone(id) ? "done" : !msLocked(MS[id]) ? "open" : (MS[id].req || []).every(r => reqDone(r) || !msLocked(MS[r])) ? "near" : "far";
+const figState = id => st(id).done ? "done" : eqSkip(id) ? "skip" : reqDone(id) ? "done" : !msLocked(MS[id]) ? "open" : (MS[id].req || []).every(r => reqDone(r) || !msLocked(MS[r])) ? "near" : "far";
+// la légende d’un ciel : un titre, une phrase pour le sens de lecture, les symboles ; « lue » une fois fermée
+const skyLegend = (title, sub, items, foot, read) => close => { const c = el("div"), hd = el("div","cstch0"), x = el("button","cstx","×"); x.setAttribute("aria-label","Fermer");
+  x.onclick = e => { e.stopPropagation(); read(); close(); }; hd.append(el("b",null,title), el("span",null,sub), x); c.append(hd);
+  const L = el("div","cstleg"); items.forEach(([k, t]) => { const r = el("div"); r.append(el("i","lg-" + k), el("span",null,t)); L.append(r); }); c.append(L, el("p","cstlegp", foot)); return c; };
 function figSky(nextId){
   const Y = skyLayout(), {pos, line, W, H} = Y, colOf = id => SKY_COL[line[id] ? line[id].sid : "trunk"] || "#ddd", stOf = {}, unl = {};
   Object.keys(pos).forEach(id => { stOf[id] = figState(id); (MS[id].req || []).forEach(r => (unl[r] || (unl[r] = [])).push(id)); });
-  const M = p => f0(p[0]) + " " + f0(p[1]), lit = id => stOf[id] === "done" || stOf[id] === "open";
+  const M = p => f0(p[0]) + " " + f0(p[1]), pass = id => stOf[id] === "done" || stOf[id] === "skip", lit = id => pass(id) || stOf[id] === "open";
   // les fils : le long de chaque brin, d’étoile en étoile ; du tronc au carrefour ; du carrefour au pied de chaque ligne des disciplines
   const paths = [], dots = [{x:Y.gate[0], y:Y.gate[1], r:7, col:SKY_COL.trunk}], tags = [], nebs = [];
   const curve = (a, b, col, on) => paths.push({d:"M" + M(a) + "C" + M([a[0], (a[1] + b[1]) / 2]) + " " + M([b[0], (a[1] + b[1]) / 2]) + " " + M(b), col, lit:on});
   Y.strands.forEach(R => { const col = SKY_COL[R.sid];
-    for (let k = 1; k < R.ids.length; k++) curve(pos[R.ids[k - 1]], pos[R.ids[k]], col, stOf[R.ids[k - 1]] === "done" && lit(R.ids[k]));
-    if (R.sid === "trunk") curve(pos[R.ids[R.ids.length - 1]], Y.gate, col, stOf[R.ids[R.ids.length - 1]] === "done");
+    for (let k = 1; k < R.ids.length; k++) curve(pos[R.ids[k - 1]], pos[R.ids[k]], col, pass(R.ids[k - 1]) && lit(R.ids[k]));
+    if (R.sid === "trunk") curve(pos[R.ids[R.ids.length - 1]], Y.gate, col, pass(R.ids[R.ids.length - 1]));
     else if (R.sid !== "low" && R.sid !== "ultime") curve(Y.gate, pos[R.ids[0]], col, lit(R.ids[0]));
     // le nom de la ligne, au sommet de son brin, comme un fanion
     tags.push({x:R.x, y:R.top - 44, text:R.lname, col}); });
@@ -176,29 +182,28 @@ function figSky(nextId){
       cls:(cur ? "cur" : s) + (maj ? " maj" : " mn") + (L.sat ? " sat" : "") + (live ? " anim" : ""), r:live ? size / 2 + 4 : null,
       html:live ? (s === "done" ? '<b class="cstok">' + lnIcon("check", 12) + '</b>' : "") : s === "done" ? lnIcon("check", 12) : "",
       fill:live ? b => { const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; b.prepend(sp); sprPaint(sp, size); } : null,
-      name:m.name, side:[0, 1], aria:m.name + (s === "done" ? ", validée" : cur ? ", ta prochaine figure" : s === "open" ? ", ouverte" : ", pas encore ouverte"), tap:() => quick(id)}; });
+      name:m.name, side:[0, 1], aria:m.name + (s === "done" ? ", validée" : s === "skip" ? ", passée : pas besoin avec ton matériel" : cur ? ", ta prochaine figure" : s === "open" ? ", ouverte" : ", pas encore ouverte"), tap:() => quick(id)}; });
   // la carte d’une étoile : où elle en est, ce qu’il manque (à toucher), ce qu’elle ouvre, et la fiche
   const chip = (id, go) => { const b = el("button","cstch", MS[id].name); b.style.setProperty("--c", colOf(id)); if (stOf[id] === "done") b.classList.add("done"); b.onclick = e => { e.stopPropagation(); go(id); }; return b; };
   const card = (n, go, close) => { const id = n.id, s = stOf[id], c = el("div"), hd = el("div","cstch0"), miss = (MS[id].req || []).filter(r => !reqDone(r)), op = (unl[id] || []).filter(r => !reqDone(r));
     // la figure en mouvement, son nom, et où tu en es : niveau atteint et prochain palier, ou la cible
     const m = MS[id], Lv = lvls(m), kk = lvlOf(m), nx = nextStep(m), sp = el("span","sp cstsp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = s === "far" || s === "near" ? 1 : ""; sprPaint(sp, 64);
-    const where = s === "done" ? "Validée" : (id === nextId ? "Ta prochaine figure" : s === "open" ? "Ouverte" : "Pas encore ouverte") + (s !== "done" && Lv.length > 1 && nx ? " · niveau " + kk + "/" + Lv.length + ", prochain palier " + unitTxt(m, nx) : m.target && s !== "done" ? " · cible " + goalTxt(m) : "");
+    const where = s === "done" ? "Validée" : s === "skip" ? "Passée : avec ton matériel, l’autre chemin suffit" : (id === nextId ? "Ta prochaine figure" : s === "open" ? "Ouverte" : "Pas encore ouverte") + (s !== "done" && Lv.length > 1 && nx ? " · niveau " + kk + "/" + Lv.length + ", prochain palier " + unitTxt(m, nx) : m.target && s !== "done" ? " · cible " + goalTxt(m) : "");
     hd.append(sp, el("b",null, m.name), el("span",null, where));
     const x = el("button","cstx","×"); x.setAttribute("aria-label","Fermer"); x.onclick = e => { e.stopPropagation(); close(); }; hd.append(x); c.append(hd);
-    if (miss.length) { const r = el("div","cstrow"); r.append(el("span",null,"Il te manque")); miss.forEach(m => r.append(chip(m, go))); c.append(r); }
+    if (miss.length) { const r = el("div","cstrow"), all = [...reqsOf(id)].filter(r2 => !reqDone(r2) && !MS[r2].alt).length; r.append(el("span",null,"Il te manque")); miss.forEach(m => r.append(chip(m, go))); c.append(r);
+      if (all > miss.length) c.append(el("p","cstlegp", "En tout, " + all + " étapes avant celle-ci : touche « Il te manque » pour remonter le chemin.")); }
     if (op.length) { const r = el("div","cstrow"); r.append(el("span",null,"Elle ouvre")); op.slice(0, 4).forEach(m => r.append(chip(m, go))); c.append(r); }
     const f = el("button","btn","Voir la fiche"); f.onclick = e => { e.stopPropagation(); quick(id); }; c.append(f); return c; };
   // en bas, quand rien n’est touché : ta prochaine figure, à un geste
   const bar = go => { if (!nextId) return null; const b = el("button"); b.append(el("span",null,"Prochaine"), el("b",null, MS[nextId].name)); b.onclick = e => { e.stopPropagation(); wrap.pick(nextId); }; return b; };
-  const ids = sid => SKY_LINES.find(x => x[0] === sid)[2].flatMap(l => l[1]), row = (name, sid) => { const xs = ids(sid), d = xs.filter(id => stOf[id] === "done").length; return {name, col:SKY_COL[sid], p:d / xs.length, title:name + " : " + d + "/" + xs.length}; };
+  const ids = sid => SKY_LINES.find(x => x[0] === sid)[2].flatMap(l => l[1]), row = (name, sid) => { const xs = ids(sid), d = xs.filter(id => st(id).done).length, g = Y.groups[sid]; return {name, col:SKY_COL[sid], p:d / xs.length, title:name + " : " + d + "/" + xs.length, go:g ? () => wrap.goTo(g.cx, (g.by + g.top) / 2, 0.42) : null}; };   // toucher une jauge : on survole son massif
   const all = Object.keys(pos), wrap = skyMap({key:"fs", W, H, nebs, paths, dots, tags, nodes, pick:true, card, bar, kMin:0.12, far:0.42, close:1.05, k0:0.8,
     center:{big:"Départ", small:"", x:Y.toi[0], y:Y.toi[1]}, pin:nextId && pos[nextId] ? {x:pos[nextId][0], y:pos[nextId][1] - 34, text:"Toi"} : null,
-    legend:close => { const c = el("div"), hd = el("div","cstch0"), x = el("button","cstx","×"); x.setAttribute("aria-label","Fermer"); x.onclick = e => { e.stopPropagation(); S.skyHelp = 1; save(); close(); };   // lue : elle ne revient plus d’elle-même
-      hd.append(el("b",null,"Lire le ciel"), el("span",null,"De bas en haut : plus on monte, plus c’est dur."), x); c.append(hd);
-      const L = el("div","cstleg"); [["maj","Une figure phare"],["ok","Validée"],["op","Ouverte : tu peux la travailler"],["cur","Toi : ta prochaine figure"],["nr","À un pas"],["far","Plus tard, dans la brume"],["th","Fil lumineux : chemin ouvert"]].forEach(([k, t]) => { const r = el("div"); r.append(el("i","lg-" + k), el("span",null,t)); L.append(r); });
-      c.append(L, el("p","cstlegp","Touche une étoile : ce qu’il te manque, ce qu’elle ouvre.")); return c; },
+    legend:skyLegend("Lire le ciel", "De bas en haut : plus on monte, plus c’est dur.", [["maj","Une figure phare"],["ok","Validée"],["op","Ouverte : tu peux la travailler"],["cur","Toi : ta prochaine figure"],["nr","À un pas"],["far","Plus tard, dans la brume"],["th","Fil lumineux : chemin ouvert"]],
+      "Touche une étoile : ce qu’il te manque, ce qu’elle ouvre.", () => { S.skyHelp = 1; save(); }),
     legendFirst:() => !S.skyHelp,
-    panel:{head:all.filter(id => stOf[id] === "done").length + "/" + all.length, sub:"figures", rows:[row("Tronc","trunk"), row("Un bras","onearm"), row("Planche","planche"), row("Force","press"), row("Combo","ultime")]},
+    panel:{head:all.filter(id => !MS[id].alt && st(id).done).length + "/" + all.filter(id => !MS[id].alt).length, sub:"validées", rows:[row("Tronc","trunk"), row("Un bras","onearm"), row("Planche","planche"), row("Force","press"), row("Combo","ultime")]},
     view:{get:() => S.skyV, set:v => { S.skyV = v; }}, focus:nextId && pos[nextId] ? [pos[nextId][0], pos[nextId][1] - 110] : Y.toi});
   return wrap;
 }

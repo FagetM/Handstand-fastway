@@ -161,7 +161,7 @@ function vpRing(ph, sec){ const r = $("vpRing"); r.style.transitionDuration = se
 function vpTick(){
   if (!vp || !vp.run) return; const now = Date.now(); vp.t += (now - vp.last) / 1000; vp.last = now;
   let acc = 0, i = 0; while (i < vp.steps.length && acc + vp.steps[i][1] <= vp.t) { acc += vp.steps[i][1]; i++; }
-  if (i >= vp.steps.length) { vpStop(); vp.i = i; $("vpGo").textContent = "Recommencer"; $("vpTxt").textContent = "C’est fini. Prends un instant avant de te relever."; $("vpLeft").textContent = ""; say("C’est fini.", true); vpRing(null, 1);
+  if (i >= vp.steps.length) { vpStop(); vp.i = i; $("vpGo").textContent = vp.fromLesson ? "Continuer la leçon" : "Recommencer"; $("vpTxt").textContent = "C’est fini. Prends un instant avant de te relever."; $("vpLeft").textContent = ""; say("C’est fini.", true); vpRing(null, 1);
     if (vp.p.journal) ecouteForm(); return; }
   if (i !== vp.i) { vp.i = i; const [ph, sec, txt] = vp.steps[i]; $("vpTxt").textContent = txt; vpRing(ph, sec);
     // la voix guide les premiers cycles, puis le cercle prend le relais : un souffle ne se compte pas à voix haute pendant 5 minutes
@@ -170,7 +170,7 @@ function vpTick(){
   const left = Math.max(0, Math.ceil(vp.tot - vp.t)); $("vpLeft").textContent = Math.floor(left / 60) + " min " + String(left % 60).padStart(2, "0") + " s";
 }
 function vpStop(){ if (vp) vp.run = false; clearInterval(vpTick.h); if (vp && vp.i < vp.steps.length) $("vpGo").textContent = "Reprendre"; }
-$("vpGo").onclick = () => { if (!vp) return; if (vp.run) { vpStop(); return; } if (vp.i >= vp.steps.length) { vpOpen(vp.p, vp.alt); } if (vp.t === 0) say(vp.p.steps && vp.p.steps[0][0] === "txt" ? "On commence." : "On commence. Suis le cercle.", true); vp.run = true; vp.last = Date.now(); $("vpGo").textContent = "Pause"; clearInterval(vpTick.h); vpTick.h = setInterval(vpTick, 200); vpTick(); };
+$("vpGo").onclick = () => { if (!vp) return; if (vp.run) { vpStop(); return; } if (vp.i >= vp.steps.length && vp.fromLesson) { $("vpDlg").close(); return; } if (vp.i >= vp.steps.length) { vpOpen(vp.p, vp.alt); } if (vp.t === 0) say(vp.p.steps && vp.p.steps[0][0] === "txt" ? "On commence." : "On commence. Suis le cercle.", true); vp.run = true; vp.last = Date.now(); $("vpGo").textContent = "Pause"; clearInterval(vpTick.h); vpTick.h = setInterval(vpTick, 200); vpTick(); };   // pratique d’une leçon : on revient à la leçon
 $("vpX").onclick = () => $("vpDlg").close();
 $("vpDlg").addEventListener("close", () => { clearTimeout(vpOpen.jt); vpStop(); try { speechSynthesis.cancel(); } catch(e){} });
 $("ecGo").onclick = () => { S.ecoute = 0; save(); $("ecoute").hidden = true; vpOpen(PRATIQUES.find(p => p.id === "ecoute")); };

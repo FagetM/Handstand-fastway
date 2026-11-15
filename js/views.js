@@ -142,7 +142,7 @@ function render(){
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste
   // coffre gagné : la scène d’ouverture attend qu’aucune fenêtre ne soit ouverte (jamais au milieu d’une série)
-  if (S.chestQ && !document.querySelector("dialog[open]")) { const q = S.chestQ; delete S.chestQ; save(); setTimeout(() => chestScene(q), 350); }
+  if (S.chestQ && !document.querySelector("dialog[open]") && !(S.pain && Date.now() - S.pain < 3600e3)) {   /* jamais de cadeau juste après une douleur */ const q = S.chestQ; delete S.chestQ; save(); setTimeout(() => chestScene(q), 350); }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!reqDone(id) && !msLocked(MS[id])) || ids.find(id=>!reqDone(id));
@@ -153,7 +153,7 @@ function render(){
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
     nc.append(el("div","lab", "Séance du jour"));   // le jour est déjà dans l’en-tête
     if (!S.placed && Object.keys(MS).filter(id=>st(id).done).length < 6) { const pb = el("button","place");
-      pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"2 minutes, quelques touches"));
+      pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"3 minutes environ, tu peux t’arrêter quand tu veux"));
       pb.onclick = () => startPlacement(); nc.append(pb); $("sessToggle").hidden = $("sess").hidden = true; ["cycle","sommet","pJour"].forEach(i => { const e = $(i); if (e) e.hidden = true; });   // avant le bilan : rien d’autre à l’écran
       const sk = el("button","golink","Passer : je pars de zéro"); sk.onclick = () => { S.placed = true; save(); render(); }; nc.append(sk);
       break today; }
@@ -202,6 +202,7 @@ function render(){
         v.onclick = () => setNoVest(!noVest()); nc.append(v); }
       const bt = el("button","btn big" + (dn >= tot ? " done" : ""), dn >= tot ? "Séance faite. Voir mon parcours" : dn ? "Reprendre (" + dn + " / " + tot + ")" : "Démarrer" + " (" + Math.max(5, Math.round(estSecs(day.blocks) / 60)) + " min)"); 
       bt.onclick = () => { if (dn >= tot) { showTab("path"); return; } startGuided(); }; nc.append(bt);
+      if (dn && dn < tot) { const fin = el("button","lnk","Terminer la séance ici"); fin.onclick = () => { selDay = todayIdx(); endSession(); }; nc.append(fin); }   // finir plus tôt : le ressenti est demandé, la séance compte
       if (dn >= tot && P.builtin) { const sw = softWeek() < 2, z = el("button","zenhint"); z.append(el("b",null, sw ? "Souplesse douce, 20 min" : "Récup active, 8 min"), el("span",null, sw ? softWeek() + " sur 2 cette semaine" : "Mobilité après l’effort")); z.onclick = () => openZen(sw ? "souple" : "recup"); nc.append(z); }
       if (dn >= tot) nc.append(el("div","tmeta", daySummary()));
       // effacer le dernier enregistrement du jour (une erreur de saisie, une série notée deux fois)
@@ -218,7 +219,7 @@ function render(){
   // le Parcours, c’est le ciel : la montée de nuit, avec ton objectif et ses dates en haut, ta prochaine figure en bas
   const tree = $("tree"), keepY = window.scrollY; if (sprIO) tree.querySelectorAll(".sp").forEach(sp => { sprIO.unobserve(sp); sprLive.delete(sp); }); tree.textContent = ""; $("pathTop").textContent = "";
   $("v-path").classList.add("cstmode");
-  { const gw = planWk(plan(), [goalTop()]); tree.append(skyFull(figSky(nextId), "Parcours", gw ? goalShort() + " : " + dateTxt(gw) : "Tout ton arbre, d’un coup d’œil", "Mes dates", () => { openEta(); const d = $("etaDlg"); if (!d.open) d.showModal(); })); }
+  { const gw = planWk(plan(), [goalTop()]); tree.append(skyFull(figSky(nextId), "Parcours", gw ? goalShort() + " : " + rangeTxt(gw) : "Tout ton arbre, d’un coup d’œil", "Mes dates", () => { openEta(); const d = $("etaDlg"); if (!d.open) d.showModal(); })); }
   if (keepY) window.scrollTo(0, keepY);
 
   $("countdown").value = String(Math.max(3, S.countdown || 0)); $("theme").value = S.theme || "dark";
