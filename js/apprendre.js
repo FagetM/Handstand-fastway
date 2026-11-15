@@ -34,13 +34,17 @@ function revCard(box){ const due = revDue(); if (!due.length) return; const b = 
   b.onclick = () => revOpen(); box.append(b); }
 function renderLearn(){
   const box = $("learn"); if (!box) return; box.textContent = ""; const L = LS();
-  if (L.open && voieById(L.open)) return renderVoiePath(box, voieById(L.open));
+  if (L.open && voieById(L.open)) { $("v-learn").classList.remove("cstmode"); return renderVoiePath(box, voieById(L.open)); }
+  const flip = () => { const L = LS(); L.list = !L.list; save(); renderLearn(); window.scrollTo(0, 0); };
+  $("v-learn").classList.toggle("cstmode", !L.list);
+  // vue d’ensemble en constellation (par défaut), sur tout l’écran : le titre, la série et la révision flottent sur le ciel
+  if (!L.list) { const w = constellation(), top = el("div","csttop"), t = el("div"), tg = el("button","cstl","Vue liste"), rb = el("div","cstrev");
+    w.classList.add("full"); t.append(el("h2",null,"Apprendre"), el("span",null, lnStreak() + " j de série")); tg.onclick = flip; top.append(t, tg); w.append(top);
+    revCard(rb); if (rb.firstChild) w.append(rb); box.append(w); return; }
   const hd = el("div","lnstats"); hd.append(el("div","lnst", lnStreak() + " j"), el("span","mut","de série"), el("div","lnst", String(L.xp || 0)), el("span","mut","points"));
   box.append(hd);
   revCard(box);
-  // vue d’ensemble en constellation (par défaut), ou la liste des voies
-  { const tg = el("button","lnview", L.list ? "Vue constellation" : "Vue liste"); tg.onclick = () => { L.list = !L.list; save(); renderLearn(); }; box.append(tg); }
-  if (!L.list) { box.append(constellation()); return; }
+  { const tg = el("button","lnview","Vue constellation"); tg.onclick = flip; box.append(tg); }
   LEARN.forEach(c => { box.append(el("h2","lncat", c.cat)); const g = el("div","lngrid");
     c.voies.forEach(v => { const ls = lessonsOf(v), dn = ls.filter(l => L.done[l.id]).length, b = el("button","lnv" + (dn === ls.length ? " done" : ""));
       const ic = el("span","lnic"); ic.innerHTML = lnIcon(v.ic); const bar = el("span","bar"), i = el("i"); i.style.width = Math.round(dn / ls.length * 100) + "%"; bar.append(i);
