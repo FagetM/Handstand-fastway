@@ -963,10 +963,36 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .cstmode #pathTop{display:none}
 .cstr{font:800 18px/1 var(--disp);opacity:.75}
 .cstn.open{color:var(--c);box-shadow:inset 0 0 0 2px var(--c),0 0 10px color-mix(in srgb,var(--c) 45%,transparent)}
-.cstn.alt{width:36px;height:36px;opacity:.85}
 .cstn.ph{background-size:cover;background-position:center}
-.cstn.ph.lk{filter:grayscale(1) brightness(.6)}
+.cstn.ph.lk,.cstn.ph.far,.cstn.ph.near{filter:grayscale(1) brightness(.6)}
 .cst.far .cstn:not(.maj):not(.cur) i{display:none}
+/* le Parcours : petites étoiles pour les étapes, brume pour ce qui est loin ; la zone de toucher reste large */
+.cstn.mn{width:16px;height:16px;font-size:0}
+.cstn.mn::after{content:"";position:absolute;inset:-14px;border-radius:50%}
+.cstn.mn.done{width:18px;height:18px}
+.cstn.mn.open{width:22px;height:22px}
+.cstn.mn.cur{width:30px;height:30px}
+.cstn.near{background:transparent;box-shadow:inset 0 0 0 2px var(--nring)}
+.cstn.mn.far{width:8px;height:8px;background:var(--nring);box-shadow:none}
+.cstn.maj.far{opacity:.45;color:var(--nmut);box-shadow:inset 0 0 0 2px var(--nring)}
+.cstn.maj.near{opacity:.75;color:var(--nmut);box-shadow:inset 0 0 0 2px var(--nring),0 0 0 5px var(--nnode),0 0 0 7px var(--nring)}
+.cstn.mn i{display:none}
+.cstn.mn.cur i,.cstn.mn.open i,.cst.close .cstn.mn.done i,.cst.close .cstn.mn.near i{display:block}
+.cstn.sat{display:none}.cst.close .cstn.sat{display:grid}
+.cstn.mn i{font-size:11px;width:96px}
+.cstt{font:800 14px/1 var(--disp);opacity:.85}
+.cstsel{position:absolute;left:0;top:0;pointer-events:none}
+.cst.sel .cstn:not(.hot){opacity:.15}.cst.sel .cste{opacity:.45}
+.cst.sel .cstn.hot i{display:block}
+.cstcard,.cstbar{position:absolute;left:12px;right:12px;bottom:12px;border-radius:18px;background:var(--nlab);color:var(--ntx);box-shadow:inset 0 0 0 1px var(--nring)}
+.cstbar{display:flex;align-items:baseline;gap:8px;min-height:52px;padding:12px 16px;border:0;font:600 14px/1.2 var(--disp);text-align:left}.cstbar span{opacity:.7}
+.cstcard{padding:12px 16px 16px;display:flex;flex-direction:column;gap:8px}
+.cstch0{display:grid;grid-template-columns:1fr auto;align-items:start}.cstch0 b{font:800 18px/1.2 var(--disp)}.cstch0 span{grid-row:2;font-size:13px;opacity:.75}
+.cstx{grid-row:1/3;grid-column:2;width:44px;height:44px;border:0;border-radius:12px;background:none;color:var(--ntx);font:800 22px/1 var(--disp)}
+.cstrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}.cstrow>span{font-size:13px;opacity:.75;margin-right:4px}
+.cstch{min-height:44px;padding:0 12px;border:0;border-radius:12px;background:var(--nnode);color:var(--ntx);font:700 13px/1.1 var(--disp);box-shadow:inset 0 0 0 2px var(--c)}
+.cstch.done{background:var(--c);color:var(--nbtx)}
+.cstcard .btn{margin-top:4px}
 .cstz{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
 .cstz button{width:44px;height:44px;border-radius:12px;border:0;background:var(--nbtn);color:var(--nbtx);font:800 20px/1 var(--disp)}
 .lnrev .mut{font-size:13px;color:color-mix(in srgb,var(--txt) 80%,var(--raise))}
