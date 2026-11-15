@@ -37,6 +37,8 @@ function skyMap(o){
   (o.dots || []).forEach(d => fg.push('<circle cx="' + f0(d.x) + '" cy="' + f0(d.y) + '" r="' + d.r + '" fill="' + d.col + '"/>'));
   world.insertAdjacentHTML("beforeend", '<svg class="cste" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true"><defs>' + defs.join("") + '</defs>' + bg.join("") + glow.join("") + fg.join("") + '</svg>');
   // le cœur
+  // « Toi » : une épingle posée sur ta prochaine étoile, qui garde sa taille à tous les zooms (comme « vous êtes ici » sur un plan)
+  if (o.pin) { const pn = el("div","cstpin", o.pin.text); pn.style.left = o.pin.x + "px"; pn.style.top = o.pin.y + "px"; pn.setAttribute("aria-hidden","true"); world.append(pn); }
   if (o.center) { const h = el("div","csth"); h.style.left = (o.center.x != null ? o.center.x : C) + "px"; h.style.top = (o.center.y != null ? o.center.y : C) + "px"; h.append(el("b",null, o.center.big), el("span",null, o.center.small)); world.append(h); }
   // des noms posés dans le ciel (sommets des lignes, titres des massifs), qui ne captent pas le doigt
   (o.tags || []).forEach(g => { const t = el("span","cstg" + (g.big ? " big" : ""), g.text); t.style.left = g.x + "px"; t.style.top = g.y + "px"; t.style.color = g.col; world.append(t); });
@@ -66,7 +68,7 @@ function skyMap(o){
     wrap.append(pn); }
   // déplacer au doigt, zoomer à deux doigts ou à la molette ; boutons + − ⤢ ; de loin, seuls les grands noms restent
   const kMin = o.kMin || 0.25, st0 = o.view.get(); let k = st0 ? st0.k : 0, tx = st0 ? st0.x : 0, ty = st0 ? st0.y : 0; const pts = new Map(); let base = null;
-  const apply = () => { world.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")"; wrap.classList.toggle("far", k < (o.far || 0)); wrap.classList.toggle("close", k >= (o.close || 9)); };
+  const apply = () => { world.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")"; wrap.style.setProperty("--k", k); wrap.classList.toggle("far", k < (o.far || 0)); wrap.classList.toggle("close", k >= (o.close || 9)); };
   const keep = () => o.view.set({k, x:tx, y:ty});
   const zoomAt = (f, cx, cy) => { const nk = Math.max(kMin, Math.min(1.6, k * f)); tx = cx - (cx - tx) * nk / k; ty = cy - (cy - ty) * nk / k; k = nk; apply(); keep(); };
   const fit = () => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520; k = Math.max(kMin, Math.min(w / W, h / H) * 0.98); tx = (w - W * k) / 2; ty = (h - H * k) / 2; apply(); keep(); };
@@ -82,6 +84,11 @@ function skyMap(o){
   zp.setAttribute("aria-label","Zoomer"); zm.setAttribute("aria-label","Dézoomer"); zf.setAttribute("aria-label","Tout voir");
   zp.onclick = () => zoomAt(1.25, wrap.clientWidth / 2, wrap.clientHeight / 2); zm.onclick = () => zoomAt(0.8, wrap.clientWidth / 2, wrap.clientHeight / 2); zf.onclick = fit;
   zb.append(zp, zm, zf); wrap.append(zb);
+  // la légende : ce que veulent dire les étoiles et les fils ; elle s’ouvre seule la première fois
+  if (o.legend) { const q = el("button",null,"?"); q.setAttribute("aria-label","Que veulent dire les étoiles ?"); zb.append(q);
+    const showLegend = () => { if (o.pick) { wrap.classList.remove("sel"); Object.values(btn).forEach(x => x.b.classList.remove("hot")); sel.textContent = ""; }
+      if (card) card.remove(); if (bar) { bar.remove(); bar = null; } card = o.legend(() => { card.remove(); card = null; if (o.pick) dock(); }); card.classList.add("cstcard"); wrap.append(card); };
+    q.onclick = e => { e.stopPropagation(); showLegend(); }; if (o.legendFirst && o.legendFirst()) requestAnimationFrame(showLegend); }
   // se poser sur un point du ciel (la prochaine étoile, par défaut)
   wrap.goTo = (x, y, nk) => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520; k = nk || o.k0 || 0.62; tx = w / 2 - x * k; ty = h / 2 - y * k; apply(); keep(); };
   requestAnimationFrame(() => { if (st0 && st0.k) apply(); else wrap.goTo(o.focus ? o.focus[0] : C, o.focus ? o.focus[1] : C); });
@@ -185,7 +192,12 @@ function figSky(nextId){
   const bar = go => { if (!nextId) return null; const b = el("button"); b.append(el("span",null,"Prochaine"), el("b",null, MS[nextId].name)); b.onclick = e => { e.stopPropagation(); wrap.pick(nextId); }; return b; };
   const ids = sid => SKY_LINES.find(x => x[0] === sid)[2].flatMap(l => l[1]), row = (name, sid) => { const xs = ids(sid), d = xs.filter(id => stOf[id] === "done").length; return {name, col:SKY_COL[sid], p:d / xs.length, title:name + " : " + d + "/" + xs.length}; };
   const all = Object.keys(pos), wrap = skyMap({key:"fs", W, H, nebs, paths, dots, tags, nodes, pick:true, card, bar, kMin:0.12, far:0.42, close:1.05, k0:0.8,
-    center:{big:"Toi", small:"", x:Y.toi[0], y:Y.toi[1]},
+    center:{big:"Départ", small:"", x:Y.toi[0], y:Y.toi[1]}, pin:nextId && pos[nextId] ? {x:pos[nextId][0], y:pos[nextId][1] - 34, text:"Toi"} : null,
+    legend:close => { const c = el("div"), hd = el("div","cstch0"), x = el("button","cstx","×"); x.setAttribute("aria-label","Fermer"); x.onclick = e => { e.stopPropagation(); S.skyHelp = 1; save(); close(); };   // lue : elle ne revient plus d’elle-même
+      hd.append(el("b",null,"Lire le ciel"), el("span",null,"De bas en haut : plus on monte, plus c’est dur."), x); c.append(hd);
+      const L = el("div","cstleg"); [["maj","Une figure phare"],["ok","Validée"],["op","Ouverte : tu peux la travailler"],["cur","Toi : ta prochaine figure"],["nr","À un pas"],["far","Plus tard, dans la brume"],["th","Fil lumineux : chemin ouvert"]].forEach(([k, t]) => { const r = el("div"); r.append(el("i","lg-" + k), el("span",null,t)); L.append(r); });
+      c.append(L, el("p","cstlegp","Touche une étoile : ce qu’il te manque, ce qu’elle ouvre.")); return c; },
+    legendFirst:() => !S.skyHelp,
     panel:{head:all.filter(id => stOf[id] === "done").length + "/" + all.length, sub:"figures", rows:[row("Tronc","trunk"), row("Un bras","onearm"), row("Planche","planche"), row("Force","press"), row("Combo","ultime")]},
     view:{get:() => S.skyV, set:v => { S.skyV = v; }}, focus:nextId && pos[nextId] ? [pos[nextId][0], pos[nextId][1] - 110] : Y.toi});
   return wrap;

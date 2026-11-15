@@ -194,6 +194,7 @@ function render(){
         const dots = el("div","dots"); if (dn) b.sets.forEach((s,si)=>{ const v = vals[bi + "-" + si]; dots.append(el("i", (v != null ? (b.kind === "hold" && s.goal && v < s.goal * 0.95 ? "half" : "ok") : "") + (s.max ? " t" : ""))); }); g.append(dots);
         b.sets.forEach(s=>{ secs += (s.rest || 20) + (s.goal && b.kind === "hold" ? s.goal : s.dur ? sDur(s, day.scale) * (s.sides ? 2 : 1) : 25); });
         r.append(art, g); if (done >= b.sets.length) r.classList.add("ok"); list.append(r); });
+      { const nx = list.querySelector(".trow:not(.ok)"); if (nx) nx.classList.add("cur"); }   // l’exercice qui vient pulse, comme ta prochaine étoile
       nc.append(list);
       // gilet lesté : s’il n’est pas là aujourd’hui, un toucher et les exercices lestés passent en version lente sans charge
       if ((S.equip || {}).kg && (noVest() || day.blocks.some(b => b.dk && DRILLS[b.dk].eq === "kg"))) { const v = el("button","vest" + (noVest() ? " off" : "")); v.setAttribute("aria-pressed", noVest());

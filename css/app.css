@@ -913,6 +913,18 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .cstn.mn i{font-size:11px;width:78px}
 .cstt{font:800 14px/1 var(--disp);opacity:.85}
 .cstsel{position:absolute;left:0;top:0;pointer-events:none}
+.cstpin{position:absolute;padding:4px 12px;border-radius:12px;background:var(--acc);color:var(--onacc);font:800 13px/1 var(--disp);pointer-events:none;transform-origin:50% 100%;transform:translate(-50%,-100%) scale(calc(1 / var(--k,1)));box-shadow:0 0 14px color-mix(in srgb,var(--acc) 60%,transparent)}
+.cstpin::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg);z-index:-1}
+.cstleg{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px}.cstleg>div{display:flex;align-items:center;gap:8px}
+.cstleg i{flex:none;width:22px;height:22px;border-radius:50%;display:block}
+.lg-maj{background:var(--nnode);box-shadow:inset 0 0 0 2px var(--acc),0 0 0 3px var(--nnode),0 0 0 4px color-mix(in srgb,var(--acc) 55%,transparent)}
+.lg-ok{background:var(--acc);box-shadow:0 0 10px var(--acc)}
+.lg-op{box-shadow:inset 0 0 0 2px var(--acc),0 0 8px color-mix(in srgb,var(--acc) 45%,transparent)}
+.lg-cur{background:var(--nbtx);box-shadow:inset 0 0 0 3px var(--acc),0 0 0 5px color-mix(in srgb,var(--acc) 30%,transparent)}
+.cstleg i.lg-nr{width:14px;height:14px;margin:4px;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--acc) 55%,transparent)}
+.cstleg i.lg-far{width:8px;height:8px;margin:8px;background:var(--nring)}
+.cstleg i.lg-th{width:22px;height:3px;border-radius:2px;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+.cstlegp{margin:0;font-size:13px;opacity:.8}
 .cst.sel .cstn:not(.hot){opacity:.15}.cst.sel .cste{opacity:.45}
 .cst.sel .cstn.hot i{display:block}
 .cstcard,.cstbar{position:absolute;left:12px;right:12px;bottom:12px;border-radius:18px;background:var(--nlab);color:var(--ntx);box-shadow:inset 0 0 0 1px var(--nring)}
@@ -931,3 +943,25 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .cstz button{width:44px;height:44px;border-radius:12px;border:0;background:var(--nbtn);color:var(--nbtx);font:800 20px/1 var(--disp)}
 .lnrev .mut{font-size:13px;color:color-mix(in srgb,var(--txt) 80%,var(--raise))}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Aujourd’hui, dans la matière du ciel ----------
+   La séance est un brin de constellation : chaque exercice une étoile (le personnage dedans), reliées par un fil ;
+   ce qui est fait s’allume, ce qui vient pulse. La semaine, sept étoiles. Pas de grande boîte : la séance est posée sur la nuit. */
+:root:not([data-theme="light"]) .next{background:none;box-shadow:none;padding:8px 0 0;border-radius:0}
+:root:not([data-theme="light"]) #scene .scene{-webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 50%,var(--nsh) 55%,transparent 100%);mask-image:radial-gradient(ellipse 60% 70% at 50% 50%,var(--nsh) 55%,transparent 100%);height:110px}   /* le décor se fond dans la nuit, sans cadre */
+:root:not([data-theme="light"]) .trow{position:relative;border-top:0;padding:12px 0}
+:root:not([data-theme="light"]) .trow .art{background:var(--nnode);overflow:visible;box-shadow:inset 0 0 0 2px var(--nring)}
+:root:not([data-theme="light"]) .trow .art .sp{border-radius:50%}
+:root:not([data-theme="light"]) .trow+.trow::before{content:"";position:absolute;left:31px;top:-12px;width:2px;height:24px;background:repeating-linear-gradient(var(--nring) 0 3px,transparent 3px 7px)}
+:root:not([data-theme="light"]) .trow.ok{opacity:1}
+:root:not([data-theme="light"]) .trow.ok .art{box-shadow:inset 0 0 0 2px var(--acc),0 0 14px color-mix(in srgb,var(--acc) 55%,transparent)}
+:root:not([data-theme="light"]) .trow.ok .grow{opacity:.6}
+:root:not([data-theme="light"]) .trow.ok+.trow::before{background:var(--acc);box-shadow:0 0 6px var(--acc)}
+:root:not([data-theme="light"]) .trow.cur .art{box-shadow:inset 0 0 0 3px var(--acc),0 0 0 6px color-mix(in srgb,var(--acc) 25%,transparent);animation:tcur 1.8s ease-in-out infinite}
+@keyframes tcur{50%{box-shadow:inset 0 0 0 3px var(--acc),0 0 0 11px color-mix(in srgb,var(--acc) 10%,transparent)}}
+:root:not([data-theme="light"]) .twk{border-top:0;position:relative;padding-top:20px}
+:root:not([data-theme="light"]) .twk::before{content:"";position:absolute;left:8px;right:8px;top:28px;height:1px;background:repeating-linear-gradient(90deg,var(--nring) 0 3px,transparent 3px 8px)}
+:root:not([data-theme="light"]) .twk i{position:relative;background:var(--n2);box-shadow:inset 0 0 0 1.5px var(--nring)}
+:root:not([data-theme="light"]) .twk .did i{background:var(--acc);box-shadow:0 0 12px var(--acc)}
+:root:not([data-theme="light"]) .twk .did i::after{content:none}
+@media (prefers-reduced-motion:reduce){.trow.cur .art{animation:none}}
