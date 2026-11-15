@@ -26,7 +26,7 @@ const W = {
   omoP:n => zr("Pompes d’omoplates en pike", 2, n, "En V inversé, bras tendus : laisse descendre puis repousse avec les épaules seulement."),
   creux:d => zn(3, "Gainage creux", d, "Position de pompe, dos légèrement arrondi, fesses serrées. Pousse le sol."),
   pikeBox:d => zn(3, "Appui tendu en pike, pieds sur une caisse", d, "Pieds sur une caisse ou une chaise, bassin au-dessus des épaules, bras tendus aux oreilles. Pousse le sol."),
-  dosMur:d => zn(3, "Équilibre dos au mur", d, "Talons contre le mur, mains à 20 cm : corps droit, épaules ouvertes, regard entre les mains."),
+  dosMur:d => zn(3, "Équilibre ventre au mur", d, "Ventre face au mur, mains à une main du mur : seuls les orteils touchent, côtes rentrées, épaules aux oreilles."),
   corbeau:d => zn(4, "Corbeau", d, "Genoux sur l’arrière des bras, regard devant : bascule jusqu’à décoller les pieds. Tiens, sans à-coup."),
   corbeauT:d => zn(4, "Corbeau bras tendus", d, "Genoux haut sur les bras tendus, épaules devant les mains, dos rond. Immobile."),
   latérale:d => zh("Planche latérale", d, "Sur une main, corps aligné, hanche haute. Le bras libre tendu vers le ciel.", {sides:1}),
@@ -49,7 +49,7 @@ const ZEN = [
   {id:"ligne", name:"Ligne et épaules", min:10, when:"Pour un équilibre droit : épaules ouvertes, corps gainé", tiers:[
     {name:"Épaules au mur et chien actif 3 × 30 s", up:15, blocks:[W.chiot, W.chien(30), W.murEp(30), W.omoP(10), W.creux(30)]},
     {name:"Gainage creux 3 × 45 s, appui pike sur caisse", up:10, blocks:[W.chiot, W.creux(45), W.pikeBox(20), W.omoP(12)]},
-    {name:"Équilibre dos au mur 3 × 30 s", up:15, blocks:[W.chiot, W.pikeBox(30), W.dosMur(30), W.creux(45)]}]},
+    {name:"Équilibre ventre au mur 3 × 30 s", up:15, blocks:[W.chiot, W.pikeBox(30), W.dosMur(30), W.creux(45)]}]},
   {id:"controle", name:"Contrôle lent", min:12, when:"Poses tenues et transitions lentes", tiers:[
     {name:"Corbeau 4 × 15 s → 30 s", up:15, blocks:[W.corbeau(15), W.latérale(30), W.chat(10), W.transi(6), W.guerrier]},
     {name:"Corbeau 4 × 30 s, chaturanga 3 × 20 s", up:10, blocks:[W.corbeau(30), W.latérale(45), W.chat(20), W.transi(8)]},
@@ -62,7 +62,8 @@ const ZEN = [
       zh("Enfant bras longs", 60, "Fesses vers les talons, bras allongés loin devant : les épaules s’étirent."),
       zh("Pigeon", 45, "Jambe avant pliée devant toi, jambe arrière allongée : laisse descendre les hanches.", {sides:1}),
       zh("Chien tête en bas", 45, "Pédale doucement avec les talons, pousse le sol."),
-      zh("Torsion couchée", 30, "Genoux d’un côté, épaules au sol.", {sides:1})]}]},
+      zh("Torsion couchée", 30, "Genoux d’un côté, épaules au sol.", {sides:1}),
+      zh("Jambes au mur", 180, "Bassin contre le mur, jambes posées dessus, mains sur le ventre : inspire sur 2, expire sur 4.")]}]},
 ];
 // état d’une échelle : palier, nombre de crans gagnés (un cran = +2 s sur une tenue courte, +5 s sinon), séances propres au plafond (dates)
 const zst = id => { const all = S.zst || (S.zst = {}); return all[id] || (all[id] = {tier:0, add:0, ok:[]}); };

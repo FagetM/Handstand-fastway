@@ -26,7 +26,7 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 
 | Fichier | Rôle |
 |---|---|
-| `index.html` | la page : structure des quatre onglets et des fenêtres |
+| `index.html` | la page : structure des cinq onglets et des fenêtres |
 | `css/app.css` | l'apparence |
 | `js/data.js` | arbre des figures (`TREE`), objectifs (`GOALS`), fiches détaillées, schémas de posture |
 | `js/state.js` | sauvegarde sur l'appareil, migrations, outils (`el`, `chipRow`), **le journal** (`idOfLog`, `logsOf`, `daysWhere`), validation, niveaux, badges |
@@ -44,6 +44,8 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/bilan.js` | bilan de départ et profil : sécurité, objectif, matériel, âge, poids, fragilités, vérifications |
 | `js/zen.js` | Postures : échelles tenues qui s'allongent, souplesse douce, récup, météo du corps |
 | `js/voie.js` | la Voie : pensées, respirations, écoute du corps, carnet, transmettre |
+| `js/apprendre-data.js` | le contenu des formations (voies, unités, leçons : cartes, quiz, pratiques) ; les livres s'y ajoutent |
+| `js/apprendre.js` | l'onglet Apprendre : catalogue des voies, chemin de leçons, lecteur de leçon, série et points |
 | `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
 
 À chaque nouvelle version, changer `CACHE` dans `sw.js` (et `SPV` dans `js/sprites.js` si une animation change).
