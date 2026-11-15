@@ -62,7 +62,7 @@ function laurelCalc(){
 function renderSommet(){
   const box = $("sommet"); if (!box) return; box.textContent = "";
   const P = plan(), todo = [...MAITRES].filter(id => MS[id] && !st(id).done); if (!todo.length) { box.hidden = true; return; }
-  const id = todo.reduce((a, b) => (P.fin[b] || 999) < (P.fin[a] || 999) ? b : a), m = MS[id];
+  const gt = goalTop(), id = todo.includes(gt) ? gt : todo.reduce((a, b) => (P.fin[b] || 999) < (P.fin[a] || 999) ? b : a), m = MS[id];   // ton sommet, celui de ton but, d’abord
   const anc = new Set(), walk = i => (MS[i].req || []).forEach(r => { if (MS[r] && !anc.has(r)) { anc.add(r); walk(r); } }); walk(id);
   const done = [...anc].filter(r => reqDone(r)).length, tot = anc.size || 1, pct = Math.round(done / tot * 100), y = yogaOf(id);
   box.hidden = false;

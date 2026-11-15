@@ -81,6 +81,8 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 { const net = () => { $("offBar").hidden = navigator.onLine; }; window.addEventListener("online", net); window.addEventListener("offline", net); net(); }
 // Stockage durable : on demande au navigateur de ne pas effacer la progression ni les animations quand il manque de place.
 if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist().catch(()=>{}); }).catch(()=>{});
+// Réglages, tout en bas du Profil : à l’ouverture, on les amène à l’écran
+{ const r = document.querySelector("details.reglages"); if (r) r.addEventListener("toggle", () => { if (r.open) requestAnimationFrame(() => r.querySelector("summary").scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"start"})); }); }
 // Raccourcis de l’icône : « Démarrer la séance » et « Mon parcours ».
 { const q = new URLSearchParams(location.search), go = () => { if (document.body.classList.contains("locked")) return;
     if (q.get("tab") === "path") showTab("path");

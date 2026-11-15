@@ -215,7 +215,7 @@ const gainTxt = wk => wk < 9 ? Math.max(1, Math.round(wk)) + " semaine" + (Math.
 // la figure qui fixe la date du but : on remonte le chemin le plus long jusqu’à une figure ouverte aujourd’hui
 function keyFig(P, ids){ let id = ids.reduce((a, b) => (P.fin[b] || 0) > (P.fin[a] || 0) ? b : a, ids[0]), n = 0; while (id && P.start[id] > 0 && P.by[id] && n++ < 200) id = P.by[id]; return id && !st(id).done ? id : null; }
 // fenêtre « Mes dates » : les grandes étapes, puis ce qui ferait gagner du temps
-const STEPS = [["in_str60","Équilibre droit, 60 s"],["pr_straddle","Montée en force jambes écartées"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre sur un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
+const STEPS = [["in_str60","Tenir sur les mains, 60 s"],["pr_straddle","Montée en force jambes écartées"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre sur un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
 // au-delà d’un an, une fourchette plutôt qu’une date précise : le chemin est long, il ne doit pas décourager
 function rangeTxt(w){ if (!w) return ""; if (w <= 52) return dateTxt(w); const y = k => new Date(Date.now() + w * k * 7 * 864e5).getFullYear(), a = y(0.8), b = y(1.25); return a === b ? dateTxt(w) : "entre " + a + " et " + b; }
 function openEta(){ const box = $("etaBody"), P = plan(), goal = goalTop(), w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";

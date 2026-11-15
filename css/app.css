@@ -913,7 +913,7 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .cstn.mn i{font-size:11px;width:78px}
 .cstt{font:800 14px/1 var(--disp);opacity:.85}
 .cstsel{position:absolute;left:0;top:0;pointer-events:none}
-.cstpin{position:absolute;padding:4px 12px;border-radius:12px;background:var(--acc);color:var(--onacc);font:800 13px/1 var(--disp);pointer-events:none;transform-origin:50% 100%;transform:translate(-50%,-100%) scale(calc(1 / var(--k,1)));box-shadow:0 0 14px color-mix(in srgb,var(--acc) 60%,transparent)}
+.cstpin{position:absolute;z-index:5;padding:4px 12px;border-radius:12px;background:var(--acc);color:var(--onacc);font:800 13px/1 var(--disp);pointer-events:none;transform-origin:50% 100%;transform:translate(-50%,-100%) scale(calc(1 / var(--k,1)));box-shadow:0 0 14px color-mix(in srgb,var(--acc) 60%,transparent)}
 .cstpin::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg);z-index:-1}
 .cstleg{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px}.cstleg>div{display:flex;align-items:center;gap:8px}
 .cstleg i{flex:none;width:22px;height:22px;border-radius:50%;display:block}

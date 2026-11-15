@@ -33,12 +33,19 @@ const PL_GOALS = [["min","Tenir sur les mains","in_str60"],["planche","La full p
 function plGoal(){ const box = $("plBody"); box.textContent = ""; box.append(el("div","lab","Ton but"), el("h2",null,"Qu’est-ce qui te fait envie ?"));
   const g = el("div","plgoal");
   PL_GOALS.forEach(([k, name, fig]) => { const b = el("button","plg" + ((S.goal || "both") === k ? " on" : "")), sp = el("span","sp"); sp.dataset.pose = poseId(fig); sp.dataset.anim = fig; sp.dataset.lk = ""; sprPaint(sp, 56);
-    b.append(sp, el("b",null,name)); b.onclick = () => { S.goal = k === "both" ? null : k; save(); const gs = $("goalSel"); if (gs) gs.value = k; plStep(); }; g.append(b); });
+    b.append(sp, el("b",null,name)); b.onclick = () => { S.goal = k === "both" ? null : k; save(); const gs = $("goalSel"); if (gs) gs.value = k; plHs(); }; g.append(b); });
   box.append(g, el("p","mut","Tu pourras changer d’avis dans le Profil.")); }
+// une question d’aiguillage : qui tient déjà l’équilibre sans mur saute les fondations (elles seront vérifiées en séance)
+function plHs(){ const box = $("plBody"); box.textContent = ""; const art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId("b2_str15"); sp.dataset.anim = "b2_str15"; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
+  box.append(el("div","lab","Une question pour commencer"), el("h2",null,"Tu tiens déjà l’équilibre sur les mains, sans mur ?"), art);
+  const row = el("div","chips"), opt = (t, fn) => { const b = el("button","chip", t); b.onclick = fn; row.append(b); };
+  opt("Pas encore", () => plStep()); opt("Quelques secondes", () => plStep());
+  opt("15 s ou plus", () => { [...reqsOf("b2_str15"), "b2_str15"].forEach(r => { const x = st(r); if (x.done || MS[r].alt) return; x.done = true; if (MS[r].target) x.best = Math.max(x.best, MS[r].target); (S.confirm || (S.confirm = [])).push(r); }); save(); plStep(); });
+  box.append(row, el("p","mut","Si tu tiens 15 s, les étapes d’avant sont comptées comme acquises : la séance les vérifiera.")); }
 // un même effort à plusieurs durées (équilibre droit 15, 40, 60 s) : une seule question, la réponse valide ce qu’elle couvre
 const HOLD_FAM = [["b2_str15","in_str40","in_str60"]];
 // déjà avancé : des figures phares à cocher d’un coup, leurs étapes d’avant comptent comme acquises (vérifiées en séance)
-const PL_ADV = ["pl_tuck","pl_adv","pl_straddle","pr_lsit","pr_vsit","pr_straddle","pr_pike","pr_stalder","oa_flaghoriz","oa_finger1","oa_oahs","lo_croc"];
+const PL_ADV = ["in_toes7","in_7d","pl_tuck","pl_adv","pl_straddle","pr_lsit","pr_vsit","pr_straddle","pr_pike","pr_stalder","oa_flaghoriz","oa_finger1","oa_oahs","lo_croc"];
 function plAdv(){ const box = $("plBody"), pick = new Set(); box.textContent = "";
   box.append(el("div","lab","Déjà avancé"), el("h2",null,"Tu sais déjà faire certaines de ces figures ?"), el("p","mut","Touche celles que tu tiens proprement. Ce qui mène jusqu’à elles sera compté comme acquis, puis vérifié en séance."));
   const g = el("div","pladv"), done = el("button","btn","C’est tout");
@@ -69,7 +76,7 @@ function plStep(){
     const b = el("button","chip","Valider"); b.type = "submit"; r.onsubmit = (e) => { e.preventDefault(); const v = Math.max(0, Math.round(+i.value || 0)); if (!i.value) return; v >= (m.target || 1) ? yes() : no(v); };
     r.append(i, el("span","mut",unit), b); return r; };
   const q = el("div","plq");
-  const fam = HOLD_FAM.find(f => f[0] === id);
+  const fam0 = HOLD_FAM.find(f => f.includes(id)), fam = fam0 ? fam0.slice(fam0.indexOf(id)) : null;   // la question couvre ce qui reste de la famille
   if (fam) { q.append(el("div","mut","Combien de temps tiens-tu cette figure ?")); const row = el("div","chips");
     [["Pas du tout",0]].concat(L.slice(0, -1).map(v=>["≈ " + v + " s", v])).forEach(([lab,v])=>{ const b = el("button","chip",lab); b.onclick = () => no(v); row.append(b); });
     fam.forEach((f, i) => { const b = el("button","chip", MS[f].target + " s" + (i === fam.length - 1 ? " ou plus" : "")); b.onclick = () => { fam.slice(0, i + 1).forEach(x => { const o = st(x); o.done = true; o.best = Math.max(o.best, MS[x].target); (S.confirm || (S.confirm = [])).push(x); });
@@ -78,6 +85,6 @@ function plStep(){
   else if (m.type === "hold") { q.append(el("div","mut","Combien de temps tiens-tu cette figure ?"));
     const row = el("div","chips"); [["Pas du tout",0]].concat(L.slice(0, -1).map(v=>["≈ " + v + " s", v])).forEach(([lab,v])=>{ const b = el("button","chip",lab); b.onclick = () => no(v); row.append(b); });
     const ok = el("button","chip", m.target + " s ou plus"); ok.onclick = yes; row.append(ok); q.append(row, exact("secondes")); }
-  else { q.append(el("div","mut","Sais-tu le faire proprement ?")); const row = el("div","chips"), y = el("button","chip on","Oui"), n = el("button","chip","Pas encore"); y.onclick = yes; n.onclick = () => no(0); row.append(y, n); q.append(row); if (m.type === "reps" && m.target > 1) q.append(exact("répétitions")); }
+  else { q.append(el("div","mut","Sais-tu le faire proprement ?")); const row = el("div","chips"), y = el("button","chip","Oui"), n = el("button","chip","Pas encore"); y.onclick = yes; n.onclick = () => no(0); row.append(y, n); q.append(row); if (m.type === "reps" && m.target > 1) q.append(exact("répétitions")); }
   box.append(q);
 }

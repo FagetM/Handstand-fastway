@@ -103,7 +103,8 @@ function builtinBlocks(){
   const dn = Math.floor(Date.now() / 864e5), oaOk = onearmOk(), fConf = confIds.filter(id => FORCE(id)).length;   // une vérification de force compte dans le plafond de 2
   // rotation : la première figure ouverte de chaque discipline (équilibre, un bras, compression, planche, montées),
   // celle travaillée il y a le plus longtemps passe en premier — aucune discipline n’étouffe les autres
-  const disc = id => /^oa_/.test(id) ? "oa" : /^pl_/.test(id) ? "pl" : /^pr_(lsit|stradL|pikeLift|stradLift|vsit|vsitC|extSup)$/.test(id) ? "comp" : /^pr_/.test(id) ? "pr" : /^ul_/.test(id) ? "ul" : "eq";
+  // les fondations qui mènent à la planche (appui, pompes, dips) comptent comme de la planche : elles ont leur place chaque jour, pas derrière la roue
+  const plPre = reqsOf("pl_lean"), disc = id => /^oa_/.test(id) ? "oa" : /^pl_/.test(id) || plPre.has(id) ? "pl" : /^pr_(lsit|stradL|pikeLift|stradLift|vsit|vsitC|extSup)$/.test(id) ? "comp" : /^pr_/.test(id) ? "pr" : /^ul_/.test(id) ? "ul" : "eq";
   const cand = open.filter(id => !FORCE(id) && (oaOk || !/^oa_/.test(id))), heads = [], seen = new Set();
   cand.forEach(id => { const d = disc(id); if (!seen.has(d)) { seen.add(d); heads.push(id); } });
   // retard d’une figure = jours depuis son dernier travail, rapportés à son rythme cible (équilibre et un bras 3 j, compression et force 4 j)
@@ -482,7 +483,7 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
       $("sdReps").classList.toggle("typing", !t0); }   /* un nombre d’un toucher ; le clavier seulement si on le demande */
     $("sdGo").style.display = hold ? "" : "none"; $("sdGo").textContent = "Démarrer";
     // tenue libre : impossible de toucher Stop la tête en bas, alors on peut noter sa tenue après coup
-    if (hold) { const q = $("sdNoteQ"), T = tg || 10; q.textContent = ""; [...new Set([0.3, 0.5, 0.75, 1, 1.25, 1.5].map(k => Math.max(1, Math.round(T * k))))].forEach(n => { const bq = el("button","src", n + " s"); bq.setAttribute("aria-label", "Tenue de " + n + " secondes"); bq.onclick = () => { clearInterval(sdTimer); sdTimer = null; saveSet(n); }; q.append(bq); }); }   /* les durées n’apparaissent qu’une fois le chrono lancé */
+    if (hold) { const q = $("sdNoteQ"), T = tg || 10; q.textContent = ""; if (b.ms && MS[b.ms] && !FREE(MS[b.ms]) && !/^(oa_|in_|b[12]_|st_)/.test(b.ms)) {} else [...new Set([0.3, 0.5, 0.75, 1, 1.25, 1.5].map(k => Math.max(1, Math.round(T * k))))].forEach(n => { const bq = el("button","src", n + " s"); bq.setAttribute("aria-label", "Tenue de " + n + " secondes"); bq.onclick = () => { clearInterval(sdTimer); sdTimer = null; saveSet(n); }; q.append(bq); }); }   /* les durées n’apparaissent qu’une fois le chrono lancé */
     $("sdHint").textContent = tg ? "Cible : " + tg + unit(b) + (s.pct && s.pct < 100 ? " (" + s.pct + " % de ton record)" : s.pct ? ", ton record ou mieux" : "")
       : "Premier passage : fais ton maximum propre, il servira de référence.";
     if (b.note) $("sdHint").textContent += " " + b.note;
