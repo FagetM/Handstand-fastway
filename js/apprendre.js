@@ -38,8 +38,7 @@ function renderLearn(){
   const flip = () => { const L = LS(); L.list = !L.list; save(); renderLearn(); window.scrollTo(0, 0); };
   $("v-learn").classList.toggle("cstmode", !L.list);
   // vue d’ensemble en constellation (par défaut), sur tout l’écran : le titre, la série et la révision flottent sur le ciel
-  if (!L.list) { const w = constellation(), top = el("div","csttop"), t = el("div"), tg = el("button","cstl","Vue liste"), rb = el("div","cstrev");
-    w.classList.add("full"); t.append(el("h2",null,"Apprendre"), el("span",null, lnStreak() + " j de série")); tg.onclick = flip; top.append(t, tg); w.append(top);
+  if (!L.list) { const w = skyFull(constellation(), "Apprendre", lnStreak() + " j de série", "Vue liste", flip), rb = el("div","cstrev");
     revCard(rb); if (rb.firstChild) w.append(rb); box.append(w); return; }
   const hd = el("div","lnstats"); hd.append(el("div","lnst", lnStreak() + " j"), el("span","mut","de série"), el("div","lnst", String(L.xp || 0)), el("span","mut","points"));
   box.append(hd);
@@ -59,92 +58,42 @@ function renderLearn(){
 const CST_COL = {"Le yoga":"#e2b04a", "Énergie":"#a98be6", "Formations":"#5cc2b3"};
 // liens entre voies : la même idée vue de deux côtés (une étoile faite des deux côtés allume le lien)
 const CST_LINK = [["m4","a1"],["m4","r1"],["m5","d2"],["m6","d1"],["m2","p5"],["a2","c3"],["a5","p2"],["r4","p4"],["k1","e3"],["p3","c2"]];
-const f0 = x => x.toFixed(0);
 function constellation(){
   const L = LS(), W = 1440, C = W / 2, branches = LEARN.flatMap(c => c.voies.map(v => ({c, v}))), n = branches.length, slice = 2 * Math.PI / n;
-  const wrap = el("div","cst"), world = el("div","cstw"); world.style.width = world.style.height = W + "px"; wrap.append(world);
-  const svg = ['<svg class="cste" viewBox="0 0 ' + W + ' ' + W + '" width="' + W + '" height="' + W + '" aria-hidden="true"><defs><filter id="cstg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>'];
-  Object.entries(CST_COL).forEach(([cat, col], i) => svg.push('<radialGradient id="cstn' + i + '"><stop offset="0" stop-color="' + col + '" stop-opacity=".22"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></radialGradient>'));
-  svg.push('</defs>');
-  // poussière d’étoiles, toujours la même (pseudo-hasard fixe)
-  let sd = 7; const rnd = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
-  const bg = [], fg = [], glow = [];
-  for (let i = 0; i < 170; i++) bg.push('<circle cx="' + f0(rnd() * W) + '" cy="' + f0(rnd() * W) + '" r="' + (rnd() * 1.4 + 0.3).toFixed(1) + '" fill="#fff" opacity="' + (rnd() * 0.5 + 0.15).toFixed(2) + '"/>');
-  const nodes = [], byId = {}, sectors = {};
+  const nodes = [], byId = {}, sectors = {}, paths = [], dots = [], labels = [];
   branches.forEach(({c, v}, b) => { const ang = -Math.PI / 2 + b * slice, col = CST_COL[c.cat] || "#ddd", ls = lessonsOf(v), next = ls.find(l => !L.done[l.id]);
     (sectors[c.cat] || (sectors[c.cat] = [])).push(ang);
     // la branche s’enroule doucement, comme un bras de galaxie
-    const pts = [[C + Math.cos(ang) * 92, C + Math.sin(ang) * 92]];
+    const pts = [[C + Math.cos(ang) * 92, C + Math.sin(ang) * 92]], mine = [];
     ls.forEach((l, k) => { const a = ang + (k + 1) * 0.045, r = 250 + k * 74, wob = (k % 2 ? 1 : -1) * 16, x = C + Math.cos(a) * r - Math.sin(a) * wob, y = C + Math.sin(a) * r + Math.cos(a) * wob;
-      const done = !!L.done[l.id], cur = !!(next && next.id === l.id), o = {v, l, x, y, col, done, cur, lock:!done && !cur, k:k + 1, maj:k === 0 || k === ls.length - 1, side:[-Math.sin(a) * Math.sign(wob), Math.cos(a) * Math.sign(wob)]};
-      pts.push([x, y]); nodes.push(o); byId[l.id] = o; });
+      const done = !!L.done[l.id], cur = !!(next && next.id === l.id), lock = !done && !cur, maj = k === 0 || k === ls.length - 1;
+      const o = {x, y, col, l, done, cls:(done ? "done" : cur ? "cur" : "lk") + (maj ? " maj" : ""), name:l.name, side:[-Math.sin(a) * Math.sign(wob), Math.cos(a) * Math.sign(wob)],
+        // les grandes étoiles (première et dernière de la voie) portent l’emblème de la voie
+        html:maj ? lnIcon(v.ic, 26) : done ? lnIcon("check", 18) : lock ? lnIcon("lock", 16) : "<span>" + (k + 1) + "</span>",
+        aria:v.name + ", " + l.name + (done ? ", faite" : lock ? ", verrouillée" : ", à faire"),
+        tap:() => { if (lock) { toast("Termine d’abord : " + lessonsOf(v).find(z => !L.done[z.id]).name); return; } lnOpen(v, l); }};
+      pts.push([x, y]); nodes.push(o); mine.push(o); byId[l.id] = o; });
     // chaque segment est une courbe douce (Catmull-Rom), allumé quand l’étoile d’arrivée est faite ou à faire
-    for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)], o = nodes[nodes.length - ls.length + i];
-      const d = "M" + f0(p1[0]) + " " + f0(p1[1]) + "C" + f0(p1[0] + (p2[0] - p0[0]) / 6) + " " + f0(p1[1] + (p2[1] - p0[1]) / 6) + " " + f0(p2[0] - (p3[0] - p1[0]) / 6) + " " + f0(p2[1] - (p3[1] - p1[1]) / 6) + " " + f0(p2[0]) + " " + f0(p2[1]);
-      const lit = (i === 0 || nodes[nodes.length - ls.length + i - 1].done) && (o.done || o.cur);
-      if (lit) glow.push('<path d="' + d + '" stroke="' + col + '" stroke-width="7" fill="none" opacity=".55" filter="url(#cstg)"/>');
-      fg.push('<path d="' + d + '" stroke="' + (lit ? col : "#6e6884") + '" stroke-width="' + (lit ? 2.6 : 1.6) + '" fill="none" stroke-linecap="round"' + (lit ? "" : ' stroke-dasharray="1 6" opacity=".8"') + '/>'); }
-    fg.push('<circle cx="' + f0(pts[0][0]) + '" cy="' + f0(pts[0][1]) + '" r="5" fill="' + col + '"/>');
+    for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)], o = mine[i];
+      paths.push({col, lit:(i === 0 || mine[i - 1].done) && (o.done || /cur/.test(o.cls)),
+        d:"M" + f0(p1[0]) + " " + f0(p1[1]) + "C" + f0(p1[0] + (p2[0] - p0[0]) / 6) + " " + f0(p1[1] + (p2[1] - p0[1]) / 6) + " " + f0(p2[0] - (p3[0] - p1[0]) / 6) + " " + f0(p2[1] - (p3[1] - p1[1]) / 6) + " " + f0(p2[0]) + " " + f0(p2[1])}); }
+    dots.push({x:pts[0][0], y:pts[0][1], r:5, col});
     // le nom de la voie, au départ de sa branche
-    nodes.push({label:v, x:C + Math.cos(ang) * 162, y:C + Math.sin(ang) * 162, col, ang}); });
+    labels.push({x:C + Math.cos(ang) * 162, y:C + Math.sin(ang) * 162, col, text:v.name, tap:() => { L.open = v.id; save(); renderLearn(); window.scrollTo(0, 0); }}); });
   // les liens entre voies : un fil pâle qui se courbe vers le centre
-  CST_LINK.forEach(([a, b]) => { const A = byId[a], B = byId[b]; if (!A || !B) return; const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, lit = A.done && B.done;
-    const cx = C + (mx - C) * 0.72, cy = C + (my - C) * 0.72;
-    fg.unshift('<path d="M' + f0(A.x) + " " + f0(A.y) + "Q" + f0(cx) + " " + f0(cy) + " " + f0(B.x) + " " + f0(B.y) + '" stroke="' + (lit ? A.col : "#8a84a3") + '" stroke-width="1.2" fill="none" stroke-dasharray="2 5" opacity="' + (lit ? .8 : .35) + '"/>'); });
+  const links = CST_LINK.map(([a, b]) => { const A = byId[a], B = byId[b]; if (!A || !B) return null; const cx = C + ((A.x + B.x) / 2 - C) * 0.72, cy = C + ((A.y + B.y) / 2 - C) * 0.72;
+    return {d:"M" + f0(A.x) + " " + f0(A.y) + "Q" + f0(cx) + " " + f0(cy) + " " + f0(B.x) + " " + f0(B.y), col:A.col, lit:A.done && B.done}; }).filter(Boolean);
   // les secteurs : une nébuleuse de la couleur de la catégorie, un arc, des séparations, et le nom courbé le long du bord
-  const cats = Object.keys(CST_COL); let sep = [];
-  Object.entries(sectors).forEach(([cat, as]) => { const col = CST_COL[cat], i = cats.indexOf(cat), a0 = as[0] - slice / 2 + 0.03, a1 = as[as.length - 1] + slice / 2 - 0.03, am = (a0 + a1) / 2;
-    bg.push('<circle cx="' + f0(C + Math.cos(am) * 430) + '" cy="' + f0(C + Math.sin(am) * 430) + '" r="' + f0(200 + as.length * 45) + '" fill="url(#cstn' + i + ')"/>');
-    const arc = (r, x0, x1) => { const big = x1 - x0 > Math.PI ? 1 : 0, P = t => f0(C + Math.cos(t) * r) + " " + f0(C + Math.sin(t) * r); return "M" + P(x0) + "A" + r + " " + r + " 0 " + big + " 1 " + P(x1); };
-    const arcR = (r, x0, x1) => { const big = x1 - x0 > Math.PI ? 1 : 0, P = t => f0(C + Math.cos(t) * r) + " " + f0(C + Math.sin(t) * r); return "M" + P(x1) + "A" + r + " " + r + " 0 " + big + " 0 " + P(x0); };
-    fg.push('<path d="' + arc(640, a0, a1) + '" stroke="' + col + '" stroke-width="2" fill="none" opacity=".5"/>');
-    // le nom se lit toujours à l’endroit : en bas du cercle, on le pose sur l’arc parcouru dans l’autre sens
-    const low = Math.sin(am) > 0.2, tid = "csta" + i;
-    svg.push('<path id="' + tid + '" d="' + (low ? arcR(686, a0, a1) : arc(662, a0, a1)) + '" fill="none"/>');
-    fg.push('<text class="csts" fill="' + col + '" text-anchor="middle"><textPath href="#' + tid + '" startOffset="50%">' + cat.toUpperCase() + '</textPath></text>');
-    sep.push(a0 - 0.03); });
-  sep.forEach(a => bg.push('<line x1="' + f0(C + Math.cos(a) * 120) + '" y1="' + f0(C + Math.sin(a) * 120) + '" x2="' + f0(C + Math.cos(a) * 690) + '" y2="' + f0(C + Math.sin(a) * 690) + '" stroke="#8a84a3" stroke-opacity=".22" stroke-width="1.5" stroke-dasharray="2 9"/>'));
-  bg.push('<circle cx="' + C + '" cy="' + C + '" r="92" fill="none" stroke="#e8a0b0" stroke-opacity=".45" stroke-width="2" stroke-dasharray="3 7"/><circle cx="' + C + '" cy="' + C + '" r="640" fill="none" stroke="#8a84a3" stroke-opacity=".12" stroke-width="1"/>');
-  svg.push(...bg, ...glow, ...fg);
-  svg.push('</svg>'); world.insertAdjacentHTML("beforeend", svg.join(""));
-  // le cœur : toi, tes points
-  { const h = el("div","csth"); h.style.left = h.style.top = C + "px"; h.append(el("b",null, String(L.xp || 0)), el("span",null,"points")); world.append(h); }
-  nodes.forEach(o => { if (o.label) { const t = el("button","cstv", o.label.name); t.style.left = o.x + "px"; t.style.top = o.y + "px"; t.style.color = o.col;
-      t.onclick = e => { if (wrap.dataset.moved) return; L.open = o.label.id; save(); renderLearn(); window.scrollTo(0, 0); }; world.append(t); return; }
-    const b = el("button","cstn" + (o.done ? " done" : o.cur ? " cur" : " lk") + (o.maj ? " maj" : "")); b.style.left = o.x + "px"; b.style.top = o.y + "px"; b.style.setProperty("--c", o.col);
-    // les grandes étoiles (première et dernière de la voie) portent l’emblème de la voie
-    b.innerHTML = o.maj ? lnIcon(o.v.ic, 26) : o.done ? lnIcon("check", 18) : o.lock ? lnIcon("lock", 16) : "<span>" + o.k + "</span>"; // le nom se pose du côté extérieur du zigzag, jamais sur la branche
-    const nm = el("i",null, o.l.name), R = (o.maj ? 30 : 22) + 6, [sx, sy] = o.side, ax = sx > .35 ? 0 : sx < -.35 ? -100 : -50, ay = sy > .35 ? 0 : sy < -.35 ? -100 : -50;
-    nm.style.left = "calc(50% + " + f0(sx * R) + "px)"; nm.style.top = "calc(50% + " + f0(sy * R) + "px)"; nm.style.transform = "translate(" + ax + "%," + ay + "%)"; nm.style.textAlign = ax === 0 ? "left" : ax === -100 ? "right" : "center"; b.append(nm);
-    b.setAttribute("aria-label", o.v.name + ", " + o.l.name + (o.done ? ", faite" : o.lock ? ", verrouillée" : ", à faire"));
-    b.onclick = () => { if (wrap.dataset.moved) return; if (o.lock) { toast("Termine d’abord : " + lessonsOf(o.v).find(l => !L.done[l.id]).name); return; } lnOpen(o.v, o.l); }; world.append(b); });
-  // le panneau de bord : leçons faites, et une jauge par catégorie
-  { const pn = el("div","cstp"), all = nodes.filter(o => o.l), dn = all.filter(o => o.done).length; pn.setAttribute("aria-hidden","true");
-    const hd = el("div","cstph"); hd.append(el("b",null, dn + "/" + all.length), el("span",null,"étoiles")); pn.append(hd);
-    Object.keys(CST_COL).forEach(cat => { const xs = all.filter(o => LEARN.find(c => c.cat === cat).voies.includes(o.v)), d = xs.filter(o => o.done).length, r = el("div","cstpr"), bar = el("i");
-      r.style.setProperty("--c", CST_COL[cat]); bar.style.setProperty("--p", xs.length ? d / xs.length : 0); r.title = cat + " : " + d + "/" + xs.length; r.append(el("span",null,cat.replace(/^Le y/,"Y")), bar); pn.append(r); });
-    wrap.append(pn); }
-  // déplacer au doigt, zoomer à deux doigts ou à la molette ; boutons + et −
-  const st0 = L.view || null; let k = st0 ? st0.k : 0, tx = st0 ? st0.x : 0, ty = st0 ? st0.y : 0; const pts = new Map(); let base = null;
-  const apply = () => { world.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")"; };
-  const keep = () => { L.view = {k, x:tx, y:ty}; };
-  const zoomAt = (f, cx, cy) => { const nk = Math.max(0.25, Math.min(1.6, k * f)); tx = cx - (cx - tx) * nk / k; ty = cy - (cy - ty) * nk / k; k = nk; apply(); keep(); };
-  const fit = () => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520; k = Math.min(w, h) / W * 0.98; tx = (w - W * k) / 2; ty = (h - W * k) / 2; apply(); keep(); };
-  wrap.addEventListener("pointerdown", e => { pts.set(e.pointerId, [e.clientX, e.clientY]); wrap.dataset.moved = ""; base = {tx, ty, k, p:[...pts.values()]}; });
-  wrap.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]); const P = [...pts.values()];
-    if (P.length === 1 && base.p.length === 1) { const dx = P[0][0] - base.p[0][0], dy = P[0][1] - base.p[0][1]; if (Math.hypot(dx, dy) > 6) { wrap.dataset.moved = "1"; wrap.setPointerCapture(e.pointerId); } if (wrap.dataset.moved) { tx = base.tx + dx; ty = base.ty + dy; apply(); } }
-    else if (P.length === 2 && base.p.length === 2) { wrap.dataset.moved = "1"; const d0 = Math.hypot(base.p[0][0] - base.p[1][0], base.p[0][1] - base.p[1][1]), d1 = Math.hypot(P[0][0] - P[1][0], P[0][1] - P[1][1]), r = wrap.getBoundingClientRect();
-      const cx = (P[0][0] + P[1][0]) / 2 - r.left, cy = (P[0][1] + P[1][1]) / 2 - r.top; k = base.k; tx = base.tx; ty = base.ty; zoomAt(d1 / d0, cx, cy); } });
-  const up = e => { pts.delete(e.pointerId); base = {tx, ty, k, p:[...pts.values()]}; keep(); if (!pts.size) setTimeout(() => { wrap.dataset.moved = ""; }, 30); };
-  wrap.addEventListener("pointerup", up); wrap.addEventListener("pointercancel", up);
-  wrap.addEventListener("wheel", e => { e.preventDefault(); const r = wrap.getBoundingClientRect(); zoomAt(e.deltaY < 0 ? 1.12 : 1 / 1.12, e.clientX - r.left, e.clientY - r.top); }, {passive:false});
-  const zb = el("div","cstz"), zp = el("button",null,"+"), zm = el("button",null,"−"), zf = el("button",null,"⤢");
-  zp.setAttribute("aria-label","Zoomer"); zm.setAttribute("aria-label","Dézoomer"); zf.setAttribute("aria-label","Tout voir");
-  zp.onclick = () => zoomAt(1.25, wrap.clientWidth / 2, wrap.clientHeight / 2); zm.onclick = () => zoomAt(0.8, wrap.clientWidth / 2, wrap.clientHeight / 2); zf.onclick = fit;
-  zb.append(zp, zm, zf); wrap.append(zb);
-  const focus = () => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520, c = nodes.find(o => o.cur) || {x:C, y:C}; k = 0.62; tx = w / 2 - (c.x + C) / 2 * k; ty = h / 2 - (c.y + C) / 2 * k; apply(); keep(); };   /* entre le cœur et la prochaine étoile */
-  requestAnimationFrame(() => { if (st0 && st0.k) apply(); else focus(); });
-  return wrap;
+  const secs = Object.entries(sectors).map(([cat, as]) => { const a0 = as[0] - slice / 2 + 0.03, a1 = as[as.length - 1] + slice / 2 - 0.03, am = (a0 + a1) / 2;
+    return {name:cat, col:CST_COL[cat], a0, a1, arcR:640, nameR:662, neb:[C + Math.cos(am) * 430, C + Math.sin(am) * 430, 200 + as.length * 45]}; });
+  const all = nodes, dn = all.filter(o => o.done).length;
+  return skyMap({key:"ln", W, sectors:secs, seps:secs.map(s => ({a:s.a0 - 0.03, r0:120, r1:690})), rings:[{r:92, col:"#e8a0b0", op:.45, w:2, dash:"3 7"}, {r:640, op:.12, w:1}],
+    paths, links, dots, nodes, labels, center:{big:String(L.xp || 0), small:"points"},
+    panel:{head:dn + "/" + all.length, sub:"étoiles", rows:Object.keys(CST_COL).map(cat => { const vs = LEARN.find(c => c.cat === cat).voies, xs = all.filter(o => vs.some(v => lessonsOf(v).includes(o.l))), d = xs.filter(o => o.done).length;
+      return {name:cat.replace(/^Le y/,"Y"), col:CST_COL[cat], p:xs.length ? d / xs.length : 0, title:cat + " : " + d + "/" + xs.length}; })},
+    view:{get:() => L.view, set:v => { L.view = v; }}, k0:0.62,
+    // à l’ouverture : entre le cœur et la prochaine étoile
+    focus:(c => [(c.x + C) / 2, (c.y + C) / 2])(nodes.find(o => /cur/.test(o.cls)) || {x:C, y:C})});
 }
 // le chemin d’une voie : une leçon par rond, la suivante s’ouvre quand la précédente est faite
 function renderVoiePath(box, v){ const L = LS(), ls = lessonsOf(v), next = ls.find(l => !L.done[l.id]);

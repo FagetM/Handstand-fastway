@@ -224,7 +224,10 @@ function render(){
     pt.append(c);
   }
   const tree = $("tree"), keepY = window.scrollY; if (sprIO) tree.querySelectorAll(".sp").forEach(sp => { sprIO.unobserve(sp); sprLive.delete(sp); }); tree.textContent = "";
-  tree.append(journey(nextId));
+  // deux vues du même parcours : le chemin qui serpente, ou le ciel où tout l’arbre tient sur un écran
+  $("v-path").classList.toggle("cstmode", !!S.pathSky);
+  if (S.pathSky) { const nx = nextId && MS[nextId]; tree.append(skyFull(figSky(nextId), "Parcours", nx ? "Prochaine : " + nx.name : "Tout est validé", "Vue chemin", () => { S.pathSky = false; save(); render(); window.scrollTo(0, 0); })); }
+  else { const tg = el("button","lnview","Vue constellation"); tg.onclick = () => { S.pathSky = true; save(); render(); window.scrollTo(0, 0); }; tree.append(tg, journey(nextId)); }
   if (keepY) window.scrollTo(0, keepY);
 
   $("countdown").value = String(Math.max(3, S.countdown || 0)); $("theme").value = S.theme || "light";

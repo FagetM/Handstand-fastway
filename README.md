@@ -45,6 +45,7 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/zen.js` | Postures : échelles tenues qui s'allongent, souplesse douce, récup, météo du corps |
 | `js/voie.js` | la Voie : pensées, respirations, écoute du corps, carnet, transmettre |
 | `js/apprendre-data.js` | le contenu des formations (voies, unités, leçons : cartes, quiz, pratiques) ; les livres s'y ajoutent |
+| `js/ciel.js` | le ciel : moteur de carte d’étoiles partagé (Apprendre, Parcours) et la vue constellation du Parcours |
 | `js/apprendre.js` | l'onglet Apprendre : catalogue des voies, chemin de leçons, lecteur de leçon, série et points |
 | `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
 
