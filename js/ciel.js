@@ -1,18 +1,18 @@
 // ---------- Le ciel : une carte d’étoiles, partagée par Apprendre et le Parcours ----------
 // Le moteur ne sait rien des leçons ni des figures : on lui donne des étoiles, des fils, des secteurs ; il dessine, déplace et zoome.
-// o = {key, W, sectors:[{name,col,a0,a1,nameR,arcR,neb:[x,y,r]}], seps:[{a,r0,r1}], rings:[{r,col,op,dash,name,at}], paths:[{d,col,lit}], links:[{d,col,lit}],
+// o = {key, W, H, nebs:[{x,y,rx,ry,col}], tags:[{x,y,text,col,big}], sectors:[{name,col,a0,a1,nameR,arcR,neb:[x,y,r]}], seps:[{a,r0,r1}], rings:[{r,col,op,dash,name,at}], paths:[{d,col,lit}], links:[{d,col,lit}],
 //      dots:[{x,y,r,col}], nodes:[{x,y,col,cls,html,name,side,aria,tap,bg}], labels:[{x,y,col,text,tap}], center:{big,small}, panel:{head,sub,rows:[{name,col,p,title}]},
 //      view:{get,set}, kMin, focus:[x,y], k0, far}
 const f0 = x => x.toFixed(0);
 function skyMap(o){
-  const W = o.W, C = W / 2, K = o.key, wrap = el("div","cst"), world = el("div","cstw"); world.style.width = world.style.height = W + "px"; wrap.append(world);
+  const W = o.W, H = o.H || W, C = W / 2, K = o.key, wrap = el("div","cst"), world = el("div","cstw"); world.style.width = W + "px"; world.style.height = H + "px"; wrap.append(world);
   const P = (r, t) => f0(C + Math.cos(t) * r) + " " + f0(C + Math.sin(t) * r);
   const arc = (r, a0, a1) => "M" + P(r, a0) + "A" + r + " " + r + " 0 " + (a1 - a0 > Math.PI ? 1 : 0) + " 1 " + P(r, a1);
   const arcBack = (r, a0, a1) => "M" + P(r, a1) + "A" + r + " " + r + " 0 " + (a1 - a0 > Math.PI ? 1 : 0) + " 0 " + P(r, a0);
   const defs = ['<filter id="' + K + 'g" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>'], bg = [], glow = [], fg = [];
   // poussière d’étoiles, toujours la même (pseudo-hasard fixe), plus dense quand le ciel est grand
   let sd = 7; const rnd = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0, N = Math.min(600, Math.round(170 * (W / 1440) ** 2)); i < N; i++) bg.push('<circle cx="' + f0(rnd() * W) + '" cy="' + f0(rnd() * W) + '" r="' + (rnd() * 1.4 + 0.3).toFixed(1) + '" fill="#fff" opacity="' + (rnd() * 0.5 + 0.15).toFixed(2) + '"/>');
+  for (let i = 0, N = Math.min(600, Math.round(170 * W * H / 1440 / 1440)); i < N; i++) bg.push('<circle cx="' + f0(rnd() * W) + '" cy="' + f0(rnd() * H) + '" r="' + (rnd() * 1.4 + 0.3).toFixed(1) + '" fill="#fff" opacity="' + (rnd() * 0.5 + 0.15).toFixed(2) + '"/>');
   // les secteurs : une nébuleuse, un arc, et le nom courbé le long du bord (toujours à l’endroit)
   (o.sectors || []).forEach((s, i) => { const am = (s.a0 + s.a1) / 2, id = K + "s" + i;
     if (s.neb) { defs.push('<radialGradient id="' + id + 'n"><stop offset="0" stop-color="' + s.col + '" stop-opacity=".22"/><stop offset="1" stop-color="' + s.col + '" stop-opacity="0"/></radialGradient>');
@@ -20,6 +20,8 @@ function skyMap(o){
     fg.push('<path d="' + arc(s.arcR, s.a0, s.a1) + '" stroke="' + s.col + '" stroke-width="2" fill="none" opacity=".5"/>');
     const low = Math.sin(am) > 0.2; defs.push('<path id="' + id + '" d="' + (low ? arcBack(s.nameR + 24, s.a0, s.a1) : arc(s.nameR, s.a0, s.a1)) + '"/>');
     fg.push('<text class="csts" fill="' + s.col + '" text-anchor="middle"><textPath href="#' + id + '" startOffset="50%">' + s.name.toUpperCase() + '</textPath></text>'); });
+  (o.nebs || []).forEach((n, i) => { const id = K + "n" + i; defs.push('<radialGradient id="' + id + '"><stop offset="0" stop-color="' + n.col + '" stop-opacity=".2"/><stop offset="1" stop-color="' + n.col + '" stop-opacity="0"/></radialGradient>');
+    bg.push('<ellipse cx="' + f0(n.x) + '" cy="' + f0(n.y) + '" rx="' + f0(n.rx) + '" ry="' + f0(n.ry) + '" fill="url(#' + id + ')"/>'); });
   (o.seps || []).forEach(s => bg.push('<line x1="' + f0(C + Math.cos(s.a) * s.r0) + '" y1="' + f0(C + Math.sin(s.a) * s.r0) + '" x2="' + f0(C + Math.cos(s.a) * s.r1) + '" y2="' + f0(C + Math.sin(s.a) * s.r1) + '" stroke="#8a84a3" stroke-opacity=".22" stroke-width="1.5" stroke-dasharray="2 9"/>'));
   // les orbites (le cercle central, les étages) ; leur nom se pose dans le plus grand vide de l’orbite
   (o.rings || []).forEach((r, i) => { bg.push('<circle cx="' + C + '" cy="' + C + '" r="' + r.r + '" fill="none" stroke="' + (r.col || "#8a84a3") + '" stroke-opacity="' + (r.op || .2) + '" stroke-width="' + (r.w || 1.5) + '"' + (r.dash ? ' stroke-dasharray="' + r.dash + '"' : "") + '/>');
@@ -33,12 +35,14 @@ function skyMap(o){
   (o.texts || []).forEach((x, i) => { const id = K + "t" + i; defs.push('<path id="' + id + '" d="' + x.d + '"/>');
     fg.push('<text class="cstt" fill="' + x.col + '" text-anchor="' + (x.anchor || "middle") + '"><textPath href="#' + id + '" startOffset="' + (x.off || "50%") + '">' + x.text + '</textPath></text>'); });
   (o.dots || []).forEach(d => fg.push('<circle cx="' + f0(d.x) + '" cy="' + f0(d.y) + '" r="' + d.r + '" fill="' + d.col + '"/>'));
-  world.insertAdjacentHTML("beforeend", '<svg class="cste" viewBox="0 0 ' + W + ' ' + W + '" width="' + W + '" height="' + W + '" aria-hidden="true"><defs>' + defs.join("") + '</defs>' + bg.join("") + glow.join("") + fg.join("") + '</svg>');
+  world.insertAdjacentHTML("beforeend", '<svg class="cste" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" aria-hidden="true"><defs>' + defs.join("") + '</defs>' + bg.join("") + glow.join("") + fg.join("") + '</svg>');
   // le cœur
-  if (o.center) { const h = el("div","csth"); h.style.left = h.style.top = C + "px"; h.append(el("b",null, o.center.big), el("span",null, o.center.small)); world.append(h); }
+  if (o.center) { const h = el("div","csth"); h.style.left = (o.center.x != null ? o.center.x : C) + "px"; h.style.top = (o.center.y != null ? o.center.y : C) + "px"; h.append(el("b",null, o.center.big), el("span",null, o.center.small)); world.append(h); }
+  // des noms posés dans le ciel (sommets des lignes, titres des massifs), qui ne captent pas le doigt
+  (o.tags || []).forEach(g => { const t = el("span","cstg" + (g.big ? " big" : ""), g.text); t.style.left = g.x + "px"; t.style.top = g.y + "px"; t.style.color = g.col; world.append(t); });
   (o.labels || []).forEach(l => { const t = el("button","cstv", l.text); t.style.left = l.x + "px"; t.style.top = l.y + "px"; t.style.color = l.col;
     t.onclick = () => { if (!wrap.dataset.moved) l.tap(); }; world.append(t); });
-  const btn = {}, sel = document.createElementNS("http://www.w3.org/2000/svg","svg"); sel.setAttribute("class","cstsel"); sel.setAttribute("width", W); sel.setAttribute("height", W); sel.setAttribute("aria-hidden","true"); world.append(sel);
+  const btn = {}, sel = document.createElementNS("http://www.w3.org/2000/svg","svg"); sel.setAttribute("class","cstsel"); sel.setAttribute("width", W); sel.setAttribute("height", H); sel.setAttribute("aria-hidden","true"); world.append(sel);
   (o.nodes || []).forEach(n => { const b = el("button","cstn " + n.cls); if (n.id) btn[n.id] = {b, n}; b.style.left = n.x + "px"; b.style.top = n.y + "px"; b.style.setProperty("--c", n.col);
     if (n.bg) b.style.backgroundImage = "url(" + n.bg + ")"; b.innerHTML = n.html || "";
     // le nom se pose du côté indiqué (l’extérieur du zigzag, ou sous l’étoile), jamais sur le fil
@@ -54,7 +58,7 @@ function skyMap(o){
     (x.n.rel || []).forEach(r => { const y = btn[r]; if (y) { y.b.classList.add("hot"); line(y.n, x.n, x.n.col, y.n.done); } });
     (x.n.unl || []).forEach(r => { const y = btn[r]; if (y) { y.b.classList.add("hot"); line(x.n, y.n, y.n.col, false); } });
     if (bar) { bar.remove(); bar = null; } card = o.card(x.n, pick, clear); card.classList.add("cstcard"); wrap.append(card); };
-  if (o.pick) { wrap.addEventListener("click", e => { if (!wrap.dataset.moved && wrap.classList.contains("sel") && !e.target.closest(".cstcard,.cstz,.csttop,.cstn")) clear(); }); dock(); wrap.pick = id => { pick(id); const x = btn[id]; if (x) wrap.goTo(x.n.x, x.n.y + 60); }; }
+  if (o.pick) { wrap.addEventListener("click", e => { if (!wrap.dataset.moved && wrap.classList.contains("sel") && !e.target.closest(".cstcard,.cstz,.csttop,.cstn")) clear(); }); dock(); wrap.pick = id => { pick(id); const x = btn[id]; if (x) wrap.goTo(x.n.x, x.n.y + 90); }; }
   // le panneau de bord : le total, et une jauge par secteur
   if (o.panel) { const pn = el("div","cstp"), hd = el("div","cstph"); pn.setAttribute("aria-hidden","true"); hd.append(el("b",null, o.panel.head), el("span",null, o.panel.sub)); pn.append(hd);
     o.panel.rows.forEach(r => { const x = el("div","cstpr"), bar = el("i"); x.style.setProperty("--c", r.col); bar.style.setProperty("--p", r.p); x.title = r.title || r.name; x.append(el("span",null, r.name), bar); pn.append(x); });
@@ -64,7 +68,7 @@ function skyMap(o){
   const apply = () => { world.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")"; wrap.classList.toggle("far", k < (o.far || 0)); wrap.classList.toggle("close", k >= (o.close || 9)); };
   const keep = () => o.view.set({k, x:tx, y:ty});
   const zoomAt = (f, cx, cy) => { const nk = Math.max(kMin, Math.min(1.6, k * f)); tx = cx - (cx - tx) * nk / k; ty = cy - (cy - ty) * nk / k; k = nk; apply(); keep(); };
-  const fit = () => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520; k = Math.max(kMin, Math.min(w, h) / W * 0.98); tx = (w - W * k) / 2; ty = (h - W * k) / 2; apply(); keep(); };
+  const fit = () => { const w = wrap.clientWidth || 360, h = wrap.clientHeight || 520; k = Math.max(kMin, Math.min(w / W, h / H) * 0.98); tx = (w - W * k) / 2; ty = (h - H * k) / 2; apply(); keep(); };
   wrap.addEventListener("pointerdown", e => { pts.set(e.pointerId, [e.clientX, e.clientY]); wrap.dataset.moved = ""; base = {tx, ty, k, p:[...pts.values()]}; });
   wrap.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]); const Q = [...pts.values()];
     if (Q.length === 1 && base.p.length === 1) { const dx = Q[0][0] - base.p[0][0], dy = Q[0][1] - base.p[0][1]; if (Math.hypot(dx, dy) > 6) { wrap.dataset.moved = "1"; wrap.setPointerCapture(e.pointerId); } if (wrap.dataset.moved) { tx = base.tx + dx; ty = base.ty + dy; apply(); } }
@@ -87,9 +91,9 @@ function skyFull(w, title, sub, btn, flip){ const top = el("div","csttop"), t = 
   t.append(el("h2",null,title), el("span",null, sub)); tg.onclick = flip; top.append(t, tg); w.append(top); return w; }
 
 // ---------- Le Parcours en constellation ----------
-// Analogie : une roue de vélo. Au centre, toi ; chaque rayon est une ligne de progression (une qualité : appui, compression, transfert…),
-// rangée dans le secteur de sa discipline. Sur un rayon, plus on s’éloigne du centre, plus c’est dur. Les grandes étoiles sont les figures phares,
-// les petites, les étapes entre elles ; ce qui est loin de toi reste dans la brume jusqu’à ce que tu t’en approches.
+// Analogie : une montée en montagne, vue de nuit. Tu pars d’en bas ; le tronc commun est le sentier d’approche (quatre brins côte à côte) ;
+// au carrefour, trois massifs (un bras, planche, force), chacun fait de lignes de progression qui montent ; tout en haut, le sommet : le combo.
+// Les grandes étoiles sont les figures phares, les petites, les étapes ; ce qui est loin de toi reste dans la brume.
 const SKY_COL = {trunk:"#efe3c6", onearm:"#e2b04a", planche:"#5cc2b3", ultime:"#ffd27a", press:"#a98be6", low:"#e8a0b0"};
 const SKY_LINES = [
   ["trunk","Tronc commun",[["Force de base",["fd_plank","fd_pushInc","fd_push","fd_support","fd_dips"]],["Mur et sortie",["fd_roue","fd_pike","fd_c2w","st_bail30","st_bailc2w"]],
@@ -111,40 +115,56 @@ const SKY_MAJ = new Set(["fd_dips","st_bail30","b1_free5","in_str60","in_tuck","
 const skyOrder = ids => { const set = new Set(ids), out = [], seen = new Set(), go = id => { if (seen.has(id)) return; seen.add(id); (MS[id].req || []).filter(r => set.has(r)).forEach(go); out.push(id); }; ids.forEach(go); return out; };
 function skyLayout(){
   if (skyLayout.v) return skyLayout.v;   // la forme du ciel ne dépend que de l’arbre : calculée une fois
-  const pos = {}, line = {}, rays = [], sats = {}, HUB = 470, GAP = 0.7, slots = SKY_LINES.reduce((n, s) => n + s[2].length, 0) + SKY_LINES.length * GAP, da = 2 * Math.PI / slots;
-  const placed = new Set(SKY_LINES.flatMap(s => s[2].flatMap(l => l[1])));
+  const pos = {}, line = {}, strands = [], groups = {}, sats = {}, GAP = 86, G = Object.fromEntries(SKY_LINES.map(x => [x[0], x]));
+  const placed = new Set(SKY_LINES.flatMap(x => x[2].flatMap(l => l[1])));
   // les variantes (et toute figure qu’aucune ligne ne nomme) deviennent des satellites de leur prérequis
   Object.values(MS).forEach(m => { if (!placed.has(m.id)) { const p = (m.req || []).find(r => placed.has(r)) || "fd_plank"; (sats[p] || (sats[p] = [])).push(m.id); } });
-  let a = -Math.PI / 2 - (SKY_LINES[0][2].length - 1) / 2 * da, rMax = HUB; const secs = [];
-  SKY_LINES.forEach(([sid, name, ls]) => { const a0 = a - da / 2;
-    ls.forEach(([lname, ids0]) => { const ids = skyOrder(ids0); let r = HUB; const xs = [];
-      ids.forEach((id, k) => { if (k) r += SKY_MAJ.has(id) || SKY_MAJ.has(ids[k - 1]) ? 104 : 78; const t = a + (r - HUB) * 0.00012, w = k % 2 ? 9 : -9;
-        pos[id] = [Math.cos(t) * r - Math.sin(t) * w, Math.sin(t) * r + Math.cos(t) * w]; line[id] = {sid, lname, k, ids, a:t};
-        (sats[id] || []).forEach((sId, j) => { const rr = r + 20 + j * 46, tt = t - 48 / rr; pos[sId] = [Math.cos(tt) * rr, Math.sin(tt) * rr]; line[sId] = {sid, lname, sat:id, a:tt}; }); xs.push(id); });
-      rays.push({sid, lname, a, ids, r1:r}); rMax = Math.max(rMax, r); a += da; });
-    secs.push({sid, name, a0, a1:a - da / 2}); a += GAP * da; });
-  const W = 2 * (rMax + 200), C = W / 2; Object.keys(pos).forEach(id => { pos[id] = [C + pos[id][0], C + pos[id][1]]; });
-  return (skyLayout.v = {pos, line, rays, secs, W, C, HUB, rMax});
+  // un brin : les figures d’une ligne, de bas en haut, plus serrées pour les petites étapes
+  const strand = (sid, lname, ids0, bx, by, fan) => { const ids = skyOrder(ids0); let y = by;
+    ids.forEach((id, k) => { if (k) y -= SKY_MAJ.has(id) || SKY_MAJ.has(ids[k - 1]) ? 92 : 70; const x = bx + fan * k + (k % 2 ? 7 : -7); pos[id] = [x, y]; line[id] = {sid, lname, k, ids};
+      (sats[id] || []).forEach((sId, j) => { pos[sId] = [x + 34 + j * 28, y + 30]; line[sId] = {sid, lname, sat:id}; }); });
+    strands.push({sid, lname, ids, x:pos[ids[ids.length - 1]][0], top:y}); return y; };
+  // un massif : ses brins côte à côte, qui s’écartent un peu en montant
+  const group = (sid, cx, by, fan) => { const ls = G[sid][2], n = ls.length; let top = by;
+    ls.forEach(([lname, ids], i) => { const off = i - (n - 1) / 2; top = Math.min(top, strand(sid, lname, ids, cx + off * GAP, by, off * fan)); });
+    return (groups[sid] = {sid, name:G[sid][1], cx, by, top, half:(n - 1) / 2 * GAP + 60}); };
+  // en bas le tronc commun et le sol à côté ; au-dessus du carrefour, les trois disciplines ; au sommet, le combo
+  const T = group("trunk", 0, 0, 0); group("low", -T.half - 120, 0, 0);
+  const gate = [0, T.top - 120], dB = gate[1] - 150;
+  const A = group("onearm", -470, dB, 3), B = group("planche", 0, dB - 40, 3), D = group("press", 470, dB, 3);
+  const U = group("ultime", 0, Math.min(A.top, B.top, D.top) - 230, 0);
+  // le cadre : tout décalé pour laisser une marge autour
+  const xs = Object.values(pos).map(p => p[0]), ys = Object.values(pos).map(p => p[1]), x0 = Math.min(...xs) - 150, y0 = Math.min(...ys) - 190;
+  const W = Math.max(...xs) - x0 + 150, H = Math.max(...ys) - y0 + 260, sh = p => [p[0] - x0, p[1] - y0];
+  Object.keys(pos).forEach(id => { pos[id] = sh(pos[id]); }); strands.forEach(x => { x.x -= x0; x.top -= y0; });
+  Object.values(groups).forEach(g => { g.cx -= x0; g.by -= y0; g.top -= y0; });
+  return (skyLayout.v = {pos, line, strands, groups, gate:sh(gate), W, H, toi:sh([0, 150])});
 }
 const figState = id => reqDone(id) ? "done" : !msLocked(MS[id]) ? "open" : (MS[id].req || []).every(r => reqDone(r) || !msLocked(MS[r])) ? "near" : "far";
 function figSky(nextId){
-  const Y = skyLayout(), {pos, line, W, C} = Y, colOf = id => SKY_COL[line[id] ? line[id].sid : "trunk"] || "#ddd", stOf = {}, unl = {};
+  const Y = skyLayout(), {pos, line, W, H} = Y, colOf = id => SKY_COL[line[id] ? line[id].sid : "trunk"] || "#ddd", stOf = {}, unl = {};
   Object.keys(pos).forEach(id => { stOf[id] = figState(id); (MS[id].req || []).forEach(r => (unl[r] || (unl[r] = [])).push(id)); });
-  const P = (r, t) => f0(C + Math.cos(t) * r) + " " + f0(C + Math.sin(t) * r);
-  // un seul fil par rayon, d’étoile en étoile ; les autres prérequis n’apparaissent qu’au toucher
-  const paths = [], dots = [], texts = [];
-  Y.rays.forEach(R => { const col = SKY_COL[R.sid]; dots.push({x:C + Math.cos(R.a) * (Y.HUB - 34), y:C + Math.sin(R.a) * (Y.HUB - 34), r:4, col});
-    let prev = [C + Math.cos(R.a) * (Y.HUB - 34), C + Math.sin(R.a) * (Y.HUB - 34)], pDone = true;
-    R.ids.forEach(id => { const q = pos[id]; paths.push({d:"M" + f0(prev[0]) + " " + f0(prev[1]) + "L" + f0(q[0]) + " " + f0(q[1]), col, lit:pDone && (stOf[id] === "done" || stOf[id] === "open")}); prev = q; pDone = stOf[id] === "done"; });
-    // le nom de la ligne, couché le long du rayon, avant sa première étoile ; toujours à l’endroit
-    const right = Math.cos(R.a) >= 0, r1 = 120, r2 = Y.HUB - 50;
-    texts.push({d:"M" + (right ? P(r1, R.a) + "L" + P(r2, R.a) : P(r2, R.a) + "L" + P(r1, R.a)), text:R.lname, col, anchor:right ? "end" : "start", off:right ? "100%" : "0%"}); });
-  const nodes = Object.keys(pos).map(id => { const m = MS[id], L = line[id], s = stOf[id], cur = id === nextId, maj = SKY_MAJ.has(id), ph = maj && PHOTOS.has("but-" + id), t = L.a;
+  const M = p => f0(p[0]) + " " + f0(p[1]), lit = id => stOf[id] === "done" || stOf[id] === "open";
+  // les fils : le long de chaque brin, d’étoile en étoile ; du tronc au carrefour ; du carrefour au pied de chaque ligne des disciplines
+  const paths = [], dots = [{x:Y.gate[0], y:Y.gate[1], r:7, col:SKY_COL.trunk}], tags = [], nebs = [];
+  const curve = (a, b, col, on) => paths.push({d:"M" + M(a) + "C" + M([a[0], (a[1] + b[1]) / 2]) + " " + M([b[0], (a[1] + b[1]) / 2]) + " " + M(b), col, lit:on});
+  Y.strands.forEach(R => { const col = SKY_COL[R.sid];
+    for (let k = 1; k < R.ids.length; k++) curve(pos[R.ids[k - 1]], pos[R.ids[k]], col, stOf[R.ids[k - 1]] === "done" && lit(R.ids[k]));
+    if (R.sid === "trunk") curve(pos[R.ids[R.ids.length - 1]], Y.gate, col, stOf[R.ids[R.ids.length - 1]] === "done");
+    else if (R.sid !== "low" && R.sid !== "ultime") curve(Y.gate, pos[R.ids[0]], col, lit(R.ids[0]));
+    // le nom de la ligne, au sommet de son brin, comme un fanion
+    tags.push({x:R.x, y:R.top - 44, text:R.lname, col}); });
+  // le combo part du sommet de la planche
+  { const U = Y.strands.find(x => x.sid === "ultime"), Bp = Y.groups.planche; curve([Bp.cx, Bp.top - 80], pos[U.ids[0]], SKY_COL.ultime, lit(U.ids[0])); dots.push({x:Bp.cx, y:Bp.top - 80, r:5, col:SKY_COL.ultime}); }
+  // chaque massif : une nébuleuse et son nom en grand (au pied pour le tronc et le sol, au-dessus des fanions pour les autres)
+  Object.values(Y.groups).forEach(g => { const col = SKY_COL[g.sid], foot = g.sid === "trunk" || g.sid === "low";
+    nebs.push({x:g.cx, y:(g.by + g.top) / 2, rx:g.half + 120, ry:(g.by - g.top) / 2 + 160, col});
+    tags.push({x:g.cx, y:foot ? g.by + 70 : g.top - 100, text:g.name, col, big:true}); });
+  const nodes = Object.keys(pos).map(id => { const m = MS[id], L = line[id], s = stOf[id], cur = id === nextId, maj = SKY_MAJ.has(id), ph = maj && PHOTOS.has("but-" + id);
     return {id, x:pos[id][0], y:pos[id][1], col:colOf(id), done:s === "done", rel:(m.req || []).filter(r => pos[r]), unl:(unl[id] || []).filter(r => pos[r]),
       cls:(cur ? "cur" : s) + (maj ? " maj" : " mn") + (L.sat ? " sat" : "") + (ph ? " ph" : ""), bg:ph ? photoUrl("but-" + id) : null,
-      html:ph ? "" : maj ? lnIcon("hs", 26) : s === "done" ? lnIcon("check", 12) : "", name:m.name, side:[-Math.sin(t), Math.cos(t)],
+      html:ph ? "" : maj ? lnIcon("hs", 26) : s === "done" ? lnIcon("check", 12) : "", name:m.name, side:[0, 1],
       aria:m.name + (s === "done" ? ", validée" : cur ? ", ta prochaine figure" : s === "open" ? ", ouverte" : ", pas encore ouverte"), tap:() => quick(id)}; });
-  const sectors = Y.secs.map(x => ({name:x.name, col:SKY_COL[x.sid], a0:x.a0, a1:x.a1, arcR:Y.rMax + 90, nameR:Y.rMax + 140, neb:[C + Math.cos((x.a0 + x.a1) / 2) * (Y.HUB + 300), C + Math.sin((x.a0 + x.a1) / 2) * (Y.HUB + 300), 260 + (x.a1 - x.a0) * 380]}));
   // la carte d’une étoile : où elle en est, ce qu’il manque (à toucher), ce qu’elle ouvre, et la fiche
   const chip = (id, go) => { const b = el("button","cstch", MS[id].name); b.style.setProperty("--c", colOf(id)); if (stOf[id] === "done") b.classList.add("done"); b.onclick = e => { e.stopPropagation(); go(id); }; return b; };
   const card = (n, go, close) => { const id = n.id, s = stOf[id], c = el("div"), hd = el("div","cstch0"), miss = (MS[id].req || []).filter(r => !reqDone(r)), op = (unl[id] || []).filter(r => !reqDone(r));
@@ -156,9 +176,9 @@ function figSky(nextId){
   // en bas, quand rien n’est touché : ta prochaine figure, à un geste
   const bar = go => { if (!nextId) return null; const b = el("button"); b.append(el("span",null,"Prochaine"), el("b",null, MS[nextId].name)); b.onclick = e => { e.stopPropagation(); wrap.pick(nextId); }; return b; };
   const ids = sid => SKY_LINES.find(x => x[0] === sid)[2].flatMap(l => l[1]), row = (name, sid) => { const xs = ids(sid), d = xs.filter(id => stOf[id] === "done").length; return {name, col:SKY_COL[sid], p:d / xs.length, title:name + " : " + d + "/" + xs.length}; };
-  const all = Object.keys(pos), wrap = skyMap({key:"fs", W, sectors, rings:[{r:Y.HUB - 34, op:.18, dash:"2 6"}], paths, dots, texts, nodes, pick:true, card, bar, kMin:0.14, far:0.45, close:1.05, k0:0.85,
-    center:{big:"Toi", small:""},
+  const all = Object.keys(pos), wrap = skyMap({key:"fs", W, H, nebs, paths, dots, tags, nodes, pick:true, card, bar, kMin:0.12, far:0.42, close:1.05, k0:0.8,
+    center:{big:"Toi", small:"", x:Y.toi[0], y:Y.toi[1]},
     panel:{head:all.filter(id => stOf[id] === "done").length + "/" + all.length, sub:"figures", rows:[row("Tronc","trunk"), row("Un bras","onearm"), row("Planche","planche"), row("Force","press"), row("Combo","ultime")]},
-    view:{get:() => S.skyV, set:v => { S.skyV = v; }}, focus:nextId && pos[nextId] ? [pos[nextId][0], pos[nextId][1] + 60] : [C, C]});
+    view:{get:() => S.skyV, set:v => { S.skyV = v; }}, focus:nextId && pos[nextId] ? [pos[nextId][0], pos[nextId][1] - 110] : Y.toi});
   return wrap;
 }
