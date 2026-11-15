@@ -43,7 +43,7 @@ function skyMap(o){
   (o.labels || []).forEach(l => { const t = el("button","cstv", l.text); t.style.left = l.x + "px"; t.style.top = l.y + "px"; t.style.color = l.col;
     t.onclick = () => { if (!wrap.dataset.moved) l.tap(); }; world.append(t); });
   const btn = {}, sel = document.createElementNS("http://www.w3.org/2000/svg","svg"); sel.setAttribute("class","cstsel"); sel.setAttribute("width", W); sel.setAttribute("height", H); sel.setAttribute("aria-hidden","true"); world.append(sel);
-  (o.nodes || []).forEach(n => { const b = el("button","cstn " + n.cls); if (n.id) btn[n.id] = {b, n}; b.style.left = n.x + "px"; b.style.top = n.y + "px"; b.style.setProperty("--c", n.col);
+  (o.nodes || []).forEach(n => { const b = el("button","cstn " + n.cls); if (n.id) { btn[n.id] = {b, n}; b.dataset.id = n.id; } b.style.left = n.x + "px"; b.style.top = n.y + "px"; b.style.setProperty("--c", n.col);
     if (n.bg) b.style.backgroundImage = "url(" + n.bg + ")"; b.innerHTML = n.html || "";
     // le nom se pose du côté indiqué (l’extérieur du zigzag, ou sous l’étoile), jamais sur le fil
     const nm = el("i",null, n.name), R = (/\bmaj\b/.test(n.cls) ? 30 : 22) + 6, [sx, sy] = n.side || [0, 1], ax = sx > .35 ? 0 : sx < -.35 ? -100 : -50, ay = sy > .35 ? 0 : sy < -.35 ? -100 : -50;
@@ -168,7 +168,10 @@ function figSky(nextId){
   // la carte d’une étoile : où elle en est, ce qu’il manque (à toucher), ce qu’elle ouvre, et la fiche
   const chip = (id, go) => { const b = el("button","cstch", MS[id].name); b.style.setProperty("--c", colOf(id)); if (stOf[id] === "done") b.classList.add("done"); b.onclick = e => { e.stopPropagation(); go(id); }; return b; };
   const card = (n, go, close) => { const id = n.id, s = stOf[id], c = el("div"), hd = el("div","cstch0"), miss = (MS[id].req || []).filter(r => !reqDone(r)), op = (unl[id] || []).filter(r => !reqDone(r));
-    hd.append(el("b",null, MS[id].name), el("span",null, id === nextId ? "Ta prochaine figure" : s === "done" ? "Validée" : s === "open" ? "Ouverte : tu peux la travailler" : "Pas encore ouverte"));
+    // la figure en mouvement, son nom, et où tu en es : niveau atteint et prochain palier, ou la cible
+    const m = MS[id], Lv = lvls(m), kk = lvlOf(m), nx = nextStep(m), sp = el("span","sp cstsp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = s === "far" || s === "near" ? 1 : ""; sprPaint(sp, 64);
+    const where = s === "done" ? "Validée" : (id === nextId ? "Ta prochaine figure" : s === "open" ? "Ouverte" : "Pas encore ouverte") + (s !== "done" && Lv.length > 1 && nx ? " · niveau " + kk + "/" + Lv.length + ", prochain palier " + unitTxt(m, nx) : m.target && s !== "done" ? " · cible " + goalTxt(m) : "");
+    hd.append(sp, el("b",null, m.name), el("span",null, where));
     const x = el("button","cstx","×"); x.setAttribute("aria-label","Fermer"); x.onclick = e => { e.stopPropagation(); close(); }; hd.append(x); c.append(hd);
     if (miss.length) { const r = el("div","cstrow"); r.append(el("span",null,"Il te manque")); miss.forEach(m => r.append(chip(m, go))); c.append(r); }
     if (op.length) { const r = el("div","cstrow"); r.append(el("span",null,"Elle ouvre")); op.slice(0, 4).forEach(m => r.append(chip(m, go))); c.append(r); }

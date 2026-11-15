@@ -1,14 +1,11 @@
 // Navigation, réglages, code d’accès, conseil du jour, app installable. Seul fichier qui lance l’app.
 "use strict";
 // ---------- Navigation + réglages ----------
-function goHere(id){ const m = MS[id]; if (!m) return;
-  if (HARD.some(h => h[0] === m.sec) && S.jdisc !== m.sec && !document.querySelector('.jn[data-id="' + id + '"]')) { S.jdisc = m.sec; save(); render(); }   // figure d’une autre discipline : on l’affiche
-  if (!document.querySelector('.jn[data-id="' + id + '"]') && !(S.jopen || {})[m.sec]) { (S.jopen || (S.jopen = {}))[m.sec] = true; save(); render(); }   // étage replié : on l’ouvre
-  requestAnimationFrame(()=>{ const nd = document.querySelector('.jn[data-id="' + id + '"]'); if (nd) nd.scrollIntoView({behavior:noMotion ? "auto" : "smooth", block:"center"}); }); }
+// montrer une figure dans le ciel du Parcours : l’étoile s’allume, sa carte s’ouvre
+function goHere(id){ if (!MS[id]) return; requestAnimationFrame(() => { const w = document.querySelector("#tree .cst"); if (w && w.pick) w.pick(id); }); }
 function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); if (v === "me") renderScene(stats()); }   // le petit décor du Profil ne se dessine qu’à l’ouverture
-document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ const was = b.classList.contains("on"); showTab(b.dataset.v); window.scrollTo(0,0);
-  // en arrivant sur le parcours, on t’amène à ta position
-  if (b.dataset.v === "path" && !was) { const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); } });
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ showTab(b.dataset.v); window.scrollTo(0,0);
+ });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 // séance du jour pas encore commencée : on la recompose (objectif, profil changés)
 function reDay(){ if (S.bday && S.bday.d === dayKey(Date.now()) && !Object.keys(wkGet(todayIdx())).length) S.bday = null; }
@@ -86,7 +83,7 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
 if (navigator.storage && navigator.storage.persist) navigator.storage.persisted().then(p => { if (!p) navigator.storage.persist().catch(()=>{}); }).catch(()=>{});
 // Raccourcis de l’icône : « Démarrer la séance » et « Mon parcours ».
 { const q = new URLSearchParams(location.search), go = () => { if (document.body.classList.contains("locked")) return;
-    if (q.get("tab") === "path") { showTab("path"); const cur = document.querySelector(".jn.cur"); if (cur) setTimeout(()=>goHere(cur.dataset.id), 350); }
+    if (q.get("tab") === "path") showTab("path");
     if (q.get("go") === "session") setTimeout(()=>{ if (!$("sd").open && nextSet()) startGuided(); }, 500);
     if (q.has("tab") || q.has("go")) history.replaceState(null, "", location.pathname); };
   go(); }

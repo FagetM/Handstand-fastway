@@ -31,7 +31,7 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/data.js` | arbre des figures (`TREE`), objectifs (`GOALS`), fiches détaillées, schémas de posture |
 | `js/state.js` | sauvegarde sur l'appareil, migrations, outils (`el`, `chipRow`), **le journal** (`idOfLog`, `logsOf`, `daysWhere`), validation, niveaux, badges |
 | `js/yoga.js` | noms yoga des figures, figures maîtresses, carte « Prochaine victoire » |
-| `js/parcours.js` | plan par figure (`planFor`), dates (`planCalc`), douleur, plateau, matériel (`EQ_NOTE`, `PARA_ALT`), chemin du parcours, fiche plein écran |
+| `js/parcours.js` | plan par figure (`planFor`), dates (`planCalc`), douleur, plateau, matériel (`EQ_NOTE`, `PARA_ALT`), fiche plein écran |
 | `js/sprites.js` | personnage 3D et animations des figures et des exercices |
 | `js/scene.js` | le décor aquarelle qui grandit avec le rang |
 | `js/cycle.js` | cycles de 4 semaines : semaine légère, jour de test, bilan, records, carnet vidéo |
@@ -45,7 +45,7 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/zen.js` | Postures : échelles tenues qui s'allongent, souplesse douce, récup, météo du corps |
 | `js/voie.js` | la Voie : pensées, respirations, écoute du corps, carnet, transmettre |
 | `js/apprendre-data.js` | le contenu des formations (voies, unités, leçons : cartes, quiz, pratiques) ; les livres s'y ajoutent |
-| `js/ciel.js` | le ciel : moteur de carte d’étoiles partagé (Apprendre, Parcours) et la vue constellation du Parcours |
+| `js/ciel.js` | le ciel : moteur de carte d’étoiles partagé (Apprendre, Parcours) et le Parcours lui-même, une montée de nuit en lignes de progression |
 | `js/apprendre.js` | l'onglet Apprendre : catalogue des voies, chemin de leçons, lecteur de leçon, série et points |
 | `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
 

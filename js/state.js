@@ -6,6 +6,7 @@ const blank = () => ({countdown:5, ms:{}, log:[], vid:{}, pg:{best:{}, wk:{}, by
 let S = blank();
 let loadErr = false;
 try { const raw = localStorage.getItem(KEY); if (raw) { try { S = Object.assign(blank(), JSON.parse(raw)); } catch(e){ loadErr = true; try { localStorage.setItem(KEY + ".bak", raw); } catch(_){} } } } catch(e){}   // sauvegarde illisible : on en garde une copie avant de repartir
+if (!S.nuit) { S.nuit = 1; S.theme = "dark"; }   // la nuit étoilée devient le thème de tous (une fois ; la clarté reste un choix des réglages)
 if (!S.ms || typeof S.ms !== "object") S.ms = {}; if (!Array.isArray(S.log)) S.log = []; if (!S.pg || typeof S.pg !== "object") S.pg = blank().pg; if (!S.vid) S.vid = {};
 S.sessOpen = false;
 // fusion des deux « jambes en ciseaux » : l’ancienne figure de 15 s rejoint celle de 5 s

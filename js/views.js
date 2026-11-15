@@ -146,11 +146,12 @@ function render(){
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
   const nextId = ids.find(id=>!reqDone(id) && !msLocked(MS[id])) || ids.find(id=>!reqDone(id));
+  { const d = new Date().toLocaleDateString("fr-FR", {weekday:"long", day:"numeric", month:"long"}); $("todaySub").textContent = d.charAt(0).toUpperCase() + d.slice(1); }
   today: { // Aujourd’hui : la séance du jour d’un coup d’œil, et un seul bouton pour tout lancer
     const nc = $("nextCard"); nc.textContent = ""; pickP(); $("sessToggle").hidden = $("sess").hidden = false;
     const today = todayIdx(), day = pDay(today), vals = wkGet(today), all = allP();
     const tot = day.blocks.reduce((n,b)=>n + b.sets.length, 0), dn = Object.keys(vals).length;
-    nc.append(el("div","lab", DAYN[today] + ", séance du jour"));
+    nc.append(el("div","lab", "Séance du jour"));   // le jour est déjà dans l’en-tête
     if (!S.placed && Object.keys(MS).filter(id=>st(id).done).length < 6) { const pb = el("button","place");
       pb.append(el("b",null,"Commence par ton bilan"), el("span",null,"2 minutes, quelques touches"));
       pb.onclick = () => startPlacement(); nc.append(pb); $("sessToggle").hidden = $("sess").hidden = true; ["cycle","sommet","pJour"].forEach(i => { const e = $(i); if (e) e.hidden = true; });   // avant le bilan : rien d’autre à l’écran
@@ -213,24 +214,13 @@ function render(){
     { const g = nextGift(); if (g) { const b = el("button","gift"); b.innerHTML = g.icon; { const tx = el("span","gtx"); tx.append(el("span",null,"Prochain cadeau : "), el("b",null, g.name), " ", el("span","mut","(" + (g.wk <= 1 ? "cette semaine" : "dans ≈ " + gainTxt(g.wk)) + ")")); b.append(tx); } b.onclick = () => { $("fitOpen").click(); }; nc.append(b); } }
   }
 
-  { const pt = $("pathTop"), gms = goalOf().ms, dn = doneIn(gms); pt.textContent = "";
-    const c = el("div","ptop"), fins = el("div","fins"); (({planche:["pl_full"], press:["pr_stalder","pr_manna"], oahs:["oa_oahs10"], min:["in_str60"]})[S.goal] || ["oa_oahs","pl_full"]).forEach(id=>{ const w = el("span","fin"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 60); w.append(sp); fins.append(w); });
-    const g = el("div","grow"); g.append(el("div","pt2", dn + " / " + gms.length + " figures"));
-    const bar = el("div","bar"), bi = el("i"); bi.style.width = (dn / gms.length * 100) + "%"; bar.append(bi); const nxt = gms.find(id=>!reqDone(id) && !msLocked(MS[id])) || gms.find(id=>!reqDone(id)); g.append(bar, el("div","pn2", nxt ? "Prochaine étape : " + MS[nxt].name + (MS[nxt].target ? ", " + unitTxt(MS[nxt], nextStep(MS[nxt]) || MS[nxt].target) : "") : goalShort() + " : tout est validé."));
-    { const P = plan(), gw = planWk(P, [goalTop()]); if (gw) { const eb = el("button","etab"); eb.append(el("span",null, goalShort() + " : "), el("b",null, dateTxt(gw)), el("span",null,", "), el("span","etm","mes dates")); eb.onclick = () => { openEta(); $("etaDlg").showModal(); }; g.append(eb); } }
-    c.append(fins, g);
-    if (nextId) { const here = el("button","here"); here.setAttribute("aria-label","Aller à ma position : " + MS[nextId].name);
-      here.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>'; here.onclick = () => goHere(nextId); c.append(here); }
-    pt.append(c);
-  }
-  const tree = $("tree"), keepY = window.scrollY; if (sprIO) tree.querySelectorAll(".sp").forEach(sp => { sprIO.unobserve(sp); sprLive.delete(sp); }); tree.textContent = "";
-  // deux vues du même parcours : le chemin qui serpente, ou le ciel où tout l’arbre tient sur un écran
-  $("v-path").classList.toggle("cstmode", !!S.pathSky);
-  if (S.pathSky) { const nx = nextId && MS[nextId]; tree.append(skyFull(figSky(nextId), "Parcours", nx ? "Prochaine : " + nx.name : "Tout est validé", "Vue chemin", () => { S.pathSky = false; save(); render(); window.scrollTo(0, 0); })); }
-  else { const tg = el("button","lnview","Vue constellation"); tg.onclick = () => { S.pathSky = true; save(); render(); window.scrollTo(0, 0); }; tree.append(tg, journey(nextId)); }
+  // le Parcours, c’est le ciel : la montée de nuit, avec ton objectif et ses dates en haut, ta prochaine figure en bas
+  const tree = $("tree"), keepY = window.scrollY; if (sprIO) tree.querySelectorAll(".sp").forEach(sp => { sprIO.unobserve(sp); sprLive.delete(sp); }); tree.textContent = ""; $("pathTop").textContent = "";
+  $("v-path").classList.add("cstmode");
+  { const gw = planWk(plan(), [goalTop()]); tree.append(skyFull(figSky(nextId), "Parcours", gw ? goalShort() + " : " + dateTxt(gw) : "Tout ton arbre, d’un coup d’œil", "Mes dates", () => { openEta(); const d = $("etaDlg"); if (!d.open) d.showModal(); })); }
   if (keepY) window.scrollTo(0, keepY);
 
-  $("countdown").value = String(Math.max(3, S.countdown || 0)); $("theme").value = S.theme || "light";
+  $("countdown").value = String(Math.max(3, S.countdown || 0)); $("theme").value = S.theme || "dark";
   renderQuest(Z, nextId);
   renderSess();
 }
@@ -304,7 +294,7 @@ function record(v){
   stamp(cur); S.log.push({t:Date.now(), id:cur, v, pr}); if (S.log.length > 6000) S.log = S.log.slice(-6000);
   save(); fillDlg(); render();
   const lv1 = lvlOf(m); if (lv1 > lv0 && lv1 < lvls(m).length) toast(m.name + ", niveau " + lv1 + " atteint.");
-  const nd = document.querySelector('.jn[data-id="' + cur + '"]'); if (nd && lv1 > lv0) nd.classList.add("pop");
+  const nd = document.querySelector('#tree .cstn[data-id="' + cur + '"]'); if (nd && lv1 > lv0) nd.classList.add("pop");   // l’étoile du ciel fleurit quand un niveau tombe
 }
 function resetClock(){
   clearInterval(timer); phase = "idle"; beeped = false;

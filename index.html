@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1e1f24" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#191527" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#f7f3ec" media="(prefers-color-scheme: light)">
 <meta name="robots" content="noindex">
-<script>{ let t = "light"; try { t = (JSON.parse(localStorage.getItem("hs-fastway-v1") || "{}") || {}).theme || "light"; } catch (e) {}   /* claires par défaut, même sans stockage */ if (t === "light" || t === "dark") { document.documentElement.dataset.theme = t; document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.media = "all"; m.content = t === "dark" ? "#1e1f24" : "#f7f3ec"; }); } }</script>
+<script>{ let t = "dark"; try { const d = JSON.parse(localStorage.getItem("hs-fastway-v1") || "{}") || {}; t = d.nuit ? d.theme || "dark" : "dark"; } catch (e) {}   /* nuit étoilée par défaut (la clarté reste un choix des réglages) */ if (t === "light" || t === "dark") { document.documentElement.dataset.theme = t; document.querySelectorAll('meta[name="theme-color"]').forEach(m => { m.media = "all"; m.content = t === "dark" ? "#191527" : "#f7f3ec"; }); } }</script>
 <title>Gymnastic Yoga</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
@@ -33,6 +33,7 @@
     <div class="appbar" id="updBar" hidden><span class="grow">Une nouvelle version est prête.</span><button id="updGo">Mettre à jour</button></div>
     <div class="appbar" id="insBar" hidden><span class="grow">Installe l’app : plein écran, hors connexion.</span><button id="insGo">Installer</button><button id="insNo" aria-label="Plus tard">×</button></div>
     <div class="appbar off" id="offBar" hidden><span class="grow">Hors connexion : l’app fonctionne, tes séances sont gardées sur le téléphone.</span></div>
+    <header class="vhead"><h2>Aujourd’hui</h2><p class="mut" id="todaySub"></p></header>
     <figure class="scwrap" aria-live="polite"><div id="scene"></div><figcaption id="sceneCap"></figcaption></figure>
     <div class="next" id="nextCard"></div>
     <button class="fold-h" id="sessToggle" aria-expanded="false"></button>
@@ -50,7 +51,7 @@
   </section>
 
   <section id="v-voie" class="view">
-    <header class="vhead"><h2>La Voie</h2><p class="mut">Le côté intérieur de la pratique : écouter, respirer, réfléchir, et un jour transmettre.</p></header>
+    <header class="vhead"><h2>La Voie</h2><p class="mut">Écouter, respirer, réfléchir, et un jour transmettre.</p></header>
     <div id="voie"></div>
   </section>
 
@@ -60,6 +61,7 @@
   </section>
 
   <section id="v-me" class="view">
+    <header class="vhead"><h2>Profil</h2><p class="mut">Ton niveau, tes records, ta souplesse, tes réglages.</p></header>
     <div class="goal">
       <div id="av3d" hidden><button class="wbtn" id="fitOpen">Vestiaire</button></div>
       <div class="hero">
@@ -91,7 +93,7 @@
     <div class="block">
       <h2>Apparence</h2>
       <label class="mut" for="theme">Couleurs de l’app</label>
-      <select id="theme"><option value="light">Claires (sable)</option><option value="dark">Sombres</option><option value="auto">Comme le téléphone</option></select>
+      <select id="theme"><option value="dark">Nuit étoilée</option><option value="light">Claires (sable)</option><option value="auto">Comme le téléphone</option></select>
     </div>
     <div class="block">
       <h2>Mon matériel</h2>
