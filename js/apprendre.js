@@ -53,35 +53,73 @@ function renderLearn(){
 // Les catégories occupent des secteurs ; chaque voie est une branche qui part du cercle central ; chaque leçon, une étoile
 // (allumée quand elle est faite, qui pulse quand c’est la prochaine). On se déplace au doigt, on zoome à deux doigts.
 const CST_COL = {"Le yoga":"#e2b04a", "Énergie":"#a98be6", "Formations":"#5cc2b3"};
+// liens entre voies : la même idée vue de deux côtés (une étoile faite des deux côtés allume le lien)
+const CST_LINK = [["m4","a1"],["m4","r1"],["m5","d2"],["m6","d1"],["m2","p5"],["a2","c3"],["a5","p2"],["r4","p4"],["k1","e3"],["p3","c2"]];
+const f0 = x => x.toFixed(0);
 function constellation(){
-  const L = LS(), W = 1440, C = W / 2, branches = LEARN.flatMap(c => c.voies.map(v => ({c, v}))), n = branches.length;
+  const L = LS(), W = 1440, C = W / 2, branches = LEARN.flatMap(c => c.voies.map(v => ({c, v}))), n = branches.length, slice = 2 * Math.PI / n;
   const wrap = el("div","cst"), world = el("div","cstw"); world.style.width = world.style.height = W + "px"; wrap.append(world);
-  const svg = ['<svg class="cste" viewBox="0 0 ' + W + ' ' + W + '" width="' + W + '" height="' + W + '" aria-hidden="true">'];
+  const svg = ['<svg class="cste" viewBox="0 0 ' + W + ' ' + W + '" width="' + W + '" height="' + W + '" aria-hidden="true"><defs><filter id="cstg" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="5"/></filter>'];
+  Object.entries(CST_COL).forEach(([cat, col], i) => svg.push('<radialGradient id="cstn' + i + '"><stop offset="0" stop-color="' + col + '" stop-opacity=".22"/><stop offset="1" stop-color="' + col + '" stop-opacity="0"/></radialGradient>'));
+  svg.push('</defs>');
   // poussière d’étoiles, toujours la même (pseudo-hasard fixe)
   let sd = 7; const rnd = () => (sd = (sd * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < 140; i++) svg.push('<circle cx="' + (rnd() * W).toFixed(0) + '" cy="' + (rnd() * W).toFixed(0) + '" r="' + (rnd() * 1.4 + 0.3).toFixed(1) + '" fill="#fff" opacity="' + (rnd() * 0.5 + 0.15).toFixed(2) + '"/>');
-  svg.push('<circle cx="' + C + '" cy="' + C + '" r="92" fill="none" stroke="#e8a0b0" stroke-opacity=".45" stroke-width="2" stroke-dasharray="3 7"/>');
-  const nodes = [], sectors = {};
-  branches.forEach(({c, v}, b) => { const ang = -Math.PI / 2 + b * 2 * Math.PI / n, col = CST_COL[c.cat] || "#ddd", ls = lessonsOf(v), next = ls.find(l => !L.done[l.id]);
+  const bg = [], fg = [], glow = [];
+  for (let i = 0; i < 170; i++) bg.push('<circle cx="' + f0(rnd() * W) + '" cy="' + f0(rnd() * W) + '" r="' + (rnd() * 1.4 + 0.3).toFixed(1) + '" fill="#fff" opacity="' + (rnd() * 0.5 + 0.15).toFixed(2) + '"/>');
+  const nodes = [], byId = {}, sectors = {};
+  branches.forEach(({c, v}, b) => { const ang = -Math.PI / 2 + b * slice, col = CST_COL[c.cat] || "#ddd", ls = lessonsOf(v), next = ls.find(l => !L.done[l.id]);
     (sectors[c.cat] || (sectors[c.cat] = [])).push(ang);
-    const ux = Math.cos(ang), uy = Math.sin(ang), px = -uy, py = ux; let prev = [C + ux * 92, C + uy * 92], prevDone = true;
-    ls.forEach((l, k) => { const r = 235 + k * 76, wob = (k % 2 ? 1 : -1) * 22, x = C + ux * r + px * wob, y = C + uy * r + py * wob, done = !!L.done[l.id], cur = next && next.id === l.id;
-      svg.push('<line x1="' + prev[0].toFixed(0) + '" y1="' + prev[1].toFixed(0) + '" x2="' + x.toFixed(0) + '" y2="' + y.toFixed(0) + '" stroke="' + (prevDone && (done || cur) ? col : "#7a7590") + '" stroke-opacity="' + (prevDone && (done || cur) ? 0.9 : 0.35) + '" stroke-width="2.5"/>');
-      prev = [x, y]; prevDone = done; nodes.push({v, l, x, y, col, done, cur, lock:!done && !cur, k:k + 1}); });
+    // la branche s’enroule doucement, comme un bras de galaxie
+    const pts = [[C + Math.cos(ang) * 92, C + Math.sin(ang) * 92]];
+    ls.forEach((l, k) => { const a = ang + (k + 1) * 0.045, r = 250 + k * 74, wob = (k % 2 ? 1 : -1) * 16, x = C + Math.cos(a) * r - Math.sin(a) * wob, y = C + Math.sin(a) * r + Math.cos(a) * wob;
+      const done = !!L.done[l.id], cur = !!(next && next.id === l.id), o = {v, l, x, y, col, done, cur, lock:!done && !cur, k:k + 1, maj:k === 0 || k === ls.length - 1, side:[-Math.sin(a) * Math.sign(wob), Math.cos(a) * Math.sign(wob)]};
+      pts.push([x, y]); nodes.push(o); byId[l.id] = o; });
+    // chaque segment est une courbe douce (Catmull-Rom), allumé quand l’étoile d’arrivée est faite ou à faire
+    for (let i = 0; i < pts.length - 1; i++) { const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(pts.length - 1, i + 2)], o = nodes[nodes.length - ls.length + i];
+      const d = "M" + f0(p1[0]) + " " + f0(p1[1]) + "C" + f0(p1[0] + (p2[0] - p0[0]) / 6) + " " + f0(p1[1] + (p2[1] - p0[1]) / 6) + " " + f0(p2[0] - (p3[0] - p1[0]) / 6) + " " + f0(p2[1] - (p3[1] - p1[1]) / 6) + " " + f0(p2[0]) + " " + f0(p2[1]);
+      const lit = (i === 0 || nodes[nodes.length - ls.length + i - 1].done) && (o.done || o.cur);
+      if (lit) glow.push('<path d="' + d + '" stroke="' + col + '" stroke-width="7" fill="none" opacity=".55" filter="url(#cstg)"/>');
+      fg.push('<path d="' + d + '" stroke="' + (lit ? col : "#6e6884") + '" stroke-width="' + (lit ? 2.6 : 1.6) + '" fill="none" stroke-linecap="round"' + (lit ? "" : ' stroke-dasharray="1 6" opacity=".8"') + '/>'); }
+    fg.push('<circle cx="' + f0(pts[0][0]) + '" cy="' + f0(pts[0][1]) + '" r="5" fill="' + col + '"/>');
     // le nom de la voie, au départ de sa branche
-    nodes.push({label:v, x:C + ux * 128, y:C + uy * 128, col, ang}); });
+    nodes.push({label:v, x:C + Math.cos(ang) * 162, y:C + Math.sin(ang) * 162, col, ang}); });
+  // les liens entre voies : un fil pâle qui se courbe vers le centre
+  CST_LINK.forEach(([a, b]) => { const A = byId[a], B = byId[b]; if (!A || !B) return; const mx = (A.x + B.x) / 2, my = (A.y + B.y) / 2, lit = A.done && B.done;
+    const cx = C + (mx - C) * 0.72, cy = C + (my - C) * 0.72;
+    fg.unshift('<path d="M' + f0(A.x) + " " + f0(A.y) + "Q" + f0(cx) + " " + f0(cy) + " " + f0(B.x) + " " + f0(B.y) + '" stroke="' + (lit ? A.col : "#8a84a3") + '" stroke-width="1.2" fill="none" stroke-dasharray="2 5" opacity="' + (lit ? .8 : .35) + '"/>'); });
+  // les secteurs : une nébuleuse de la couleur de la catégorie, un arc, des séparations, et le nom courbé le long du bord
+  const cats = Object.keys(CST_COL); let sep = [];
+  Object.entries(sectors).forEach(([cat, as]) => { const col = CST_COL[cat], i = cats.indexOf(cat), a0 = as[0] - slice / 2 + 0.03, a1 = as[as.length - 1] + slice / 2 - 0.03, am = (a0 + a1) / 2;
+    bg.push('<circle cx="' + f0(C + Math.cos(am) * 430) + '" cy="' + f0(C + Math.sin(am) * 430) + '" r="' + f0(200 + as.length * 45) + '" fill="url(#cstn' + i + ')"/>');
+    const arc = (r, x0, x1) => { const big = x1 - x0 > Math.PI ? 1 : 0, P = t => f0(C + Math.cos(t) * r) + " " + f0(C + Math.sin(t) * r); return "M" + P(x0) + "A" + r + " " + r + " 0 " + big + " 1 " + P(x1); };
+    const arcR = (r, x0, x1) => { const big = x1 - x0 > Math.PI ? 1 : 0, P = t => f0(C + Math.cos(t) * r) + " " + f0(C + Math.sin(t) * r); return "M" + P(x1) + "A" + r + " " + r + " 0 " + big + " 0 " + P(x0); };
+    fg.push('<path d="' + arc(640, a0, a1) + '" stroke="' + col + '" stroke-width="2" fill="none" opacity=".5"/>');
+    // le nom se lit toujours à l’endroit : en bas du cercle, on le pose sur l’arc parcouru dans l’autre sens
+    const low = Math.sin(am) > 0.2, tid = "csta" + i;
+    svg.push('<path id="' + tid + '" d="' + (low ? arcR(686, a0, a1) : arc(662, a0, a1)) + '" fill="none"/>');
+    fg.push('<text class="csts" fill="' + col + '" text-anchor="middle"><textPath href="#' + tid + '" startOffset="50%">' + cat.toUpperCase() + '</textPath></text>');
+    sep.push(a0 - 0.03); });
+  sep.forEach(a => bg.push('<line x1="' + f0(C + Math.cos(a) * 120) + '" y1="' + f0(C + Math.sin(a) * 120) + '" x2="' + f0(C + Math.cos(a) * 690) + '" y2="' + f0(C + Math.sin(a) * 690) + '" stroke="#8a84a3" stroke-opacity=".22" stroke-width="1.5" stroke-dasharray="2 9"/>'));
+  bg.push('<circle cx="' + C + '" cy="' + C + '" r="92" fill="none" stroke="#e8a0b0" stroke-opacity=".45" stroke-width="2" stroke-dasharray="3 7"/><circle cx="' + C + '" cy="' + C + '" r="640" fill="none" stroke="#8a84a3" stroke-opacity=".12" stroke-width="1"/>');
+  svg.push(...bg, ...glow, ...fg);
   svg.push('</svg>'); world.insertAdjacentHTML("beforeend", svg.join(""));
   // le cœur : toi, tes points
   { const h = el("div","csth"); h.style.left = h.style.top = C + "px"; h.append(el("b",null, String(L.xp || 0)), el("span",null,"points")); world.append(h); }
-  // les secteurs : le nom de la catégorie, loin du centre, dans sa couleur
-  Object.entries(sectors).forEach(([cat, as]) => { const a = Math.atan2(as.reduce((s, x) => s + Math.sin(x), 0), as.reduce((s, x) => s + Math.cos(x), 0)), t = el("div","csts", cat.toUpperCase());
-    t.style.left = (C + Math.cos(a) * 610) + "px"; t.style.top = (C + Math.sin(a) * 610) + "px"; t.style.color = CST_COL[cat]; world.append(t); });
   nodes.forEach(o => { if (o.label) { const t = el("button","cstv", o.label.name); t.style.left = o.x + "px"; t.style.top = o.y + "px"; t.style.color = o.col;
       t.onclick = e => { if (wrap.dataset.moved) return; L.open = o.label.id; save(); renderLearn(); window.scrollTo(0, 0); }; world.append(t); return; }
-    const b = el("button","cstn" + (o.done ? " done" : o.cur ? " cur" : " lk")); b.style.left = o.x + "px"; b.style.top = o.y + "px"; b.style.setProperty("--c", o.col);
-    b.innerHTML = o.done ? lnIcon("check", 18) : o.lock ? lnIcon("lock", 16) : "<span>" + o.k + "</span>"; b.append(el("i",null, o.l.name));
+    const b = el("button","cstn" + (o.done ? " done" : o.cur ? " cur" : " lk") + (o.maj ? " maj" : "")); b.style.left = o.x + "px"; b.style.top = o.y + "px"; b.style.setProperty("--c", o.col);
+    // les grandes étoiles (première et dernière de la voie) portent l’emblème de la voie
+    b.innerHTML = o.maj ? lnIcon(o.v.ic, 26) : o.done ? lnIcon("check", 18) : o.lock ? lnIcon("lock", 16) : "<span>" + o.k + "</span>"; // le nom se pose du côté extérieur du zigzag, jamais sur la branche
+    const nm = el("i",null, o.l.name), R = (o.maj ? 30 : 22) + 6, [sx, sy] = o.side, ax = sx > .35 ? 0 : sx < -.35 ? -100 : -50, ay = sy > .35 ? 0 : sy < -.35 ? -100 : -50;
+    nm.style.left = "calc(50% + " + f0(sx * R) + "px)"; nm.style.top = "calc(50% + " + f0(sy * R) + "px)"; nm.style.transform = "translate(" + ax + "%," + ay + "%)"; nm.style.textAlign = ax === 0 ? "left" : ax === -100 ? "right" : "center"; b.append(nm);
     b.setAttribute("aria-label", o.v.name + ", " + o.l.name + (o.done ? ", faite" : o.lock ? ", verrouillée" : ", à faire"));
     b.onclick = () => { if (wrap.dataset.moved) return; if (o.lock) { toast("Termine d’abord : " + lessonsOf(o.v).find(l => !L.done[l.id]).name); return; } lnOpen(o.v, o.l); }; world.append(b); });
+  // le panneau de bord : leçons faites, et une jauge par catégorie
+  { const pn = el("div","cstp"), all = nodes.filter(o => o.l), dn = all.filter(o => o.done).length; pn.setAttribute("aria-hidden","true");
+    const hd = el("div","cstph"); hd.append(el("b",null, dn + "/" + all.length), el("span",null,"étoiles")); pn.append(hd);
+    Object.keys(CST_COL).forEach(cat => { const xs = all.filter(o => LEARN.find(c => c.cat === cat).voies.includes(o.v)), d = xs.filter(o => o.done).length, r = el("div","cstpr"), bar = el("i");
+      r.style.setProperty("--c", CST_COL[cat]); bar.style.setProperty("--p", xs.length ? d / xs.length : 0); r.title = cat + " : " + d + "/" + xs.length; r.append(el("span",null,cat.replace(/^Le y/,"Y")), bar); pn.append(r); });
+    wrap.append(pn); }
   // déplacer au doigt, zoomer à deux doigts ou à la molette ; boutons + et −
   const st0 = L.view || null; let k = st0 ? st0.k : 0, tx = st0 ? st0.x : 0, ty = st0 ? st0.y : 0; const pts = new Map(); let base = null;
   const apply = () => { world.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")"; };
