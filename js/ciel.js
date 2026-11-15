@@ -201,7 +201,7 @@ function figSky(nextId){
   const all = Object.keys(pos), wrap = skyMap({key:"fs", W, H, nebs, paths, dots, tags, nodes, pick:true, card, bar, kMin:0.12, far:0.42, close:1.05, k0:0.8,
     center:{big:"Départ", small:"", x:Y.toi[0], y:Y.toi[1]}, pin:nextId && pos[nextId] ? {x:pos[nextId][0], y:pos[nextId][1] - 34, text:"Toi"} : null,
     legend:skyLegend("Lire le ciel", "De bas en haut : plus on monte, plus c’est dur.", [["maj","Une figure phare"],["ok","Validée"],["op","Ouverte : tu peux la travailler"],["cur","Toi : ta prochaine figure"],["nr","À un pas"],["far","Plus tard, dans la brume"],["th","Fil lumineux : chemin ouvert"]],
-      "Touche une étoile : ce qu’il te manque, ce qu’elle ouvre.", () => { S.skyHelp = 1; save(); }),
+      "Touche une étoile : ce qu’il te manque, ce qu’elle ouvre. Mots de gym : tuck = groupé, straddle = jambes écartées, pike = jambes serrées tendues, lean = penché en avant, planche = le corps à l’horizontale sur les mains (pas la planche du yoga).", () => { S.skyHelp = 1; save(); }),
     legendFirst:() => !S.skyHelp,
     panel:{head:all.filter(id => !MS[id].alt && st(id).done).length + "/" + all.filter(id => !MS[id].alt).length, sub:"validées", rows:[row("Tronc","trunk"), row("Un bras","onearm"), row("Planche","planche"), row("Force","press"), row("Combo","ultime")]},
     view:{get:() => S.skyV, set:v => { S.skyV = v; }}, focus:nextId && pos[nextId] ? [pos[nextId][0], pos[nextId][1] - 110] : Y.toi});

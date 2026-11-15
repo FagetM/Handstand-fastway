@@ -770,7 +770,7 @@ header.top{display:none}
 .plx{display:flex;align-items:center;gap:8px;margin-top:12px}
 .plx input{width:8em;flex:none}
 /* mode expert, sobre : ni rang, ni niveau, ni vestiaire ; le décor reste */
-[data-sober] #lvRank,[data-sober] #lvNum,[data-sober] .hero .bar,[data-sober] #xpTxt,[data-sober] #fitOpen,[data-sober] #sceneCap{display:none}
+[data-sober] #lvRank,[data-sober] #lvNum,[data-sober] .hero .bar,[data-sober] #xpTxt,[data-sober] #fitOpen,[data-sober] #sceneCap,[data-sober] #quest,[data-sober] .gift,[data-sober] #learn .csth,[data-sober] .lnstats{display:none}   /* mode calme : la pratique sans le jeu */
 /* Ma souplesse : un repère par ligne, ses paliers en points */
 .romrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border:0;border-top:1px solid var(--line);background:none;color:inherit;font:inherit;text-align:left;min-height:48px}
 .romrow:first-of-type{border-top:0}

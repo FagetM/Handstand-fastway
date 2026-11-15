@@ -9,7 +9,7 @@ document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ showTab(
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
 // séance du jour pas encore commencée : on la recompose (objectif, profil changés)
 function reDay(){ if (S.bday && S.bday.d === dayKey(Date.now()) && !Object.keys(wkGet(todayIdx())).length) S.bday = null; }
-{ const X = () => S.ex || (S.ex = {}), sync = () => { $("exOn").checked = !!X().on; $("exPrio").value = X().prio || ""; $("exSober").checked = !!X().sober; $("exMore").hidden = !X().on; document.documentElement.toggleAttribute("data-sober", !!(X().on && X().sober)); };
+{ const X = () => S.ex || (S.ex = {}), sync = () => { $("exOn").checked = !!X().on; $("exPrio").value = X().prio || ""; $("exSober").checked = !!X().sober; $("exMore").hidden = !X().on; document.documentElement.toggleAttribute("data-sober", !!X().sober); };   // le mode calme ne dépend plus du mode expert
   // mode expert : éteint, on revient aux durées habituelles
   $("exOn").onchange = e => { X().on = e.target.checked; if (!X().on && S.mins > 60) S.mins = 60; save(); sync(); render(); };
   $("exPrio").onchange = e => { X().prio = e.target.value || null; save(); render(); };

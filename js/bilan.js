@@ -56,6 +56,8 @@ function plStep(){
     if (gw) box.append(el("p","mut","Ton but, " + goalShort().toLowerCase() + " : " + rangeTxt(gw) + ", à ce rythme."));
     if ((S.confirm || []).length) box.append(el("p","mut","Ce que tu as déclaré sera vérifié en séance."));
     const b = el("button","btn","Démarrer la séance"); b.onclick = () => { $("plDlg").close(); showTab("today"); window.scrollTo(0,0); startGuided(); }; box.append(b);
+    // la souplesse aussi fait partie du point de départ : trois repères, une touche chacun (facultatif)
+    if (typeof romOpen === "function") { const sf = el("button","btn line","Noter ma souplesse (1 minute)"); sf.onclick = () => { $("plDlg").close(); const seq = ids => { if (!ids.length) { showTab("today"); render(); toast("Souplesse notée : elle guidera tes étirements."); return; } romOpen(ids[0], () => seq(ids.slice(1))); }; seq(["pike","pancake","epaules"]); }; box.append(sf); }
     const l = el("button","lnk","Plus tard"); l.onclick = () => { $("plDlg").close(); showTab("today"); }; box.append(l); return; }
   const m = MS[id], L = lvls(m), art = el("div","plart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 150); art.append(sp);
   box.append(el("div","lab", "Question " + (++plN) + ", " + SEC[m.sec].name), el("h2",null, m.name), art);

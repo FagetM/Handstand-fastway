@@ -141,7 +141,11 @@ function builtinBlocks(){
     if (id === "pl_fullNeg") base.note = "Descente de 3 s au moins, sinon elle ne compte pas.";
     if (pl.sides) base.note = /^pl_/.test(id) ? "Alterne la jambe à chaque série (séries paires d’une jambe, impaires de l’autre) : les deux doivent tenir la cible." : "Alterne le côté à chaque série (séries paires d’un côté, impaires de l’autre) : les deux doivent tenir la cible.";
     return Object.assign(base, {kind:m.type, sets:Array.from({length:pl.sides ? (/^pl_/.test(id) ? sets * 2 : 2 * Math.ceil(sets / 2)) : sets}, ()=>({goal:pl.work, rest:restOf(m), auto:true})).concat(Array.from({length:pl.sides ? tries * 2 : tries}, ()=>({goal:pl.tryT || pl.T, rest:pl.sides ? 90 : pr ? 240 : 120, max:true})))}); });
-  const blocks = blocks0.map(b => { const wy = MS[b.ms] && planFor(MS[b.ms]).why; if (wy) b.why = wy; const fn = fragNote(b.ms); if (fn) b.note = (b.note ? b.note + " " : "") + fn; return b; });
+  const blocks = blocks0.map(b => { const wy = MS[b.ms] && planFor(MS[b.ms]).why; if (wy) b.why = wy; const fn = fragNote(b.ms); if (fn) b.note = (b.note ? b.note + " " : "") + fn;
+    // poignet fragile : sur un bras, un seul poignet porte tout le poids ; un tiers de séries en moins (en nombre pair quand on alterne les côtés)
+    if (frag("poignet") && /^oa_/.test(b.ms || "") && b.ms !== "oa_strad30") { const sided = /Alterne/.test(b.note || ""), w = b.sets.filter(x => !x.max), mx = b.sets.filter(x => x.max); let n = Math.max(sided ? 2 : 1, Math.ceil(w.length * 2 / 3)); if (sided && n % 2) n++;
+      if (n < w.length) { b.sets = w.slice(0, n).concat(mx.slice(0, sided ? 2 : 1)); b.note = (b.note ? b.note + " " : "") + "Séries réduites d’un tiers : un seul poignet porte tout."; } }
+    return b; });
   // figures validées au bilan sur simple déclaration : on vérifie la sortie de secours en pratique
   // figures déclarées au bilan : on vérifie en vrai (2 par séance au plus) ; tenues et répétitions sont mesurées
   const conf = confIds.map(id=>{ const m = MS[id], base = {name:m.name + ", vérification", how:"Déclarée à ton bilan : montre-la pour la confirmer. Si l’essai ne passe pas, elle repasse à travailler.", ms:id, confirm:true};

@@ -142,6 +142,7 @@ function render(){
     if (had) { const nw = op.find(sid=>!had.includes(sid)); if (nw) { S.newFit = true; S.chestQ = nw; } }
     const all = [...new Set((had || []).concat(op))]; if (!had || had.length !== all.length) { S.chests = all; save(); } }   // un coffre ouvert le reste
   // coffre gagné : la scène d’ouverture attend qu’aucune fenêtre ne soit ouverte (jamais au milieu d’une série)
+  if (S.chestQ && (S.ex && S.ex.sober)) delete S.chestQ;   /* mode calme : pas de scène de cadeau */
   if (S.chestQ && !document.querySelector("dialog[open]") && !(S.pain && Date.now() - S.pain < 3600e3)) {   /* jamais de cadeau juste après une douleur */ const q = S.chestQ; delete S.chestQ; save(); setTimeout(() => chestScene(q), 350); }
   if (!seen || seen.lvl !== Z.lvl || seen.b.length !== nowB.length) { S.seen = {lvl:Z.lvl, b:nowB}; save(); }
 
