@@ -77,6 +77,7 @@ function lnStep(){ const box = $("lnBody"), go = $("lnGo"); box.textContent = ""
   $("lnBar").style.transform = "scaleX(" + (ln.i / ln.steps.length).toFixed(3) + ")";
   const s = ln.steps[ln.i]; if (!s) return lnEnd();
   if (s[0] === "c") { const h = el("h3",null,s[1]), lb = el("button","lnear"); lb.innerHTML = lnIcon("ear", 22); lb.setAttribute("aria-label","Écouter"); lb.onclick = () => say(s[1] + ". " + s[2], true); h.append(lb);
+    if (!ln.rev && ln.steps.findIndex(x => x[0] === "c") === ln.i) { const f = el("figure","lnph"), im = el("img"); im.alt = ""; im.onerror = () => f.remove(); im.src = photoUrl("ln-" + ln.l.id); f.append(im); box.append(f); }   // photo de la leçon, si elle existe
     box.append(h, el("p","lncard", s[2])); go.textContent = "Continuer"; go.onclick = () => { ln.i++; lnStep(); }; }
   else if (s[0] === "q") { box.append(el("h3",null,s[1])); const opts = el("div","lnq"); go.textContent = "Vérifier"; go.disabled = true; let pick = null, checked = false;
     s[2].forEach((t, k) => { const b = el("button","lnopt", t); b.onclick = () => { if (checked) return; pick = k; opts.querySelectorAll(".lnopt").forEach((x, j) => x.classList.toggle("on", j === k)); go.disabled = false; }; opts.append(b); });

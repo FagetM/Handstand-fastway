@@ -354,9 +354,9 @@ function faultOf(id){ if (id in FX_ID) return FX_ID[id] && {t:FX_ID[id][0], labe
 const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + id : null; };
 const lc1 = t => t.charAt(0).toLowerCase() + t.slice(1);   // minuscule après les deux-points
 function quick(id){
-  let qkPh = null; const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
+  const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
   const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 200); art.append(sp);
-  { const ph = photo("but-" + id); if (ph) { const f = el("figure","qkph"), im = el("img"); im.src = ph; im.alt = m.name; im.loading = "lazy"; f.append(im); qkPh = f; } }
+
   const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + (/^[A-Z]{2}/.test(SEC[m.sec].name) ? SEC[m.sec].name : lc1(SEC[m.sec].name)) : SEC[m.sec].name), el("h2",null, m.name));
   { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), y[0] ? el("b",null,y[0]) : "", y[1] ? el("span",null,(y[0] ? ", " : "") + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
   if (mst) { art.classList.add("mst"); const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr); }   // la figure maîtresse garde sa couronne dans sa fiche
@@ -369,6 +369,8 @@ function quick(id){
     req.forEach((r,i)=>{ const on = st(r).done, b = el("button","qkn" + (on ? " on" : "")), ps = el("span","sp"); ps.dataset.pose = poseId(r); ps.dataset.anim = r; ps.dataset.lk = on ? "" : 1; sprPaint(ps, 56);
       b.append(ps, el("i",null, MS[r].name)); b.setAttribute("aria-label", MS[r].name + (on ? ", validée" : ", à valider")); b.onclick = () => quick(r); par.append(b); }); }
   const top = el("div","qktop"); top.append(art, g); box.append(top);
+  // la photo de la figure, si elle existe : en tête de fiche ; absente, elle disparaît sans laisser de trou
+  { const f = el("figure","qkph qkhero"), im = el("img"); im.alt = m.name; im.onerror = () => f.remove(); im.src = photoUrl("but-" + id); f.append(im); box.append(f); }
   if (HIST[id]) { const h = el("div","qhist" + (mst ? " mst" : "")); h.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Z"/><path d="M5 19l8-8"/></svg>'; const dh = el("details","qhd"); dh.append(el("summary","lab","Un peu d’histoire"), el("p",null,HIST[id])); h.append(dh); box.append(h); }
   // ce qui bloque, en une ligne : prérequis manquant, critère pas encore atteint, ou rien
   { const D0 = DETAILS[id] || {}, hi = hitInfo(id), blk = el("div","qkblock"), bar = f => { const b = el("div","bar"), i = el("span"); i.style.width = Math.round(Math.min(1, f) * 100) + "%"; b.append(i); blk.append(b); };
@@ -408,7 +410,6 @@ function quick(id){
     if (dl.childElementCount) t.append(el("div","lab","Préparation"), dl); if (t.childElementCount) fold(x.done ? "Préparation" : "Plan et préparation", t); }
   if (qkHist) fold(qkHist[1], qkHist[0]);
   if (qkTree) fold(req.length > 1 ? "Avant cette figure : les prérequis" : "Avant cette figure : le prérequis", qkTree);
-  if (qkPh) fold("Le but", qkPh);
   if (m.yt && m.yt.length) { const v = el("div"); m.yt.forEach(([vid,t])=>v.append(ytLink(vid, "Vidéo : " + t))); fold("Vidéo", v); }
   box.append(info);
   $("qkT").textContent = m.name; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled");

@@ -927,3 +927,5 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .lnrev{display:flex;align-items:center;gap:12px;width:100%;padding:16px;border-radius:20px;background:color-mix(in srgb,var(--acc) 14%,var(--raise));box-shadow:inset 0 0 0 2px var(--acc);text-align:left;color:inherit;font:inherit;margin:8px 0 4px}
 .lnrev b{display:block;font-size:16px}.lnrev .mut{font-size:13px}
 .lnear{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:8px;border-radius:22px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line);color:var(--acc);vertical-align:middle}
+.qkhero{margin:12px 0}.qkhero img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:18px;display:block}
+.lnph{margin:0 0 8px}.lnph img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:16px;display:block}
