@@ -893,18 +893,24 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .cst.far .cstn:not(.maj):not(.cur) i{display:none}
 /* le Parcours : petites étoiles pour les étapes, brume pour ce qui est loin ; la zone de toucher reste large */
 .cstn.mn{width:16px;height:16px;font-size:0}
+/* étoiles vivantes : le personnage tourne dans un médaillon, un petit sceau doré quand la figure est validée */
+.cstn.anim{width:52px;height:52px;overflow:visible}.cstn.maj.anim{width:60px;height:60px}.cstn.mn.anim.open{width:46px;height:46px}.cstn.mn.anim.cur{width:56px;height:56px}
+.cstn.anim .sp{border-radius:50%;pointer-events:none}
+.cstn.anim.near .sp,.cstn.anim.far .sp{opacity:.55}
+.cstok{position:absolute;right:-4px;bottom:-4px;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:var(--c);color:var(--nbtx)}
 .cstn.mn::after{content:"";position:absolute;inset:-14px;border-radius:50%}
 .cstn.mn.done{width:18px;height:18px}
 .cstn.mn.open{width:22px;height:22px}
 .cstn.mn.cur{width:30px;height:30px}
-.cstn.near{background:transparent;box-shadow:inset 0 0 0 2px var(--nring)}
+.cstn.near{background:transparent;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--c) 55%,transparent)}
 .cstn.mn.far{width:8px;height:8px;background:var(--nring);box-shadow:none}
 .cstn.maj.far{opacity:.45;color:var(--nmut);box-shadow:inset 0 0 0 2px var(--nring)}
 .cstn.maj.near{opacity:.75;color:var(--nmut);box-shadow:inset 0 0 0 2px var(--nring),0 0 0 5px var(--nnode),0 0 0 7px var(--nring)}
 .cstn.mn i{display:none}
 .cstn.mn.cur i,.cstn.mn.open i,.cst.close .cstn.mn.done i,.cst.close .cstn.mn.near i{display:block}
 .cstn.sat{display:none}.cst.close .cstn.sat{display:grid}
-.cstn.mn i{font-size:11px;width:96px}
+.cst .cstn.mn.sat i{display:none}.cst.sel .cstn.mn.sat.hot i{display:block}   /* une variante ne dit son nom qu’au toucher */
+.cstn.mn i{font-size:11px;width:78px}
 .cstt{font:800 14px/1 var(--disp);opacity:.85}
 .cstsel{position:absolute;left:0;top:0;pointer-events:none}
 .cst.sel .cstn:not(.hot){opacity:.15}.cst.sel .cste{opacity:.45}

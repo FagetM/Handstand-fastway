@@ -46,8 +46,9 @@ function skyMap(o){
   (o.nodes || []).forEach(n => { const b = el("button","cstn " + n.cls); if (n.id) { btn[n.id] = {b, n}; b.dataset.id = n.id; } b.style.left = n.x + "px"; b.style.top = n.y + "px"; b.style.setProperty("--c", n.col);
     if (n.bg) b.style.backgroundImage = "url(" + n.bg + ")"; b.innerHTML = n.html || "";
     // le nom se pose du côté indiqué (l’extérieur du zigzag, ou sous l’étoile), jamais sur le fil
-    const nm = el("i",null, n.name), R = (/\bmaj\b/.test(n.cls) ? 30 : 22) + 6, [sx, sy] = n.side || [0, 1], ax = sx > .35 ? 0 : sx < -.35 ? -100 : -50, ay = sy > .35 ? 0 : sy < -.35 ? -100 : -50;
+    const nm = el("i",null, n.name), R = n.r || (/\bmaj\b/.test(n.cls) ? 30 : 22) + 6, [sx, sy] = n.side || [0, 1], ax = sx > .35 ? 0 : sx < -.35 ? -100 : -50, ay = sy > .35 ? 0 : sy < -.35 ? -100 : -50;
     nm.style.left = "calc(50% + " + f0(sx * R) + "px)"; nm.style.top = "calc(50% + " + f0(sy * R) + "px)"; nm.style.transform = "translate(" + ax + "%," + ay + "%)"; nm.style.textAlign = ax === 0 ? "left" : ax === -100 ? "right" : "center"; b.append(nm);
+    if (n.fill) n.fill(b);   // un contenu vivant (le personnage animé), posé par l’appelant
     b.setAttribute("aria-label", n.aria || n.name); b.onclick = e => { if (wrap.dataset.moved) return; e.stopPropagation(); if (o.pick) pick(n.id); else n.tap(); }; world.append(b); });
   // toucher une étoile (mode « pick ») : ses fils vers ce qu’il manque et ce qu’elle ouvre s’allument, le reste du ciel s’efface, une carte s’ouvre en bas
   let card = null, bar = null; const dock = () => { if (bar) bar.remove(); bar = o.bar ? o.bar(pick) : null; if (bar) { bar.classList.add("cstbar"); wrap.append(bar); } };
@@ -121,8 +122,8 @@ function skyLayout(){
   Object.values(MS).forEach(m => { if (!placed.has(m.id)) { const p = (m.req || []).find(r => placed.has(r)) || "fd_plank"; (sats[p] || (sats[p] = [])).push(m.id); } });
   // un brin : les figures d’une ligne, de bas en haut, plus serrées pour les petites étapes
   const strand = (sid, lname, ids0, bx, by, fan) => { const ids = skyOrder(ids0); let y = by;
-    ids.forEach((id, k) => { if (k) y -= SKY_MAJ.has(id) || SKY_MAJ.has(ids[k - 1]) ? 92 : 70; const x = bx + fan * k + (k % 2 ? 7 : -7); pos[id] = [x, y]; line[id] = {sid, lname, k, ids};
-      (sats[id] || []).forEach((sId, j) => { pos[sId] = [x + 34 + j * 28, y + 30]; line[sId] = {sid, lname, sat:id}; }); });
+    ids.forEach((id, k) => { if (k) y -= SKY_MAJ.has(id) || SKY_MAJ.has(ids[k - 1]) ? 106 : 86; const x = bx + fan * k + (k % 2 ? 7 : -7); pos[id] = [x, y]; line[id] = {sid, lname, k, ids};
+      (sats[id] || []).forEach((sId, j) => { pos[sId] = [x + 46 + j * 26, y - 22 - j * 8]; line[sId] = {sid, lname, sat:id}; }); });   // les variantes, en lunes sur le côté
     strands.push({sid, lname, ids, x:pos[ids[ids.length - 1]][0], top:y}); return y; };
   // un massif : ses brins côte à côte, qui s’écartent un peu en montant
   const group = (sid, cx, by, fan) => { const ls = G[sid][2], n = ls.length; let top = by;
@@ -160,11 +161,15 @@ function figSky(nextId){
   Object.values(Y.groups).forEach(g => { const col = SKY_COL[g.sid], foot = g.sid === "trunk" || g.sid === "low";
     nebs.push({x:g.cx, y:(g.by + g.top) / 2, rx:g.half + 120, ry:(g.by - g.top) / 2 + 160, col});
     tags.push({x:g.cx, y:foot ? g.by + 70 : g.top - 100, text:g.name, col, big:true}); });
-  const nodes = Object.keys(pos).map(id => { const m = MS[id], L = line[id], s = stOf[id], cur = id === nextId, maj = SKY_MAJ.has(id), ph = maj && PHOTOS.has("but-" + id);
+  // les étoiles vivantes : les figures phares, ta prochaine figure et celles qui sont ouvertes montrent le personnage en mouvement ;
+  // les étapes faites restent de petits points cochés, ce qui est loin reste de la poussière
+  const nodes = Object.keys(pos).map(id => { const m = MS[id], L = line[id], s = stOf[id], cur = id === nextId, maj = SKY_MAJ.has(id), live = maj || cur || (s === "open" && !L.sat);
+    const size = maj ? 56 : cur ? 52 : 42, lk = s === "near" || s === "far";
     return {id, x:pos[id][0], y:pos[id][1], col:colOf(id), done:s === "done", rel:(m.req || []).filter(r => pos[r]), unl:(unl[id] || []).filter(r => pos[r]),
-      cls:(cur ? "cur" : s) + (maj ? " maj" : " mn") + (L.sat ? " sat" : "") + (ph ? " ph" : ""), bg:ph ? photoUrl("but-" + id) : null,
-      html:ph ? "" : maj ? lnIcon("hs", 26) : s === "done" ? lnIcon("check", 12) : "", name:m.name, side:[0, 1],
-      aria:m.name + (s === "done" ? ", validée" : cur ? ", ta prochaine figure" : s === "open" ? ", ouverte" : ", pas encore ouverte"), tap:() => quick(id)}; });
+      cls:(cur ? "cur" : s) + (maj ? " maj" : " mn") + (L.sat ? " sat" : "") + (live ? " anim" : ""), r:live ? size / 2 + 4 : null,
+      html:live ? (s === "done" ? '<b class="cstok">' + lnIcon("check", 12) + '</b>' : "") : s === "done" ? lnIcon("check", 12) : "",
+      fill:live ? b => { const sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = lk ? 1 : ""; b.prepend(sp); sprPaint(sp, size); } : null,
+      name:m.name, side:[0, 1], aria:m.name + (s === "done" ? ", validée" : cur ? ", ta prochaine figure" : s === "open" ? ", ouverte" : ", pas encore ouverte"), tap:() => quick(id)}; });
   // la carte d’une étoile : où elle en est, ce qu’il manque (à toucher), ce qu’elle ouvre, et la fiche
   const chip = (id, go) => { const b = el("button","cstch", MS[id].name); b.style.setProperty("--c", colOf(id)); if (stOf[id] === "done") b.classList.add("done"); b.onclick = e => { e.stopPropagation(); go(id); }; return b; };
   const card = (n, go, close) => { const id = n.id, s = stOf[id], c = el("div"), hd = el("div","cstch0"), miss = (MS[id].req || []).filter(r => !reqDone(r)), op = (unl[id] || []).filter(r => !reqDone(r));
