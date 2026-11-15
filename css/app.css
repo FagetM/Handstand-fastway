@@ -4,7 +4,7 @@
 /* Hallmark · answered F7 · fiches, panneaux et tuiles partagent une même carte sable : l'app tient sur une seule matière, choisie par l'utilisateur */
 /* Univers doux : police arrondie (Nunito, libre de droits), tons sable et sauge, coins ronds, ombres légères */
 @font-face{font-family:"Nunito";font-weight:300 900;font-display:swap;src:url(../fonts/nunito-latin.woff2) format("woff2")}
-:root{
+:root{--n1:#2c2440;--n2:#191527;--n3:#100d18;--ntx:#f3e7d0;--nlab:rgba(16,13,24,.7);--nnode:#2a2638;--nmut:#a19bb8;--nring:#4b4560;--nlbl:#e9e3f3;--nsh:#000;--nbtn:rgba(255,255,255,.92);--nbtx:#1b1726;
   color-scheme:dark;
   --bg:#1e1f24; --raise:#272930; --line:#363944; --txt:#ece6dc; --mut:#a39d93; --acc:#9cbf9f; --acc2:#e9b4a6; --onacc:#1e1f24;
   --shadow:0 6px 24px rgb(0 0 0 / .35);
@@ -929,3 +929,22 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .lnear{display:inline-grid;place-items:center;width:44px;height:44px;margin-left:8px;border-radius:22px;background:var(--raise);box-shadow:inset 0 0 0 1px var(--line);color:var(--acc);vertical-align:middle}
 .qkhero{margin:12px 0}.qkhero img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:18px;display:block}
 .lnph{margin:0 0 8px}.lnph img{width:100%;aspect-ratio:1.6;object-fit:cover;border-radius:16px;display:block}
+/* constellation d’Apprendre : toujours de nuit */
+.lnview{display:block;margin:0 0 8px auto;background:none;border:0;color:var(--acc);font:700 14px var(--disp);min-height:44px}
+.cst{position:relative;height:min(72vh,640px);border-radius:24px;overflow:hidden;touch-action:none;user-select:none;background:radial-gradient(circle at 50% 50%,var(--n1) 0%,var(--n2) 55%,var(--n3) 100%);box-shadow:var(--shadow)}
+.cstw{position:absolute;left:0;top:0;transform-origin:0 0}
+.cste{position:absolute;left:0;top:0}
+.csth{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;color:var(--ntx);pointer-events:none}.csth b{font:800 34px/1 var(--disp)}.csth span{font-size:13px;opacity:.75}
+.csts{position:absolute;transform:translate(-50%,-50%);font:800 28px/1 var(--disp);letter-spacing:.12em;white-space:nowrap;text-shadow:0 0 18px currentColor;opacity:.85;pointer-events:none}
+.cstv{position:absolute;transform:translate(-50%,-50%);background:var(--nlab);border:0;border-radius:12px;padding:8px 12px;font:800 14px/1.1 var(--disp);min-height:32px;white-space:nowrap}
+.cstn{position:absolute;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:0;padding:0;background:var(--nnode);color:var(--nmut);box-shadow:inset 0 0 0 2px var(--nring);font:800 15px var(--disp)}
+.cstn i{position:absolute;top:50px;left:50%;transform:translateX(-50%);width:120px;font:600 12px/1.2 var(--disp);font-style:normal;color:var(--nlbl);text-align:center;text-shadow:0 1px 3px var(--nsh);pointer-events:none}
+.cstn.lk i{color:var(--nmut)}
+.cstn.done{background:var(--c);color:var(--nbtx);box-shadow:0 0 16px var(--c)}
+.cstn.cur{background:var(--nbtx);color:var(--c);box-shadow:inset 0 0 0 3px var(--c),0 0 0 6px color-mix(in srgb,var(--c) 30%,transparent);animation:cstp 1.8s ease-in-out infinite}
+@keyframes cstp{50%{box-shadow:inset 0 0 0 3px var(--c),0 0 0 12px color-mix(in srgb,var(--c) 12%,transparent)}}
+@media (prefers-reduced-motion:reduce){.cstn.cur{animation:none}}
+.cstz{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;gap:8px}
+.cstz button{width:44px;height:44px;border-radius:12px;border:0;background:var(--nbtn);color:var(--nbtx);font:800 20px/1 var(--disp)}
+.lnrev .mut{font-size:13px;color:color-mix(in srgb,var(--txt) 80%,var(--raise))}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

@@ -19,7 +19,7 @@ const LEARN = [
      ["c","Sur le tapis aussi","Forcer un étirement qui fait mal, c’est manquer d’ahiṃsā envers soi. Dire « j’ai tenu 30 s » quand c’était 20, c’est manquer de satya."],
      ["q","Ahiṃsā veut dire…",["Ne pas nuire","Être patient","Respirer lentement"],0,"Le premier yama, la base de tous les autres."],
      ["q","Ne pas s’accrocher, c’est…",["Aparigraha","Ahiṃsā","Satya"],0,"Aparigraha : ne pas accumuler, ne pas s’agripper à un résultat."],
-     ["q","Tu forces sur une douleur au poignet pour finir ta série. Quel yama oublies-tu ?",["Ahiṃsā","Asteya","Brahmacarya"],0,"Ne pas nuire, à soi compris."]]},
+     ["q","Tu forces sur une douleur au poignet pour finir ta série. Quel yama oublies-tu ?",["Ahiṃsā","Asteya","Satya"],0,"Ne pas nuire, à soi compris."]]},
     {id:"m3", name:"Les niyamas : avec soi", steps:[
      ["c","Cinq disciplines","Śauca, la propreté. Santoṣa, le contentement. Tapas, l’effort qui transforme. Svādhyāya, l’étude des textes et de soi. Īśvara-praṇidhāna, s’en remettre à plus grand que soi."],
      ["c","Tapas et santoṣa","L’un pousse, l’autre apaise. Tapas : revenir chaque jour au tapis. Santoṣa : être content de la séance d’aujourd’hui, même imparfaite."],
@@ -71,7 +71,7 @@ const LEARN = [
     {id:"a5", name:"La salutation au soleil", steps:[
      ["c","Un enchaînement","Sūrya Namaskār : une suite de postures liées au souffle, pour réchauffer tout le corps. Une façon idéale de commencer, comme ta mise en route."],
      ["c","Un mouvement, un souffle","Inspire en ouvrant, expire en pliant. Le rythme du souffle donne le rythme du corps."],
-     ["q","Dans la salutation, on inspire plutôt…",["En s’ouvrant, en levant les bras","En se pliant vers l’avant","En reculant en planche"],0,"Ouvrir = inspirer, plier = expirer."],
+     ["q","Dans la salutation, on inspire plutôt…",["En s’ouvrant, en levant les bras","En se pliant vers l’avant","En descendant au sol, poitrine vers le tapis"],0,"Ouvrir = inspirer, plier = expirer."],
      ["p",{name:"Salutation lente", dur:"1 min 30", why:"Une salutation au soleil, au rythme du souffle.", src:"hatha yoga", steps:tx([10,"Debout, mains jointes. Inspire, lève les bras."],[10,"Expire, plie en avant."],[15,"Inspire, dos plat. Expire, recule en planche et descends, genoux au sol si besoin."],[15,"Inspire, le cobra, coudes près du corps."],[20,"Expire, le chien tête en bas. Trois souffles."],[10,"Inspire, avance les pieds. Expire, plie."],[10,"Inspire, remonte les bras. Expire, mains jointes."])}]]}]}]},
   {id:"souffle", name:"Respiration", sub:"Prāṇāyāma", ic:"wind", units:[
    {name:"Les bases", lessons:[
@@ -147,9 +147,9 @@ const LEARN = [
    {name:"Comprendre", lessons:[
     {id:"e1", name:"Origine", steps:[
      ["c","Japon, 1922","Mikao Usui fonde l’Usui Reiki Ryōhō à Tokyo. Rei, l’esprit, le mystérieux (souvent traduit « universel ») ; ki, l’énergie vitale. Une pratique d’imposition des mains et de développement personnel."],
-     ["c","Vers l’Occident","Chūjirō Hayashi, élève d’Usui, forme Hawayo Takata, qui l’enseigne à Hawaï dès 1937, puis sur le continent américain ; elle forme 22 maîtres entre 1970 et 1980."],
+     ["c","Vers l’Occident","Chūjirō Hayashi, élève d’Usui, forme Hawayo Takata, qui le pratique à Hawaï dès 1937 et l’enseigne à partir de 1938, puis sur le continent américain ; elle forme 22 maîtres entre 1970 et 1980."],
      ["q","Qui a fondé le reiki ?",["Mikao Usui","Patañjali","Hawayo Takata"],0,"Japon, 1922."],
-     ["q","Ki veut dire…",["L’énergie vitale","La lumière","Le souffle sacré"],0,"Le même mot que le qi chinois."]]},
+     ["q","Ki veut dire…",["L’énergie vitale","La lumière","L’esprit, le mystérieux"],0,"Le même mot que le qi chinois."]]},
     {id:"e2", name:"Les cinq principes", steps:[
      ["c","Gokai","Juste pour aujourd’hui : ne te mets pas en colère, ne t’inquiète pas, sois reconnaissant, applique-toi à ta pratique, sois bienveillant envers les autres."],
      ["c","Juste pour aujourd’hui","Pas pour toujours : pour aujourd’hui. Le même esprit que revenir au tapis chaque jour, sans promesse impossible."],
@@ -184,7 +184,7 @@ const LEARN = [
      ["c","Un arc","Arrivée et souffle, échauffement, postures debout, la posture-sommet, retour au calme, relaxation. Un cours monte puis redescend."],
      ["c","Un fil","Choisis une intention ou une posture-sommet, et fais que tout y prépare. Comme ton parcours prépare la full planche."],
      ["q","Dans quel ordre ?",["Échauffement, postures, sommet, retour au calme","Sommet, échauffement, postures, retour au calme","Échauffement, sommet, retour au calme, postures"],0,"Préparer, culminer, redescendre."],
-     ["q","La relaxation finale (śavāsana) se place…",["À la fin","Au début","Après l’échauffement"],0,"Le temps de laisser le corps intégrer."]]},
+     ["q","Śavāsana, la relaxation, se place…",["À la fin","Au début","Après l’échauffement"],0,"Le temps de laisser le corps intégrer."]]},
     {id:"p3", name:"Toucher et ajuster", steps:[
      ["c","Le consentement","Avant tout ajustement, demander. Beaucoup de studios utilisent une carte ou un geste pour dire oui ou non, renouvelable à chaque cours."],
      ["c","Les mots d’abord","Une consigne verbale ou une démonstration suffit souvent. Le toucher guide, il ne force jamais une amplitude."],
