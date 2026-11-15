@@ -124,7 +124,7 @@ function renderVoie(){
       const x = el("button","vdel","Effacer"); x.setAttribute("aria-label","Effacer cette note"); x.onclick = () => { S.jr = S.jr.filter(o => o !== e); save(); vForce(); }; d.append(x); b.append(d); });
     box.append(b); }
   // transmettre
-  { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Un jour, enseigner le yoga et la gym. Les missions s’ouvrent l’une après l’autre : " + dn + " sur " + MISSIONS.length + " faites."));
+  { const b = el("div","block"), dn = Object.keys(S.tm || {}).length; b.append(el("h2",null,"Transmettre"), el("p","mut","Enseigner le yoga et la gym, ou mieux les enseigner si c’est déjà ton métier. Les missions s’ouvrent l’une après l’autre : " + dn + " sur " + MISSIONS.length + " faites."));
     b.append(el("p","vlaw","En France, être payé pour enseigner la gym ou l’acrobatie demande un diplôme reconnu (BPJEPS, CQP…) et la carte professionnelle d’éducateur sportif. Le yoga n’a pas de diplôme d’État."));
     let lkN = 0;
     MORD.forEach(m => { const need = tmNeed(m), on = !need.length, done = (S.tm || {})[m.id]; if (!on && !done && ++lkN > 2) return;   /* les suivantes restent cachées : pas de longue liste grise */
