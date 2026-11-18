@@ -3,7 +3,7 @@
 // ---------- Navigation + réglages ----------
 // montrer une figure dans le ciel du Parcours : l’étoile s’allume, sa carte s’ouvre
 function goHere(id){ if (!MS[id]) return; requestAnimationFrame(() => { const w = document.querySelector("#tree .cst"); if (w && w.pick) w.pick(id); }); }
-function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); if (v === "me") renderScene(stats()); }   // le petit décor du Profil ne se dessine qu’à l’ouverture
+function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); if (v === "me") { renderScene(stats()); if (a3want) setAvatar(a3want); } }   // le petit décor du Profil ne se dessine qu’à l’ouverture
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ showTab(b.dataset.v); window.scrollTo(0,0);
  });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
@@ -53,6 +53,8 @@ $("gateForm").onsubmit = async e => {
 };
 
 render();
+// animations des figures : celles gardées sur l’appareil reviennent dès la première image, le reste se calcule en arrière-plan
+requestAnimationFrame(() => setTimeout(buildSprites, 0));
 // ---------- Conseil du jour (affiché en haut du parcours) ----------
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n’est appliquée que si tu l’acceptes, jamais pendant une séance.

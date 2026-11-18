@@ -71,7 +71,7 @@ function wardNeed(need, Z){ if (!need) return ""; if (need === "quest") return "
 const wNeedShort = (need, Z) => typeof need === "number" ? "niv. " + need : need === "quest" ? "quête" : need.startsWith("m:") ? "figure" : need.startsWith("l:") ? "palier" : need.startsWith("c:") ? "coffre" : "badge";
 // aperçu en grand : le personnage du vestiaire, qui porte ce que tu touches (même un élément verrouillé, pour l’essayer)
 let fitA = null;
-function fitPreview(F, label){ const host = $("fitPrev"); if (!host || !sprMod) { if (host) host.hidden = true; return; } host.hidden = false;
+function fitPreview(F, label){ const host = $("fitPrev"); if (!host) return; if (!sprMod) { host.hidden = true; sprImport().then(() => { if ($("fitDlg").open) fitPreview(F, label); }).catch(()=>{}); return; } host.hidden = false;
   try { if (!fitA) fitA = sprMod.mount(host); fitA.set(Object.assign({}, a3want || {pose:"stand", level:1}, {fit:F})); } catch(e){ host.hidden = true; }
   $("fitLab").textContent = label || ""; }
 function renderFit(tryF){
@@ -105,9 +105,10 @@ $("plX").onclick = () => { S.placed = true; save(); $("plDlg").close(); render()
   $(x).onclick = () => { if (ok()) d.close(); }; d.addEventListener("click", e => { if (e.target === d && ok()) d.close(); }); d.addEventListener("cancel", e => { if (!ok()) e.preventDefault(); }); });
 function setAvatar(s){
   a3want = s; if (A3) { A3.set(s); return; }
-  if (a3tried) return; a3tried = true;
+  // le moteur 3D (près de 800 Ko) n’est chargé qu’à la première visite du Profil : l’ouverture de l’app reste légère
+  if (a3tried || !$("v-me").classList.contains("on")) return; a3tried = true;
   try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) return; } catch(e){ return; }
-  import(new URL("avatar3d.js", document.baseURI).href).then(m=>{ sprMod = m; buildSprites(); const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); })
+  sprImport().then(m=>{ const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); if (a3party) { a3party = false; A3.celebrate(); } })
     .catch(()=>{ $("av3d").hidden = true; $("av").style.display = ""; });
 }
 

@@ -7,7 +7,7 @@ const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"hs_straddle
   pr_straddle:"hs_straddle", pr_pike:"pk1", pr_stalder:"hs_straddle", pr_negS:"hs_spress", pr_elev:"hs_spress", pr_stradL:"hs_stal0", pr_lsit:"lsit0", pr_lsitHs:"lsit1", in_mexican:"hs_mex", in_hspu:"hs", oa_flagfloor:"hs_flag",
   oa_shTuck:"hs_oatuck", oa_shStrad:"hs_oastrad", oa_shFlag:"hs_oaflag", pr_vsitC:"vsitC", pr_mannaP:"mannaP", pr_manna:"manna", pl_strHs:"pl_s45", pl_hsDown:"hs_pl45", pl_press:"hs_pl45", ul_c1:"hs_oafull", ul_c2:"pl_full", ul_c3:"manna", ul_full:"manna", oa_switch:"hs_oafull", pr_extSup:"revSup", pr_vsitH:"vsitH", pl_halfPress:"pl_halfL", ul_c12:"pl_full",
   lo_frog:"crow", lo_elbow:"lever", lo_croc:"lever", lo_qdr:"lv_qdr2"};
-let A3 = null, a3want = null, a3tried = false, lastZ = null;
+let A3 = null, a3want = null, a3tried = false, a3party = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
 // Chaque figure est rendue image par image dans une bande d’images, puis animée en boucle. Tant qu’elle n’est pas prête, on montre une image fixe.
 const SPR = {}, SPN = 192, SPF = 8, COLS = 12; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
@@ -68,8 +68,18 @@ async function sprStore(key, id, blob, n, hold){
   if (!window.caches) return; try { const c = await caches.open(SPC); await c.put("spr/" + id, new Response(blob, {headers:{"Content-Type":"image/webp"}}));
     const meta = sprMeta(); if (meta.key !== key || meta.v !== SPV) { meta.key = key; meta.v = SPV; meta.items = {}; } meta.items[id] = {n, hold}; localStorage.setItem(SPM, JSON.stringify(meta)); } catch(e){}
 }
+// Figures sans script d’animation : notées pour ne plus réveiller le moteur 3D à chaque ouverture.
+// La liste vaut pour une version précise des scripts (empreinte de avatar3d.js) : une mise à jour qui en ajoute la remet à zéro.
+const SPK = "hs-spr-skip"; let sprTagV = "";
+async function sprTag(){ if (sprTagV) return sprTagV;
+  try { const b = await (await fetch("avatar3d.js")).arrayBuffer(), h = new Uint8Array(await crypto.subtle.digest("SHA-1", b)); sprTagV = [...h.slice(0, 8)].map(x=>x.toString(16).padStart(2,"0")).join(""); } catch(e){} return sprTagV; }
+const sprSkip = () => { try { const o = JSON.parse(localStorage.getItem(SPK)); return new Set(o && sprTagV && o.t === sprTagV ? o.ids : []); } catch(e){ return new Set(); } };
+const sprSkipAdd = id => { if (!sprTagV) return; try { const s = sprSkip(); s.add(id); localStorage.setItem(SPK, JSON.stringify({t:sprTagV, ids:[...s]})); } catch(e){} };
+const sprImport = () => import(new URL("avatar3d.js", document.baseURI).href).then(m => (sprMod = sprMod || m));
+// Au démarrage : les animations gardées sur l’appareil sont reprises tout de suite, sans charger le moteur 3D ;
+// il n’est réveillé (dans un Web Worker si possible) que s’il manque des animations.
 async function buildSprites(force){
-  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra,F.face, getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()]);   /* couleurs du thème comprises */ if (key === sprKey && !force) return;
+  const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra,F.face, getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()]);   /* couleurs du thème comprises */ if (key === sprKey && !force) return;
   const changed = sprKey && sprKey !== key; sprKey = key; const job = ++sprJob;
   if (changed && sprW) { sprW.terminate(); sprW = null; sprWok = null; }   // un calcul en cours avec l’ancienne tenue est abandonné
   if (changed) Object.keys(SPR).forEach(id=>{ const u = SPR[id].url; delete SPR[id]; setTimeout(()=>URL.revokeObjectURL(u), 2000); });
@@ -78,11 +88,14 @@ async function buildSprites(force){
   // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l’écran
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
-  const fxIds = Object.keys(MS).map(faultKey).filter(Boolean); fxIds.forEach(k => sprMod.faultScript && sprMod.faultScript(k));
-  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"], fxIds))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
+  const fxIds = Object.keys(MS).map(faultKey).filter(Boolean), reg = () => fxIds.forEach(k => sprMod.faultScript && sprMod.faultScript(k)); if (sprMod) reg();
+  let ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"], fxIds))].filter(id=>!SPR[id] && (!sprMod || sprMod.SCRIPTS[id]));
+  if (ids.length && !sprMod) { await sprTag(); if (job !== sprJob) return; const sk = sprSkip(); ids = ids.filter(id => !sk.has(id)); }
+  if (!ids.length) return;
   // de préférence dans un Web Worker (hors de la page) ; sinon par petits morceaux dans la page
   if (await sprViaWorker(ids, F, key, job)) return;
   if (job !== sprJob) return;
+  if (!sprMod) { try { await sprImport(); } catch(e){ return; } if (job !== sprJob) return; reg(); ids = ids.filter(id => sprMod.SCRIPTS[id]); if (!ids.length) return; }
   let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
   const A = sprA, dt = 1 / SPF, MAXF = 144; await idle();
@@ -118,9 +131,12 @@ async function sprViaWorker(ids, F, key, job){
     const r = await new Promise(res => { const to = setTimeout(() => res({error:"timeout"}), 30000);
       w.onmessage = e => { if (e.data && e.data.id === id) { clearTimeout(to); res(e.data); } }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:144, COLS}); });
     if (job !== sprJob) return true;
+    if (r.error === "no script") { sprSkipAdd(id); continue; }
     if (r.error || !r.blob) { if (Object.keys(SPR).length === 0) { sprWok = false; w.terminate(); sprW = null; return false; } continue; }
     SPR[id] = {url:URL.createObjectURL(r.blob), n:r.n, hold:r.hold}; sprRepaint(id); sprStore(key, id, r.blob, r.n, r.hold);
   }
+  // tout est prêt : le Worker et son moteur 3D rendent leur mémoire au téléphone
+  if (job === sprJob && sprW === w) { w.terminate(); sprW = null; sprWok = null; }
   return true;
 }
 // pendant qu’on fait défiler ou qu’on touche l’écran, le calcul des animations attend
