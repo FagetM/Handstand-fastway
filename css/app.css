@@ -452,6 +452,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 .trow .dots i.half{background:linear-gradient(90deg,currentColor 50%,transparent 50%);opacity:1}
 /* Aujourd'hui, plus sobre */
 .moodset{display:inline-block;margin:8px 0 2px;padding:8px 12px;border-radius:999px;background:var(--bg);font-size:13.5px;color:var(--mut)}
+button.moodset{display:inline-flex;align-items:center;min-height:44px}   /* une vraie cible pour le pouce */
 .mood button{padding:8px 4px;min-width:64px}.mood button i{font-size:18px}.mood button b{font-size:12.5px;font-weight:600}
 .mins{margin:8px 0 2px}.mins span{flex:0 0 auto;font-size:13px}.mins button{min-height:30px;padding:4px 8px;font-size:14px}
 .tip .tb>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -576,6 +577,7 @@ body>#toast{top:auto;bottom:calc(76px + env(safe-area-inset-bottom));transform:t
 
 
 .fx.wait .sp{opacity:.3}
+button.golink{min-height:44px}   /* liens texte : la même cible pour le pouce partout */
 #quest .golink{display:block;margin-top:12px}#quest .golink::after{content:" ›"}
 label[for="eqKg"]{display:block;margin-top:12px}
 
