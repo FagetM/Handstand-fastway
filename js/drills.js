@@ -75,10 +75,11 @@ function drillsFor(m){
   else if (s === "planche" && !["pl_lean","pl_ppp"].includes(id)) out.push("leanPress");
   if (s === "planche") out.push(id === "pl_lean" || id === "pl_ppp" ? "lean" : (S.equip || {}).kg && st("fd_dips").done ? "dipsW" : "lean","protrac","pseudo","biceps");
   if (["pl_frog","pl_1leg","pl_straddle"].includes(id)) out.unshift("tuck2strad");
+  if (/^pl_(adv|frog|1leg|str|t2s|half|full)/.test(id)) out.splice(1, 0, "hollow", "gainArr");   // dès l’advanced tuck : gainage creux et chaîne arrière, sinon le bassin tombe
   if (id === "oa_flaghoriz" || id === "oa_wall") out.unshift("tuckflag");
   if (s === "press") out.push("pikepulse","stradlift","pancake","omoplates");   // l’appui penché reste réservé aux jours de planche
   if (id === "pr_straddle") out.unshift("elevpress");
-  if (/^pr_(manna|vsitH|extSup)/.test(id)) { out.splice(0, out.length, "extEp", ...(frag("epaule") ? [] : ["appuiArr"]), "mannaLift", "biceps", "pancake"); }   // la manna, c’est d’abord des épaules en extension
+  if (/^pr_(manna|vsitH|extSup)/.test(id)) { out.splice(0, out.length, "extEp", ...(frag("epaule") ? [] : ["appuiArr"]), "mannaLift", "pikepulse", "biceps", "pancake"); }   /* la compression reste : la manna, c’est aussi des jambes qui montent */   // la manna, c’est d’abord des épaules en extension
   if (s === "ultime") out.push("doigts","extEp","omoplates");
   if (id === "pr_stalder" || id === "pr_lsitHs") { out.unshift("stalneg"); if ((S.equip || {}).para) out.unshift("lsitpara"); }
   else if (s === "low") out.push("frog","omoplates");

@@ -38,7 +38,7 @@ function renderLearn(){
   const flip = () => { const L = LS(); L.list = !L.list; save(); renderLearn(); window.scrollTo(0, 0); };
   $("v-learn").classList.toggle("cstmode", !L.list);
   // vue d’ensemble en constellation (par défaut), sur tout l’écran : le titre, la série et la révision flottent sur le ciel
-  if (!L.list) { const w = skyFull(constellation(), "Apprendre", lnStreak() + " j de série", "Vue liste", flip), rb = el("div","cstrev");
+  if (!L.list) { const w = skyFull(constellation(), "Apprendre", S.ex && S.ex.sober ? "Tes leçons, à ton rythme" : lnStreak() + " j de série", "Vue liste", flip), rb = el("div","cstrev");
     revCard(rb); if (rb.firstChild) w.append(rb); box.append(w); return; }
   const hd = el("div","lnstats"); hd.append(el("div","lnst", lnStreak() + " j"), el("span","mut","de série"), el("div","lnst", String(L.xp || 0)), el("span","mut","points de savoir"));
   box.append(hd);
@@ -150,7 +150,8 @@ function lnStep(){ if (typeof hush === "function") hush(); const box = $("lnBody
 function lnEnd(){ const L = LS(); ln.ended = true; const first = !ln.rev && !L.done[ln.l.id], pts = ln.rev ? 5 : first ? 10 + (ln.miss ? 0 : 5) : 2;   // revoir une leçon rapporte peu : on ne gagne qu’en avançant
   if (!ln.rev) L.done[ln.l.id] = L.done[ln.l.id] || Date.now(); L.xp = (L.xp || 0) + pts; const d = dayKey(Date.now()); if (!L.days.includes(d)) { L.days.push(d); if (L.days.length > 400) L.days = L.days.slice(-400); } save();
   const box = $("lnBody"), go = $("lnGo"); box.textContent = ""; $("lnBar").style.transform = "scaleX(1)";
-  box.append(el("div","lnend", "+" + pts), el("h3",null, ln.rev ? "Révision faite" : ln.miss ? "Leçon terminée" : "Sans faute"), el("p","mut", lnStreak() + " j de série" + (first || ln.rev ? "" : " · leçon revue")));
+  const calm = !!(S.ex && S.ex.sober);   // mode calme : la leçon finie, sans points ni série
+  box.append(el("div","lnend", calm ? "✓" : "+" + pts), el("h3",null, ln.rev ? "Révision faite" : ln.miss ? "Leçon terminée" : "Sans faute"), el("p","mut", calm ? (first || ln.rev ? "Bien joué." : "Leçon revue.") : lnStreak() + " j de série" + (first || ln.rev ? "" : " · leçon revue")));
   const nx = !ln.rev && lessonsOf(ln.v).find(l => !L.done[l.id]), more = $("lnMore");
   if (nx) { go.textContent = "Leçon suivante"; go.onclick = () => lnOpen(ln.v, nx); more.hidden = false; more.onclick = () => { $("lnDlg").close(); renderLearn(); }; }
   else { go.textContent = "Continuer"; go.onclick = () => { $("lnDlg").close(); renderLearn(); }; }

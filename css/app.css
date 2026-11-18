@@ -643,7 +643,7 @@ header.top{display:none}
 .vpstage{position:relative;display:grid;place-items:center;height:240px;margin:8px 0}
 .vpring{position:absolute;width:200px;height:200px;border-radius:50%;background:color-mix(in srgb,var(--leaf) 30%,transparent);box-shadow:inset 0 0 0 2px var(--leaf);transform:scale(.55);transition:transform 4s ease-in-out}
 .vpring[data-ph="in"]{transform:scale(1)}.vpring[data-ph="in2"]{transform:scale(1.08)}.vpring[data-ph="out"]{transform:scale(.55)}
-.vptxt{position:relative;max-width:260px;margin:0;font:600 17px/1.4 var(--disp)}
+.vptxt{position:relative;max-width:176px;margin:0;font:600 16px/1.35 var(--disp);text-align:center}   /* le texte reste dans le cercle du souffle */
 .vpleft{font-size:20px;margin:4px 0 16px;color:var(--mut)}
 @media (prefers-reduced-motion:reduce){.vpring{transition:none}}
 .ecoute{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 16px;padding:16px;border-radius:16px;background:color-mix(in srgb,var(--leaf) 16%,var(--raise));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--leaf) 40%,transparent)}.ecoute[hidden]{display:none}.ecoute .grow{display:flex;flex-direction:column;gap:2px;min-width:200px}.ecoute .btn{width:auto;min-height:40px;padding:8px 20px}.ecoute .vdel{position:static}
@@ -864,7 +864,7 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 .cstn.mn i{font-size:11px;width:78px}
 .cstt{font:800 14px/1 var(--disp);opacity:.85}
 .cstsel{position:absolute;left:0;top:0;pointer-events:none}
-.cstpin{position:absolute;padding:4px 12px;border-radius:12px;background:var(--acc);color:var(--onacc);font:800 13px/1 var(--disp);pointer-events:none;transform-origin:50% 100%;transform:translate(-50%,-100%) scale(calc(1 / var(--k,1)));box-shadow:0 0 14px color-mix(in srgb,var(--acc) 60%,transparent)}
+.cstpin{position:absolute;z-index:5;padding:4px 12px;border-radius:12px;background:var(--acc);color:var(--onacc);font:800 13px/1 var(--disp);pointer-events:none;transform-origin:50% 100%;transform:translate(-50%,-100%) scale(calc(1 / var(--k,1)));box-shadow:0 0 14px color-mix(in srgb,var(--acc) 60%,transparent)}
 .cstpin::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;background:inherit;transform:translateX(-50%) rotate(45deg);z-index:-1}
 .cstleg{display:grid;grid-template-columns:1fr 1fr;gap:12px;font-size:13px}.cstleg>div{display:flex;align-items:center;gap:8px}
 .cstleg i{flex:none;width:22px;height:22px;border-radius:50%;display:block}

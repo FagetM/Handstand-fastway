@@ -97,7 +97,7 @@ function planFor(m){
     const nt = /^pl_/.test(m.id) && !hold ? Math.min(1, tries2) : tries2, ntSide = !SIDED.has(m.id) ? "" : /^pl_/.test(m.id) ? " par jambe" : " par côté", ntTxt = (nt > 1 ? nt + " tentatives" : "une tentative") + ntSide;
     out.short = sets + " × " + (hold ? work + " s" + (!SIDED.has(m.id) ? "" : /^pl_/.test(m.id) ? " par jambe" : " en alternant les côtés") : work + " rép.") + (nt ? ", puis " + ntTxt + " à " + (hold ? T + " s" : T + " rép.") : ""); out.short += (out.short.endsWith(".") ? " " : ". ") + (prSkill ? "Jusqu’à " : "") + days + " séances par semaine.";   /* pas de « rép.. » */
     out.lines = [freq,
-      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" + (/^pl_/.test(m.id) && SIDED.has(m.id) ? " par jambe" : "") : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (r => r < 60 ? r + " s" : Math.floor(r / 60) + " min" + (r % 60 ? " " + r % 60 + " s" : ""))(restOf(m)) + " de repos entre chacune" + (hold ? " (" + num(sets * work / 60) + " min sous tension au total)." : "."),
+      "À chaque séance : " + sets + " " + (hold ? "tenues de " + work + " s" + (/^pl_/.test(m.id) && SIDED.has(m.id) ? " par jambe" : "") : "séries de " + work + (work > 1 ? " répétitions" : " répétition")) + ", " + (r => r < 60 ? r + " s" : Math.floor(r / 60) + " min" + (r % 60 ? " " + r % 60 + " s" : ""))(restOf(m)) + " de repos entre chacune" + (hold ? " (" + (sets * work < 90 ? sets * work + " s" : num(sets * work / 60) + " min") + " de tenue au total)." : "."),
       (/^pl_/.test(m.id) ? (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", " + (SIDED.has(m.id) ? "90 s" : "3 min") + " de repos entre chacune. " : ". ") : "") + (hold ? "Une tenue à la cible" : "Une tentative réussie") + " ouvre le niveau suivant ; la validation suit la règle ci-dessous, car les tendons aussi doivent être prêts."
         : (nt ? "Termine par " + ntTxt + " à " + u(T) + (nt > 1 ? ", avec " + (SIDED.has(m.id) ? "90 s" : "2 minutes") + " de repos entre chacune." : ".") + " Réussie, elle fait passer le palier ; " : "Une série à la cible fait passer le palier ; ") + "au dernier palier, la règle de validation s’applique."),
       force ? "Les jours sans séance : mobilité et souplesse, pas de force." : "Les jours sans séance, 2 ou 3 tenues courtes dans la journée entretiennent l’équilibre sans fatiguer.",
@@ -177,8 +177,8 @@ const DEFW = {fd_plank:2, fd_roue:2, fd_c2w:3, fd_push:4, fd_dips:4, fd_support:
   oa_strad30:4, oa_tuckflag:4, oa_flaghoriz:5, oa_flagfloor:5, oa_wall:6, oa_shrug:4, oa_shift:6, oa_sidehold:6, oa_finger:3, oa_finger3:3, oa_finger2:3, oa_finger1:4, oa_strarm:6, oa_lift:8, oa_oahs:20, oa_oahsw:12, oa_oahs10:16, oa_shTuck:8, oa_shStrad:8, oa_switch:10,
   pr_pikeLift:3, pr_stradLift:3, pr_wallNeg:3, pr_negS:4, pr_elev:4, pr_elevLow:4, pr_straddle:8, pr_negP:5, pr_pike:10, pr_lsit:3, pr_stradL:4, pr_vsit:8, pr_halfSt:6, pr_tuckUp:6, pr_stalPart:8, pr_stalder:14, pr_lsitNeg:6, pr_lsitHs:10, pr_vsitC:6, pr_extSup:4, pr_mannaP:16, pr_vsitH:26, pr_manna:80,
   lo_elbow:3, lo_croc:6, lo_qdr:6, pl_lean:3, pl_ppp:4, pl_lean2:4, pl_tuckP:5, pl_tuck:6, pl_tuckPu:6, pl_tuckO:8, pl_adv:12, pl_1leg:10, pl_strBand:8, pl_strBandL:8, pl_straddle:20, pl_strNar:12, pl_half:16, pl_fullBand:10, pl_fullNeg:10, pl_full:26, pl_strHs:10, pl_hsDown:10, pl_halfPress:20, pl_press:40,
-  ul_c1:8, ul_c2:10, ul_c3:8, ul_c12:10, ul_full:12};
-const laneOf = m => /^pl_/.test(m.id) ? "pl" : m.sec === "press" || m.sec === "low" ? "pr" : m.sec === "ultime" ? "ul" : "ba";
+  ul_c1:8, ul_c2:10, ul_c3:8, ul_c12:10, ul_full:12, pl_frog:6};
+const laneOf = m => /^pl_/.test(m.id) || (laneOf.pp || (laneOf.pp = reqsOf("pl_lean"))).has(m.id) ? "pl" : m.sec === "press" || m.sec === "low" ? "pr" : m.sec === "ultime" ? "ul" : "ba";
 // jours d’entraînement sur les 28 derniers jours (null tant que l’historique est trop court pour juger)
 function trainDays(){ const now = Date.now(), first = S.log.length ? S.log[0].t : now; if (now - first < 14 * 864e5) return null; return new Set(S.log.filter(l => l.t >= now - 28 * 864e5).map(l => dayKey(l.t))).size; }
 // calendrier : chaque famille (équilibre, planche, montées) avance une figure à la fois, les familles avancent en parallèle
@@ -215,7 +215,7 @@ const gainTxt = wk => wk < 9 ? Math.max(1, Math.round(wk)) + " semaine" + (Math.
 // la figure qui fixe la date du but : on remonte le chemin le plus long jusqu’à une figure ouverte aujourd’hui
 function keyFig(P, ids){ let id = ids.reduce((a, b) => (P.fin[b] || 0) > (P.fin[a] || 0) ? b : a, ids[0]), n = 0; while (id && P.start[id] > 0 && P.by[id] && n++ < 200) id = P.by[id]; return id && !st(id).done ? id : null; }
 // fenêtre « Mes dates » : les grandes étapes, puis ce qui ferait gagner du temps
-const STEPS = [["in_str60","Équilibre droit, 60 s"],["pr_straddle","Montée en force jambes écartées"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre sur un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
+const STEPS = [["in_str60","Tenir sur les mains, 60 s"],["pr_straddle","Montée en force jambes écartées"],["pl_tuck","Tuck planche"],["pr_stalder","Stalder"],["oa_oahs","Équilibre sur un bras"],["pl_straddle","Straddle planche"],["pr_manna","Manna"],["pl_full","Full planche"],["ul_full","Le combo ultime"]];
 // au-delà d’un an, une fourchette plutôt qu’une date précise : le chemin est long, il ne doit pas décourager
 function rangeTxt(w){ if (!w) return ""; if (w <= 52) return dateTxt(w); const y = k => new Date(Date.now() + w * k * 7 * 864e5).getFullYear(), a = y(0.8), b = y(1.25); return a === b ? dateTxt(w) : "entre " + a + " et " + b; }
 function openEta(){ const box = $("etaBody"), P = plan(), goal = goalTop(), w0 = P.fin[goal], mins = S.mins || 30, td = trainDays(); box.textContent = "";
@@ -328,7 +328,10 @@ function renderQuest(S0, nextId){
   const head = el("h2","sect","Badges"); head.id = "sect-badges"; box.append(head);
   const got = S0.badges.filter(b=>b.ok).length;
   box.append(el("p","intro-t", got + " / " + S0.badges.length));
-  const next3 = new Set(S0.badges.filter(b=>!b.ok).sort((a,b)=>b.cur / b.max - a.cur / a.max).slice(0, 3).map(b=>b.id)), shown = b => S.allB || b.ok || next3.has(b.id);
+  // ce qui suit ton but : ta quête toujours visible, les étages et quêtes des autres buts seulement dans « Tous les badges »
+  const myGoal = "goal_" + (S.goal || "both"), mySecs = new Set(goalOf().ms.map(id => MS[id] && MS[id].sec)),
+    mine = b => b.id.startsWith("goal_") ? b.id === myGoal : b.id.startsWith("sec_") ? mySecs.has(b.id.slice(4)) : true;
+  const next3 = new Set(S0.badges.filter(b=>!b.ok && mine(b)).sort((a,b)=>(b.id === myGoal) - (a.id === myGoal) || b.cur / b.max - a.cur / a.max).slice(0, 3).map(b=>b.id)), shown = b => S.allB || b.ok || next3.has(b.id) || b.id === myGoal;
   BFAM.forEach(([name, ids, pre])=>{ const list = S0.badges.filter(b=>(ids ? ids.includes(b.id) : b.id.startsWith(pre)) && shown(b)); if (!list.length) return;
     box.append(el("div","lab bfam",name)); const grid = el("div","badges");
     list.forEach(b=>{ const x = el("button","bdg" + (b.ok ? "" : " off")); x.setAttribute("aria-label", b.name + ", " + (b.ok ? "obtenu" : b.cur + " sur " + b.max));
