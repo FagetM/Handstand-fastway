@@ -42,7 +42,12 @@ async function gateHash(code){
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hs-fastway:" + code));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
 }
-function unlock(){ document.body.classList.remove("locked"); }
+// animations des figures : celles gardées sur l’appareil reviennent dès la première image, le reste se calcule en arrière-plan ;
+// rien n’est lancé tant que l’écran du code d’accès est affiché (ni calcul, ni téléchargement du moteur 3D)
+let sprStarted = false;
+const startSprites = () => { if (sprStarted || document.body.classList.contains("locked")) return; sprStarted = true; requestAnimationFrame(() => setTimeout(buildSprites, 0)); };
+function unlock(){ document.body.classList.remove("locked"); if (booted) startSprites(); }
+let booted = false;
 let known = null; try { known = localStorage.getItem(GKEY); } catch(e){}
 if (known === GATE) unlock(); else $("gateCode").focus();
 $("gateForm").onsubmit = async e => {
@@ -53,8 +58,7 @@ $("gateForm").onsubmit = async e => {
 };
 
 render();
-// animations des figures : celles gardées sur l’appareil reviennent dès la première image, le reste se calcule en arrière-plan
-requestAnimationFrame(() => setTimeout(buildSprites, 0));
+booted = true; startSprites();
 // ---------- Conseil du jour (affiché en haut du parcours) ----------
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n’est appliquée que si tu l’acceptes, jamais pendant une séance.
