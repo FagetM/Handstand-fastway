@@ -42,6 +42,8 @@ function initPage({gate, state, day, seed}) {
     window.Date = FD; window.__tick = ms => { t += ms; };
   }
   if (seed != null) { let s = seed; Math.random = () => { s = (s * 1664525 + 1013904223) % 4294967296; return s / 4294967296; }; }
+  // l'état de départ n'est posé qu'au premier chargement : un rechargement garde ce que l'app a enregistré
+  if (sessionStorage.getItem('__seeded')) return; sessionStorage.setItem('__seeded', '1');
   if (gate) localStorage.setItem('hs-fastway-gate', gate);
   if (state) localStorage.setItem('hs-fastway-v1', JSON.stringify(state));
 }

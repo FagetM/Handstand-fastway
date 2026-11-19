@@ -8,6 +8,6 @@
     "test:update": "UPDATE_GOLDEN=1 node --test tests/snapshot.test.mjs"
   },
   "devDependencies": {
-    "playwright": "^1.63.0"
+    "playwright": "1.63.0"
   }
 }
