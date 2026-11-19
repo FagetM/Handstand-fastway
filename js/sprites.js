@@ -7,7 +7,7 @@ const POSE3D = {oa_tuckflag:"hs_flag", oa_shrug:"oahs", oa_sidehold:"hs_straddle
   pr_straddle:"hs_straddle", pr_pike:"pk1", pr_stalder:"hs_straddle", pr_negS:"hs_spress", pr_elev:"hs_spress", pr_stradL:"hs_stal0", pr_lsit:"lsit0", pr_lsitHs:"lsit1", in_mexican:"hs_mex", in_hspu:"hs", oa_flagfloor:"hs_flag",
   oa_shTuck:"hs_oatuck", oa_shStrad:"hs_oastrad", oa_shFlag:"hs_oaflag", pr_vsitC:"vsitC", pr_mannaP:"mannaP", pr_manna:"manna", pl_strHs:"pl_s45", pl_hsDown:"hs_pl45", pl_press:"hs_pl45", ul_c1:"hs_oafull", ul_c2:"pl_full", ul_c3:"manna", ul_full:"manna", oa_switch:"hs_oafull", pr_extSup:"revSup", pr_vsitH:"vsitH", pl_halfPress:"pl_halfL", ul_c12:"pl_full",
   lo_frog:"crow", lo_elbow:"lever", lo_croc:"lever", lo_qdr:"lv_qdr2"};
-let A3 = null, a3want = null, a3tried = false, lastZ = null;
+let A3 = null, a3want = null, a3tried = false, a3party = false, lastZ = null;
 // Animations des nœuds : le personnage 3D, avec la tenue du vestiaire, joue chaque figure (debout, montée, maintien, retour).
 // Chaque figure est rendue image par image dans une bande d’images, puis animée en boucle. Tant qu’elle n’est pas prête, on montre une image fixe.
 const SPR = {}, SPN = 192, SPF = 8, COLS = 12; let sprMod = null, sprA = null, sprKey = "", sprJob = 0, sprT = 0;
@@ -25,7 +25,11 @@ const ZN_ANIM = {"Bascules à quatre pattes":"z_bascules", "Appui sur le bout de
 const blockAnim = b => b.dk ? ((b.dk === "dipsW" || b.dk === "pushW") && b.name === DRILLS[b.dk].name ? "dr_" + b.dk : DR_ANIM[b.dk]) : ZN_ANIM[b.name];
 // posture tenue de chaque animation d’exercice : l’image fixe montrée avant le calcul de l’animation
 const ANIM_STILL = {"dr_hollow": "dr_hollow", "dr_tirage": "dr_rowB", "dr_rotext": "dr_erB", "dr_extpoig": "dr_wrB", "z_bascules": "z_quadF", "z_chiot": "z_chiot", "z_pancake": "z_pan1", "dr_biceps": "dr_bicB", "dr_t2s": "pl_straddle", "dr_protrac": "dr_leanR", "dr_extEp": "dr_sit2", "z_pikepu": "z_dogB", "z_fing": "z_fing", "z_dos": "z_dos", "z_ppoig": "z_fing", "z_lgroup": "z_lgroup", "z_lone": "z_lone", "z_dog": "z_dog", "z_murEp": "reach", "z_omoP": "z_dog", "z_creux": "z_creux", "z_dosMur": "hs", "z_crowT": "z_crowT", "z_side": "z_side", "z_chat": "pu_down", "z_transi": "z_dog", "z_war": "z_war", "z_avbras": "z_quadB", "z_enfant": "z_enfant", "z_pigeon": "z_pigeon", "z_dogP": "z_dog", "z_twist": "z_twist", "dr_dipsW": "sup_up", "dr_pushW": "pu_down", "z_pliage": "f_pike1", "z_ecartAct": "f_panL", "z_midsplit": "f_mid", "z_frontsplit": "f_front", "z_half": "f_half", "z_lunge": "f_lunge", "z_horse": "f_horse", "z_legs": "f_legF", "z_bridge": "f_bridge", "z_poigF": "z_quadF"};
-const drSp = (b, size) => { const an = blockAnim(b), sp = el("span","sp"); sp.dataset.pose = ANIM_STILL[an] || poseId(an) || "stand"; sp.dataset.anim = an; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
+// un personnage : la posture fixe tant que l’animation n’est pas prête, puis la boucle (taille en px)
+const figSp = (anim, size, pose = poseId(anim), cls = "sp") => { const sp = el("span", cls); sp.dataset.pose = pose; sp.dataset.anim = anim; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
+const drSp = (b, size) => { const an = blockAnim(b); return figSp(an, size, ANIM_STILL[an] || poseId(an) || "stand"); };
+// le personnage d’un bloc de séance : la figure, sinon l’exercice animé, sinon rien
+const blockSp = (b, size) => b.ms && MS[b.ms] ? figSp(b.ms, size) : blockAnim(b) ? drSp(b, size) : null;
 // images fixes pré-calculées (anim/still_*.webp) : pour une posture qui n’en a pas, la plus proche
 const STILLS = new Set(["f_pike1","f_panL","f_mid","f_front","f_half","f_lunge","f_horse","f_legF","f_bridge","crow","dr_bicB","dr_erB","dr_hollow","dr_leanR","dr_rowB","dr_sit2","dr_wrB","hs","hs_finger","hs_flag","hs_mex","hs_oaflag","hs_oafull","hs_oastr","hs_oastrad","hs_oatuck","hs_pl45","hs_seven","hs_seven1","hs_split","hs_spress","hs_stal0","hs_stal1","hs_straddle","hs_tuck","hs_tuck90","hs_wsplit","lever","lsit0","lsit1","lv_qdr2","manna","mannaP","oahs","pk1","pk2","pl_1legP","pl_adv","pl_frog","pl_full","pl_halfL","pl_lean","pl_pdown","pl_pike","pl_s45","pl_straddle","pl_tuck","pu_down","reach","revSup","sp2","stand","sup_up","vsitC","vsitH","z_chiot","z_creux","z_crowT","z_dog","z_dogB","z_dos","z_enfant","z_fing","z_lgroup","z_lone","z_pan1","z_pigeon","z_quadB","z_quadF","z_side","z_twist","z_war"]);   /* une image fixe fidèle par posture, rendue par le moteur actuel */
 const STILL_NEAR = {};
@@ -68,8 +72,18 @@ async function sprStore(key, id, blob, n, hold){
   if (!window.caches) return; try { const c = await caches.open(SPC); await c.put("spr/" + id, new Response(blob, {headers:{"Content-Type":"image/webp"}}));
     const meta = sprMeta(); if (meta.key !== key || meta.v !== SPV) { meta.key = key; meta.v = SPV; meta.items = {}; } meta.items[id] = {n, hold}; localStorage.setItem(SPM, JSON.stringify(meta)); } catch(e){}
 }
+// Figures sans script d’animation : notées pour ne plus réveiller le moteur 3D à chaque ouverture.
+// La liste vaut pour une version précise des scripts (empreinte de avatar3d.js) : une mise à jour qui en ajoute la remet à zéro.
+const SPK = "hs-spr-skip"; let sprTagV = "";
+async function sprTag(){ if (sprTagV) return sprTagV;
+  try { const b = await (await fetch("avatar3d.js")).arrayBuffer(), h = new Uint8Array(await crypto.subtle.digest("SHA-1", b)); sprTagV = [...h.slice(0, 8)].map(x=>x.toString(16).padStart(2,"0")).join(""); } catch(e){} return sprTagV; }
+const sprSkip = () => { try { const o = JSON.parse(localStorage.getItem(SPK)); return new Set(o && sprTagV && o.t === sprTagV ? o.ids : []); } catch(e){ return new Set(); } };
+const sprSkipAdd = id => { if (!sprTagV) return; try { const s = sprSkip(); s.add(id); localStorage.setItem(SPK, JSON.stringify({t:sprTagV, ids:[...s]})); } catch(e){} };
+const sprImport = () => import(new URL("avatar3d.js", document.baseURI).href).then(m => (sprMod = sprMod || m));
+// Au démarrage : les animations gardées sur l’appareil sont reprises tout de suite, sans charger le moteur 3D ;
+// il n’est réveillé (dans un Web Worker si possible) que s’il manque des animations.
 async function buildSprites(force){
-  if (!sprMod) return; const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra,F.face, getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()]);   /* couleurs du thème comprises */ if (key === sprKey && !force) return;
+  const F = fit(), key = JSON.stringify([F.skin,F.hair,F.hairc,F.top,F.bottom,F.feet,F.wrists,F.head,F.extra,F.face, getComputedStyle(document.documentElement).getPropertyValue("--bg").trim()]);   /* couleurs du thème comprises */ if (key === sprKey && !force) return;
   const changed = sprKey && sprKey !== key; sprKey = key; const job = ++sprJob;
   if (changed && sprW) { sprW.terminate(); sprW = null; sprWok = null; }   // un calcul en cours avec l’ancienne tenue est abandonné
   if (changed) Object.keys(SPR).forEach(id=>{ const u = SPR[id].url; delete SPR[id]; setTimeout(()=>URL.revokeObjectURL(u), 2000); });
@@ -78,11 +92,14 @@ async function buildSprites(force){
   // ce qui manque est calculé par petits morceaux, pendant les temps morts, en commençant par ce qui est à l’écran
   const vh = window.innerHeight, dist = n => { const r = n.getBoundingClientRect(); return Math.abs(r.top + r.height/2 - vh/2); };
   const nodes = [...document.querySelectorAll(".sp[data-anim]")].sort((a,b)=>dist(a) - dist(b)).map(n=>n.dataset.anim);
-  const fxIds = Object.keys(MS).map(faultKey).filter(Boolean); fxIds.forEach(k => sprMod.faultScript && sprMod.faultScript(k));
-  const ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"], fxIds))].filter(id=>!SPR[id] && sprMod.SCRIPTS[id]); if (!ids.length) return;
+  const fxIds = Object.keys(MS).map(faultKey).filter(Boolean), reg = () => fxIds.forEach(k => sprMod.faultScript && sprMod.faultScript(k)); if (sprMod) reg();
+  let ids = [...new Set(nodes.concat(Object.keys(MS), Object.values(DR_ANIM), Object.values(ZN_ANIM), ["dr_dipsW","dr_pushW"], fxIds))].filter(id=>!SPR[id] && (!sprMod || sprMod.SCRIPTS[id]));
+  if (ids.length && !sprMod) { await sprTag(); if (job !== sprJob) return; const sk = sprSkip(); ids = ids.filter(id => !sk.has(id)); }
+  if (!ids.length) return;
   // de préférence dans un Web Worker (hors de la page) ; sinon par petits morceaux dans la page
   if (await sprViaWorker(ids, F, key, job)) return;
   if (job !== sprJob) return;
+  if (!sprMod) { try { await sprImport(); } catch(e){ return; } if (job !== sprJob) return; reg(); ids = ids.filter(id => sprMod.SCRIPTS[id]); if (!ids.length) return; }
   let host = $("sprHost"); if (!host) { host = el("div"); host.id = "sprHost"; host.style.cssText = "position:fixed;left:-9999px;top:0;width:" + SPN + "px;height:" + SPN + "px;pointer-events:none"; host.setAttribute("aria-hidden","true"); document.body.append(host); }
   try { sprA = sprA || sprMod.mount(host, {bare:true, manual:true, yaw:-1.15, loopT:3}); } catch(e){ return; }
   const A = sprA, dt = 1 / SPF, MAXF = 144; await idle();
@@ -118,9 +135,12 @@ async function sprViaWorker(ids, F, key, job){
     const r = await new Promise(res => { const to = setTimeout(() => res({error:"timeout"}), 30000);
       w.onmessage = e => { if (e.data && e.data.id === id) { clearTimeout(to); res(e.data); } }; w.postMessage({id, fit:F, colors, SPN, SPF, MAXF:144, COLS}); });
     if (job !== sprJob) return true;
+    if (r.error === "no script") { sprSkipAdd(id); continue; }
     if (r.error || !r.blob) { if (Object.keys(SPR).length === 0) { sprWok = false; w.terminate(); sprW = null; return false; } continue; }
     SPR[id] = {url:URL.createObjectURL(r.blob), n:r.n, hold:r.hold}; sprRepaint(id); sprStore(key, id, r.blob, r.n, r.hold);
   }
+  // tout est prêt : le Worker et son moteur 3D rendent leur mémoire au téléphone
+  if (job === sprJob && sprW === w) { w.terminate(); sprW = null; sprWok = null; }
   return true;
 }
 // pendant qu’on fait défiler ou qu’on touche l’écran, le calcul des animations attend

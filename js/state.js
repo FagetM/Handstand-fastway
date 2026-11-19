@@ -166,7 +166,6 @@ const BAND_STEPS = new Set(["pl_strBand","pl_strBandL","pl_fullBand"]), NOBAND_S
 const eqSkip = r => (BAND_STEPS.has(r) && !(S.equip || {}).band) || (NOBAND_STEPS.has(r) && !!(S.equip || {}).band);   // l’autre chemin, selon ton matériel
 const reqDone = r => st(r).done || eqSkip(r);
 const msLocked = m => (m.req||[]).some(r=>!reqDone(r));
-const secDone = s => s.ms.length > 0 && s.ms.every(m=>st(m.id).done);
 const dayKey = t => { const d = new Date(t); return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate(); };
 // clé de jour → date locale à minuit (new Date("2026-10-31") serait lue en UTC, et « 2026-11-1 » en heure locale)
 const dk = k => { const [y, m, d] = String(k).split("-").map(Number); return new Date(y, m - 1, d); };

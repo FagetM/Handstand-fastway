@@ -120,7 +120,6 @@ function planFor(m){
 function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } save(); render(); showTab("today"); window.scrollTo(0, 0); }
 
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
-const HARD = [["onearm","Équilibre un bras"],["planche","Full planche"],["press","Équilibre en force"]];
 // un coffre s’ouvre quand les figures du chemin de l’étage sont validées (les bonus hors chemin ne comptent pas)
 function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>reqDone(m.id)); }
 // Coffres : un par étage, ouvert quand l’étage est terminé ; chacun débloque une tenue.
@@ -144,6 +143,46 @@ const SQ = [
   {id:"sq_croco", name:"Le crocodile marche", req:"lo_croc", d:"3 pas des mains en crocodile, sans poser les pieds.", h:"Le crocodile a un cousin en yoga : Mayurasana, le paon, en appui sur les coudes plantés dans le ventre. La Hatha Yoga Pradipika lui prête le pouvoir d’attiser le feu digestif, jusqu’à digérer le poison."},
   {id:"sq_poings", name:"Planche lean sur les poings", req:"pl_lean", d:"Planche lean sur les poings, 20 s.", h:"Bruce Lee faisait ses pompes sur les poings, et même sur deux doigts. Sur les poings, le poignet reste droit : en planche lean, il souffre moins."}];
 const sqDone = () => S.sq || (S.sq = {});
+// La page de la quête : l’objectif, le chemin par chapitres, ce qu’on peut travailler maintenant, et les défis bonus ouverts.
+function questOpen(){
+  const Q = questState(), box = $("qkBody"), close = () => $("qkDlg").close(); box.textContent = "";
+  const hd = el("div","qsthd"), num = el("div","qpct big"); num.append(el("b",null, String(Q.pct)), el("i",null," %"));
+  hd.append(el("div","lab","Quête principale"), el("h2",null, Q.G.name), num, questBar(Q.pct),
+    el("p","mut", Q.done + (Q.done > 1 ? " étapes validées sur " : " étape validée sur ") + Q.tot + (Q.left.length ? ", encore " + Q.left.length + "." : ". Quête accomplie.")));
+  if (Q.left.length && Q.wk) { const when = el("p","qwhen"); when.append("Arrivée estimée : ", el("b",null, (t => /^(vers|entre)/.test(t) ? t : "en " + t)(rangeTxt(Q.wk))), (td => td == null ? ", avec 5 séances de " + (S.mins || 30) + " min par semaine." : ", à ton rythme actuel : " + td + " jour" + (td > 1 ? "s" : "") + " d’entraînement sur les 4 dernières semaines, séances de " + (S.mins || 30) + " min.")(trainDays())); hd.append(when);
+    const dt = el("button","golink","Comment arriver plus tôt"); dt.onclick = () => { close(); openEta(); }; hd.append(dt); }
+  box.append(hd);
+  const title = t => box.append(el("div","lab qstt", t));
+  if (Q.open.length) { title("Maintenant");
+    Q.open.slice(0, 3).forEach(([id, wk]) => { const m = MS[id], b = el("button","qkblock sqrow qstep"), g = el("span","grow"); g.append(el("b",null, stepTxt(m)), el("p",null, wk ? inTxt(wk) + ", " + dateTxt(wk) : "à valider en séance"));
+      b.append(figSp(id, 56), g); b.onclick = () => quick(id); box.append(b); }); }
+  // le chemin : les étages traversés par l’objectif, dans l’ordre, avec leur avancement et leur date
+  title("Le chemin");
+  { const secs = []; Q.ids.forEach(id => { const s = MS[id].sec; if (!secs.includes(s)) secs.push(s); });
+    const ol = el("ol","qpath");
+    secs.forEach(sid => { const list = Q.ids.filter(id => MS[id].sec === sid), dn = list.filter(Q.ok).length, todo = list.filter(id => !Q.ok(id)), cur = dn < list.length && todo.some(id => !msLocked(MS[id])), wk = planWk(Q.P, todo);
+      const li = el("li", dn === list.length ? "ok" : cur ? "cur" : ""), b = el("button"), g = el("span","grow");
+      g.append(el("b",null, SEC[sid].name), el("span","mut", dn === list.length ? "Terminé" : (cur ? "En cours" : "À venir") + (wk ? ", fini " + (t => /^(vers|entre)/.test(t) ? t : "en " + t)(rangeTxt(wk)) : "")));
+      b.append(g, el("span","qcnt", dn + "/" + list.length)); b.onclick = () => { close(); showTab("path"); goHere(todo[0] || list[list.length - 1]); }; li.append(b); ol.append(li); });
+    box.append(ol); }
+  { const ready = SQ.filter(q => MS[q.req] && reqDone(q.req) && !sqDone()[q.id]), n = Object.keys(sqDone()).length;
+    title("Quêtes annexes"); box.append(el("p","mut qstp", ready.length ? "Des défis bonus qui partent des figures que tu maîtrises déjà. Ils ne changent pas tes dates." : "Des défis bonus s’ouvrent à mesure que tu valides des figures."));
+    ready.slice(0, 3).forEach(q => box.append(sqRow(q)));
+    const all = el("button","golink","Toutes les quêtes annexes (" + n + "/" + SQ.length + ")"); all.onclick = sqList; box.append(all); }
+  { const ch = el("button","golink","Changer d’objectif"); ch.onclick = () => { close(); showTab("me"); const r = document.querySelector("details.reglages"); if (r) r.open = true; requestAnimationFrame(() => { $("goalSel").scrollIntoView({block:"center"}); $("goalSel").focus(); }); }; box.append(ch); }
+  $("qkT").textContent = "Ma quête"; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled");
+}
+// une ligne de quête annexe : son nom, où elle en est, et un toucher pour l’ouvrir
+const sqState = q => sqDone()[q.id] ? "Réussie" : reqDone(q.req) ? "À tenter" : "Après : " + MS[q.req].name;
+function sqRow(q, lead){ const b = el("button","qkblock sqrow" + (sqDone()[q.id] ? " ok" : "")); b.append(el("b",null,(lead || "") + q.name), el("p",null,sqState(q))); b.onclick = () => sqOpen(q); return b; }
+// toutes les quêtes annexes, ouvertes depuis le Profil ou depuis une quête
+function sqList(){
+  const box = $("qkBody"); box.textContent = "";
+  const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab", (n => n + (n > 1 ? " réussies sur " : " réussie sur ") + SQ.length)(Object.keys(sqDone()).length)), el("h2",null,"Quêtes annexes")); box.append(hd);
+  SQ.filter(q => MS[q.req]).forEach(q => box.append(sqRow(q)));
+  box.append(el("p","mut sqnote","Pour le plaisir : les quêtes annexes ne changent ni tes séances ni tes dates."));
+  $("qkT").textContent = "Quêtes annexes"; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled"); qd.onscroll = null;
+}
 function sqOpen(q){
   const box = $("qkBody"), on = reqDone(q.req), dn = sqDone()[q.id]; box.textContent = "";
   const hd = el("div","sqhd"); hd.innerHTML = ICON.flag || ""; hd.append(el("div","lab","Quête annexe"), el("h2",null,q.name)); box.append(hd);
@@ -157,6 +196,7 @@ function sqOpen(q){
     else { const b = el("button","btn","C’est fait"); b.onclick = () => { const had = (S.bgot || []).includes("sq8"); sqDone()[q.id] = Date.now(); save(); $("qkDlg").close(); render(); const n = Object.keys(sqDone()).length; if (!(n >= 8 && !had)) toast("Tampon posé : " + n + " sur " + SQ.length + "."); };   /* le 8e : c’est l’annonce du badge qui parle */ row.append(b); }
     box.append(row); }
   box.append(el("p","mut sqnote","Pour le plaisir : les quêtes annexes ne changent ni tes séances ni tes dates."));
+  { const all = el("button","golink","Toutes les quêtes annexes"); all.onclick = sqList; box.append(all); }
   $("qkT").textContent = q.name; const qd = $("qkDlg"); qd.classList.add("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled"); qd.onscroll = null;
 }
 // Estimation, à ton rythme : semaines pour atteindre la cible d’une figure (d’après tes progrès enregistrés, sinon une estimation prudente)
@@ -247,7 +287,7 @@ const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + 
 const lc1 = t => t.charAt(0).toLowerCase() + t.slice(1);   // minuscule après les deux-points
 function quick(id){
   const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
-  const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 200); art.append(sp);
+  const art = el("div","qkart"), sp = figSp(id, 200); art.append(sp);
 
   const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + (/^[A-Z]{2}/.test(SEC[m.sec].name) ? SEC[m.sec].name : lc1(SEC[m.sec].name)) : SEC[m.sec].name), el("h2",null, m.name));
   { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), y[0] ? el("b",null,y[0]) : "", y[1] ? el("span",null,(y[0] ? ", " : "") + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }
@@ -304,6 +344,7 @@ function quick(id){
   if (qkTree) fold(req.length > 1 ? "Avant cette figure : les prérequis" : "Avant cette figure : le prérequis", qkTree);
   if (m.yt && m.yt.length) { const v = el("div"); m.yt.forEach(([vid,t])=>v.append(ytLink(vid, "Vidéo : " + t))); fold("Vidéo", v); }
   box.append(info);
+  SQ.filter(q => q.req === id).forEach(q => box.append(sqRow(q, "Quête annexe : ")));   // le défi bonus qui part de cette figure
   $("qkT").textContent = m.name; const qd = $("qkDlg"); qd.classList.remove("sqd"); if (!qd.open) qd.showModal(); qd.scrollTop = 0; qd.classList.remove("scrolled");
   qd.onscroll = () => qd.classList.toggle("scrolled", qd.scrollTop > 300);   /* le nom revient dans la barre du haut quand le grand titre est passé */
 }
@@ -343,4 +384,5 @@ function renderQuest(S0, nextId){
       grid.append(x); });
     box.append(grid); });
   { const more = el("button","golink", S.allB ? "Moins de badges" : "Tous les badges (" + S0.badges.length + ")"); more.onclick = () => { S.allB = !S.allB; save(); render(); }; box.append(more); }
+  { const sq = el("button","golink","Quêtes annexes (" + Object.keys(sqDone()).length + "/" + SQ.length + ")"); sq.onclick = sqList; box.append(sq); }
 }

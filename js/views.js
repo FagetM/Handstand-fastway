@@ -71,7 +71,7 @@ function wardNeed(need, Z){ if (!need) return ""; if (need === "quest") return "
 const wNeedShort = (need, Z) => typeof need === "number" ? "niv. " + need : need === "quest" ? "quête" : need.startsWith("m:") ? "figure" : need.startsWith("l:") ? "palier" : need.startsWith("c:") ? "coffre" : "badge";
 // aperçu en grand : le personnage du vestiaire, qui porte ce que tu touches (même un élément verrouillé, pour l’essayer)
 let fitA = null;
-function fitPreview(F, label){ const host = $("fitPrev"); if (!host || !sprMod) { if (host) host.hidden = true; return; } host.hidden = false;
+function fitPreview(F, label){ const host = $("fitPrev"); if (!host) return; if (!sprMod) { host.hidden = true; sprImport().then(() => { if ($("fitDlg").open) fitPreview(F, label); }).catch(()=>{}); return; } host.hidden = false;
   try { if (!fitA) fitA = sprMod.mount(host); fitA.set(Object.assign({}, a3want || {pose:"stand", level:1}, {fit:F})); } catch(e){ host.hidden = true; }
   $("fitLab").textContent = label || ""; }
 function renderFit(tryF){
@@ -105,9 +105,10 @@ $("plX").onclick = () => { S.placed = true; save(); $("plDlg").close(); render()
   $(x).onclick = () => { if (ok()) d.close(); }; d.addEventListener("click", e => { if (e.target === d && ok()) d.close(); }); d.addEventListener("cancel", e => { if (!ok()) e.preventDefault(); }); });
 function setAvatar(s){
   a3want = s; if (A3) { A3.set(s); return; }
-  if (a3tried) return; a3tried = true;
+  // le moteur 3D (près de 800 Ko) n’est chargé qu’à la première visite du Profil : l’ouverture de l’app reste légère
+  if (a3tried || !$("v-me").classList.contains("on")) return; a3tried = true;
   try { const c = document.createElement("canvas"); if (!(c.getContext("webgl2") || c.getContext("webgl"))) return; } catch(e){ return; }
-  import(new URL("avatar3d.js", document.baseURI).href).then(m=>{ sprMod = m; buildSprites(); const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); })
+  sprImport().then(m=>{ const host = $("av3d"); host.hidden = false; A3 = m.mount(host); $("av").style.display = "none"; A3.set(a3want); if (a3party) { a3party = false; A3.celebrate(); } })
     .catch(()=>{ $("av3d").hidden = true; $("av").style.display = ""; });
 }
 
@@ -129,7 +130,7 @@ function render(){
   lastZ = Z; $("fitOpen").classList.toggle("new", !!S.newFit);
   renderScene(Z); $("lvRank").textContent = Z.rank;
   { const [c, src] = penseeDuJour(0), pj = $("pJour"); pj.textContent = ""; pj.hidden = false; pj.append(el("span","lab","Pensée du jour"), el("q",null,c), el("span","mut",src)); pj.onclick = () => { vpK = 0; showTab("voie"); vForce(); window.scrollTo(0, 0); }; }
-  renderCycle(); renderRecords(); renderSouple(); renderSommet(); renderVoie(); renderLearn(); $("ecoute").hidden = !(S.ecoute && Date.now() - S.ecoute < 3 * 3600e3); $("lvNum").textContent = "Niveau " + Z.lvl;
+  renderCycle(); renderBackup(); renderRecords(); renderSouple(); renderSommet(); renderVoie(); renderLearn(); $("ecoute").hidden = !(S.ecoute && Date.now() - S.ecoute < 3 * 3600e3); $("lvNum").textContent = "Niveau " + Z.lvl;
   $("xpBar").style.width = (frac*100) + "%"; $("xpTxt").textContent = Z.xp + " / " + Z.hi + " points d’expérience";
   const seen = S.seen, nowB = Z.badges.filter(b=>b.ok).map(b=>b.id);
   if (seen){ const nbs = Z.badges.filter(b=>b.ok && !seen.b.includes(b.id)), up = Z.lvl > seen.lvl;
@@ -186,7 +187,7 @@ function render(){
     else {
       let secs = 0; const list = el("div","tlist");
       day.blocks.forEach((b,bi)=>{ const r = el("div","trow"), art = el("span","art"), g = el("div","grow"), done = b.sets.filter((_,si)=>vals[bi + "-" + si] != null).length;
-        if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 64); art.append(sp); } else if (blockAnim(b)) art.append(drSp(b, 64)); else art.append(el("span","num", String(bi + 1)));
+        art.append(blockSp(b, 64) || el("span","num", String(bi + 1)));
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
         const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
@@ -265,7 +266,7 @@ function openMs(id){
   $("dDesc").textContent = m.desc || "";
   const fg = $("dFig"); fg.textContent = "";
   { const pz = poseId(id);
-    if (SPR[id]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
+    if (SPR[id]) { fg.append(figSp(id, 132, pz, "sp demo")); }
     else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() && STILLS.has(pz) ? "demo_" : "still_") + stillOf(pz) + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
     else { const f2 = figure(id); if (f2) fg.append(f2); } }
   const dv = $("dVid"); dv.textContent = "";

@@ -59,28 +59,28 @@ function laurelCalc(){
   return '<svg viewBox="0 0 180 180" aria-hidden="true"><path d="M' + (2 * C - a[0]) + ' ' + a[1] + 'A' + R + ' ' + R + ' 0 0 1 ' + (2 * C - b[0]) + ' ' + b[1] + 'M' + a[0] + ' ' + a[1] + 'A' + R + ' ' + R + ' 0 0 0 ' + b[0] + ' ' + b[1] + '" fill="none" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>' + leaves + sparks + '</svg>';
 }
 // Aujourd’hui : le prochain sommet, celui qui donne envie d’y aller
-function renderSommet(){
-  const box = $("sommet"); if (!box) return; box.textContent = "";
-  const P = plan(), todo = [...MAITRES].filter(id => MS[id] && !st(id).done); if (!todo.length) { box.hidden = true; return; }
-  const gt = goalTop(), id = todo.includes(gt) ? gt : todo.reduce((a, b) => (P.fin[b] || 999) < (P.fin[a] || 999) ? b : a), m = MS[id];   // ton sommet, celui de ton but, d’abord
-  const anc = new Set(), walk = i => (MS[i].req || []).forEach(r => { if (MS[r] && !anc.has(r)) { anc.add(r); walk(r); } }); walk(id);
-  const done = [...anc].filter(r => reqDone(r)).length, tot = anc.size || 1, pct = Math.round(done / tot * 100), y = yogaOf(id);
-  box.hidden = false;
-  const near0 = Object.values(MS).filter(f => !f.alt && !st(f.id).done && !msLocked(f) && f.target && P.fin[f.id] > 0).map(f => [f, P.fin[f.id]]).sort((a, b) => a[1] - b[1])[0], aid = near0 ? near0[0].id : id;
-  const art = el("span","smart"), sp = el("span","sp"); sp.dataset.pose = poseId(aid); sp.dataset.anim = aid; sp.dataset.lk = ""; sprPaint(sp, 88); art.append(sp);   // la figure de la prochaine victoire
-  if (!near0) { const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr); }
-  // d’abord la victoire proche (une figure ouverte, datée en semaines), puis le sommet, avec une fourchette plutôt qu’une date lointaine
-  const g = el("span","grow");
-  if (near0) g.append(el("span","lab","Prochaine victoire"), el("b","smn", near0[0].name + ", " + (near0[0].type === "reps" ? near0[0].target + " répétitions" : goalTxt(near0[0]))), el("span","mut", (t => /^vers/.test(t) ? "V" + t.slice(1) : "Vers " + t)(dateTxt(near0[1])) + "."));
-  const fw = P.fin[id], rng = fw ? (t => /^(vers|entre)/.test(t) ? t : "vers " + t)(rangeTxt(fw)) : "";
-  const bar = el("span","smbar"), i = el("span"); i.style.width = pct + "%"; bar.append(i);
-  const sl = el("span","lab smlab"); sl.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 2l2.2 7.8L22 12l-7.8 2.2L12 22l-2.2-7.8L2 12l7.8-2.2Z" fill="currentColor"/></svg>'; sl.append(" Ton prochain sommet : " + m.name);
-  g.append(sl, bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + (rng ? ", " + rng : "") + "."));
-  box.append(art, g); box.onclick = () => { showTab("path"); goHere(aid); setTimeout(() => quick(aid), 500); };
+// ---------- La quête principale : l’objectif choisi, où on en est, quand on y sera, et la prochaine étape ----------
+// étapes = les figures du chemin de l’objectif (hors variantes) ; « ouvertes » = celles qu’on peut travailler maintenant, la plus proche d’abord
+function questState(){
+  const G = goalOf(), P = plan(), ids = G.ms.filter(id => MS[id] && !MS[id].alt), ok = id => st(id).done || eqSkip(id), done = ids.filter(ok).length, tot = ids.length || 1;
+  const top = goalTop(), left = ids.filter(id => !ok(id)), wk = planWk(P, MS[top] && !st(top).done ? [top] : left);
+  const open = left.filter(id => !msLocked(MS[id])).map(id => [id, P.fin[id] || 0]).sort((a, b) => (a[1] || 999) - (b[1] || 999));
+  return {G, P, ids, ok, done, tot, pct:Math.floor(done / tot * 100), wk, left, open, next:open[0] || null};
 }
-// les trois grandes disciplines : leur figure maîtresse, leur nom en yoga, une ligne d’histoire
-const DISC = {
-  onearm:{fig:"oa_oahs10", yoga:[["Eka Hasta Vṛkṣāsana"], ", l’arbre sur une main."], h:"Au gymnase, on dit ATR un bras, pour appui tendu renversé. Un numéro phare des équilibristes de cirque : la main corrige au bout des doigts."},
-  planche:{fig:"pl_full", yoga:["pas de nom classique ; la plus proche est ", ["Mayūrāsana"], ", le paon."], h:"Le mot est français : le corps à l’horizontale sur des bras tendus, un grand élément de force de la gymnastique."},
-  press:{fig:"pr_stalder", yoga:["de ", ["Prasārita Pādottānāsana"], " à ", ["Adho Mukha Vṛkṣāsana"], "."], h:"Monter en équilibre sans élan. La montée stalder emprunte son nom au gymnaste suisse Josef Stalder, champion olympique en 1948."},
-};
+// « dans 12 jours », puis en semaines, mois ou années quand c’est loin
+const inTxt = wk => { const d = Math.max(1, Math.round(wk * 7)); return d < 60 ? "dans " + d + " jour" + (d > 1 ? "s" : "") : "dans ≈ " + gainTxt(wk); };
+const stepTxt = m => m.name + (m.target ? ", " + (m.type === "reps" ? m.target + " répétitions" : goalTxt(m)) : "");
+const questBar = pct => { const bar = el("span","smbar"), i = el("span"); i.style.width = pct + "%"; bar.append(i); return bar; };
+function renderSommet(){
+  const box = $("sommet"); if (!box) return; box.textContent = ""; box.hidden = false;
+  const Q = questState(), head = el("span","qhead"), num = el("span","qpct"); num.append(el("b",null, String(Q.pct)), el("i",null," %"));
+  { const g = el("span","grow"); g.append(el("span","lab","Quête principale"), el("b","smn", Q.G.name)); head.append(g, num); }
+  box.append(head, questBar(Q.pct));
+  if (!Q.left.length) { box.append(el("span","mut","Quête accomplie : les " + Q.tot + " étapes sont validées. Choisis ta prochaine quête."));
+    box.setAttribute("aria-label","Quête principale accomplie : " + Q.G.name); box.onclick = questOpen; return; }
+  box.append(el("span","mut", Q.done + (Q.done > 1 ? " étapes sur " : " étape sur ") + Q.tot + (Q.wk ? " · arrivée estimée " + (t => /^(vers|entre)/.test(t) ? t : "en " + t)(rangeTxt(Q.wk)) : "")));
+  if (Q.next) { const m = MS[Q.next[0]], row = el("span","qnext"), g = el("span","grow");
+    g.append(el("span","lab","Prochaine étape"), el("b",null, stepTxt(m)), el("span","mut", Q.next[1] ? inTxt(Q.next[1]) + ", " + dateTxt(Q.next[1]) : "à valider en séance"));
+    row.append(figSp(m.id, 64), g); box.append(row); }
+  box.setAttribute("aria-label","Quête principale : " + Q.G.name + ", " + Q.pct + " pour cent. Ouvrir la quête."); box.onclick = questOpen;
+}

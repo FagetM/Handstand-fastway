@@ -51,18 +51,34 @@ const estSecs = blocks => blocks.reduce((t, b) => t + b.sets.reduce((u, s) => u 
 // le temps choisi est respecté : on retire des séries (d’abord aux exercices d’accompagnement, puis aux figures) jusqu’à tenir dedans
 function fitTime(blocks, mins){
   const cap = mins * 60 * 1.1; let guard = 300;
+  // équilibre libre : retire un essai (deux pour une figure à deux côtés ou sur un bras) au-dessus du plancher donné
+  const trimFree = (oneArm, sided, other) => { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (MS[b.ms].sec === "onearm" ? oneArm : two(b) ? sided : other))[0];
+    if (!att) return false; att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); return true; };
+  // accompagnement : retire la dernière série d’effort au bloc qui en a le plus
+  const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
+    if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
   while (estSecs(blocks) > cap && guard--) {
-    const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
-      if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
     { const pool = blocks.filter(b => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
-    { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (MS[b.ms].sec === "onearm" ? 13 : two(b) ? 9 : 8))[0];   /* sur un bras : 13 essais au moins, 6 à 7 par côté */ if (att) { att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); continue; } }   // équilibre : 8 essais suffisent ; un bras : 9, toujours impair (le côté faible garde son essai de plus)
+    if (trimFree(13, 9, 8)) continue;   /* sur un bras : 13 essais au moins, 6 à 7 par côté */   // équilibre : 8 essais suffisent ; un bras : 9, toujours impair (le côté faible garde son essai de plus)
     { const dI = blocks.map((b, i) => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) ? (mins <= 30 ? 3 : 4) : SIDED.has(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d’abord la dernière figure (la force), pas l’équilibre
       if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
     const mx = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.filter(s => s.max).length > (b.ms === "pl_1leg" ? 4 : /^pl_/.test(b.ms) ? (mins <= 30 ? 2 : 3) : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
     // dernier recours : l’équilibre descend à 6 essais
-    { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (MS[b.ms].sec === "onearm" ? 12 : two(b) ? 7 : 6))[0]; if (att) { att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); continue; } }
+    if (trimFree(12, 7, 6)) continue;
     break; }
+  // Séance courte : si le temps choisi est encore dépassé, on resserre dans cet ordre, du moins utile au plus protecteur.
+  // La mise en route et la préparation des poignets ne sont jamais retirées.
+  const over = () => estSecs(blocks) > cap, drop = test => { const i = blocks.findIndex(test); if (i < 0) return false; blocks.splice(i, 1); return true; };
+  if (over()) drop(b => b.keep && / souplesse active$/.test(b.name));                       // 1. la souplesse de fin de séance
+  if (over()) drop(b => b.keep && /, entretien$/.test(b.name));                             // 2. l’entretien d’une figure acquise
+  for (let g = 40; over() && g--;) { const b = blocks.filter(b => b.keep && !b.ms && b.dk !== "miseEnRoute" && b.sets.length > 1).sort((a, c) => c.sets.length - a.sets.length)[0]; if (!b) break; b.sets.pop(); }   // 3. une série par exercice de préparation
+  for (let g = 60; over() && g--;) {                                                         // 4. les figures : deux séries au moins (une par côté), l’équilibre libre garde ses essais
+    const b = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.length > 2).sort((a, c) => estSecs([c]) - estSecs([a]))[0]; if (!b) break;
+    for (let q = 0; q < (SIDED.has(b.ms) && b.sets.length >= 4 ? 2 : 1); q++) { const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i >= 0 ? i : b.sets.length - 1, 1); } }
+  if (over()) { const w = blocks.find(b => b.name === DRILLS.poignets.name && b.sets[0] && b.sets[0].dur > 180);   // 5. les poignets en 3 minutes au lieu de 5
+    if (w) { w.sets[0].dur = 180; w.how = "Version courte, 3 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, puis 10 pompes de poignets. Les poignets portent tout ton poids : ne la saute jamais."; } }
+  for (let g = 4; over() && g--;) if (!drop(b => b.keep && !b.ms && ["tirage","rotext","extpoig","rowTable"].includes(b.dk))) break;   // 6. le renforcement du dos, en dernier
   return blocks;
 }
 // repos entre séries de planche : il augmente avec la difficulté
@@ -123,7 +139,7 @@ function builtinBlocks(){
   if (fok && pickF && !fConf && !tired && nMs >= 3 && next.includes(pickF)) { const f2 = F.find(id => id !== pickF && !/^pl_/.test(id) && disc(id) !== disc(pickF) && late(id) > 1); if (f2) next = [next[0], f2, pickF]; }
   if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (confIds.some(c => /^pl_/.test(c)) || plancheDays() >= (EX === "pl" && !profHeavy() ? 3 : 2) || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d’ouvert aujourd’hui (un bras au repos, pas de force) : séance de mobilité plutôt qu’une page vide
-  if (!next.length && !confIds.length) return soupleDay(PS);
+  if (!next.length && !confIds.length) return fitTime(soupleDay(PS), mins);   // tout est validé : souplesse, dans le temps choisi
   // combo : un seul par jour, en tout début de séance (frais) ; ces jours-là, le travail sur un bras est écourté
   { const u = next.filter(id => /^ul_/.test(id)); if (u.length) next = [u[0]].concat(next.filter(id => !/^ul_/.test(id))); }
   const ulDay = next.some(id => /^ul_/.test(id));
@@ -430,7 +446,7 @@ function feedback(kind){ if (window._lateToast) { const lt = window._lateToast; 
     // la séance du jour se recompose sans la zone douloureuse : ce qui était fait reste dans l’historique, mis de côté
     if (S.bday && S.bday.d === dayKey(nowS()) && P && P.builtin) { const k = wkKey(todayIdx()), o = pg().wk[k]; if (o && Object.keys(o).length) { (pg().wkPain || (pg().wkPain = {}))[k] = o; delete pg().wk[k]; } delete S.bday; } }
   sessRes = {}; S.ecoute = Date.now(); save(); $("fbDlg").close(); render();   // juste après : l’invitation à écouter le corps, sur Aujourd’hui
-  if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (window.A3 || typeof A3 !== "undefined") { try { A3.celebrate(); } catch(e){} } setTimeout(() => { toast("« " + MS[id].name + " » validée."); quick(id); }, 900); return; }
+  if (sessVal && MS[sessVal] && st(sessVal).done) { const id = sessVal; sessVal = null; showTab("path"); goHere(id); if (A3) { try { A3.celebrate(); } catch(e){} } else a3party = true; setTimeout(() => { toast("« " + MS[id].name + " » validée."); quick(id); }, 900); return; }
   toast(kind === "easy" ? "Noté : ça monte." : kind === "hard" ? "Noté : on réduit." : kind === "pain" ? (S.painZone === "poignet" ? "Noté. " + (painState().again ? "Deuxième fois en 3 semaines : 7 jours" : "3 jours") + " sans appui sur les mains." : S.painZone === "epaule" || S.painZone === "coude" ? "Noté : " + (painState().days || 7) + " j sans un bras, planche, montées." : S.painZone === "jambe" ? "Noté : pas de grand écart pendant " + (painState().days || 3) + " jours, puis reprise douce." : "Noté : séances allégées.") + (painState().again ? " Ça revient : consulte un kiné." : "") : (sessPR ? "Nouveau record : " + num(sessPR[1]) + sessPR[2] + " en " + sessPR[0] + "." : "Séance enregistrée."));
 }
 // Séance guidée : un seul toucher, puis l’app enchaîne décompte, série, repos et exercice suivant.
@@ -465,7 +481,7 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   { const seen = S.seenHow || (S.seenHow = {}), key = b.ms || b.dk || b.name, first = !seen[key] && !(b.ms && lastWorked(b.ms)); seen[key] = 1; $("sdT").textContent = b.name; howShort(b.how || "", first); }
-  { const art = $("sdArt"); art.textContent = ""; if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(b)) art.append(drSp(b, 110)); }
+  { const art = $("sdArt"); art.textContent = ""; const sp = blockSp(b, 110); if (sp) art.append(sp); }
   const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
   if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l’exercice"; sv.append(vl); }
   if (b.dk && DRILLS[b.dk].eq === "kg" && !noVest() && P.builtin) { const nv = el("button","golink","Pas de gilet sous la main ? Version sans charge"); nv.onclick = () => { setNoVest(true); openSet(sd.bi, sd.si); }; sv.append(nv); }
@@ -547,7 +563,7 @@ function startRest(r, nx, title){
   $("sdS").textContent = title + ", repos " + restTxt(r); $("sdT").textContent = "Repos"; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance"; $("sdGo").disabled = true; setTimeout(() => { $("sdGo").disabled = false; }, 600);   /* un double appui sur « Enregistrer » ne saute pas le repos */
   const nb = nx && pDay(selDay).blocks[nx[0]];
-  { const art = $("sdArt"); art.textContent = ""; if (nb) { if (nb.ms && MS[nb.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(nb.ms); sp.dataset.anim = nb.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(nb)) art.append(drSp(nb, 110)); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
+  { const art = $("sdArt"); art.textContent = ""; if (nb) { const sp = blockSp(nb, 110); if (sp) art.append(sp); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
   resAsk();
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C’était la dernière série du jour.";
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C’était la dernière série.");

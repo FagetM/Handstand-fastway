@@ -32,7 +32,7 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/state.js` | sauvegarde sur l'appareil, migrations, outils (`el`, `chipRow`), **le journal** (`idOfLog`, `logsOf`, `daysWhere`), validation, niveaux, badges |
 | `js/yoga.js` | noms yoga des figures, figures maîtresses, carte « Prochaine victoire » |
 | `js/parcours.js` | plan par figure (`planFor`), dates (`planCalc`), douleur, plateau, matériel (`EQ_NOTE`, `PARA_ALT`), fiche plein écran |
-| `js/sprites.js` | personnage 3D et animations des figures et des exercices |
+| `js/sprites.js` | personnage 3D et animations des figures et des exercices ; `figSp(anim, taille)` crée un personnage animé, `blockSp(bloc, taille)` celui d’un bloc de séance |
 | `js/scene.js` | le décor aquarelle qui grandit avec le rang |
 | `js/cycle.js` | cycles de 4 semaines : semaine légère, jour de test, bilan, records, carnet vidéo |
 | `js/souple.js` | souplesse : repères mesurés, fin de séance active, séance douce |
@@ -50,6 +50,27 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/main.js` | navigation, réglages, code d'accès, app installable (seul fichier qui lance l'app) |
 
 À chaque nouvelle version, changer `CACHE` dans `sw.js` (et `SPV` dans `js/sprites.js` si une animation change).
+
+## Tests
+
+```sh
+npm install                      # une fois : installe Playwright
+npx playwright install chromium  # une fois : le navigateur des tests
+npm test                         # toute la suite, une vingtaine de secondes
+```
+
+| Fichier | Ce qu'il vérifie |
+|---|---|
+| `tests/static.test.mjs` | sans navigateur : syntaxe, fichiers gardés pour le hors-ligne (`CORE` de `sw.js`), CSS sans règle ni animation morte, README à jour |
+| `tests/logic.test.mjs` | les règles d'entraînement : séances complètes, une seule figure quand on est fatigué, repos après une douleur, temps respecté, ordre des prérequis dans le plan |
+| `tests/snapshot.test.mjs` | le filet des refactorings : date et hasard figés, 192 cas de séances, plans et textes, plus les écrans du bilan, des fiches et de la séance guidée, comparés à `tests/golden/` |
+| `tests/ui.test.mjs` | sur un écran de téléphone : les onglets, le code d'accès, la 3D chargée seulement au Profil, texte ≥ 12 px, cibles tactiles, contraste AA dans les deux thèmes, usage hors connexion |
+| `tests/backup.test.mjs` | la sauvegarde : rappel sur Aujourd'hui, fichier téléchargé complet, aller-retour sur un téléphone vide, fichier invalide refusé |
+
+Sur GitHub, la suite se lance toute seule à chaque pull request (`.github/workflows/tests.yml`).
+
+Après un changement voulu de contenu ou de règle d'entraînement, `npm run test:update` réenregistre la référence de `tests/golden/` (à relire dans le diff avant de commiter).
+Les tests marqués `todo` décrivent des défauts connus, pas encore corrigés : ils s'affichent sans faire échouer la suite.
 
 L'app ne contient aucun contenu du programme d'origine (vidéos, textes) : uniquement des noms de jalons pour le suivi personnel.
 

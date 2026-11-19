@@ -3,7 +3,7 @@
 // ---------- Navigation + réglages ----------
 // montrer une figure dans le ciel du Parcours : l’étoile s’allume, sa carte s’ouvre
 function goHere(id){ if (!MS[id]) return; requestAnimationFrame(() => { const w = document.querySelector("#tree .cst"); if (w && w.pick) w.pick(id); }); }
-function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); if (v === "me") renderScene(stats()); }   // le petit décor du Profil ne se dessine qu’à l’ouverture
+function showTab(v){ document.querySelectorAll("nav.tabs button").forEach(x=>x.classList.toggle("on", x.dataset.v === v)); document.querySelectorAll(".view").forEach(s=>s.classList.toggle("on", s.id === "v-" + v)); if (v === "me") { renderScene(stats()); if (a3want) setAvatar(a3want); } }   // le petit décor du Profil ne se dessine qu’à l’ouverture
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>{ showTab(b.dataset.v); window.scrollTo(0,0);
  });
 $("countdown").onchange = e => { S.countdown = +e.target.value; save(); };
@@ -26,7 +26,31 @@ $("theme").onchange = e => { S.theme = e.target.value; save(); try { sessionStor
   $("eqBlocks").onchange = e => { E().blocks = e.target.checked; redo(); }; $("eqBench").onchange = e => { E().bench = e.target.checked; redo(); };
   $("eqBand").onchange = e => { E().band = e.target.checked; redo(); }; $("eqPara").onchange = e => { E().para = e.target.checked; redo(); };
   $("eqKg").onchange = e => { E().kg = +e.target.value; redo(); }; }
-$("exp").onclick = () => { let pr = null; try { pr = JSON.parse(localStorage.getItem("hs-fastway-progs")); } catch(e){} $("io").value = JSON.stringify(pr ? Object.assign({}, S, {_progs:pr}) : S); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); };
+// ---------- Sauvegarde : un fichier à garder ailleurs, et un rappel discret quand elle date ----------
+const BK_EVERY = 28 * 864e5, BK_LATER = 7 * 864e5, BK_MIN = 5;   // un rappel par cycle de 4 semaines, dès 5 essais enregistrés
+const backupText = () => { let pr = null; try { pr = JSON.parse(localStorage.getItem("hs-fastway-progs")); } catch(e){} return JSON.stringify(pr ? Object.assign({}, S, {_progs:pr}) : S); };
+const backupDue = () => S.log.length >= BK_MIN && Date.now() - (S.bk || 0) > BK_EVERY && Date.now() > (S.bkLater || 0);
+const backupDone = () => { S.bk = Date.now(); delete S.bkLater; save(); renderBackup(); };
+// le fichier part par le partage du téléphone (Drive, mail, Fichiers…) s’il sait partager un fichier, sinon dans les téléchargements
+async function backupFile(){
+  const d = new Date(), name = "gymnastic-yoga-" + d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0") + ".json", txt = backupText();
+  try { const f = new File([txt], name, {type:"application/json"});
+    if (navigator.canShare && navigator.canShare({files:[f]})) { await navigator.share({files:[f], title:"Sauvegarde Gymnastic Yoga"}); backupDone(); toast("Sauvegarde partagée."); return; }
+  } catch(e){ if (e && e.name === "AbortError") return; }   /* partage annulé : rien n’est noté comme sauvegardé */
+  const a = el("a"); a.href = URL.createObjectURL(new Blob([txt], {type:"application/json"})); a.download = name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  backupDone(); toast("Sauvegarde enregistrée dans tes téléchargements.");
+}
+function renderBackup(){
+  const info = $("bkInfo"); if (info) info.textContent = S.bk ? "Dernière sauvegarde : " + new Date(S.bk).toLocaleDateString("fr-FR", {day:"numeric", month:"long", year:"numeric"}) + "." : "Pas encore de sauvegarde.";
+  const box = $("bkCard"); if (!box) return; box.textContent = ""; box.hidden = !backupDue(); if (box.hidden) return;
+  const c = el("div","cycard"), row = el("div","btns"), go = el("button","btn","Sauvegarder"), later = el("button","btn line","Plus tard");
+  go.onclick = backupFile; later.onclick = () => { S.bkLater = Date.now() + BK_LATER; save(); renderBackup(); };
+  row.append(go, later); c.append(el("b",null, S.bk ? "Ta sauvegarde date d’un mois" : "Mets ta progression à l’abri"), el("p","mut","Elle ne vit que sur ce téléphone. Un fichier gardé ailleurs la retrouve en cas de perte ou de changement d’appareil."), row); box.append(c);
+}
+$("bkSave").onclick = backupFile;
+$("bkOpen").onclick = () => $("bkFile").click();
+$("bkFile").onchange = e => { const f = e.target.files[0]; e.target.value = ""; if (!f) return; f.text().then(t => { $("io").value = t; $("imp").click(); }).catch(() => alert("Fichier illisible.")); };
+$("exp").onclick = () => { $("io").value = backupText(); $("io").select(); if (navigator.clipboard) navigator.clipboard.writeText($("io").value).catch(()=>{}); backupDone(); };
 $("imp").onclick = () => {
   try { const d = JSON.parse($("io").value); if (!d || !d.ms || typeof d.ms !== "object" || Array.isArray(d.ms) || !Array.isArray(d.log)) throw 0;
     if (confirm("Remplacer les données actuelles par cette sauvegarde ?")) { const pr = d._progs; delete d._progs; if (d.cyc && typeof d.cyc.start !== "number") delete d.cyc; d.log = d.log.filter(l => l && typeof l.t === "number" && isFinite(l.t)).sort((a, b) => a.t - b.t); ["jr","painLog","ecl","fb","cycles"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["cours"].forEach(k => { if (d[k] && !Array.isArray(d[k])) delete d[k]; }); ["tm","sq","rom","ex"].forEach(k => { if (d[k] && (typeof d[k] !== "object" || Array.isArray(d[k]))) delete d[k]; });
@@ -42,7 +66,12 @@ async function gateHash(code){
   const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("hs-fastway:" + code));
   return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,"0")).join("");
 }
-function unlock(){ document.body.classList.remove("locked"); }
+// animations des figures : celles gardées sur l’appareil reviennent dès la première image, le reste se calcule en arrière-plan ;
+// rien n’est lancé tant que l’écran du code d’accès est affiché (ni calcul, ni téléchargement du moteur 3D)
+let sprStarted = false;
+const startSprites = () => { if (sprStarted || document.body.classList.contains("locked")) return; sprStarted = true; requestAnimationFrame(() => setTimeout(buildSprites, 0)); };
+function unlock(){ document.body.classList.remove("locked"); if (booted) startSprites(); }
+let booted = false;
 let known = null; try { known = localStorage.getItem(GKEY); } catch(e){}
 if (known === GATE) unlock(); else $("gateCode").focus();
 $("gateForm").onsubmit = async e => {
@@ -53,6 +82,7 @@ $("gateForm").onsubmit = async e => {
 };
 
 render();
+booted = true; startSprites();
 // ---------- Conseil du jour (affiché en haut du parcours) ----------
 // ---------- Application installable (PWA) ----------
 // Service worker : ouverture immédiate et hors connexion. Une mise à jour n’est appliquée que si tu l’acceptes, jamais pendant une séance.
