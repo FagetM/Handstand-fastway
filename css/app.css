@@ -287,7 +287,7 @@ ul.plan li{margin:8px 0}
 
 
 img.demo{display:block;border-radius:20px;background:var(--raise)}
-@media (prefers-reduced-motion: reduce){.me,.clock{animation:none;transition:none}}
+@media (prefers-reduced-motion: reduce){.clock{animation:none;transition:none}}
 /* quêtes, badges */
 
 .bfam{margin:24px 0 8px}
@@ -354,7 +354,7 @@ body.locked>header,body.locked>main,body.locked>nav{display:none}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 
 /* ---------- Douceur ---------- */
-.me{animation:float 3s ease-in-out infinite alternate}
+@media (prefers-reduced-motion:no-preference){.me{animation:float 3s ease-in-out infinite alternate}}   /* le personnage flotte, sauf si le téléphone demande moins de mouvement */
 @keyframes float{to{transform:translate(-50%,-4px)}}
 .block,.tip{box-shadow:var(--shadow)}
 /* météo du corps */
@@ -520,6 +520,7 @@ label[for="eqKg"]{display:block;margin-top:12px}
 
 .sqhd{text-align:center;padding:24px 0 8px}.sqhd svg{display:block;margin:0 auto 8px;width:48px;height:48px;color:var(--goldtxt)}.sqhd h2{margin:4px 0 0;font-size:26px}
 .sqnote{margin-top:24px;font-size:13px;text-align:center}
+button.sqrow{display:block;width:100%;min-height:56px;text-align:left}button.sqrow.ok b::after{content:" ✓";color:var(--acc)}
 #qkDlg.sqd{margin:auto auto 0;height:auto;max-height:92dvh;max-width:640px;border-radius:16px 16px 0 0;border-top:1px solid var(--line)}#qkDlg.sqd #qkHd{border-radius:16px 16px 0 0;padding-top:8px}
 
 /* décor qui grandit avec le rang (js/scene.js) : un ciel, la terre, une plante puis un arbre, une forêt, la montagne et les étoiles */
@@ -855,7 +856,7 @@ label.vid input[type=checkbox]{width:24px;height:24px}
 :root:not([data-theme="light"]) .twk i{position:relative;background:var(--n2);box-shadow:inset 0 0 0 1.5px var(--nring)}
 :root:not([data-theme="light"]) .twk .did i{background:var(--acc);box-shadow:0 0 12px var(--acc)}
 :root:not([data-theme="light"]) .twk .did i::after{content:none}
-@media (prefers-reduced-motion:reduce){.trow.cur .art{animation:none}}
+@media (prefers-reduced-motion:reduce){:root:not([data-theme="light"]) .trow.cur .art{animation:none}}
 /* bilan : le but en grand, les figures avancées à cocher ; même matière que les cartes du ciel */
 .plgoal{display:grid;gap:8px;margin:12px 0}
 .plg{display:flex;align-items:center;gap:12px;min-height:64px;padding:4px 16px 4px 4px;border-radius:20px;background:var(--raise);box-shadow:var(--shadow);text-align:left;font:700 16px/1.2 var(--disp)}

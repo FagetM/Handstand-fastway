@@ -67,6 +67,18 @@ function fitTime(blocks, mins){
     // dernier recours : l’équilibre descend à 6 essais
     if (trimFree(12, 7, 6)) continue;
     break; }
+  // Séance courte : si le temps choisi est encore dépassé, on resserre dans cet ordre, du moins utile au plus protecteur.
+  // La mise en route et la préparation des poignets ne sont jamais retirées.
+  const over = () => estSecs(blocks) > cap, drop = test => { const i = blocks.findIndex(test); if (i < 0) return false; blocks.splice(i, 1); return true; };
+  if (over()) drop(b => b.keep && / souplesse active$/.test(b.name));                       // 1. la souplesse de fin de séance
+  if (over()) drop(b => b.keep && /, entretien$/.test(b.name));                             // 2. l’entretien d’une figure acquise
+  for (let g = 40; over() && g--;) { const b = blocks.filter(b => b.keep && !b.ms && b.dk !== "miseEnRoute" && b.sets.length > 1).sort((a, c) => c.sets.length - a.sets.length)[0]; if (!b) break; b.sets.pop(); }   // 3. une série par exercice de préparation
+  for (let g = 60; over() && g--;) {                                                         // 4. les figures : deux séries au moins (une par côté), l’équilibre libre garde ses essais
+    const b = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.length > 2).sort((a, c) => estSecs([c]) - estSecs([a]))[0]; if (!b) break;
+    for (let q = 0; q < (SIDED.has(b.ms) && b.sets.length >= 4 ? 2 : 1); q++) { const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i >= 0 ? i : b.sets.length - 1, 1); } }
+  if (over()) { const w = blocks.find(b => b.name === DRILLS.poignets.name && b.sets[0] && b.sets[0].dur > 180);   // 5. les poignets en 3 minutes au lieu de 5
+    if (w) { w.sets[0].dur = 180; w.how = "Version courte, 3 minutes : cercles dans les deux sens, appuis sur les paumes en avançant les épaules, sur le dos des mains, puis 10 pompes de poignets. Les poignets portent tout ton poids : ne la saute jamais."; } }
+  for (let g = 4; over() && g--;) if (!drop(b => b.keep && !b.ms && ["tirage","rotext","extpoig","rowTable"].includes(b.dk))) break;   // 6. le renforcement du dos, en dernier
   return blocks;
 }
 // repos entre séries de planche : il augmente avec la difficulté
@@ -127,7 +139,7 @@ function builtinBlocks(){
   if (fok && pickF && !fConf && !tired && nMs >= 3 && next.includes(pickF)) { const f2 = F.find(id => id !== pickF && !/^pl_/.test(id) && disc(id) !== disc(pickF) && late(id) > 1); if (f2) next = [next[0], f2, pickF]; }
   if (next.length < nMs) next = next.concat((fok && !tired ? F : []).filter(id => !next.includes(id) && !(/^pl_/.test(id) && (confIds.some(c => /^pl_/.test(c)) || plancheDays() >= (EX === "pl" && !profHeavy() ? 3 : 2) || next.some(x => /^pl_/.test(x))))).slice(0, Math.max(0, 2 - fConf - next.filter(FORCE).length))).slice(0, nMs);   // 2 figures de force par jour au plus
   // rien d’ouvert aujourd’hui (un bras au repos, pas de force) : séance de mobilité plutôt qu’une page vide
-  if (!next.length && !confIds.length) return soupleDay(PS);
+  if (!next.length && !confIds.length) return fitTime(soupleDay(PS), mins);   // tout est validé : souplesse, dans le temps choisi
   // combo : un seul par jour, en tout début de séance (frais) ; ces jours-là, le travail sur un bras est écourté
   { const u = next.filter(id => /^ul_/.test(id)); if (u.length) next = [u[0]].concat(next.filter(id => !/^ul_/.test(id))); }
   const ulDay = next.some(id => /^ul_/.test(id));

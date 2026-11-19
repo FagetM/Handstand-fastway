@@ -60,19 +60,20 @@ test('à partir de 60 minutes, la séance tient dans le temps choisi (10 % de ma
   assert.deepEqual(bad, []);
 });
 
-test('séances courtes (15 à 45 minutes) dans le temps choisi', {todo: 'connu : les blocs « à garder » ne sont jamais raccourcis ; une séance de 15 min peut en durer 38'}, async () => {
+test('séances courtes (15 à 45 minutes) dans le temps choisi (10 % de marge)', async () => {
   const bad = await inPage(M => { const out = []; for (const o of M.filter(x => x.mins < 60)) { __prep(o); const r = estSecs(builtinBlocks()) / (o.mins * 60); if (r > 1.1) out.push(JSON.stringify(o) + ' ×' + r.toFixed(2)); } return out; }, MATRIX);
   assert.deepEqual(bad, []);
 });
 
-test('réduire une séance trop longue garde ses figures, ses blocs « à garder » et 6 essais d’équilibre', async () => {
+test('réduire une séance trop longue garde ses figures, la mise en route, les poignets et 6 essais d’équilibre', async () => {
   // une vraie séance de 90 minutes, serrée à 5, 10 puis 15 minutes
   const bad = await inPage(M => { const out = [];
-    for (const o of M.filter(x => x.mins === 90)) { __prep(o); const full = builtinBlocks();
+    for (const o of M.filter(x => x.mins === 90)) { __prep(o); const full = builtinBlocks(); if (!full.some(b => b.ms)) continue;   // objectif entièrement validé : séance de souplesse, sans appui sur les mains
       for (const mins of [5, 10, 15]) { const r = fitTime(JSON.parse(JSON.stringify(full)), mins), tag = JSON.stringify(o) + ' → ' + mins + ' min';
         full.filter(b => b.ms).forEach(b => { const y = r.find(z => z.ms === b.ms); if (!y) out.push(tag + ' : ' + b.ms + ' retirée');
           else if (FREE(MS[b.ms]) && y.sets.length < Math.min(6, b.sets.length)) out.push(tag + ' : ' + b.ms + ' à ' + y.sets.length + ' essais'); });
-        if (r.filter(b => b.keep).length !== full.filter(b => b.keep).length) out.push(tag + ' : bloc « à garder » retiré');
+        for (const dk of ['miseEnRoute', 'poignets']) if (!r.some(b => b.dk === dk)) out.push(tag + ' : ' + dk + ' retiré');
+        r.forEach(b => { if (!b.sets.length) out.push(tag + ' : ' + b.name + ' sans série'); });
         if (estSecs(r) > estSecs(full)) out.push(tag + ' : la séance s’est allongée'); } }
     return out; }, MATRIX);
   assert.deepEqual(bad, []);
@@ -93,8 +94,29 @@ test('valider des figures ne fait jamais baisser l’expérience ni le niveau', 
   assert.ok(seq[seq.length - 1][0] > seq[0][0], 'valider 40 figures doit rapporter de l’expérience');
 });
 
-test('les quêtes annexes ont un point d’entrée dans l’app', {todo: 'connu : sqOpen() n’est plus appelée depuis la suppression de l’ancien chemin'}, async () => {
-  const src = await app.page.evaluate(() => [...document.scripts].map(s => s.src).filter(Boolean));
-  const texts = await Promise.all(src.map(u => fetch(u).then(r => r.text())));
-  assert.ok(texts.join('\n').match(/sqOpen\(/g).length > 1, 'sqOpen n’est appelée nulle part');
+test('quêtes annexes : on y arrive par le Profil et par la fiche de la figure, et le tampon compte pour le badge', async () => {
+  const r = await inPage(() => { __prep({done: 8}); render(); const out = {};
+    showTab('me'); const link = [...document.querySelectorAll('#v-me button')].find(b => /^Quêtes annexes/.test(b.textContent)); out.link = link && link.textContent;
+    link.click(); out.rows = document.querySelectorAll('#qkBody .sqrow').length; out.total = SQ.filter(q => MS[q.req]).length;
+    const q = SQ.find(q => reqDone(q.req)), locked = SQ.find(q => !reqDone(q.req));
+    quick(q.req); const row = [...document.querySelectorAll('#qkBody .sqrow')].find(b => b.textContent.includes(q.name)); out.onSheet = !!row;
+    row.click(); out.title = $('qkT').textContent === q.name;
+    [...document.querySelectorAll('#qkBody button')].find(b => b.textContent === 'C’est fait').click();
+    out.stamped = !!S.sq[q.id]; out.badge = BADGES.find(b => b.id === 'sq8').cur();
+    sqOpen(locked); out.lockedHasNoButton = ![...document.querySelectorAll('#qkBody button')].some(b => b.textContent === 'C’est fait'); $('qkDlg').close();
+    return out; });
+  assert.match(r.link, /^Quêtes annexes \(0\/\d+\)$/); assert.equal(r.rows, r.total); assert.ok(r.rows >= 10);
+  assert.ok(r.onSheet, 'la fiche de la figure doit proposer sa quête'); assert.ok(r.title); assert.ok(r.stamped); assert.equal(r.badge, 1);
+  assert.ok(r.lockedHasNoButton, 'une quête verrouillée ne se valide pas');
+});
+
+test('une séance très courte garde toujours la mise en route et la préparation des poignets (3 minutes au moins)', async () => {
+  const bad = await inPage(M => { const out = [];
+    for (const o of M.filter(x => x.mins === 15)) { __prep(o); const bb = builtinBlocks(), w = bb.find(b => b.dk === 'poignets');
+      if (!goalOf().ms.some(id => !st(id).done)) { if (!bb.some(b => b.dk === 'miseEnRoute')) out.push('souplesse sans mise en route'); continue; }   // objectif validé : séance de souplesse
+      if (!bb.some(b => b.dk === 'miseEnRoute')) out.push('sans mise en route ' + JSON.stringify(o));
+      if (!w || w.sets[0].dur < 180) out.push('poignets absents ou trop courts ' + JSON.stringify(o));
+      if (!bb.some(b => b.ms)) out.push('aucune figure ' + JSON.stringify(o)); }
+    return out; }, MATRIX);
+  assert.deepEqual(bad, []);
 });

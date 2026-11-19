@@ -90,13 +90,16 @@ test('le Parcours garde les noms de ses lignes entiers sur un écran de 360 px',
   await app.ctx.close();
 });
 
-test('« réduire les animations » : plus aucune animation en boucle', {todo: 'connu : la figure en cours (Aujourd’hui) et le personnage 2D du Profil continuent de bouger'}, async () => {
-  const app = await openApp(browser, {url: server.url, state: SAVE({mins: 60}), reducedMotion: 'reduce', no3d: true}), found = [];
-  for (const v of TABS) { await app.page.evaluate(v => showTab(v), v); await settle(app.page);
-    found.push(...await app.page.evaluate(v => [...document.querySelectorAll('.view.on *')].filter(e => [null, '::before', '::after'].some(pe => { const cs = getComputedStyle(e, pe);
-      return cs.animationName !== 'none' && cs.animationIterationCount === 'infinite' && parseFloat(cs.animationDuration) > 0.2; })).map(e => v + ' : .' + e.className), v)); }
-  assert.deepEqual([...new Set(found)], []);
-  await app.ctx.close();
+test('« réduire les animations » : plus aucune animation en boucle, dans les deux thèmes', async () => {
+  const LOOPS = name => [...(document.querySelector('dialog[open]') || document.querySelector('.view.on')).querySelectorAll('*')].filter(e => [null, '::before', '::after'].some(pe => { const cs = getComputedStyle(e, pe);
+    return cs.animationName !== 'none' && cs.animationIterationCount === 'infinite' && parseFloat(cs.animationDuration) > 0.2; })).map(e => name + ' : .' + e.className);
+  for (const theme of [null, 'light']) {
+    const app = await openApp(browser, {url: server.url, state: SAVE({mins: 60}), theme, reducedMotion: 'reduce', no3d: true}), p = app.page, found = [];
+    for (const v of TABS) { await p.evaluate(v => showTab(v), v); await settle(p); found.push(...await p.evaluate(LOOPS, v)); }
+    await p.evaluate(() => { showTab('today'); quick('fd_pike'); }); await settle(p); found.push(...await p.evaluate(LOOPS, 'fiche')); await p.evaluate(() => $('qkDlg').close());
+    await p.evaluate(() => document.querySelector('#v-today button.btn.big').click()); await p.waitForTimeout(300); found.push(...await p.evaluate(LOOPS, 'séance guidée'));
+    assert.deepEqual([...new Set(found)], [], 'thème ' + (theme || 'sombre'));
+    await app.ctx.close(); }
 });
 
 test('hors connexion, après une première ouverture : l’app se recharge et la séance démarre', async () => {
