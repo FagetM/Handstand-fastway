@@ -1,0 +1,13 @@
+{
+  "name": "gymnastic-yoga",
+  "private": true,
+  "description": "Tests de l'app (l'app elle-même reste une page statique, sans étape de build)",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "test:static": "node --test tests/static.test.mjs",
+    "test:update": "UPDATE_GOLDEN=1 node --test tests/snapshot.test.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

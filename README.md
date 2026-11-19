@@ -51,6 +51,24 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 
 À chaque nouvelle version, changer `CACHE` dans `sw.js` (et `SPV` dans `js/sprites.js` si une animation change).
 
+## Tests
+
+```sh
+npm install                      # une fois : installe Playwright
+npx playwright install chromium  # une fois : le navigateur des tests
+npm test                         # toute la suite, une vingtaine de secondes
+```
+
+| Fichier | Ce qu'il vérifie |
+|---|---|
+| `tests/static.test.mjs` | sans navigateur : syntaxe, fichiers gardés pour le hors-ligne (`CORE` de `sw.js`), CSS sans règle ni animation morte, README à jour |
+| `tests/logic.test.mjs` | les règles d'entraînement : séances complètes, une seule figure quand on est fatigué, repos après une douleur, temps respecté, ordre des prérequis dans le plan |
+| `tests/snapshot.test.mjs` | le filet des refactorings : date et hasard figés, 192 cas de séances, plans et textes, plus les écrans du bilan, des fiches et de la séance guidée, comparés à `tests/golden/` |
+| `tests/ui.test.mjs` | sur un écran de téléphone : les onglets, le code d'accès, la 3D chargée seulement au Profil, texte ≥ 12 px, cibles tactiles, contraste AA dans les deux thèmes, usage hors connexion |
+
+Après un changement voulu de contenu ou de règle d'entraînement, `npm run test:update` réenregistre la référence de `tests/golden/` (à relire dans le diff avant de commiter).
+Les tests marqués `todo` décrivent des défauts connus, pas encore corrigés : ils s'affichent sans faire échouer la suite.
+
 L'app ne contient aucun contenu du programme d'origine (vidéos, textes) : uniquement des noms de jalons pour le suivi personnel.
 
 ## Images à générer

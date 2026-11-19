@@ -309,7 +309,7 @@ img.demo{display:block;border-radius:20px;background:var(--raise)}
 .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:20px 0 4px}
 .wk button{min-height:56px;border-radius:14px;box-shadow:inset 0 0 0 1px var(--line);color:var(--mut);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .wk button b{font:600 18px/1 var(--disp)}
-.wk button small{font-size:11px;line-height:1;min-height:11px;font-variant-numeric:tabular-nums}
+.wk button small{font-size:12px;line-height:1;min-height:12px;font-variant-numeric:tabular-nums}
 .wk button.tr{color:var(--txt)}
 .wk button.today b{color:var(--acc)}
 .wk button.on{background:var(--txt);color:var(--bg);box-shadow:none}
