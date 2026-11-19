@@ -76,6 +76,8 @@ for (const theme of [null, 'light']) for (const width of [320, 360]) {
     for (const v of TABS) { await p.evaluate(v => { showTab(v); if (v === 'me') document.querySelectorAll('#v-me details').forEach(d => { d.open = true; }); }, v); await check(v); }
     await p.evaluate(() => { showTab('today'); const t = $('sessToggle'); if (t && !t.hidden) t.click(); }); await check('détail de la séance');
     await p.evaluate(() => quick('fd_pike')); await check('fiche de figure'); await p.evaluate(() => $('qkDlg').close());
+    await p.evaluate(() => questOpen()); await check('page de la quête'); await p.evaluate(() => $('qkDlg').close());
+    await p.evaluate(() => { showTab('me'); $('fitOpen').click(); }); await check('vestiaire'); await p.evaluate(() => { $('fitDlg').close(); showTab('today'); });
     await p.evaluate(() => document.querySelector('#v-today button.btn.big').click()); await p.waitForTimeout(300); await check('séance guidée');
     assert.deepEqual(bad, []); assert.deepEqual(app.errors, []);
     await app.ctx.close();
@@ -115,6 +117,19 @@ test('hors connexion, après une première ouverture : l’app se recharge et la
   await p.waitForFunction(() => !!document.querySelector('#sd[open]'));
   // seules les images fixes des figures (anim/still_*.webp) ne sont pas mises en cache d'avance
   assert.deepEqual(failed.filter(u => !/\/anim\/still_[\w-]+\.webp$/.test(u)), [], 'fichiers manquants hors connexion');
+  assert.deepEqual(app.errors, []);
+  await app.ctx.close();
+});
+
+test('le vestiaire s’ouvre en pleine page, garde le personnage en vue et se referme', async () => {
+  const app = await openApp(browser, {url: server.url, state: SAVE(), width: 360, height: 740}), p = app.page;
+  await p.evaluate(() => showTab('me')); await p.locator('#fitOpen').tap(); await settle(p);
+  const r = await p.evaluate(() => { const d = $('fitDlg'), b = d.getBoundingClientRect(); d.scrollTop = 600; const h = d.querySelector('.fithd').getBoundingClientRect(), pv = d.querySelector('.fitprev').getBoundingClientRect();
+    return {open: d.open, w: b.width, h: b.height, vw: innerWidth, vh: innerHeight, headTop: h.top, prevTop: pv.top, headH: h.height, items: d.querySelectorAll('.wt').length, visible: [...d.querySelectorAll('.wt')].filter(x => { const q = x.getBoundingClientRect(); return q.top >= pv.bottom && q.bottom <= innerHeight; }).length}; });
+  assert.ok(r.open); assert.deepEqual([r.w, r.h], [r.vw, r.vh], 'le vestiaire occupe tout l’écran');
+  assert.equal(Math.round(r.headTop), 0, 'l’en-tête reste en haut pendant le défilement'); assert.equal(Math.round(r.prevTop), Math.round(r.headH), 'le personnage reste sous l’en-tête');
+  assert.ok(r.items > 50); assert.ok(r.visible >= 6, 'au moins deux rangées d’éléments visibles à la fois, ici ' + r.visible);
+  await p.locator('#fitX').tap(); assert.equal(await p.evaluate(() => $('fitDlg').open), false);
   assert.deepEqual(app.errors, []);
   await app.ctx.close();
 });

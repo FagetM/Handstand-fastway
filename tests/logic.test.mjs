@@ -120,3 +120,40 @@ test('une séance très courte garde toujours la mise en route et la préparatio
     return out; }, MATRIX);
   assert.deepEqual(bad, []);
 });
+
+test('quête principale : le pourcentage suit les étapes validées, de 0 à 100, pour chaque objectif', async () => {
+  const r = await inPage(() => { const out = [];
+    for (const goal of [null, 'planche', 'press', 'oahs', 'min']) { let prev = -1; const tot = (() => { __prep({goal}); return questState().tot; })();
+      for (const done of [0, 1, 5, 12, 25, 200]) { __prep({goal, done}); const Q = questState();
+        if (Q.pct < prev) out.push(goal + ' : le pourcentage baisse à ' + done); prev = Q.pct;
+        if (Q.pct !== Math.floor(Q.done / Q.tot * 100) || Q.done > Q.tot) out.push(goal + ' : compte incohérent');
+        if (Q.next && (st(Q.next[0]).done || msLocked(MS[Q.next[0]]))) out.push(goal + ' : la prochaine étape n’est pas travaillable');
+        if (Q.left.length && !Q.next) out.push(goal + ' ' + done + ' : il reste des étapes mais aucune n’est ouverte');
+        if (done >= tot && (Q.pct !== 100 || Q.left.length)) out.push(goal + ' : tout validé mais ' + Q.pct + ' %'); }
+      __prep({goal}); if (questState().pct > 10) out.push(goal + ' : ne part pas de zéro'); }
+    return out; });
+  assert.deepEqual(r, []);
+});
+
+test('quête principale : la carte est au-dessus de la séance et dit l’objectif, le pourcentage, la date et la prochaine étape', async () => {
+  const r = await inPage(() => { __prep({goal: 'planche', done: 10}); render(); showTab('today'); const c = $('sommet'), Q = questState();
+    return {above: !!(c.compareDocumentPosition($('nextCard')) & Node.DOCUMENT_POSITION_FOLLOWING), hidden: c.hidden, text: c.innerText.replace(/[\u00a0\u202f]/g, ' '),   // l'app pose des espaces insécables avant les unités
+       pct: Q.pct, goal: Q.G.name, next: MS[Q.next[0]].name}; });
+  assert.equal(r.hidden, false); assert.ok(r.above, 'la quête doit venir avant la séance du jour');
+  assert.match(r.text, /Quête principale/); assert.ok(r.text.includes(r.goal)); assert.ok(r.text.includes(r.pct + ' %') || r.text.includes(String(r.pct)));
+  assert.match(r.text, /arrivée estimée/); assert.match(r.text, /Prochaine étape/); assert.ok(r.text.includes(r.next)); assert.match(r.text, /dans (\d+ jours?|≈)/);
+});
+
+test('page de la quête : le chemin par chapitres, ce qu’on peut travailler maintenant, les quêtes annexes ouvertes', async () => {
+  const r = await inPage(() => { __prep({goal: 'planche', done: 10}); render(); $('sommet').click(); const Q = questState(), body = $('qkBody');
+    const secs = [...new Set(Q.ids.map(id => MS[id].sec))], rows = [...body.querySelectorAll('.qpath li')];
+    const out = {open: $('qkDlg').open, text: body.innerText, chapters: rows.length, secs: secs.length, counts: rows.map(li => li.querySelector('.qcnt').textContent),
+      sum: rows.reduce((n, li) => n + +li.querySelector('.qcnt').textContent.split('/')[1], 0), tot: Q.tot, steps: body.querySelectorAll('.qstep').length, okFirst: rows[0].className};
+    body.querySelector('.qstep').click(); out.sheet = $('qkT').textContent; $('qkDlg').close();
+    __prep({goal: 'min', done: 200}); render(); out.doneText = $('sommet').innerText; $('sommet').click(); out.donePage = $('qkBody').innerText; $('qkDlg').close(); return out; });
+  assert.ok(r.open); assert.equal(r.chapters, r.secs); assert.equal(r.sum, r.tot, 'les chapitres couvrent toutes les étapes');
+  assert.ok(r.steps >= 1 && r.steps <= 3); assert.equal(r.okFirst, 'ok', 'le premier chapitre est terminé');
+  for (const t of ['Maintenant', 'Le chemin', 'Quêtes annexes', 'Arrivée estimée', 'Changer d’objectif']) assert.ok(r.text.includes(t), t);
+  assert.notEqual(r.sheet, 'Ma quête', 'toucher une étape ouvre sa fiche');
+  assert.match(r.doneText, /Quête accomplie/); assert.match(r.donePage, /100/); assert.ok(!/null|undefined|NaN/.test(r.text + r.donePage + r.doneText));
+});
