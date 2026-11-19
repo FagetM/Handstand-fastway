@@ -51,17 +51,21 @@ const estSecs = blocks => blocks.reduce((t, b) => t + b.sets.reduce((u, s) => u 
 // le temps choisi est respecté : on retire des séries (d’abord aux exercices d’accompagnement, puis aux figures) jusqu’à tenir dedans
 function fitTime(blocks, mins){
   const cap = mins * 60 * 1.1; let guard = 300;
+  // équilibre libre : retire un essai (deux pour une figure à deux côtés ou sur un bras) au-dessus du plancher donné
+  const trimFree = (oneArm, sided, other) => { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (MS[b.ms].sec === "onearm" ? oneArm : two(b) ? sided : other))[0];
+    if (!att) return false; att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); return true; };
+  // accompagnement : retire la dernière série d’effort au bloc qui en a le plus
+  const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
+    if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
   while (estSecs(blocks) > cap && guard--) {
-    const cut = (pool, min) => { const b = pool.filter(b => b.sets.filter(s => !s.max).length > min).sort((a, c) => c.sets.length - a.sets.length)[0];
-      if (!b) return false; const i = b.sets.map(s => !s.max).lastIndexOf(true); b.sets.splice(i, 1); return true; };
     { const pool = blocks.filter(b => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.sets.length > (["biceps","bandpl"].includes(b.dk) ? 2 : 1)); if (cut(pool, 0)) continue; }
-    { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (MS[b.ms].sec === "onearm" ? 13 : two(b) ? 9 : 8))[0];   /* sur un bras : 13 essais au moins, 6 à 7 par côté */ if (att) { att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); continue; } }   // équilibre : 8 essais suffisent ; un bras : 9, toujours impair (le côté faible garde son essai de plus)
+    if (trimFree(13, 9, 8)) continue;   /* sur un bras : 13 essais au moins, 6 à 7 par côté */   // équilibre : 8 essais suffisent ; un bras : 9, toujours impair (le côté faible garde son essai de plus)
     { const dI = blocks.map((b, i) => !b.ms && !b.keep && b.name !== DRILLS.poignets.name && b.dk !== "biceps" ? i : -1).filter(i => i >= 0).pop(); if (dI != null) { blocks.splice(dI, 1); continue; } }
     { const fb = blocks.filter(b => b.ms && b.sets.filter(s => !s.max).length > (b.sets[0] && b.sets[0].lab === "essai" ? 5 : /^pl_/.test(b.ms) ? (mins <= 30 ? 3 : 4) : SIDED.has(b.ms) ? 4 : 3)).slice(-1)[0];   // on coupe d’abord la dernière figure (la force), pas l’équilibre
       if (fb) { for (let q = 0; q < (SIDED.has(fb.ms) ? 2 : 1); q++) fb.sets.splice(fb.sets.map(s => !s.max).lastIndexOf(true), 1); continue; } }
     const mx = blocks.filter(b => b.ms && !b.confirm && !FREE(MS[b.ms]) && b.sets.filter(s => s.max).length > (b.ms === "pl_1leg" ? 4 : /^pl_/.test(b.ms) ? (mins <= 30 ? 2 : 3) : MS[b.ms].sec === "onearm" ? 4 : SIDED.has(b.ms) ? 2 : 1)).slice(-1)[0]; if (mx) { const k = SIDED.has(mx.ms) ? 2 : 1; for (let q = 0; q < k; q++) mx.sets.splice(mx.sets.findIndex(s => s.max), 1); continue; }
     // dernier recours : l’équilibre descend à 6 essais
-    { const two = b => SIDED.has(b.ms) || MS[b.ms].sec === "onearm", att = blocks.filter(b => b.ms && FREE(MS[b.ms]) && b.sets.length > (MS[b.ms].sec === "onearm" ? 12 : two(b) ? 7 : 6))[0]; if (att) { att.sets.splice(-(two(att) ? 2 : 1), two(att) ? 2 : 1); continue; } }
+    if (trimFree(12, 7, 6)) continue;
     break; }
   return blocks;
 }
@@ -465,7 +469,7 @@ function openSet(bi, si){ { const rb = $("sdRes"); if (rb) rb.hidden = true; }
   const day = pDay(selDay), b = day.blocks[bi], s = b.sets[si], fx = fixed(s), tg = fx ? 0 : pTarget(b, s);
   sd = {bi, si, b, s, tg, fx, day, mode:"idle", side:1};
   { const seen = S.seenHow || (S.seenHow = {}), key = b.ms || b.dk || b.name, first = !seen[key] && !(b.ms && lastWorked(b.ms)); seen[key] = 1; $("sdT").textContent = b.name; howShort(b.how || "", first); }
-  { const art = $("sdArt"); art.textContent = ""; if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(b)) art.append(drSp(b, 110)); }
+  { const art = $("sdArt"); art.textContent = ""; const sp = blockSp(b, 110); if (sp) art.append(sp); }
   const sv = $("sdVid"); sv.textContent = ""; const vl = vidLink(b) || (day.drive ? extLink(drv(day.drive), "Vidéo de la séance") : null);
   if (vl) { if (vl.textContent === "Vidéo") vl.textContent = "Voir la vidéo de l’exercice"; sv.append(vl); }
   if (b.dk && DRILLS[b.dk].eq === "kg" && !noVest() && P.builtin) { const nv = el("button","golink","Pas de gilet sous la main ? Version sans charge"); nv.onclick = () => { setNoVest(true); openSet(sd.bi, sd.si); }; sv.append(nv); }
@@ -547,7 +551,7 @@ function startRest(r, nx, title){
   $("sdS").textContent = title + ", repos " + restTxt(r); $("sdT").textContent = "Repos"; $("sdHow").textContent = ""; $("sdVid").textContent = "";
   $("sdGo").style.display = ""; $("sdGo").textContent = nx ? "Passer le repos" : "Terminer la séance"; $("sdGo").disabled = true; setTimeout(() => { $("sdGo").disabled = false; }, 600);   /* un double appui sur « Enregistrer » ne saute pas le repos */
   const nb = nx && pDay(selDay).blocks[nx[0]];
-  { const art = $("sdArt"); art.textContent = ""; if (nb) { if (nb.ms && MS[nb.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(nb.ms); sp.dataset.anim = nb.ms; sp.dataset.lk = ""; sprPaint(sp, 110); art.append(sp); } else if (blockAnim(nb)) art.append(drSp(nb, 110)); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
+  { const art = $("sdArt"); art.textContent = ""; if (nb) { const sp = blockSp(nb, 110); if (sp) art.append(sp); } }   /* pendant le repos : ce qui vient ensuite, en mouvement */
   resAsk();
   $("sdHint").textContent = nx ? "Ensuite : " + nb.name + (nb.sets.length > 1 ? ", " + (nx[1]+1) + "/" + nb.sets.length : "") : "C’était la dernière série du jour.";
   say(nx ? "Repos, " + secSay(r.rest) + ". Ensuite : " + (nx[0] === sd.bi ? "série " + (nx[1]+1) + " sur " + nb.sets.length : nb.name) + "." : "C’était la dernière série.");

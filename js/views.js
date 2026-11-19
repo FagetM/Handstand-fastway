@@ -187,7 +187,7 @@ function render(){
     else {
       let secs = 0; const list = el("div","tlist");
       day.blocks.forEach((b,bi)=>{ const r = el("div","trow"), art = el("span","art"), g = el("div","grow"), done = b.sets.filter((_,si)=>vals[bi + "-" + si] != null).length;
-        if (b.ms && MS[b.ms]) { const sp = el("span","sp"); sp.dataset.pose = poseId(b.ms); sp.dataset.anim = b.ms; sp.dataset.lk = ""; sprPaint(sp, 64); art.append(sp); } else if (blockAnim(b)) art.append(drSp(b, 64)); else art.append(el("span","num", String(bi + 1)));
+        art.append(blockSp(b, 64) || el("span","num", String(bi + 1)));
         const s0 = b.sets[0], work = b.sets.filter(s=>!s.max), mx = b.sets.filter(s=>s.max);
         const one = s => s.goal ? (b.kind === "hold" ? s.goal + " s" : "× " + s.goal) : fixed(s) ? fixTxt(b, s, day.scale) : s.pct ? s.pct + " %" : "max";
         const u = s => b.kind === "hold" ? one(s) : one(s).replace("× ", "") + " rép.", ess = n => n + (n > 1 ? " essais" : " essai");
@@ -266,7 +266,7 @@ function openMs(id){
   $("dDesc").textContent = m.desc || "";
   const fg = $("dFig"); fg.textContent = "";
   { const pz = poseId(id);
-    if (SPR[id]) { const sp = el("span","sp demo"); sp.dataset.pose = pz; sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 132); fg.append(sp); }
+    if (SPR[id]) { fg.append(figSp(id, 132, pz, "sp demo")); }
     else if (pz !== "stand") { const im = el("img","demo"); im.alt = ""; im.width = im.height = 132; im.src = "anim/" + (animOn() && STILLS.has(pz) ? "demo_" : "still_") + stillOf(pz) + ".webp"; im.onerror = () => { im.remove(); const f2 = figure(id); if (f2) fg.append(f2); }; fg.append(im); }
     else { const f2 = figure(id); if (f2) fg.append(f2); } }
   const dv = $("dVid"); dv.textContent = "";

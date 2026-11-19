@@ -2,7 +2,6 @@
 // les mêmes, en quatre lignes à parcourir d’un coup d’œil
 const SAFE_LIST = ["Tension mal contrôlée : avis médical d’abord", "Glaucome ou rétine fragile : avis médical", "Nuque fragile : avis médical", "Fourmillements, douleur la nuit : stop, consulte"];
 const safeList = () => { const ul = el("ul","safel"); SAFE_LIST.forEach(t => ul.append(el("li",null,t))); return ul; };
-const SAFE_TXT = "Avant de passer tête en bas, demande l’avis d’un médecin si tu as une tension artérielle mal contrôlée, un glaucome, un décollement de rétine, ou des soucis de nuque. Engourdissement, fourmillements, gonflement ou douleur la nuit : arrête et consulte.";
 // La Voie : le côté intérieur de la pratique. Une pensée par jour (sources citées), des respirations guidées,
 // un carnet d’écoute du corps, et « Transmettre », le chemin vers l’enseignement du yoga et de la gym.
 // Laïque, en invitation, sans promesse : les textes anciens sont cités pour ce qu’ils disent, pas comme des dogmes.

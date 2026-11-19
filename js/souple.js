@@ -30,7 +30,7 @@ const romWeak = pool => pool.slice().sort((a, b) => Math.max(0, romLv(a.id)) / (
 const romOfCycle = () => ROM[(cycN() - 1) % ROM.length];
 
 // le personnage montre le repère : image fixe tout de suite, animation dès qu’elle est calculée
-const romSp = (r, size) => { const sp = el("span","sp"); sp.dataset.anim = r.an; sp.dataset.pose = ANIM_STILL[r.an] || "stand"; sp.dataset.lk = ""; sprPaint(sp, size); return sp; };
+const romSp = (r, size) => figSp(r.an, size, ANIM_STILL[r.an] || "stand");
 function romOpen(id, after){
   const r = ROMI[id], box = $("qkBody"); box.textContent = "";
   const art = el("div","plart"); art.append(romSp(r, 150)); box.append(art, el("div","lab", r.yoga || "Souplesse"), el("h2",null,r.name), el("p","mut", r.how + " Échauffé, sans rebond."));

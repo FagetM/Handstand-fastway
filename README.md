@@ -32,7 +32,7 @@ Les scripts se chargent dans cet ordre et partagent un même espace global ; rie
 | `js/state.js` | sauvegarde sur l'appareil, migrations, outils (`el`, `chipRow`), **le journal** (`idOfLog`, `logsOf`, `daysWhere`), validation, niveaux, badges |
 | `js/yoga.js` | noms yoga des figures, figures maîtresses, carte « Prochaine victoire » |
 | `js/parcours.js` | plan par figure (`planFor`), dates (`planCalc`), douleur, plateau, matériel (`EQ_NOTE`, `PARA_ALT`), fiche plein écran |
-| `js/sprites.js` | personnage 3D et animations des figures et des exercices |
+| `js/sprites.js` | personnage 3D et animations des figures et des exercices ; `figSp(anim, taille)` crée un personnage animé, `blockSp(bloc, taille)` celui d’un bloc de séance |
 | `js/scene.js` | le décor aquarelle qui grandit avec le rang |
 | `js/cycle.js` | cycles de 4 semaines : semaine légère, jour de test, bilan, records, carnet vidéo |
 | `js/souple.js` | souplesse : repères mesurés, fin de séance active, séance douce |

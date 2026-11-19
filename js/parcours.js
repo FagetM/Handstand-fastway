@@ -120,7 +120,6 @@ function planFor(m){
 function openProg(pid, step){ pg().cur = pid; if (step != null) { pickP(); pp().step = step; } save(); render(); showTab("today"); window.scrollTo(0, 0); }
 
 // ---------- Le parcours : une seule carte, de haut en bas. Tronc commun, puis le niveau difficile et ses trois voies. ----------
-const HARD = [["onearm","Équilibre un bras"],["planche","Full planche"],["press","Équilibre en force"]];
 // un coffre s’ouvre quand les figures du chemin de l’étage sont validées (les bonus hors chemin ne comptent pas)
 function chestOpen(s){ return !!s && s.ms.filter(m=>!m.alt).every(m=>reqDone(m.id)); }
 // Coffres : un par étage, ouvert quand l’étage est terminé ; chacun débloque une tenue.
@@ -247,7 +246,7 @@ const faultKey = id => { const f = faultOf(id); return f ? "fx_" + f.t + "__" + 
 const lc1 = t => t.charAt(0).toLowerCase() + t.slice(1);   // minuscule après les deux-points
 function quick(id){
   const m = MS[id], x = st(id), lk = !x.done && msLocked(m), L = lvls(m), kk = lvlOf(m), box = $("qkBody"); box.textContent = "";
-  const art = el("div","qkart"), sp = el("span","sp"); sp.dataset.pose = poseId(id); sp.dataset.anim = id; sp.dataset.lk = ""; sprPaint(sp, 200); art.append(sp);
+  const art = el("div","qkart"), sp = figSp(id, 200); art.append(sp);
 
   const g = el("div","grow"), mst = MAITRES.has(id); g.append(el("div","lab" + (mst ? " qmst" : ""), mst ? "Figure maîtresse, " + (/^[A-Z]{2}/.test(SEC[m.sec].name) ? SEC[m.sec].name : lc1(SEC[m.sec].name)) : SEC[m.sec].name), el("h2",null, m.name));
   { const y = yogaOf(id); if (y) { const yl = el("div","qyoga"); yl.append(el("span",null,"En yoga : "), y[0] ? el("b",null,y[0]) : "", y[1] ? el("span",null,(y[0] ? ", " : "") + y[1]) : "", y[2] ? el("span","mut"," (" + y[2] + ")") : ""); g.append(yl); } }

@@ -67,7 +67,7 @@ function renderSommet(){
   const done = [...anc].filter(r => reqDone(r)).length, tot = anc.size || 1, pct = Math.round(done / tot * 100), y = yogaOf(id);
   box.hidden = false;
   const near0 = Object.values(MS).filter(f => !f.alt && !st(f.id).done && !msLocked(f) && f.target && P.fin[f.id] > 0).map(f => [f, P.fin[f.id]]).sort((a, b) => a[1] - b[1])[0], aid = near0 ? near0[0].id : id;
-  const art = el("span","smart"), sp = el("span","sp"); sp.dataset.pose = poseId(aid); sp.dataset.anim = aid; sp.dataset.lk = ""; sprPaint(sp, 88); art.append(sp);   // la figure de la prochaine victoire
+  const art = el("span","smart"), sp = figSp(aid, 88); art.append(sp);   // la figure de la prochaine victoire
   if (!near0) { const wr = el("span","laurel"); wr.innerHTML = laurel(); art.prepend(wr); }
   // d’abord la victoire proche (une figure ouverte, datée en semaines), puis le sommet, avec une fourchette plutôt qu’une date lointaine
   const g = el("span","grow");
@@ -78,9 +78,3 @@ function renderSommet(){
   g.append(sl, bar, el("span","mut", done + (done > 1 ? " étapes franchies sur " : " étape franchie sur ") + tot + (rng ? ", " + rng : "") + "."));
   box.append(art, g); box.onclick = () => { showTab("path"); goHere(aid); setTimeout(() => quick(aid), 500); };
 }
-// les trois grandes disciplines : leur figure maîtresse, leur nom en yoga, une ligne d’histoire
-const DISC = {
-  onearm:{fig:"oa_oahs10", yoga:[["Eka Hasta Vṛkṣāsana"], ", l’arbre sur une main."], h:"Au gymnase, on dit ATR un bras, pour appui tendu renversé. Un numéro phare des équilibristes de cirque : la main corrige au bout des doigts."},
-  planche:{fig:"pl_full", yoga:["pas de nom classique ; la plus proche est ", ["Mayūrāsana"], ", le paon."], h:"Le mot est français : le corps à l’horizontale sur des bras tendus, un grand élément de force de la gymnastique."},
-  press:{fig:"pr_stalder", yoga:["de ", ["Prasārita Pādottānāsana"], " à ", ["Adho Mukha Vṛkṣāsana"], "."], h:"Monter en équilibre sans élan. La montée stalder emprunte son nom au gymnaste suisse Josef Stalder, champion olympique en 1948."},
-};
